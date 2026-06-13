@@ -16,6 +16,9 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { BottomTabBar } from '../components/BottomTabBar';
+import { ExerciseVideoBanner } from '../components/ExerciseVideoBanner';
+import { ProgressLogo } from '../components/home/ProgressLogo';
+import { getExerciseVideoSource } from '../lib/getExerciseVideo';
 import { useAppStore } from '../store/useAppStore';
 import { colors } from '../theme/colors';
 import { font } from '../theme/fonts';
@@ -25,6 +28,8 @@ const QUOTE_CARD_WIDTH = SCREEN_WIDTH - 32;
 
 const MALE_AVATAR = require('../assets/avatars/male-avatar.png');
 const FEMALE_AVATAR = require('../assets/avatars/female-avatar.png');
+const WALKING_CHARACTER = require('../assets/home/walking-character.png');
+const EXERCISE_THUMBNAIL = require('../assets/home/exercise-thumbnail.png');
 
 const QUOTES = ['quote1', 'quote2', 'quote3'] as const;
 
@@ -33,7 +38,10 @@ export default function HomeScreen() {
   const router = useRouter();
   const username = useAppStore((state) => state.username);
   const avatar = useAppStore((state) => state.avatar);
-  const [activeQuote, setActiveQuote] = useState(1);
+  const language = useAppStore((state) => state.language);
+  const gender = useAppStore((state) => state.gender);
+  const day1Video = getExerciseVideoSource(1, language, gender, avatar);
+  const [activeQuote, setActiveQuote] = useState(0);
   const scrollRef = useRef<ScrollView>(null);
 
   const handleQuoteScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
@@ -68,22 +76,10 @@ export default function HomeScreen() {
         </View>
 
         <View style={styles.progressSection}>
-          <View style={styles.progressRing}>
-            <Ionicons name="walk" size={32} color={colors.line} />
-          </View>
+          <ProgressLogo width={79} height={80} />
           <Text style={styles.daysCompleted}>
             {t('home.daysCompleted', { completed: 0, total: 5 })}
           </Text>
-          <Text style={styles.firstStep}>{t('home.firstStep')}</Text>
-        </View>
-
-        <View style={styles.dots}>
-          {QUOTES.map((_, index) => (
-            <View
-              key={index}
-              style={[styles.dot, activeQuote === index && styles.dotActive]}
-            />
-          ))}
         </View>
 
         <ScrollView
@@ -99,33 +95,55 @@ export default function HomeScreen() {
           {QUOTES.map((key) => (
             <View key={key} style={[styles.quoteCard, { width: QUOTE_CARD_WIDTH }]}>
               <View style={styles.quoteIllustration}>
-                <Ionicons name="play-circle-outline" size={48} color={colors.textPrimary} />
+                <Image
+                  source={WALKING_CHARACTER}
+                  style={styles.quoteCharacter}
+                  contentFit="contain"
+                />
               </View>
               <Text style={styles.quoteText}>{t(`home.${key}`)}</Text>
             </View>
           ))}
         </ScrollView>
 
+        <View style={styles.dots}>
+          {QUOTES.map((_, index) => (
+            <View
+              key={index}
+              style={[styles.dot, activeQuote === index && styles.dotActive]}
+            />
+          ))}
+        </View>
+
         <View style={styles.sessionSection}>
           <Text style={styles.sessionTitle}>{t('home.sessionTitle')}</Text>
-          <Text style={styles.sessionSubtitle}>{t('home.sessionSubtitle')}</Text>
 
           <View style={styles.dayCard}>
-            <View style={styles.exerciseBanner}>
-              <Ionicons name="body" size={72} color="#FFFFFF" />
+            <View style={styles.exerciseBannerWrap}>
+              <ExerciseVideoBanner
+                source={day1Video}
+                fallbackImage={EXERCISE_THUMBNAIL}
+                height={112}
+              />
             </View>
-            <View style={styles.dayCardFooter}>
-              <View style={styles.dayTextBlock}>
-                <Text style={styles.dayLabel}>{t('home.dayLabel', { day: 1 })}</Text>
-                <Text style={styles.daySubtitle}>{t('home.daySubtitle')}</Text>
-              </View>
-              <Pressable style={styles.startButton} accessibilityRole="button">
+            <View style={styles.dayCardBody}>
+              <Text style={styles.dayLabel}>{t('home.dayLabel', { day: 1 })}</Text>
+              <Text style={styles.daySubtitle}>{t('home.daySubtitle')}</Text>
+              <Pressable
+                style={styles.startButton}
+                accessibilityRole="button"
+                onPress={() => router.push('/exercise/1')}
+              >
                 <Text style={styles.startButtonText}>{t('home.start')}</Text>
               </Pressable>
             </View>
           </View>
         </View>
       </ScrollView>
+
+      <Pressable style={styles.fab} accessibilityRole="button" accessibilityLabel="Chat">
+        <Ionicons name="chatbubble" size={24} color={colors.buttonPrimary} />
+      </Pressable>
 
       <BottomTabBar
         activeTab="home"
@@ -160,17 +178,18 @@ const styles = StyleSheet.create({
   },
   welcome: {
     flex: 1,
-    fontSize: 16,
+    fontSize: 21,
     ...font('semiBold'),
     color: colors.textPrimary,
-    letterSpacing: 0.15,
+    letterSpacing: -0.26,
+    lineHeight: 28,
   },
   avatarRing: {
     width: 64,
     height: 64,
     borderRadius: 32,
-    borderWidth: 2,
-    borderColor: colors.optionBorderSelected,
+    borderWidth: 1,
+    borderColor: colors.buttonPrimary,
     overflow: 'hidden',
     backgroundColor: colors.optionBgSelected,
   },
@@ -184,28 +203,13 @@ const styles = StyleSheet.create({
     gap: 8,
     paddingHorizontal: 16,
   },
-  progressRing: {
-    width: 90,
-    height: 90,
-    borderRadius: 45,
-    borderWidth: 2,
-    borderColor: colors.dotInactive,
-    borderStyle: 'dashed',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
   daysCompleted: {
-    fontSize: 14,
-    ...font('bold'),
-    color: colors.navy,
+    fontSize: 20,
+    ...font('semiBold'),
+    color: colors.progressText,
     textAlign: 'center',
-  },
-  firstStep: {
-    fontSize: 12,
-    ...font('medium'),
-    color: colors.textMuted,
-    textAlign: 'center',
-    maxWidth: 306,
+    letterSpacing: -0.23,
+    lineHeight: 20,
   },
   dots: {
     flexDirection: 'row',
@@ -226,101 +230,117 @@ const styles = StyleSheet.create({
   },
   quoteScroll: {
     paddingHorizontal: 16,
+    marginTop: 16,
   },
   quoteCard: {
     flexDirection: 'row',
     alignItems: 'center',
     borderWidth: 1,
     borderColor: colors.cardBorder,
-    borderRadius: 8,
+    borderRadius: 10,
     padding: 7,
     gap: 8,
     height: 106,
+    backgroundColor: colors.background,
   },
   quoteIllustration: {
-    width: 120,
+    width: 64,
     height: 92,
-    borderRadius: 4,
-    backgroundColor: colors.optionBg,
     alignItems: 'center',
     justifyContent: 'center',
+    overflow: 'hidden',
+  },
+  quoteCharacter: {
+    width: 64,
+    height: 92,
   },
   quoteText: {
     flex: 1,
-    fontSize: 16,
-    ...font('bold'),
+    fontSize: 18,
+    ...font('semiBold'),
     color: colors.textPrimary,
-    lineHeight: 24,
+    lineHeight: 25,
+    letterSpacing: -0.2,
   },
   sessionSection: {
-    marginTop: 16,
+    marginTop: 8,
     paddingHorizontal: 16,
     gap: 8,
   },
   sessionTitle: {
-    fontSize: 16,
-    ...font('semiBold'),
-    color: colors.textPrimary,
-    letterSpacing: 0.15,
-  },
-  sessionSubtitle: {
-    fontSize: 14,
+    fontSize: 20,
     ...font('medium'),
-    color: colors.textMuted,
-    lineHeight: 22,
+    color: colors.textPrimary,
+    letterSpacing: -0.26,
+    lineHeight: 28,
+    paddingLeft: 13,
   },
   dayCard: {
     marginTop: 8,
+    marginHorizontal: 17,
     borderWidth: 1,
     borderColor: colors.cardBorder,
-    borderRadius: 12,
+    borderRadius: 16,
     overflow: 'hidden',
     backgroundColor: colors.homeCardBg,
   },
-  exerciseBanner: {
-    margin: 16,
-    height: 112,
-    borderRadius: 12,
-    backgroundColor: colors.exerciseBlue,
-    alignItems: 'center',
-    justifyContent: 'center',
+  exerciseBannerWrap: {
+    marginHorizontal: 14,
+    marginTop: 15,
   },
-  dayCardFooter: {
-    flexDirection: 'row',
-    alignItems: 'flex-end',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
+  dayCardBody: {
+    paddingHorizontal: 15,
+    paddingTop: 8,
     paddingBottom: 16,
-    gap: 12,
-  },
-  dayTextBlock: {
-    flex: 1,
     gap: 2,
   },
   dayLabel: {
     fontSize: 16,
-    ...font('semiBold'),
+    ...font('medium'),
     color: colors.textPrimary,
-    letterSpacing: 0.15,
+    letterSpacing: -0.26,
+    lineHeight: 28,
   },
   daySubtitle: {
     fontSize: 14,
-    ...font('medium'),
+    ...font('regular'),
     color: colors.textMuted,
-    lineHeight: 22,
+    lineHeight: 28,
+    letterSpacing: -0.26,
+    marginBottom: 8,
   },
   startButton: {
-    width: 120,
     height: 40,
     borderRadius: 8,
     backgroundColor: colors.buttonPrimary,
+    borderWidth: 1,
+    borderColor: '#92A9B8',
     alignItems: 'center',
     justifyContent: 'center',
   },
   startButtonText: {
     fontSize: 14,
-    ...font('semiBold'),
-    color: colors.buttonText,
-    letterSpacing: 0.1,
+    ...font('medium'),
+    color: '#F9FAFB',
+    letterSpacing: 0,
+    textTransform: 'capitalize',
+  },
+  fab: {
+    position: 'absolute',
+    right: 9,
+    bottom: 88,
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: colors.tabBarBg,
+    borderWidth: 1,
+    borderColor: colors.buttonPrimary,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    elevation: 6,
   },
 });

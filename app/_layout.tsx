@@ -40,6 +40,7 @@ export default function RootLayout() {
         <Stack.Screen name="index" />
         <Stack.Screen name="onboarding" />
         <Stack.Screen name="home" />
+        <Stack.Screen name="exercise/[day]" />
         <Stack.Screen name="growth" />
         <Stack.Screen name="settings" />
       </Stack>

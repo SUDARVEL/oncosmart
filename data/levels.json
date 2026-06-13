@@ -1,0 +1,14 @@
+{
+  "levels": [
+    {
+      "day": 1,
+      "titleKey": "home.daySubtitle",
+      "videos": {
+        "male-en": "",
+        "male-ta": "",
+        "female-en": "",
+        "female-ta": ""
+      }
+    }
+  ]
+}
