@@ -39,3 +39,13 @@ yarn-error.*
 # generated native folders
 /ios
 /android
+
+# local dev helpers (not part of the app)
+.expo-web-test/
+.expo-web-test2/
+expo-connect.html
+phone-mockup.html
+
+# exercise videos are hosted online, not bundled in the repo
+assets/videos/*.mp4
+assets/videos/*.mov
