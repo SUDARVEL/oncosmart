@@ -1,0 +1,78 @@
+{
+  "language": {
+    "header": "Language",
+    "title": "Select your language",
+    "subtitle": "Choose the language you're most comfortable with",
+    "english": "English",
+    "tamil": "தமிழ்",
+    "continue": "Continue"
+  },
+  "username": {
+    "welcome": "Welcome to Oncosmart",
+    "tagline": "Move strong and live free!",
+    "label": "Username",
+    "placeholder": "Your Name",
+    "getStarted": "Get Started"
+  },
+  "age": {
+    "header": "Age",
+    "title": "What is your age ?",
+    "subtitle": "This helps us tailor your exercise plan to your specific age and needs",
+    "range18_24": "18 - 24",
+    "range25_34": "25 - 34",
+    "range35_44": "35- 44",
+    "range45_54": "45 - 54",
+    "range55_64": "55 - 64",
+    "continue": "Continue"
+  },
+  "gender": {
+    "header": "Gender",
+    "title": "Select your gender",
+    "subtitle": "This helps us personalize your experience",
+    "male": "Male",
+    "female": "Female",
+    "preferNot": "Preferred not to say",
+    "continue": "Continue"
+  },
+  "avatar": {
+    "title": "Choose Your Avatar",
+    "subtitle": "This avatar will represent you in the app. You can change it later.",
+    "saveContinue": "Save & Continue"
+  },
+  "parq": {
+    "header": "Physical Activity Screening",
+    "intro": "This short screening helps us determine your readiness for physical activity.",
+    "q1": "1. Has your doctor ever said that you have a heart condition and that you should only do physical activity recommended by a doctor?",
+    "q2": "2. Do you feel pain in your chest when you do physical activity?",
+    "q3": "3. In the past month, have you had chest pain when you were not doing physical activity?",
+    "q4": "4. Do you lose your balance because of dizziness or do you ever lose consciousness?",
+    "q5": "5. Do you have a bone or joint problem (for example, back, knee, or hip) that could be made worse by a change in your physical activity?",
+    "q6": "6. Is your doctor currently prescribing drugs (for example, water pills) for your blood pressure or heart condition?",
+    "q7": "7. Do you know of any other reason why you should not do physical activity?",
+    "yes": "Yes",
+    "no": "No",
+    "next": "Next",
+    "continue": "Continue",
+    "congratsTitle": "Congratulations !",
+    "congratsSubtitle": "You are ready to safely start your personalized exercise plan in OncoSmart.",
+    "consultTitle": "Thank for your response",
+    "consultSubtitle": "For your safety, please consult your doctor before starting this exercise plan",
+    "startPlan": "Start my plan"
+  },
+  "home": {
+    "welcome": "Welcome, {{name}}",
+    "daysCompleted": "{{completed}} out of {{total}} days completed",
+    "firstStep": "Let's make today your first step toward progress!",
+    "quote1": "Strength today freedom always",
+    "quote2": "Don't pause your life. Press play on your rehab",
+    "quote3": "Exercise to win your tomorrow.",
+    "sessionTitle": "Let's Begin Today's Session",
+    "sessionSubtitle": "Start Your Exercise",
+    "dayLabel": "DAY {{day}}",
+    "daySubtitle": "Your recovery starts here.",
+    "start": "Start",
+    "tabHome": "Home",
+    "tabGrowth": "Your Growth",
+    "tabSettings": "Settings"
+  }
+}
