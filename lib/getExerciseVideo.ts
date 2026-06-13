@@ -1,5 +1,6 @@
 import levelsData from '../data/levels.json';
 import type { AppAvatar, AppGender, AppLanguage } from '../store/useAppStore';
+import { resolveVideoUrl } from './resolveVideoUrl';
 
 export type VideoVariant = 'male-en' | 'male-ta' | 'female-en' | 'female-ta';
 
@@ -33,9 +34,9 @@ export function getExerciseVideoSource(
 
   const variant = getVideoVariant(language, gender, avatar);
   const preferred = level.videos[variant]?.trim();
-  if (preferred) return preferred;
+  if (preferred) return resolveVideoUrl(preferred);
 
   // Fallback: use any uploaded URL for this day (handy while testing with one video).
   const fallback = Object.values(level.videos).find((url) => url.trim().length > 0);
-  return fallback?.trim() || null;
+  return fallback ? resolveVideoUrl(fallback) : null;
 }

@@ -70,6 +70,20 @@ On phone: scan the Expo QR code from the terminal (same Wi‑Fi as your PC).
 
 ---
 
+## Google Drive (testing only)
+
+You can paste a **public** Drive share link or file ID for quick previews:
+
+```
+https://drive.google.com/uc?export=view&id=YOUR_FILE_ID
+```
+
+The app also accepts share links like `https://drive.google.com/file/d/FILE_ID/view` — they are converted automatically.
+
+**Limitations:** Drive links can be slow, rate-limited, or blocked on some networks. For production, use **Supabase Storage** (stable HTTPS streaming, no login page redirects).
+
+---
+
 ## Troubleshooting
 
 | Problem | Fix |
@@ -78,3 +92,4 @@ On phone: scan the Expo QR code from the terminal (same Wi‑Fi as your PC).
 | Video won't play | URL must be **https** and publicly accessible |
 | Wrong video language | Fill the correct key (male-en, male-ta, etc.) |
 | "Video not added yet" on Start | Same as above — add URL and restart |
+| Drive video flaky | Switch to Supabase public URL for production |
