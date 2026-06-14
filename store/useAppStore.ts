@@ -15,6 +15,7 @@ type AppState = {
   avatar: AppAvatar | null;
   parqAnswers: (boolean | null)[];
   parqCleared: boolean | null;
+  painScores: Record<string, number>;
   setLanguage: (language: AppLanguage) => void;
   setUsername: (username: string) => void;
   setAgeRange: (ageRange: AgeRange) => void;
@@ -22,6 +23,7 @@ type AppState = {
   setAvatar: (avatar: AppAvatar) => void;
   setParqAnswer: (index: number, value: boolean) => void;
   setParqCleared: (cleared: boolean) => void;
+  setPainScore: (day: number, score: number) => void;
 };
 
 const INITIAL_PARQ_ANSWERS: (boolean | null)[] = Array(7).fill(null);
@@ -36,6 +38,7 @@ export const useAppStore = create<AppState>()(
       avatar: null,
       parqAnswers: [...INITIAL_PARQ_ANSWERS],
       parqCleared: null,
+      painScores: {},
       setLanguage: (language) => set({ language }),
       setUsername: (username) => set({ username }),
       setAgeRange: (ageRange) => set({ ageRange }),
@@ -48,6 +51,10 @@ export const useAppStore = create<AppState>()(
           return { parqAnswers: next };
         }),
       setParqCleared: (cleared) => set({ parqCleared: cleared }),
+      setPainScore: (day, score) =>
+        set((state) => ({
+          painScores: { ...state.painScores, [String(day)]: score },
+        })),
     }),
     {
       name: 'oncofitness-app',
@@ -60,6 +67,7 @@ export const useAppStore = create<AppState>()(
         avatar: state.avatar,
         parqAnswers: state.parqAnswers,
         parqCleared: state.parqCleared,
+        painScores: state.painScores,
       }),
     },
   ),

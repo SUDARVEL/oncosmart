@@ -132,7 +132,7 @@ export default function HomeScreen() {
               <Pressable
                 style={styles.startButton}
                 accessibilityRole="button"
-                onPress={() => router.push('/exercise/1')}
+                onPress={() => router.push(`/exercise/pain-score?day=1`)}
               >
                 <Text style={styles.startButtonText}>{t('home.start')}</Text>
               </Pressable>

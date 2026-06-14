@@ -74,5 +74,14 @@
     "tabHome": "Home",
     "tabGrowth": "Your Growth",
     "tabSettings": "Settings"
+  },
+  "pain": {
+    "title": "Pain Score",
+    "close": "Close",
+    "noPain": "No pain",
+    "moderatePain": "Moderate Pain",
+    "worstPain": "Worst Pain",
+    "info": "Drag the slider to show your pain score, so we can modify your plan.",
+    "continue": "Continue"
   }
 }
