@@ -3,6 +3,8 @@ import { useVideoPlayer, VideoView } from 'expo-video';
 import { useEffect } from 'react';
 import { StyleSheet, View } from 'react-native';
 
+import { colors } from '../theme/colors';
+
 type Props = {
   source: string | null;
   fallbackImage: number;
@@ -33,7 +35,7 @@ function ExerciseVideoBannerPlayer({
       <VideoView
         style={styles.video}
         player={player}
-        contentFit="cover"
+        contentFit="contain"
         nativeControls={false}
       />
     </View>
@@ -44,7 +46,7 @@ export function ExerciseVideoBanner({ source, fallbackImage, height = 112 }: Pro
   if (!source) {
     return (
       <View style={[styles.banner, { height }]}>
-        <Image source={fallbackImage} style={styles.fallback} contentFit="cover" />
+        <Image source={fallbackImage} style={styles.fallback} contentFit="contain" />
       </View>
     );
   }
@@ -57,7 +59,7 @@ const styles = StyleSheet.create({
     width: '100%',
     borderRadius: 8,
     overflow: 'hidden',
-    backgroundColor: '#1E5A8A',
+    backgroundColor: colors.optionBg,
   },
   video: {
     width: '100%',
