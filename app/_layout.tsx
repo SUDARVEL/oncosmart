@@ -13,6 +13,9 @@ import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
+import { isSupabaseConfigured } from '../lib/env';
+import { checkSupabaseConnection } from '../lib/supabase';
+
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
@@ -28,6 +31,17 @@ export default function RootLayout() {
       void SplashScreen.hideAsync();
     }
   }, [fontsLoaded]);
+
+  useEffect(() => {
+    if (!__DEV__) return;
+    if (!isSupabaseConfigured()) {
+      console.log('[Supabase] Add .env from .env.example to connect (see SUPABASE_SETUP.md)');
+      return;
+    }
+    void checkSupabaseConnection().then((ok) => {
+      console.log(`[Supabase] Storage connection: ${ok ? 'OK' : 'check bucket name and keys'}`);
+    });
+  }, []);
 
   if (!fontsLoaded) {
     return null;

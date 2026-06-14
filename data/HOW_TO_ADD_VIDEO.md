@@ -39,18 +39,16 @@ Fill all four URLs when you have all versions uploaded.
 
 ## Upload to Supabase (recommended)
 
-1. Go to [supabase.com](https://supabase.com) and open your project.
-2. Click **Storage** in the left menu.
-3. Create a bucket named `exercise-videos` (set it **Public** for now).
-4. Click the bucket → **Upload file** → choose your Day 1 `.mp4`.
-5. After upload, click the file → **Copy URL** (public URL).
-6. Paste that URL into `data/levels.json` under the correct key.
+1. Follow **SUPABASE_SETUP.md** — copy `.env.example` to `.env` and add your Supabase URL + anon key.
+2. Create bucket `exercise-videos` (Public).
+3. Upload `day-01/male-en.mp4`, etc.
+4. In `levels.json` use a **short path** (app builds the full URL):
 
-Example URL shape:
+```json
+"male-en": "day-01/male-en.mp4"
+```
 
-```
-https://abcdefghij.supabase.co/storage/v1/object/public/exercise-videos/day1-male-en.mp4
-```
+Or paste the full public URL from Supabase.
 
 ---
 
