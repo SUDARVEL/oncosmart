@@ -3,20 +3,19 @@ import { useVideoPlayer, VideoView } from 'expo-video';
 import { useEffect } from 'react';
 import { StyleSheet, View } from 'react-native';
 
-import { colors } from '../theme/colors';
-
 type Props = {
   source: string | null;
   fallbackImage: number;
-  height?: number;
+  /** Width:height ratio for the preview area (landscape exercise videos). */
+  aspectRatio?: number;
 };
 
 function ExerciseVideoBannerPlayer({
   source,
-  height,
+  aspectRatio,
 }: {
   source: string;
-  height: number;
+  aspectRatio: number;
 }) {
   const player = useVideoPlayer(source, (instance) => {
     instance.loop = true;
@@ -31,27 +30,31 @@ function ExerciseVideoBannerPlayer({
   }, [player, source]);
 
   return (
-    <View style={[styles.banner, { height }]}>
+    <View style={[styles.banner, { aspectRatio }]}>
       <VideoView
         style={styles.video}
         player={player}
-        contentFit="contain"
+        contentFit="cover"
         nativeControls={false}
       />
     </View>
   );
 }
 
-export function ExerciseVideoBanner({ source, fallbackImage, height = 112 }: Props) {
+export function ExerciseVideoBanner({
+  source,
+  fallbackImage,
+  aspectRatio = 16 / 9,
+}: Props) {
   if (!source) {
     return (
-      <View style={[styles.banner, { height }]}>
-        <Image source={fallbackImage} style={styles.fallback} contentFit="contain" />
+      <View style={[styles.banner, { aspectRatio }]}>
+        <Image source={fallbackImage} style={styles.fallback} contentFit="cover" />
       </View>
     );
   }
 
-  return <ExerciseVideoBannerPlayer source={source} height={height} />;
+  return <ExerciseVideoBannerPlayer source={source} aspectRatio={aspectRatio} />;
 }
 
 const styles = StyleSheet.create({
@@ -59,7 +62,7 @@ const styles = StyleSheet.create({
     width: '100%',
     borderRadius: 8,
     overflow: 'hidden',
-    backgroundColor: colors.optionBg,
+    backgroundColor: '#E5E7EB',
   },
   video: {
     width: '100%',

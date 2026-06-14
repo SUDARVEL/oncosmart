@@ -123,7 +123,6 @@ export default function HomeScreen() {
               <ExerciseVideoBanner
                 source={day1Video}
                 fallbackImage={EXERCISE_THUMBNAIL}
-                height={140}
               />
             </View>
             <View style={styles.dayCardBody}>
