@@ -6,6 +6,8 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { PainScorePanel } from '../../components/pain/PainScorePanel';
+import { ReadyToBeginModal } from '../../components/pain/ReadyToBeginModal';
+import { HIGH_PAIN_THRESHOLD } from '../../lib/painScore';
 import { useAppStore } from '../../store/useAppStore';
 import { colors } from '../../theme/colors';
 import { font } from '../../theme/fonts';
@@ -17,14 +19,23 @@ export default function PainScoreScreen() {
   const dayNumber = Number(day) || 1;
   const setPainScore = useAppStore((state) => state.setPainScore);
   const [score, setScore] = useState(0);
+  const [showReadyModal, setShowReadyModal] = useState(false);
 
   const handleClose = () => {
     router.back();
   };
 
-  const handleContinue = () => {
+  const goToDaySession = () => {
     setPainScore(dayNumber, Math.round(score));
-    router.replace(`/exercise/${dayNumber}`);
+    router.replace(`/exercise/sessions/${dayNumber}`);
+  };
+
+  const handleContinue = () => {
+    if (Math.round(score) > HIGH_PAIN_THRESHOLD) {
+      setShowReadyModal(true);
+      return;
+    }
+    goToDaySession();
   };
 
   return (
@@ -49,6 +60,15 @@ export default function PainScoreScreen() {
           onContinue={handleContinue}
         />
       </SafeAreaView>
+
+      <ReadyToBeginModal
+        visible={showReadyModal}
+        onNo={() => setShowReadyModal(false)}
+        onYes={() => {
+          setShowReadyModal(false);
+          goToDaySession();
+        }}
+      />
     </View>
   );
 }

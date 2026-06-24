@@ -1,5 +1,7 @@
 export const PAIN_MIN = 0;
 export const PAIN_MAX = 10;
+/** Pain scores above this value trigger the ready-to-begin confirmation. */
+export const HIGH_PAIN_THRESHOLD = 7;
 
 export type PainTheme = {
   borderColor: string;

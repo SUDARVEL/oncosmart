@@ -9,9 +9,10 @@ type ScreenHeaderProps = {
   title: string;
   showBack?: boolean;
   onBack?: () => void;
+  largeTitle?: boolean;
 };
 
-export function ScreenHeader({ title, showBack = false, onBack }: ScreenHeaderProps) {
+export function ScreenHeader({ title, showBack = false, onBack, largeTitle = false }: ScreenHeaderProps) {
   const router = useRouter();
 
   const handleBack = () => {
@@ -31,7 +32,11 @@ export function ScreenHeader({ title, showBack = false, onBack }: ScreenHeaderPr
       ) : (
         <View style={styles.sideSlot} />
       )}
-      {title ? <Text style={styles.title}>{title}</Text> : <View style={styles.titleSpacer} />}
+      {title ? (
+        <Text style={[styles.title, largeTitle && styles.titleLarge]}>{title}</Text>
+      ) : (
+        <View style={styles.titleSpacer} />
+      )}
       <View style={styles.sideSlot} />
     </View>
   );
@@ -64,5 +69,11 @@ const styles = StyleSheet.create({
     ...font('semiBold'),
     color: colors.textPrimary,
     letterSpacing: 0.15,
+  },
+  titleLarge: {
+    fontSize: 22,
+    lineHeight: 28,
+    letterSpacing: -0.26,
+    ...font('bold'),
   },
 });

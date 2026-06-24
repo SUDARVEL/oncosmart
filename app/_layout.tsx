@@ -1,6 +1,9 @@
 import '../i18n';
 
 import {
+  Antonio_700Bold,
+} from '@expo-google-fonts/antonio';
+import {
   Roboto_400Regular,
   Roboto_500Medium,
   Roboto_600SemiBold,
@@ -10,27 +13,46 @@ import {
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import { ActivityIndicator, Platform, StyleSheet, View } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { isSupabaseConfigured } from '../lib/env';
 import { checkSupabaseConnection } from '../lib/supabase';
+import { colors } from '../theme/colors';
 
 SplashScreen.preventAutoHideAsync();
 
+const FONT_LOAD_TIMEOUT_MS = Platform.OS === 'web' ? 2000 : 8000;
+
 export default function RootLayout() {
-  const [fontsLoaded] = useFonts({
+  const [fontsLoaded, fontError] = useFonts({
     Roboto_400Regular,
     Roboto_500Medium,
     Roboto_600SemiBold,
     Roboto_700Bold,
+    Antonio_700Bold,
   });
+  const [fontTimedOut, setFontTimedOut] = useState(false);
+
+  const appReady = fontsLoaded || fontError != null || fontTimedOut;
 
   useEffect(() => {
-    if (fontsLoaded) {
+    const timeout = setTimeout(() => setFontTimedOut(true), FONT_LOAD_TIMEOUT_MS);
+    return () => clearTimeout(timeout);
+  }, []);
+
+  useEffect(() => {
+    if (appReady) {
       void SplashScreen.hideAsync();
     }
-  }, [fontsLoaded]);
+  }, [appReady]);
+
+  useEffect(() => {
+    if (fontError) {
+      console.warn('[Fonts] Failed to load custom fonts, using system fallbacks.', fontError);
+    }
+  }, [fontError]);
 
   useEffect(() => {
     if (!__DEV__) return;
@@ -43,8 +65,12 @@ export default function RootLayout() {
     });
   }, []);
 
-  if (!fontsLoaded) {
-    return null;
+  if (!appReady) {
+    return (
+      <View style={styles.bootScreen}>
+        <ActivityIndicator size="large" color={colors.buttonPrimary} />
+      </View>
+    );
   }
 
   return (
@@ -55,6 +81,7 @@ export default function RootLayout() {
         <Stack.Screen name="onboarding" />
         <Stack.Screen name="home" />
         <Stack.Screen name="exercise/[day]" />
+        <Stack.Screen name="exercise/sessions/[day]" />
         <Stack.Screen
           name="exercise/pain-score"
           options={{ presentation: 'modal', animation: 'slide_from_bottom' }}
@@ -65,3 +92,12 @@ export default function RootLayout() {
     </SafeAreaProvider>
   );
 }
+
+const styles = StyleSheet.create({
+  bootScreen: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: colors.background,
+  },
+});

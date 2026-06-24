@@ -1,0 +1,19 @@
+{
+  "male": {
+    "diaphragmatic-breathing": null,
+    "ankle-pumps": "Ankle Pumps.png",
+    "thoracic-expansion": "Thoracic Expansion.png",
+    "arm-circles": "Arm Circles.png",
+    "spot-marching": "Spot Marching.png",
+    "hamstring-stretch": "Hamstring Stretch.png",
+    "quadriceps-stretch-right": "Quadriceps Stretch Right.png",
+    "quadriceps-stretch-left": "Quadriceps Stretch Left.png",
+    "calf-stretch-right": "Calf Stretch Right.png",
+    "calf-stretch-left": "Calf Stretch Left.png",
+    "chest-stretch": "Chest Stretch.png",
+    "triceps-stretch-right": null,
+    "triceps-stretch-left": null,
+    "neck-stretch-right": "Neck Stretch Right.png",
+    "neck-stretch-left": null
+  }
+}

@@ -1,29 +1,68 @@
+import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
-import { StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { BottomTabBar } from '../components/BottomTabBar';
+import { ScreenHeader } from '../components/ScreenHeader';
+import { SettingsRow } from '../components/settings/SettingsRow';
+import { useAppStore } from '../store/useAppStore';
 import { colors } from '../theme/colors';
-import { font } from '../theme/fonts';
 
 export default function SettingsScreen() {
   const { t } = useTranslation();
   const router = useRouter();
+  const resetApp = useAppStore((state) => state.resetApp);
+
+  const handleTabPress = (tab: 'home' | 'growth' | 'settings') => {
+    if (tab === 'home') router.replace('/home');
+    if (tab === 'growth') router.replace('/growth');
+  };
+
+  const handleLogout = () => {
+    resetApp();
+    router.replace('/onboarding');
+  };
 
   return (
     <SafeAreaView style={styles.screen} edges={['top']}>
-      <View style={styles.content}>
-        <Text style={styles.title}>{t('home.tabSettings')}</Text>
-        <Text style={styles.subtitle}>Coming soon</Text>
-      </View>
+      <ScreenHeader
+        title={t('settings.title')}
+        showBack
+        largeTitle
+        onBack={() => router.replace('/home')}
+      />
+
+      <ScrollView
+        style={styles.scroll}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
+        <SettingsRow
+          title={t('settings.myProfile')}
+          description={t('settings.myProfileDescription')}
+          showChevron
+        />
+        <SettingsRow
+          title={t('settings.helpSupport')}
+          description={t('settings.helpSupportDescription')}
+          showChevron
+        />
+        <SettingsRow
+          title={t('settings.logout')}
+          description={t('settings.logoutDescription')}
+          onPress={handleLogout}
+        />
+      </ScrollView>
+
+      <Pressable style={styles.fab} accessibilityRole="button" accessibilityLabel="Chat">
+        <Ionicons name="chatbubble" size={24} color={colors.buttonPrimary} />
+      </Pressable>
 
       <BottomTabBar
         activeTab="settings"
-        onTabPress={(tab) => {
-          if (tab === 'home') router.replace('/home');
-          if (tab === 'growth') router.replace('/growth');
-        }}
+        onTabPress={handleTabPress}
         labels={{
           home: t('home.tabHome'),
           growth: t('home.tabGrowth'),
@@ -39,21 +78,31 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.background,
   },
-  content: {
+  scroll: {
     flex: 1,
+  },
+  scrollContent: {
+    paddingHorizontal: 16,
+    paddingTop: 16,
+    paddingBottom: 120,
+    gap: 8,
+  },
+  fab: {
+    position: 'absolute',
+    right: 9,
+    bottom: 88,
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: colors.tabBarBg,
+    borderWidth: 1,
+    borderColor: colors.buttonPrimary,
     alignItems: 'center',
     justifyContent: 'center',
-    padding: 24,
-  },
-  title: {
-    fontSize: 22,
-    ...font('bold'),
-    color: colors.textPrimary,
-  },
-  subtitle: {
-    marginTop: 8,
-    fontSize: 14,
-    ...font('regular'),
-    color: colors.textSecondary,
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    elevation: 6,
   },
 });

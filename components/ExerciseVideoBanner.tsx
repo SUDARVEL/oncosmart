@@ -5,17 +5,20 @@ import { StyleSheet, View } from 'react-native';
 
 type Props = {
   source: string | null;
-  fallbackImage: number;
+  fallbackImage?: number;
   /** Width:height ratio for the preview area (landscape exercise videos). */
   aspectRatio?: number;
+  previewContentFit?: 'cover' | 'contain';
 };
 
 function ExerciseVideoBannerPlayer({
   source,
   aspectRatio,
+  previewContentFit,
 }: {
   source: string;
   aspectRatio: number;
+  previewContentFit: 'cover' | 'contain';
 }) {
   const player = useVideoPlayer(source, (instance) => {
     instance.loop = true;
@@ -34,7 +37,7 @@ function ExerciseVideoBannerPlayer({
       <VideoView
         style={styles.video}
         player={player}
-        contentFit="cover"
+        contentFit={previewContentFit}
         nativeControls={false}
       />
     </View>
@@ -45,8 +48,12 @@ export function ExerciseVideoBanner({
   source,
   fallbackImage,
   aspectRatio = 16 / 9,
+  previewContentFit = 'cover',
 }: Props) {
   if (!source) {
+    if (!fallbackImage) {
+      return <View style={[styles.banner, { aspectRatio, backgroundColor: '#E5E7EB' }]} />;
+    }
     return (
       <View style={[styles.banner, { aspectRatio }]}>
         <Image source={fallbackImage} style={styles.fallback} contentFit="cover" />
@@ -54,7 +61,13 @@ export function ExerciseVideoBanner({
     );
   }
 
-  return <ExerciseVideoBannerPlayer source={source} aspectRatio={aspectRatio} />;
+  return (
+    <ExerciseVideoBannerPlayer
+      source={source}
+      aspectRatio={aspectRatio}
+      previewContentFit={previewContentFit}
+    />
+  );
 }
 
 const styles = StyleSheet.create({

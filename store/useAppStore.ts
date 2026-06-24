@@ -16,6 +16,8 @@ type AppState = {
   parqAnswers: (boolean | null)[];
   parqCleared: boolean | null;
   painScores: Record<string, number>;
+  progressPaused: boolean;
+  levelsCompleted: number;
   setLanguage: (language: AppLanguage) => void;
   setUsername: (username: string) => void;
   setAgeRange: (ageRange: AgeRange) => void;
@@ -24,6 +26,9 @@ type AppState = {
   setParqAnswer: (index: number, value: boolean) => void;
   setParqCleared: (cleared: boolean) => void;
   setPainScore: (day: number, score: number) => void;
+  setProgressPaused: (paused: boolean) => void;
+  setLevelsCompleted: (count: number) => void;
+  resetApp: () => void;
 };
 
 const INITIAL_PARQ_ANSWERS: (boolean | null)[] = Array(7).fill(null);
@@ -39,6 +44,8 @@ export const useAppStore = create<AppState>()(
       parqAnswers: [...INITIAL_PARQ_ANSWERS],
       parqCleared: null,
       painScores: {},
+      progressPaused: false,
+      levelsCompleted: 0,
       setLanguage: (language) => set({ language }),
       setUsername: (username) => set({ username }),
       setAgeRange: (ageRange) => set({ ageRange }),
@@ -55,6 +62,21 @@ export const useAppStore = create<AppState>()(
         set((state) => ({
           painScores: { ...state.painScores, [String(day)]: score },
         })),
+      setProgressPaused: (paused) => set({ progressPaused: paused }),
+      setLevelsCompleted: (count) => set({ levelsCompleted: count }),
+      resetApp: () =>
+        set({
+          language: null,
+          username: '',
+          ageRange: null,
+          gender: null,
+          avatar: null,
+          parqAnswers: [...INITIAL_PARQ_ANSWERS],
+          parqCleared: null,
+          painScores: {},
+          progressPaused: false,
+          levelsCompleted: 0,
+        }),
     }),
     {
       name: 'oncofitness-app',
@@ -68,6 +90,8 @@ export const useAppStore = create<AppState>()(
         parqAnswers: state.parqAnswers,
         parqCleared: state.parqCleared,
         painScores: state.painScores,
+        progressPaused: state.progressPaused,
+        levelsCompleted: state.levelsCompleted,
       }),
     },
   ),

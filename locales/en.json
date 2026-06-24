@@ -82,6 +82,234 @@
     "moderatePain": "Moderate Pain",
     "worstPain": "Worst Pain",
     "info": "Drag the slider to show your pain score, so we can modify your plan.",
-    "continue": "Continue"
+    "continue": "Continue",
+    "readyTitle": "Are you ready to begin today's excercise session?",
+    "readySubtitle": "Before we begin, please confirm that you feel ready to continue with today's exercise session",
+    "readyNo": "No",
+    "readyYes": "Yes"
+  },
+  "daySession": {
+    "welcomeTitle": "Welcome to Day {{day}} ",
+    "levelLabel": "- Level {{level}}",
+    "subtitle": "Gentle moves to restore strength and support healing",
+    "startSession": "Start Session",
+    "pulseTitle": "Please wear your Pulse Oximeter !",
+    "pulseSubtitle": "Make sure your heart rate stays below 110 (bpm) during exercise session",
+    "pulseCancel": "Cancel",
+    "pulseStart": "Let's start"
+  },
+  "sessionFlow": {
+    "pause": "Pause",
+    "resume": "Resume",
+    "restart": "Restart",
+    "repsLabel": "REPS",
+    "minsLabel": "MINS",
+    "restTitle": "REST",
+    "restSubtitle": "Take a short break before the next exercise.",
+    "restSecondsUnit": "sec",
+    "whyDidYouStop": "Why did you stop?",
+    "stopSubtitle": "This helps us provide exercises that suit you better.",
+    "stopReasonTired": "I feel tired",
+    "stopReasonPain": "I have pain",
+    "stopReasonExploring": "Just exploring",
+    "exercises": {
+      "diaphragmatic-breathing": {
+        "title": "Diaphragmatic Breathing",
+        "description": "Helps improve lung expansion and oxygen supply. Relax your shoulders. Place your dominant hand over chest and non-dominant hand over stomach. Breath in through your nose. Breath-out through mouth."
+      },
+      "ankle-pumps": {
+        "title": "Ankle Pumps",
+        "description": "Improves blood circulation and reduces stiffness in the legs. Sit with your legs stretched forward and slowly move your feet up and down."
+      },
+      "thoracic-expansion": {
+        "title": "Thoracic Expansion",
+        "description": "Improves chest expansion and lung capacity. Sit on a chair and clasp both hands. Raise your arms upward while taking a deep breath. Slowly lower your arms while breathing out."
+      },
+      "arm-circles": {
+        "title": "Arm Circles",
+        "description": "Improves shoulder mobility. Stand upright and raise both arms to the sides. Slowly rotate your arms forward and backward in circular motion."
+      },
+      "spot-marching": {
+        "title": "Spot Marching",
+        "description": "Improves blood circulation. Stand straight and march in place by lifting your knees and moving opposite arms. Continue for two minutes."
+      },
+      "shoulder-shrugging": {
+        "title": "Shoulder Shrugging",
+        "description": "Strengthens shoulder muscles. Lift both shoulders upward toward your ears, hold briefly, then slowly lower them down."
+      },
+      "biceps-curls": {
+        "title": "Biceps Curls",
+        "description": "Strengthens arm muscles. Slowly bend your elbows upward and bring your hands toward your shoulders, then slowly lower them back to the starting position."
+      },
+      "wall-pushup": {
+        "title": "Wall Push-up",
+        "description": "Strengthens upper body muscles. Stand facing a wall and place your hands on the wall at shoulder level. Slowly bend your elbows and lean toward the wall, then push back to the starting position."
+      },
+      "calf-raise": {
+        "title": "Calf Raises",
+        "description": "Strengthens lower leg muscles. Stand facing a wall and take support with your hands. Slowly lift your heels and stand on your toes, then slowly lower your heels back down."
+      },
+      "sit-to-stand": {
+        "title": "Sit-to-Stand",
+        "description": "Strengthens lower body muscles and improves balance. Start in a sitting position on a chair, slowly stand up, then sit down again in a controlled manner."
+      },
+      "straight-leg-raise-right": {
+        "title": "Straight Leg Raise (Right)",
+        "description": "Strengthens thigh muscles and improves knee stability. Lie on your back with the left knee bent and right leg straight. Lift your right leg up to the level of the opposite knee, then slowly lower it down."
+      },
+      "straight-leg-raise-left": {
+        "title": "Straight Leg Raise (Left)",
+        "description": "Strengthens thigh muscles and improves knee stability. Lie on your back with the right knee bent and left leg straight. Lift the left leg up to the level of the opposite knee, then slowly lower it down."
+      }
+    }
+  },
+  "growth": {
+    "title": "Your Growth",
+    "tabProgress": "Progress",
+    "tabWorkouts": "Workouts",
+    "levelsTitle": "LEVELS",
+    "levelsCount": "{{completed}}/{{total}}",
+    "levelsCompleted": "Levels Completed",
+    "pauseProgress": "Pause Progress",
+    "resumeProgress": "Resume Progress",
+    "progressPaused": "Progress Paused",
+    "streakStart": "Start your",
+    "streakHighlight": " excercise streaks",
+    "streakEnd": " !",
+    "yourProgress": "YOUR PROGRESS",
+    "painScore": "Pain Score",
+    "painScoreValue": "{{score}}/10",
+    "lowerIsBetter": "Lower is better",
+    "allBadges": "All Badges",
+    "badgesSubtitle": "Track your achievements and milestones",
+    "badgeStartupTitle": "Startup Champion",
+    "badgeStartupSubtitle": "Complete first day of exercise",
+    "badgeConsistentTitle": "Consistent Star",
+    "badgeConsistentSubtitle": "Complete Level 1",
+    "badgeStrengthTitle": "Strength Builder",
+    "badgeStrengthSubtitle": "Complete Level 2",
+    "badgeHeroTitle": "Functional Hero",
+    "badgeHeroSubtitle": "Complete Level 3",
+    "badgeUnstoppableTitle": "The Unstoppable",
+    "badgeUnstoppableSubtitle": "Complete Level 4",
+    "workouts": {
+      "level": "Level {{level}}",
+      "emptyLevel": "Level {{level}} workouts coming soon.",
+      "items": {
+        "diaphragmatic-breathing": {
+          "title": "Diaphragmatic Breathing",
+          "description": "Helps in relaxation and improves ventilation."
+        },
+        "ankle-pumps": {
+          "title": "Ankle Pumps",
+          "description": "Improves blood circulation and prevents stiffness in the legs."
+        },
+        "thoracic-expansion": {
+          "title": "Thoracic Expansion Exercise",
+          "description": "Improves chest expansion and ventilation."
+        },
+        "arm-circles": {
+          "title": "Arm Circles",
+          "description": "Improves shoulder mobility and circulation."
+        },
+        "spot-marching": {
+          "title": "Spot Marching",
+          "description": "Improves blood circulation."
+        },
+        "shoulder-shrugging": {
+          "title": "Shoulder Shrugging",
+          "description": "Strengthens shoulder muscles."
+        },
+        "biceps-curls": {
+          "title": "Bicep Curls",
+          "description": "Strengthens arm muscles."
+        },
+        "wall-pushup": {
+          "title": "Wall Push-ups",
+          "description": "Strengthens upper body muscles."
+        },
+        "calf-raise": {
+          "title": "Calf Raise",
+          "description": "Strengthens lower leg muscles."
+        },
+        "chair-squats": {
+          "title": "Sit to Stand",
+          "description": "Strengthens lower body muscles and improves balance."
+        },
+        "straight-leg-raise-right": {
+          "title": "Straight Leg Raise (Right)",
+          "description": "Strengthens thigh muscles and improves knee stability."
+        },
+        "straight-leg-raise-left": {
+          "title": "Straight Leg Raise (Left)",
+          "description": "Strengthens thigh muscles and improves knee stability."
+        },
+        "knee-to-chest-right": {
+          "title": "Knee to Chest (Right)",
+          "description": "Improves hip mobility and reduces stiffness."
+        },
+        "knee-to-chest-left": {
+          "title": "Knee to Chest (Left)",
+          "description": "Improves hip mobility and reduces stiffness."
+        },
+        "static-quadriceps-right": {
+          "title": "Static Quadriceps (Right)",
+          "description": "Strengthens thigh muscles and improves knee control."
+        },
+        "static-quadriceps-left": {
+          "title": "Static Quadriceps (Left)",
+          "description": "Strengthens thigh muscles and improves knee control."
+        },
+        "hamstring-stretch": {
+          "title": "Hamstring Stretch",
+          "description": "Improves flexibility of the back thigh muscles."
+        },
+        "quadriceps-stretch-right": {
+          "title": "Quadriceps Stretch (Right)",
+          "description": "Improves flexibility of the front thigh muscles."
+        },
+        "quadriceps-stretch-left": {
+          "title": "Quadriceps Stretch (Left)",
+          "description": "Improves flexibility of the front thigh muscles."
+        },
+        "calf-stretch-right": {
+          "title": "Calf Stretch (Right)",
+          "description": "Improves flexibility of the lower leg muscles."
+        },
+        "calf-stretch-left": {
+          "title": "Calf Stretch (Left)",
+          "description": "Improves flexibility of the lower leg muscles."
+        },
+        "chest-stretch": {
+          "title": "Chest Stretch",
+          "description": "Improves flexibility of chest muscles and improves posture."
+        },
+        "triceps-stretch-right": {
+          "title": "Triceps Stretch (Right)",
+          "description": "Improves flexibility of the back arm muscles."
+        },
+        "triceps-stretch-left": {
+          "title": "Triceps Stretch (Left)",
+          "description": "Improves flexibility of the back arm muscles."
+        },
+        "neck-stretch-right": {
+          "title": "Neck Stretch (Right)",
+          "description": "Relieves neck stiffness and improves flexibility."
+        },
+        "neck-stretch-left": {
+          "title": "Neck Stretch (Left)",
+          "description": "Relieves neck stiffness and improves flexibility."
+        }
+      }
+    }
+  },
+  "settings": {
+    "title": "Settings",
+    "myProfile": "My Profile",
+    "myProfileDescription": "Description",
+    "helpSupport": "Help & Support",
+    "helpSupportDescription": "Description",
+    "logout": "Logout",
+    "logoutDescription": "Description"
   }
 }

@@ -11,3 +11,8 @@ export const env = {
 export function isSupabaseConfigured(): boolean {
   return Boolean(supabaseUrl && supabaseAnonKey);
 }
+
+/** Public storage URLs only need project URL + bucket (no anon key). */
+export function isStoragePublicConfigured(): boolean {
+  return Boolean(supabaseUrl && videoBucket);
+}
