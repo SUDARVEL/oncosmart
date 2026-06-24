@@ -1,0 +1,202 @@
+{
+  "days": [
+    {
+      "day": 1,
+      "level": 1,
+      "exercises": [
+        {
+          "id": "diaphragmatic-breathing",
+          "name": "Diaphragmatic Breathing",
+          "repLabel": "x10",
+          "videos": {
+            "male-en": "https://soyaeuffzytrjojifvdz.supabase.co/storage/v1/object/public/Oncosmart%20Videos%20and%20Assets/Male%20and%20Female%20png%20exports/Diaphgramatic%20Breathing.mp4",
+            "male-ta": "",
+            "female-en": "",
+            "female-ta": ""
+          }
+        },
+        {
+          "id": "ankle-pumps",
+          "name": "Ankle Pumps",
+          "repLabel": "x20",
+          "videos": {
+            "male-en": "https://soyaeuffzytrjojifvdz.supabase.co/storage/v1/object/public/Oncosmart%20Videos%20and%20Assets/Male%20and%20Female%20png%20exports/Ankle%20Pumps%20Male.mp4",
+            "male-ta": "",
+            "female-en": "",
+            "female-ta": ""
+          }
+        },
+        {
+          "id": "thoracic-expansion",
+          "name": "Thoracic Expansion Exercise",
+          "repLabel": "x10",
+          "videos": {
+            "male-en": "https://soyaeuffzytrjojifvdz.supabase.co/storage/v1/object/public/Oncosmart%20Videos%20and%20Assets/Male%20and%20Female%20png%20exports/Thoracic%20Expansion.mp4",
+            "male-ta": "",
+            "female-en": "",
+            "female-ta": ""
+          }
+        },
+        {
+          "id": "arm-circles",
+          "name": "Arm Circles",
+          "repLabel": "x10",
+          "videos": {
+            "male-en": "https://soyaeuffzytrjojifvdz.supabase.co/storage/v1/object/public/Oncosmart%20Videos%20and%20Assets/Male%20and%20Female%20png%20exports/Arm%20Circles.mp4",
+            "male-ta": "",
+            "female-en": "",
+            "female-ta": ""
+          }
+        },
+        {
+          "id": "spot-marching",
+          "name": "Spot Marching",
+          "repLabel": "2:00",
+          "videos": {
+            "male-en": "https://soyaeuffzytrjojifvdz.supabase.co/storage/v1/object/public/Oncosmart%20Videos%20and%20Assets/Male%20and%20Female%20png%20exports/Spot%20Marching.mp4",
+            "male-ta": "",
+            "female-en": "",
+            "female-ta": ""
+          }
+        },
+        {
+          "id": "shoulder-shrugging",
+          "name": "Shoulder Shrugging",
+          "repLabel": "x10",
+          "videos": {
+            "male-en": "https://soyaeuffzytrjojifvdz.supabase.co/storage/v1/object/public/Oncosmart%20Videos%20and%20Assets/Male%20Potrait%20English%20videos/Shoulder%20shrugs%20Male%20English.mp4",
+            "male-ta": "",
+            "female-en": "",
+            "female-ta": ""
+          }
+        },
+        {
+          "id": "biceps-curls",
+          "name": "Biceps Curls",
+          "repLabel": "x10",
+          "videos": {
+            "male-en": "https://soyaeuffzytrjojifvdz.supabase.co/storage/v1/object/public/Oncosmart%20Videos%20and%20Assets/Male%20Potrait%20English%20videos/Biceps%20curls%20Male%20English.mp4",
+            "male-ta": "",
+            "female-en": "",
+            "female-ta": ""
+          }
+        },
+        {
+          "id": "wall-pushup",
+          "name": "Wall Push-up",
+          "repLabel": "x10",
+          "videos": {
+            "male-en": "https://soyaeuffzytrjojifvdz.supabase.co/storage/v1/object/public/Oncosmart%20Videos%20and%20Assets/Male%20Potrait%20English%20videos/Wall%20Pushup%20Male%20English.mp4",
+            "male-ta": "",
+            "female-en": "",
+            "female-ta": ""
+          }
+        },
+        {
+          "id": "calf-raise",
+          "name": "Calf Raises",
+          "repLabel": "x10",
+          "videos": {
+            "male-en": "https://soyaeuffzytrjojifvdz.supabase.co/storage/v1/object/public/Oncosmart%20Videos%20and%20Assets/Male%20Potrait%20English%20videos/Calf%20stretch%20Male%20Left%20English.mp4",
+            "male-ta": "",
+            "female-en": "",
+            "female-ta": ""
+          }
+        },
+        {
+          "id": "sit-to-stand",
+          "name": "Sit-to-Stand",
+          "repLabel": "x10",
+          "videos": {
+            "male-en": "https://soyaeuffzytrjojifvdz.supabase.co/storage/v1/object/public/Oncosmart%20Videos%20and%20Assets/Male%20Potrait%20English%20videos/Sit%20to%20stand%20Male%20English.mp4",
+            "male-ta": "",
+            "female-en": "",
+            "female-ta": ""
+          }
+        },
+        {
+          "id": "straight-leg-raise-right",
+          "name": "Straight Leg Raise (Right)",
+          "repLabel": "x10",
+          "videos": {
+            "male-en": "https://soyaeuffzytrjojifvdz.supabase.co/storage/v1/object/public/Oncosmart%20Videos%20and%20Assets/Male%20Potrait%20English%20videos/SLR%20Right%20Male%20English.mp4",
+            "male-ta": "",
+            "female-en": "",
+            "female-ta": ""
+          }
+        },
+        {
+          "id": "straight-leg-raise-left",
+          "name": "Straight Leg Raise (Left)",
+          "repLabel": "x10",
+          "videos": {
+            "male-en": "https://soyaeuffzytrjojifvdz.supabase.co/storage/v1/object/public/Oncosmart%20Videos%20and%20Assets/Male%20Potrait%20English%20videos/SLR%20Left%20Male%20English.mp4",
+            "male-ta": "",
+            "female-en": "",
+            "female-ta": ""
+          }
+        },
+        {
+          "id": "hamstring-stretch",
+          "name": "Hamstring Stretch",
+          "repLabel": "00:30",
+          "videos": { "male-en": "", "male-ta": "", "female-en": "", "female-ta": "" }
+        },
+        {
+          "id": "quadriceps-stretch-right",
+          "name": "Quadriceps Stretch (Right)",
+          "repLabel": "00:30",
+          "videos": { "male-en": "", "male-ta": "", "female-en": "", "female-ta": "" }
+        },
+        {
+          "id": "quadriceps-stretch-left",
+          "name": "Quadriceps Stretch (Left)",
+          "repLabel": "00:30",
+          "videos": { "male-en": "", "male-ta": "", "female-en": "", "female-ta": "" }
+        },
+        {
+          "id": "calf-stretch-right",
+          "name": "Calf Stretch (Right)",
+          "repLabel": "00:30",
+          "videos": { "male-en": "", "male-ta": "", "female-en": "", "female-ta": "" }
+        },
+        {
+          "id": "calf-stretch-left",
+          "name": "Calf Stretch (Left)",
+          "repLabel": "00:30",
+          "videos": { "male-en": "", "male-ta": "", "female-en": "", "female-ta": "" }
+        },
+        {
+          "id": "triceps-stretch-right",
+          "name": "Triceps Stretch (Right)",
+          "repLabel": "00:30",
+          "videos": { "male-en": "", "male-ta": "", "female-en": "", "female-ta": "" }
+        },
+        {
+          "id": "triceps-stretch-left",
+          "name": "Triceps Stretch (Left)",
+          "repLabel": "00:30",
+          "videos": { "male-en": "", "male-ta": "", "female-en": "", "female-ta": "" }
+        },
+        {
+          "id": "chest-stretch",
+          "name": "Chest Stretch",
+          "repLabel": "00:30",
+          "videos": { "male-en": "", "male-ta": "", "female-en": "", "female-ta": "" }
+        },
+        {
+          "id": "neck-stretch-right",
+          "name": "Neck Stretch (Right)",
+          "repLabel": "00:30",
+          "videos": { "male-en": "", "male-ta": "", "female-en": "", "female-ta": "" }
+        },
+        {
+          "id": "neck-stretch-left",
+          "name": "Neck Stretch (Left)",
+          "repLabel": "00:30",
+          "videos": { "male-en": "", "male-ta": "", "female-en": "", "female-ta": "" }
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,205 @@
+{
+
+  "day": 1,
+
+  "restSeconds": 20,
+
+  "exercises": [
+
+    {
+
+      "id": "diaphragmatic-breathing",
+
+      "repType": "reps",
+
+      "repValue": 10,
+
+      "displayValue": "10",
+
+      "displayLabel": "REPS",
+
+      "portraitVideo": "Diaphragmatic Breathing Male English.mp4"
+
+    },
+
+    {
+
+      "id": "ankle-pumps",
+
+      "repType": "reps",
+
+      "repValue": 20,
+
+      "displayValue": "20",
+
+      "displayLabel": "REPS",
+
+      "portraitVideo": "Ankle Pumps Male English.mp4"
+
+    },
+
+    {
+
+      "id": "thoracic-expansion",
+
+      "repType": "reps",
+
+      "repValue": 10,
+
+      "displayValue": "10",
+
+      "displayLabel": "REPS",
+
+      "portraitVideo": "Thoracic Expansion Male English.mp4"
+
+    },
+
+    {
+
+      "id": "arm-circles",
+
+      "repType": "reps",
+
+      "repValue": 10,
+
+      "displayValue": "10",
+
+      "displayLabel": "REPS",
+
+      "portraitVideo": "Arm Circles Male English.mp4"
+
+    },
+
+    {
+
+      "id": "spot-marching",
+
+      "repType": "duration",
+
+      "repValue": 120,
+
+      "displayValue": "02",
+
+      "displayLabel": "MINS",
+
+      "portraitVideo": "Spot Marching Male English.mp4"
+
+    },
+
+    {
+
+      "id": "calf-raise",
+
+      "repType": "reps",
+
+      "repValue": 10,
+
+      "displayValue": "10",
+
+      "displayLabel": "REPS",
+
+      "portraitVideo": "Calf stretch Male Left English.mp4"
+
+    },
+
+    {
+
+      "id": "sit-to-stand",
+
+      "repType": "reps",
+
+      "repValue": 10,
+
+      "displayValue": "10",
+
+      "displayLabel": "REPS",
+
+      "portraitVideo": "Sit to stand Male English.mp4"
+
+    },
+
+    {
+
+      "id": "biceps-curls",
+
+      "repType": "reps",
+
+      "repValue": 10,
+
+      "displayValue": "10",
+
+      "displayLabel": "REPS",
+
+      "portraitVideo": "Biceps curls Male English.mp4"
+
+    },
+
+    {
+
+      "id": "wall-pushup",
+
+      "repType": "reps",
+
+      "repValue": 10,
+
+      "displayValue": "10",
+
+      "displayLabel": "REPS",
+
+      "portraitVideo": "Wall Pushup Male English.mp4"
+
+    },
+
+    {
+
+      "id": "shoulder-shrugging",
+
+      "repType": "reps",
+
+      "repValue": 10,
+
+      "displayValue": "10",
+
+      "displayLabel": "REPS",
+
+      "portraitVideo": "Shoulder shrugs Male English.mp4"
+
+    },
+
+    {
+
+      "id": "straight-leg-raise-left",
+
+      "repType": "reps",
+
+      "repValue": 10,
+
+      "displayValue": "10",
+
+      "displayLabel": "REPS",
+
+      "portraitVideo": "SLR Left Male English.mp4"
+
+    },
+
+    {
+
+      "id": "straight-leg-raise-right",
+
+      "repType": "reps",
+
+      "repValue": 10,
+
+      "displayValue": "10",
+
+      "displayLabel": "REPS",
+
+      "portraitVideo": "SLR Right Male English.mp4"
+
+    }
+
+  ]
+
+}
+
+

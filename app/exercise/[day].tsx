@@ -1,100 +1,250 @@
-import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useVideoPlayer, VideoView } from 'expo-video';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { getExerciseVideoSource } from '../../lib/getExerciseVideo';
+import { ExercisePlayerView } from '../../components/exercise/ExercisePlayerView';
+import { RestTimerScreen } from '../../components/exercise/RestTimerScreen';
+import {
+  WhyDidYouStopModal,
+  type StopReason,
+} from '../../components/exercise/WhyDidYouStopModal';
+import { getSessionExerciseVideoSource } from '../../lib/getDayExercises';
+import {
+  getDay1RestSeconds,
+  getDay1SessionExercise,
+  getDay1SessionExercises,
+  isDay1SessionComplete,
+} from '../../lib/getDay1Session';
+import { resolveSessionVideoSources } from '../../lib/getPortraitVideoUrl';
 import { useAppStore } from '../../store/useAppStore';
 import { colors } from '../../theme/colors';
 import { font } from '../../theme/fonts';
 
-function ExercisePlayer({ source }: { source: string }) {
-  const player = useVideoPlayer(source, (instance) => {
-    instance.loop = false;
-    instance.play();
-  });
-
-  return (
-    <VideoView
-      style={styles.video}
-      player={player}
-      contentFit="contain"
-      nativeControls
-    />
-  );
-}
-
-export default function ExercisePlayerScreen() {
+function LegacyExercisePreview() {
   const router = useRouter();
-  const { day } = useLocalSearchParams<{ day: string }>();
+  const { day, exercise } = useLocalSearchParams<{ day: string; exercise?: string }>();
   const dayNumber = Number(day) || 1;
+  const exerciseId = typeof exercise === 'string' ? exercise : undefined;
 
   const language = useAppStore((state) => state.language);
   const gender = useAppStore((state) => state.gender);
   const avatar = useAppStore((state) => state.avatar);
 
-  const source = getExerciseVideoSource(dayNumber, language, gender, avatar);
+  const source = exerciseId
+    ? getSessionExerciseVideoSource(dayNumber, exerciseId, language, gender, avatar)
+    : null;
+
+  const sessionExercise = exerciseId
+    ? getDay1SessionExercise(getDay1SessionExercises().findIndex((entry) => entry.id === exerciseId))
+    : null;
+
+  useEffect(() => {
+    if (!exerciseId || !source || !sessionExercise) {
+      router.back();
+    }
+  }, [exerciseId, router, sessionExercise, source]);
+
+  if (!exerciseId || !source || !sessionExercise) {
+    return null;
+  }
 
   return (
-    <SafeAreaView style={styles.screen} edges={['top', 'bottom']}>
-      <View style={styles.header}>
-        <Pressable onPress={() => router.back()} style={styles.backButton} accessibilityRole="button">
-          <Ionicons name="arrow-back" size={24} color={colors.textPrimary} />
-        </Pressable>
-        <Text style={styles.title}>Day {dayNumber}</Text>
-        <View style={styles.backButton} />
-      </View>
-
-      {source ? (
-        <ExercisePlayer source={source} />
-      ) : (
-        <View style={styles.emptyState}>
-          <Text style={styles.emptyTitle}>Video not added yet</Text>
-          <Text style={styles.emptyText}>
-            Upload your Day {dayNumber} video to Supabase (or any public link) and paste the URL in
-            data/levels.json under videos.
-          </Text>
-        </View>
-      )}
-    </SafeAreaView>
+    <ExercisePlayerView
+      exercise={sessionExercise}
+      videoSources={[source]}
+      onComplete={() => router.back()}
+      onBackPress={() => router.back()}
+    />
   );
 }
 
+function Day1SessionScreen({ sessionKey }: { sessionKey: string }) {
+  const router = useRouter();
+  const { index: indexParam } = useLocalSearchParams<{
+    index?: string;
+  }>();
+
+  const language = useAppStore((state) => state.language);
+  const gender = useAppStore((state) => state.gender);
+  const avatar = useAppStore((state) => state.avatar);
+
+  const [exerciseIndex, setExerciseIndex] = useState(() => Math.max(0, Number(indexParam) || 0));
+  const [phase, setPhase] = useState<'exercise' | 'rest'>('exercise');
+  const [showStopModal, setShowStopModal] = useState(false);
+  const exerciseFinishedRef = useRef(false);
+
+  useEffect(() => {
+    setExerciseIndex(Math.max(0, Number(indexParam) || 0));
+    setPhase('exercise');
+    setShowStopModal(false);
+    exerciseFinishedRef.current = false;
+  }, [indexParam, sessionKey]);
+
+  useEffect(() => {
+    exerciseFinishedRef.current = false;
+  }, [exerciseIndex]);
+
+  const sessionExercise = getDay1SessionExercise(exerciseIndex);
+
+  const videoSources = useMemo(() => {
+    if (!sessionExercise) return [];
+
+    const landscapeFallback = getSessionExerciseVideoSource(
+      1,
+      sessionExercise.id,
+      language,
+      gender,
+      avatar,
+    );
+
+    return resolveSessionVideoSources(sessionExercise.portraitVideo, landscapeFallback);
+  }, [avatar, gender, language, sessionExercise]);
+
+  const completeSession = useCallback(() => {
+    const { levelsCompleted, setLevelsCompleted } = useAppStore.getState();
+    setLevelsCompleted(Math.max(levelsCompleted, 1));
+    router.replace('/growth');
+  }, [router]);
+
+  const handleExerciseComplete = useCallback(() => {
+    if (exerciseFinishedRef.current) return;
+    exerciseFinishedRef.current = true;
+
+    if (isDay1SessionComplete(exerciseIndex + 1)) {
+      completeSession();
+      return;
+    }
+
+    setPhase('rest');
+  }, [completeSession, exerciseIndex]);
+
+  const handleRestComplete = useCallback(() => {
+    const nextIndex = exerciseIndex + 1;
+
+    if (isDay1SessionComplete(nextIndex)) {
+      completeSession();
+      return;
+    }
+
+    exerciseFinishedRef.current = false;
+    setExerciseIndex(nextIndex);
+    setPhase('exercise');
+  }, [completeSession, exerciseIndex]);
+
+  const exitSession = useCallback(() => {
+    setShowStopModal(false);
+    router.back();
+  }, [router]);
+
+  const handleStopReason = useCallback(
+    (_reason: StopReason) => {
+      exitSession();
+    },
+    [exitSession],
+  );
+
+  const handleBackPress = useCallback(() => {
+    setShowStopModal(true);
+  }, []);
+
+  useEffect(() => {
+    if (!sessionExercise) {
+      completeSession();
+    }
+  }, [completeSession, sessionExercise]);
+
+  if (!sessionExercise) {
+    return null;
+  }
+
+  if (phase === 'rest') {
+    return (
+      <>
+        <RestTimerScreen
+          key={`rest-${exerciseIndex}`}
+          seconds={getDay1RestSeconds()}
+          onComplete={handleRestComplete}
+          onBackPress={handleBackPress}
+        />
+        <WhyDidYouStopModal
+          visible={showStopModal}
+          onClose={() => setShowStopModal(false)}
+          onSelect={handleStopReason}
+        />
+      </>
+    );
+  }
+
+  if (videoSources.length === 0) {
+    return (
+      <SafeAreaView style={styles.emptyScreen} edges={['top', 'bottom']}>
+        <View style={styles.emptyState}>
+          <Text style={styles.emptyTitle}>Video not available</Text>
+          <Text style={styles.emptyText}>This exercise video has not been uploaded yet.</Text>
+          <Pressable style={styles.emptyButton} onPress={() => router.back()}>
+            <Text style={styles.emptyButtonText}>Go back</Text>
+          </Pressable>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  return (
+    <>
+      <ExercisePlayerView
+        key={`${sessionExercise.id}-${exerciseIndex}`}
+        exercise={sessionExercise}
+        videoSources={videoSources}
+        onComplete={handleExerciseComplete}
+        onBackPress={handleBackPress}
+      />
+      <WhyDidYouStopModal
+        visible={showStopModal}
+        onClose={() => setShowStopModal(false)}
+        onSelect={handleStopReason}
+      />
+    </>
+  );
+}
+
+export default function ExercisePlayerScreen() {
+  const router = useRouter();
+  const { day, session, exercise, started } = useLocalSearchParams<{
+    day: string;
+    session?: string;
+    exercise?: string;
+    started?: string;
+  }>();
+  const dayNumber = Number(day) || 1;
+
+  useEffect(() => {
+    if (session === '1' && dayNumber === 1) return;
+    if (typeof exercise === 'string') return;
+    router.replace(`/exercise/sessions/${dayNumber}`);
+  }, [dayNumber, exercise, router, session]);
+
+  if (session === '1' && dayNumber === 1) {
+    return <Day1SessionScreen sessionKey={started ?? 'default'} />;
+  }
+
+  if (typeof exercise === 'string') {
+    return <LegacyExercisePreview />;
+  }
+
+  return null;
+}
+
 const styles = StyleSheet.create({
-  screen: {
+  emptyScreen: {
     flex: 1,
-    backgroundColor: '#000000',
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
     backgroundColor: colors.background,
-  },
-  backButton: {
-    width: 40,
-    height: 40,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  title: {
-    fontSize: 18,
-    ...font('semiBold'),
-    color: colors.textPrimary,
-  },
-  video: {
-    flex: 1,
-    backgroundColor: '#000000',
   },
   emptyState: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: 24,
-    backgroundColor: colors.background,
     gap: 8,
   },
   emptyTitle: {
@@ -109,5 +259,16 @@ const styles = StyleSheet.create({
     color: colors.textMuted,
     textAlign: 'center',
     lineHeight: 22,
+  },
+  emptyButton: {
+    marginTop: 16,
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 8,
+    backgroundColor: colors.buttonPrimary,
+  },
+  emptyButtonText: {
+    color: '#FFFFFF',
+    ...font('medium'),
   },
 });
