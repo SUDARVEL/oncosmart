@@ -1,8 +1,6 @@
 import { createElement, useCallback, useEffect, useRef, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
-import { canMarkVideoComplete, isNearVideoEnd } from './sessionVideoCompletion';
-
 type Props = {
   source: string;
   fallbackSources?: string[];
@@ -46,19 +44,6 @@ export function SessionVideoPlayer({
     hasStartedRef.current = false;
     onProgressRef.current?.(0);
     onBufferingRef.current?.(true);
-  }, []);
-
-  const tryComplete = useCallback((video: HTMLVideoElement) => {
-    if (completedRef.current || isPausedRef.current) return;
-
-    const duration = durationRef.current || video.duration || 0;
-    if (!canMarkVideoComplete(duration, video.currentTime, hasStartedRef.current)) {
-      return;
-    }
-
-    completedRef.current = true;
-    video.pause();
-    onEndedRef.current();
   }, []);
 
   const playVideo = useCallback(async (video?: HTMLVideoElement | null) => {
@@ -136,16 +121,17 @@ export function SessionVideoPlayer({
     if (durationRef.current > 0) {
       onProgressRef.current?.(Math.min(video.currentTime / durationRef.current, 1));
     }
-
-    if (isNearVideoEnd(durationRef.current, video.currentTime)) {
-      tryComplete(video);
-    }
   };
 
   const handleEnded = (event: Event) => {
     const video = event.currentTarget as HTMLVideoElement;
+    if (completedRef.current) return;
+
+    completedRef.current = true;
     onProgressRef.current?.(1);
-    tryComplete(video);
+    onBufferingRef.current?.(false);
+    video.pause();
+    onEndedRef.current();
   };
 
   const handleError = () => {

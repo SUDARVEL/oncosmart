@@ -1,7 +1,7 @@
 import { useVideoPlayer, VideoView } from 'expo-video';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-import { canMarkVideoComplete, isNearVideoEnd } from './sessionVideoCompletion';
+import { canMarkVideoComplete } from './sessionVideoCompletion';
 
 type Props = {
   source: string;
@@ -178,9 +178,6 @@ function NativeSessionVideoPlayer({
       const duration = durationRef.current;
       if (duration > 0) {
         onProgressRef.current?.(Math.min(currentTime / duration, 1));
-      }
-      if (isNearVideoEnd(duration, currentTime)) {
-        tryComplete(currentTime);
       }
     });
 
