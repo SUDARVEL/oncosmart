@@ -1,18 +1,15 @@
 import { useVideoPlayer, VideoView } from 'expo-video';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-import { canMarkVideoComplete } from './sessionVideoCompletion';
+import { canMarkVideoComplete, isNearVideoEnd } from './sessionVideoCompletion';
 
 type Props = {
   source: string;
   fallbackSources?: string[];
   isPaused: boolean;
   restartToken: number;
-  fallbackLoopCount?: number;
-  fallbackMinimumSeconds?: number;
   onProgress?: (progress: number) => void;
-  onPlaybackBlocked?: () => void;
-  onPlaybackError?: () => void;
+  onBuffering?: (isBuffering: boolean) => void;
   onEnded: () => void;
 };
 
@@ -21,15 +18,11 @@ export function SessionVideoPlayer({
   fallbackSources = [],
   isPaused,
   restartToken,
-  fallbackLoopCount,
-  fallbackMinimumSeconds,
   onProgress,
-  onPlaybackBlocked: _onPlaybackBlocked,
-  onPlaybackError,
+  onBuffering,
   onEnded,
 }: Props) {
   const [activeSource, setActiveSource] = useState(source);
-  const [isFallbackSource, setIsFallbackSource] = useState(false);
   const sourceIndexRef = useRef(0);
   const sourcesRef = useRef<string[]>([source, ...fallbackSources]);
 
@@ -37,32 +30,25 @@ export function SessionVideoPlayer({
 
   useEffect(() => {
     sourceIndexRef.current = 0;
-    setIsFallbackSource(false);
     setActiveSource(source);
   }, [source, fallbackSources.join('|'), restartToken]);
 
   const handlePlaybackError = useCallback(() => {
     const nextIndex = sourceIndexRef.current + 1;
     const nextSource = sourcesRef.current[nextIndex];
-    if (!nextSource) {
-      onPlaybackError?.();
-      return;
-    }
+    if (!nextSource) return;
 
     sourceIndexRef.current = nextIndex;
-    setIsFallbackSource(nextIndex > 0);
     setActiveSource(nextSource);
-  }, [onPlaybackError]);
+  }, []);
 
   return (
     <NativeSessionVideoPlayer
       source={activeSource}
-      isFallbackSource={isFallbackSource}
       isPaused={isPaused}
       restartToken={restartToken}
-      fallbackLoopCount={fallbackLoopCount}
-      fallbackMinimumSeconds={fallbackMinimumSeconds}
       onProgress={onProgress}
+      onBuffering={onBuffering}
       onEnded={onEnded}
       onPlaybackError={handlePlaybackError}
     />
@@ -71,90 +57,41 @@ export function SessionVideoPlayer({
 
 function NativeSessionVideoPlayer({
   source,
-  isFallbackSource,
   isPaused,
   restartToken,
-  fallbackLoopCount,
-  fallbackMinimumSeconds,
   onProgress,
+  onBuffering,
   onEnded,
   onPlaybackError,
 }: {
   source: string;
-  isFallbackSource: boolean;
   isPaused: boolean;
   restartToken: number;
-  fallbackLoopCount?: number;
-  fallbackMinimumSeconds?: number;
   onProgress?: (progress: number) => void;
+  onBuffering?: (isBuffering: boolean) => void;
   onEnded: () => void;
   onPlaybackError: () => void;
 }) {
   const onEndedRef = useRef(onEnded);
   const onProgressRef = useRef(onProgress);
+  const onBufferingRef = useRef(onBuffering);
   const completedRef = useRef(false);
   const durationRef = useRef(0);
-  const fallbackElapsedRef = useRef(0);
-  const fallbackLoopsCompletedRef = useRef(0);
   const hasStartedRef = useRef(false);
   const isPausedRef = useRef(isPaused);
-  const isFallbackSourceRef = useRef(isFallbackSource);
-  const fallbackLoopCountRef = useRef(fallbackLoopCount);
-  const fallbackMinimumSecondsRef = useRef(fallbackMinimumSeconds);
 
   onEndedRef.current = onEnded;
   onProgressRef.current = onProgress;
+  onBufferingRef.current = onBuffering;
   isPausedRef.current = isPaused;
-  isFallbackSourceRef.current = isFallbackSource;
-  fallbackLoopCountRef.current = fallbackLoopCount;
-  fallbackMinimumSecondsRef.current = fallbackMinimumSeconds;
 
   const resetProgress = useCallback(() => {
     completedRef.current = false;
     durationRef.current = 0;
-    fallbackElapsedRef.current = 0;
-    fallbackLoopsCompletedRef.current = 0;
     hasStartedRef.current = false;
     onProgressRef.current?.(0);
+    onBufferingRef.current?.(true);
   }, []);
-
-  const getFallbackLoopCount = useCallback(() => {
-    const count = fallbackLoopCountRef.current ?? 1;
-    return Number.isFinite(count) ? Math.max(1, Math.floor(count)) : 1;
-  }, []);
-
-  const getFallbackMinimumSeconds = useCallback(() => {
-    const seconds = fallbackMinimumSecondsRef.current ?? 0;
-    return Number.isFinite(seconds) ? Math.max(0, seconds) : 0;
-  }, []);
-
-  const updateProgress = useCallback(
-    (currentTime: number) => {
-      const duration = durationRef.current;
-      if (isFallbackSourceRef.current) {
-        const minimumSeconds = getFallbackMinimumSeconds();
-        if (minimumSeconds > 0) {
-          onProgressRef.current?.(
-            Math.min((fallbackElapsedRef.current + currentTime) / minimumSeconds, 1),
-          );
-          return;
-        }
-
-        const loopCount = getFallbackLoopCount();
-        if (duration > 0 && loopCount > 1) {
-          onProgressRef.current?.(
-            Math.min((fallbackLoopsCompletedRef.current + currentTime / duration) / loopCount, 1),
-          );
-          return;
-        }
-      }
-
-      if (duration > 0) {
-        onProgressRef.current?.(Math.min(currentTime / duration, 1));
-      }
-    },
-    [getFallbackLoopCount, getFallbackMinimumSeconds],
-  );
 
   const tryComplete = useCallback(
     (currentTime: number) => {
@@ -166,7 +103,6 @@ function NativeSessionVideoPlayer({
       }
 
       completedRef.current = true;
-      onProgressRef.current?.(1);
       onEndedRef.current();
     },
     [],
@@ -214,9 +150,15 @@ function NativeSessionVideoPlayer({
         return;
       }
 
-      if (payload.status === 'readyToPlay' && player.duration > 0) {
-        durationRef.current = player.duration;
-        updateProgress(player.currentTime);
+      if (payload.status === 'loading') {
+        onBufferingRef.current?.(true);
+      }
+
+      if (payload.status === 'readyToPlay') {
+        onBufferingRef.current?.(false);
+        if (player.duration > 0) {
+          durationRef.current = player.duration;
+        }
       }
     });
 
@@ -230,9 +172,16 @@ function NativeSessionVideoPlayer({
 
       if (player.duration > 0) {
         durationRef.current = player.duration;
-        updateProgress(currentTime);
       }
 
+      onBufferingRef.current?.(false);
+      const duration = durationRef.current;
+      if (duration > 0) {
+        onProgressRef.current?.(Math.min(currentTime / duration, 1));
+      }
+      if (isNearVideoEnd(duration, currentTime)) {
+        tryComplete(currentTime);
+      }
     });
 
     const endSubscription = player.addListener('playToEnd', () => {
@@ -240,23 +189,7 @@ function NativeSessionVideoPlayer({
         durationRef.current = player.duration;
       }
 
-      if (isFallbackSourceRef.current && durationRef.current > 0) {
-        const nextElapsed = fallbackElapsedRef.current + durationRef.current;
-        const nextLoopsCompleted = fallbackLoopsCompletedRef.current + 1;
-        const shouldLoopForSeconds =
-          getFallbackMinimumSeconds() > 0 && nextElapsed < getFallbackMinimumSeconds();
-        const shouldLoopForReps =
-          getFallbackMinimumSeconds() === 0 && nextLoopsCompleted < getFallbackLoopCount();
-
-        if (shouldLoopForSeconds || shouldLoopForReps) {
-          fallbackElapsedRef.current = nextElapsed;
-          fallbackLoopsCompletedRef.current = nextLoopsCompleted;
-          player.currentTime = 0;
-          player.play();
-          return;
-        }
-      }
-
+      onProgressRef.current?.(1);
       player.pause();
       tryComplete(player.currentTime);
     });
@@ -266,7 +199,7 @@ function NativeSessionVideoPlayer({
       timeSubscription.remove();
       endSubscription.remove();
     };
-  }, [getFallbackLoopCount, getFallbackMinimumSeconds, onPlaybackError, player, tryComplete, updateProgress]);
+  }, [onPlaybackError, player, tryComplete]);
 
   return (
     <VideoView

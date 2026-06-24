@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import type { Day1SessionExercise } from '../../lib/getDay1Session';
@@ -21,13 +21,11 @@ export function ExercisePlayerView({ exercise, videoSources, onComplete, onBackP
   const [isPaused, setIsPaused] = useState(false);
   const [restartToken, setRestartToken] = useState(0);
   const [videoProgress, setVideoProgress] = useState(0);
-  const [videoError, setVideoError] = useState(false);
+  const [isBuffering, setIsBuffering] = useState(true);
   const completedRef = useRef(false);
 
   const title = t(`sessionFlow.exercises.${exercise.id}.title`);
   const description = t(`sessionFlow.exercises.${exercise.id}.description`);
-  const fallbackLoopCount = exercise.repType === 'reps' ? exercise.repValue : undefined;
-  const fallbackMinimumSeconds = exercise.repType === 'duration' ? exercise.repValue : undefined;
   const videoProgressPercent =
     videoProgress > 0 && videoProgress < 0.08 ? 8 : Math.round(videoProgress * 100);
 
@@ -42,7 +40,7 @@ export function ExercisePlayerView({ exercise, videoSources, onComplete, onBackP
     setIsPaused(false);
     setRestartToken(0);
     setVideoProgress(0);
-    setVideoError(false);
+    setIsBuffering(true);
   }, [exercise.id, videoSources.join('|')]);
 
   const handleVideoEnded = useCallback(() => {
@@ -57,7 +55,7 @@ export function ExercisePlayerView({ exercise, videoSources, onComplete, onBackP
     completedRef.current = false;
     setIsPaused(false);
     setVideoProgress(0);
-    setVideoError(false);
+    setIsBuffering(true);
     setRestartToken((value) => value + 1);
   };
 
@@ -75,27 +73,23 @@ export function ExercisePlayerView({ exercise, videoSources, onComplete, onBackP
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.videoWrap}>
-          {videoError ? (
-            <View style={styles.videoErrorState}>
-              <Text style={styles.videoErrorTitle}>Video not available</Text>
-              <Text style={styles.videoErrorText}>The full session video could not be played.</Text>
+          <SessionVideoPlayer
+            key={`${exercise.id}-${restartToken}`}
+            source={videoSources[0]}
+            fallbackSources={videoSources.slice(1)}
+            isPaused={isPaused}
+            restartToken={restartToken}
+            onProgress={setVideoProgress}
+            onBuffering={setIsBuffering}
+            onEnded={handleVideoEnded}
+          />
+          {isBuffering ? (
+            <View style={styles.videoLoaderOverlay} pointerEvents="none">
+              <ActivityIndicator size="large" color="#FFFFFF" />
             </View>
-          ) : (
-            <SessionVideoPlayer
-              key={`${exercise.id}-${restartToken}`}
-              source={videoSources[0]}
-              fallbackSources={videoSources.slice(1)}
-              isPaused={isPaused}
-              restartToken={restartToken}
-              fallbackLoopCount={fallbackLoopCount}
-              fallbackMinimumSeconds={fallbackMinimumSeconds}
-              onProgress={setVideoProgress}
-              onPlaybackBlocked={() => setIsPaused(true)}
-              onPlaybackError={() => setVideoError(true)}
-              onEnded={handleVideoEnded}
-            />
-          )}
+          ) : null}
         </View>
+
         <View style={styles.videoProgressTrack}>
           <View style={[styles.videoProgressFill, { width: `${videoProgressPercent}%` }]} />
         </View>
@@ -171,6 +165,12 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     backgroundColor: '#000000',
   },
+  videoLoaderOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.35)',
+  },
   videoProgressTrack: {
     width: 349,
     height: 8,
@@ -185,27 +185,6 @@ const styles = StyleSheet.create({
     height: '100%',
     borderRadius: 999,
     backgroundColor: '#0074B8',
-  },
-  videoErrorState: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 24,
-    backgroundColor: '#F3F4F6',
-  },
-  videoErrorTitle: {
-    fontSize: 18,
-    color: colors.textPrimary,
-    textAlign: 'center',
-    ...font('semiBold'),
-  },
-  videoErrorText: {
-    marginTop: 8,
-    fontSize: 14,
-    lineHeight: 20,
-    color: colors.textMuted,
-    textAlign: 'center',
-    ...font('regular'),
   },
   exerciseTitle: {
     marginTop: 13,

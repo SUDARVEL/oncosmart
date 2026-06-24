@@ -1,18 +1,15 @@
 import { createElement, useCallback, useEffect, useRef, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
-import { canMarkVideoComplete } from './sessionVideoCompletion';
+import { canMarkVideoComplete, isNearVideoEnd } from './sessionVideoCompletion';
 
 type Props = {
   source: string;
   fallbackSources?: string[];
   isPaused: boolean;
   restartToken: number;
-  fallbackLoopCount?: number;
-  fallbackMinimumSeconds?: number;
   onProgress?: (progress: number) => void;
-  onPlaybackBlocked?: () => void;
-  onPlaybackError?: () => void;
+  onBuffering?: (isBuffering: boolean) => void;
   onEnded: () => void;
 };
 
@@ -21,85 +18,35 @@ export function SessionVideoPlayer({
   fallbackSources = [],
   isPaused,
   restartToken,
-  fallbackLoopCount,
-  fallbackMinimumSeconds,
   onProgress,
-  onPlaybackBlocked,
-  onPlaybackError,
+  onBuffering,
   onEnded,
 }: Props) {
   const [activeSource, setActiveSource] = useState(source);
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const onEndedRef = useRef(onEnded);
   const onProgressRef = useRef(onProgress);
-  const onPlaybackBlockedRef = useRef(onPlaybackBlocked);
-  const onPlaybackErrorRef = useRef(onPlaybackError);
+  const onBufferingRef = useRef(onBuffering);
   const completedRef = useRef(false);
   const durationRef = useRef(0);
-  const fallbackElapsedRef = useRef(0);
-  const fallbackLoopsCompletedRef = useRef(0);
   const hasStartedRef = useRef(false);
   const isPausedRef = useRef(isPaused);
-  const fallbackLoopCountRef = useRef(fallbackLoopCount);
-  const fallbackMinimumSecondsRef = useRef(fallbackMinimumSeconds);
   const sourceIndexRef = useRef(0);
   const sourcesRef = useRef<string[]>([source, ...fallbackSources]);
 
   onEndedRef.current = onEnded;
   onProgressRef.current = onProgress;
-  onPlaybackBlockedRef.current = onPlaybackBlocked;
-  onPlaybackErrorRef.current = onPlaybackError;
+  onBufferingRef.current = onBuffering;
   isPausedRef.current = isPaused;
-  fallbackLoopCountRef.current = fallbackLoopCount;
-  fallbackMinimumSecondsRef.current = fallbackMinimumSeconds;
   sourcesRef.current = [source, ...fallbackSources];
 
   const resetProgress = useCallback(() => {
     completedRef.current = false;
     durationRef.current = 0;
-    fallbackElapsedRef.current = 0;
-    fallbackLoopsCompletedRef.current = 0;
     hasStartedRef.current = false;
     onProgressRef.current?.(0);
+    onBufferingRef.current?.(true);
   }, []);
-
-  const getFallbackLoopCount = useCallback(() => {
-    const count = fallbackLoopCountRef.current ?? 1;
-    return Number.isFinite(count) ? Math.max(1, Math.floor(count)) : 1;
-  }, []);
-
-  const getFallbackMinimumSeconds = useCallback(() => {
-    const seconds = fallbackMinimumSecondsRef.current ?? 0;
-    return Number.isFinite(seconds) ? Math.max(0, seconds) : 0;
-  }, []);
-
-  const updateProgress = useCallback(
-    (video: HTMLVideoElement) => {
-      const duration = durationRef.current || video.duration || 0;
-      if (sourceIndexRef.current > 0) {
-        const minimumSeconds = getFallbackMinimumSeconds();
-        if (minimumSeconds > 0) {
-          onProgressRef.current?.(
-            Math.min((fallbackElapsedRef.current + video.currentTime) / minimumSeconds, 1),
-          );
-          return;
-        }
-
-        const loopCount = getFallbackLoopCount();
-        if (duration > 0 && loopCount > 1) {
-          onProgressRef.current?.(
-            Math.min((fallbackLoopsCompletedRef.current + video.currentTime / duration) / loopCount, 1),
-          );
-          return;
-        }
-      }
-
-      if (duration > 0) {
-        onProgressRef.current?.(Math.min(video.currentTime / duration, 1));
-      }
-    },
-    [getFallbackLoopCount, getFallbackMinimumSeconds],
-  );
 
   const tryComplete = useCallback((video: HTMLVideoElement) => {
     if (completedRef.current || isPausedRef.current) return;
@@ -110,7 +57,6 @@ export function SessionVideoPlayer({
     }
 
     completedRef.current = true;
-    onProgressRef.current?.(1);
     video.pause();
     onEndedRef.current();
   }, []);
@@ -125,7 +71,7 @@ export function SessionVideoPlayer({
     try {
       await element.play();
     } catch {
-      onPlaybackBlockedRef.current?.();
+      // Browser autoplay policy — user can tap Resume to start with sound.
     }
   }, []);
 
@@ -162,8 +108,16 @@ export function SessionVideoPlayer({
     const video = event.currentTarget as HTMLVideoElement;
     if (video.duration > 0) {
       durationRef.current = video.duration;
-      updateProgress(video);
     }
+  };
+
+  const handleWaiting = () => {
+    if (completedRef.current) return;
+    onBufferingRef.current?.(true);
+  };
+
+  const handlePlaying = () => {
+    onBufferingRef.current?.(false);
   };
 
   const handleTimeUpdate = (event: Event) => {
@@ -176,38 +130,26 @@ export function SessionVideoPlayer({
 
     if (video.duration > 0) {
       durationRef.current = video.duration;
-      updateProgress(video);
     }
 
+    onBufferingRef.current?.(false);
+    if (durationRef.current > 0) {
+      onProgressRef.current?.(Math.min(video.currentTime / durationRef.current, 1));
+    }
+
+    if (isNearVideoEnd(durationRef.current, video.currentTime)) {
+      tryComplete(video);
+    }
   };
 
   const handleEnded = (event: Event) => {
     const video = event.currentTarget as HTMLVideoElement;
-    const duration = durationRef.current || video.duration || 0;
-
-    if (sourceIndexRef.current > 0 && duration > 0) {
-      const nextElapsed = fallbackElapsedRef.current + duration;
-      const nextLoopsCompleted = fallbackLoopsCompletedRef.current + 1;
-      const shouldLoopForSeconds =
-        getFallbackMinimumSeconds() > 0 && nextElapsed < getFallbackMinimumSeconds();
-      const shouldLoopForReps =
-        getFallbackMinimumSeconds() === 0 && nextLoopsCompleted < getFallbackLoopCount();
-
-      if (shouldLoopForSeconds || shouldLoopForReps) {
-        fallbackElapsedRef.current = nextElapsed;
-        fallbackLoopsCompletedRef.current = nextLoopsCompleted;
-        video.currentTime = 0;
-        void playVideo(video);
-        return;
-      }
-    }
-
+    onProgressRef.current?.(1);
     tryComplete(video);
   };
 
   const handleError = () => {
     if (switchToNextSource()) return;
-    onPlaybackErrorRef.current?.();
   };
 
   return (
@@ -219,6 +161,10 @@ export function SessionVideoPlayer({
         playsInline: true,
         preload: 'auto',
         style: styles.video,
+        onLoadStart: handleWaiting,
+        onWaiting: handleWaiting,
+        onCanPlay: handlePlaying,
+        onPlaying: handlePlaying,
         onLoadedMetadata: handleLoadedMetadata,
         onTimeUpdate: handleTimeUpdate,
         onEnded: handleEnded,
