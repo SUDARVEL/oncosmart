@@ -1,0 +1,103 @@
+{
+  "day": 2,
+  "restSeconds": 20,
+  "_note": "Placeholder Day 2 session reusing Day 1 videos. Replace portraitVideo / exercise list when Day 2 assets are uploaded.",
+  "exercises": [
+    {
+      "id": "diaphragmatic-breathing",
+      "repType": "reps",
+      "repValue": 10,
+      "displayValue": "10",
+      "displayLabel": "REPS",
+      "portraitVideo": ""
+    },
+    {
+      "id": "ankle-pumps",
+      "repType": "reps",
+      "repValue": 20,
+      "displayValue": "20",
+      "displayLabel": "REPS",
+      "portraitVideo": ""
+    },
+    {
+      "id": "thoracic-expansion",
+      "repType": "reps",
+      "repValue": 10,
+      "displayValue": "10",
+      "displayLabel": "REPS",
+      "portraitVideo": ""
+    },
+    {
+      "id": "arm-circles",
+      "repType": "reps",
+      "repValue": 10,
+      "displayValue": "10",
+      "displayLabel": "REPS",
+      "portraitVideo": ""
+    },
+    {
+      "id": "spot-marching",
+      "repType": "duration",
+      "repValue": 120,
+      "displayValue": "02",
+      "displayLabel": "MINS",
+      "portraitVideo": ""
+    },
+    {
+      "id": "calf-raise",
+      "repType": "reps",
+      "repValue": 10,
+      "displayValue": "10",
+      "displayLabel": "REPS",
+      "portraitVideo": "Calf stretch Male Left English.mp4"
+    },
+    {
+      "id": "sit-to-stand",
+      "repType": "reps",
+      "repValue": 10,
+      "displayValue": "10",
+      "displayLabel": "REPS",
+      "portraitVideo": "Sit To Stand Male English-1 compressed.mp4"
+    },
+    {
+      "id": "biceps-curls",
+      "repType": "reps",
+      "repValue": 10,
+      "displayValue": "10",
+      "displayLabel": "REPS",
+      "portraitVideo": "Biceps curls Male English.mp4"
+    },
+    {
+      "id": "wall-pushup",
+      "repType": "reps",
+      "repValue": 10,
+      "displayValue": "10",
+      "displayLabel": "REPS",
+      "portraitVideo": "Wall Pushup Male English.mp4"
+    },
+    {
+      "id": "shoulder-shrugging",
+      "repType": "reps",
+      "repValue": 10,
+      "displayValue": "10",
+      "displayLabel": "REPS",
+      "portraitVideo": "Shoulder shrugs Male English.mp4"
+    },
+    {
+      "id": "straight-leg-raise-left",
+      "repType": "reps",
+      "repValue": 10,
+      "displayValue": "10",
+      "displayLabel": "REPS",
+      "portraitVideo": "SLR Left Male English.mp4"
+    },
+    {
+      "id": "straight-leg-raise-right",
+      "repType": "reps",
+      "repValue": 10,
+      "displayValue": "10",
+      "displayLabel": "REPS",
+      "portraitVideo": "SLR Right Male English.mp4"
+    }
+  ]
+}

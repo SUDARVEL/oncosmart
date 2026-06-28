@@ -18,6 +18,10 @@ type AppState = {
   painScores: Record<string, number>;
   progressPaused: boolean;
   levelsCompleted: number;
+  /** Epoch ms when each day's guided session was completed, keyed by day number. */
+  dayCompletedAt: Record<string, number>;
+  /** Dev-only flag that bypasses the 24h unlock delay between days. */
+  devUnlockOverride: boolean;
   setLanguage: (language: AppLanguage) => void;
   setUsername: (username: string) => void;
   setAgeRange: (ageRange: AgeRange) => void;
@@ -28,6 +32,11 @@ type AppState = {
   setPainScore: (day: number, score: number) => void;
   setProgressPaused: (paused: boolean) => void;
   setLevelsCompleted: (count: number) => void;
+  /** Record a day's completion (timestamp) and keep levelsCompleted in sync. */
+  markDayCompleted: (day: number, when?: number) => void;
+  setDevUnlockOverride: (value: boolean) => void;
+  /** Dev-only: wipe day progress without touching onboarding profile. */
+  devResetProgress: () => void;
   resetApp: () => void;
 };
 
@@ -46,6 +55,8 @@ export const useAppStore = create<AppState>()(
       painScores: {},
       progressPaused: false,
       levelsCompleted: 0,
+      dayCompletedAt: {},
+      devUnlockOverride: false,
       setLanguage: (language) => set({ language }),
       setUsername: (username) => set({ username }),
       setAgeRange: (ageRange) => set({ ageRange }),
@@ -64,6 +75,26 @@ export const useAppStore = create<AppState>()(
         })),
       setProgressPaused: (paused) => set({ progressPaused: paused }),
       setLevelsCompleted: (count) => set({ levelsCompleted: count }),
+      markDayCompleted: (day, when) =>
+        set((state) => {
+          const key = String(day);
+          if (state.dayCompletedAt[key]) {
+            return state;
+          }
+          const dayCompletedAt = { ...state.dayCompletedAt, [key]: when ?? Date.now() };
+          return {
+            dayCompletedAt,
+            levelsCompleted: Math.max(state.levelsCompleted, Object.keys(dayCompletedAt).length),
+          };
+        }),
+      setDevUnlockOverride: (value) => set({ devUnlockOverride: value }),
+      devResetProgress: () =>
+        set({
+          dayCompletedAt: {},
+          levelsCompleted: 0,
+          devUnlockOverride: false,
+          painScores: {},
+        }),
       resetApp: () =>
         set({
           language: null,
@@ -76,6 +107,8 @@ export const useAppStore = create<AppState>()(
           painScores: {},
           progressPaused: false,
           levelsCompleted: 0,
+          dayCompletedAt: {},
+          devUnlockOverride: false,
         }),
     }),
     {
@@ -92,6 +125,8 @@ export const useAppStore = create<AppState>()(
         painScores: state.painScores,
         progressPaused: state.progressPaused,
         levelsCompleted: state.levelsCompleted,
+        dayCompletedAt: state.dayCompletedAt,
+        devUnlockOverride: state.devUnlockOverride,
       }),
     },
   ),
