@@ -27,7 +27,6 @@ import {
   TOTAL_SESSIONS,
   type SessionState,
 } from '../lib/programProgress';
-import { getExerciseVideoSource } from '../lib/getExerciseVideo';
 import { useAppStore } from '../store/useAppStore';
 import { colors } from '../theme/colors';
 import { font } from '../theme/fonts';
@@ -47,8 +46,6 @@ export default function HomeScreen() {
   const router = useRouter();
   const username = useAppStore((state) => state.username);
   const avatar = useAppStore((state) => state.avatar);
-  const language = useAppStore((state) => state.language);
-  const gender = useAppStore((state) => state.gender);
   const dayCompletedAt = useAppStore((state) => state.dayCompletedAt);
   const devUnlockOverride = useAppStore((state) => state.devUnlockOverride);
 
@@ -152,7 +149,6 @@ export default function HomeScreen() {
             <DayCard
               key={`${sessionState.level}-${sessionState.dayInLevel}`}
               sessionState={sessionState}
-              bannerSource={getExerciseVideoSource(activeLevel, language, gender, avatar)}
               onStart={() =>
                 router.push(
                   `/exercise/pain-score?level=${sessionState.level}&day=${sessionState.dayInLevel}`,
@@ -184,11 +180,9 @@ export default function HomeScreen() {
 
 function DayCard({
   sessionState,
-  bannerSource,
   onStart,
 }: {
   sessionState: SessionState;
-  bannerSource: string | null;
   onStart: () => void;
 }) {
   const { t } = useTranslation();
@@ -199,7 +193,7 @@ function DayCard({
   return (
     <View style={[styles.dayCard, isLocked && styles.dayCardLocked]}>
       <View style={styles.exerciseBannerWrap}>
-        <ExerciseVideoBanner source={bannerSource} fallbackImage={EXERCISE_THUMBNAIL} />
+        <ExerciseVideoBanner source={null} fallbackImage={EXERCISE_THUMBNAIL} />
         {isLocked ? (
           <View style={styles.lockOverlay} pointerEvents="none">
             <Ionicons name="lock-closed" size={28} color="#FFFFFF" />
