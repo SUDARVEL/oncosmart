@@ -19,6 +19,7 @@ import { StreakCard } from '../components/growth/StreakCard';
 import { BottomTabBar } from '../components/BottomTabBar';
 import { ScreenHeader } from '../components/ScreenHeader';
 import { getDisplayPainScore } from '../lib/getDisplayPainScore';
+import { getCompletedSessionCount } from '../lib/programProgress';
 import { useAppStore } from '../store/useAppStore';
 import { colors } from '../theme/colors';
 
@@ -33,6 +34,8 @@ export default function GrowthScreen() {
   const setProgressPaused = useAppStore((state) => state.setProgressPaused);
   const levelsCompleted = useAppStore((state) => state.levelsCompleted);
   const painScores = useAppStore((state) => state.painScores);
+  const dayCompletedAt = useAppStore((state) => state.dayCompletedAt);
+  const sessionsCompleted = getCompletedSessionCount(dayCompletedAt);
 
   const painScore = getDisplayPainScore(painScores);
 
@@ -67,7 +70,7 @@ export default function GrowthScreen() {
               onPause={() => setProgressPaused(true)}
               onResume={() => setProgressPaused(false)}
             />
-            <StreakCard paused={progressPaused} completedDays={levelsCompleted > 0 ? 1 : 0} />
+            <StreakCard paused={progressPaused} completedDays={sessionsCompleted} />
             <PainProgressCard
               score={painScore}
               paused={progressPaused}

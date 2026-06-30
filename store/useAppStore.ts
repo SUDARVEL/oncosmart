@@ -2,6 +2,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 
+import { getCompletedLevelsCount, sessionKey } from '../lib/programProgress';
+
 export type AppLanguage = 'en' | 'ta';
 export type AppGender = 'male' | 'female' | 'prefer_not_to_say';
 export type AppAvatar = 'male' | 'female';
@@ -29,10 +31,12 @@ type AppState = {
   setAvatar: (avatar: AppAvatar) => void;
   setParqAnswer: (index: number, value: boolean) => void;
   setParqCleared: (cleared: boolean) => void;
-  setPainScore: (day: number, score: number) => void;
+  setPainScore: (level: number, dayInLevel: number, score: number) => void;
   setProgressPaused: (paused: boolean) => void;
   setLevelsCompleted: (count: number) => void;
-  /** Record a day's completion (timestamp) and keep levelsCompleted in sync. */
+  /** Record a session completion (level + day within level). */
+  markSessionCompleted: (level: number, dayInLevel: number, when?: number) => void;
+  /** @deprecated Use markSessionCompleted */
   markDayCompleted: (day: number, when?: number) => void;
   setDevUnlockOverride: (value: boolean) => void;
   /** Dev-only: wipe day progress without touching onboarding profile. */
@@ -69,22 +73,34 @@ export const useAppStore = create<AppState>()(
           return { parqAnswers: next };
         }),
       setParqCleared: (cleared) => set({ parqCleared: cleared }),
-      setPainScore: (day, score) =>
+      setPainScore: (level, dayInLevel, score) =>
         set((state) => ({
-          painScores: { ...state.painScores, [String(day)]: score },
+          painScores: { ...state.painScores, [`${level}:${dayInLevel}`]: score },
         })),
       setProgressPaused: (paused) => set({ progressPaused: paused }),
       setLevelsCompleted: (count) => set({ levelsCompleted: count }),
-      markDayCompleted: (day, when) =>
+      markSessionCompleted: (level, dayInLevel, when) =>
         set((state) => {
-          const key = String(day);
-          if (state.dayCompletedAt[key]) {
+          const key = sessionKey(level, dayInLevel);
+          if (state.dayCompletedAt[key] && when == null) {
             return state;
           }
           const dayCompletedAt = { ...state.dayCompletedAt, [key]: when ?? Date.now() };
           return {
             dayCompletedAt,
-            levelsCompleted: Math.max(state.levelsCompleted, Object.keys(dayCompletedAt).length),
+            levelsCompleted: getCompletedLevelsCount(dayCompletedAt),
+          };
+        }),
+      markDayCompleted: (day, when) =>
+        set((state) => {
+          const key = sessionKey(1, day);
+          if (state.dayCompletedAt[key] && when == null) {
+            return state;
+          }
+          const dayCompletedAt = { ...state.dayCompletedAt, [key]: when ?? Date.now() };
+          return {
+            dayCompletedAt,
+            levelsCompleted: getCompletedLevelsCount(dayCompletedAt),
           };
         }),
       setDevUnlockOverride: (value) => set({ devUnlockOverride: value }),

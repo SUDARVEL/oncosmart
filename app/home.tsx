@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Dimensions,
@@ -18,6 +18,15 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { BottomTabBar } from '../components/BottomTabBar';
 import { ExerciseVideoBanner } from '../components/ExerciseVideoBanner';
 import { ProgressLogo } from '../components/home/ProgressLogo';
+import {
+  DAYS_PER_LEVEL,
+  formatCountdown,
+  getActiveLevel,
+  getCompletedSessionCount,
+  getSessionState,
+  TOTAL_SESSIONS,
+  type SessionState,
+} from '../lib/programProgress';
 import { getExerciseVideoSource } from '../lib/getExerciseVideo';
 import { useAppStore } from '../store/useAppStore';
 import { colors } from '../theme/colors';
@@ -40,9 +49,27 @@ export default function HomeScreen() {
   const avatar = useAppStore((state) => state.avatar);
   const language = useAppStore((state) => state.language);
   const gender = useAppStore((state) => state.gender);
-  const day1Video = getExerciseVideoSource(1, language, gender, avatar);
+  const dayCompletedAt = useAppStore((state) => state.dayCompletedAt);
+  const devUnlockOverride = useAppStore((state) => state.devUnlockOverride);
+
   const [activeQuote, setActiveQuote] = useState(0);
+  const [now, setNow] = useState(() => Date.now());
   const scrollRef = useRef<ScrollView>(null);
+
+  const completedCount = getCompletedSessionCount(dayCompletedAt);
+  const activeLevel = getActiveLevel(dayCompletedAt);
+  const sessionStates = Array.from({ length: DAYS_PER_LEVEL }, (_, index) =>
+    getSessionState(activeLevel, index + 1, dayCompletedAt, now, devUnlockOverride),
+  );
+  const hasActiveCountdown = sessionStates.some(
+    (state) => state.status === 'locked' && state.remainingMs > 0,
+  );
+
+  useEffect(() => {
+    if (!hasActiveCountdown) return;
+    const interval = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(interval);
+  }, [hasActiveCountdown]);
 
   const handleQuoteScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
     const offset = event.nativeEvent.contentOffset.x;
@@ -78,7 +105,7 @@ export default function HomeScreen() {
         <View style={styles.progressSection}>
           <ProgressLogo width={79} height={80} />
           <Text style={styles.daysCompleted}>
-            {t('home.daysCompleted', { completed: 0, total: 5 })}
+            {t('home.daysCompleted', { completed: completedCount, total: TOTAL_SESSIONS })}
           </Text>
         </View>
 
@@ -117,27 +144,25 @@ export default function HomeScreen() {
 
         <View style={styles.sessionSection}>
           <Text style={styles.sessionTitle}>{t('home.sessionTitle')}</Text>
+          <Text style={styles.levelHeading}>
+            {t('home.levelHeading', { level: activeLevel })}
+          </Text>
 
-          <View style={styles.dayCard}>
-            <View style={styles.exerciseBannerWrap}>
-              <ExerciseVideoBanner
-                source={day1Video}
-                fallbackImage={EXERCISE_THUMBNAIL}
-              />
-            </View>
-            <View style={styles.dayCardBody}>
-              <Text style={styles.dayLabel}>{t('home.dayLabel', { day: 1 })}</Text>
-              <Text style={styles.daySubtitle}>{t('home.daySubtitle')}</Text>
-              <Pressable
-                style={styles.startButton}
-                accessibilityRole="button"
-                onPress={() => router.push(`/exercise/pain-score?day=1`)}
-              >
-                <Text style={styles.startButtonText}>{t('home.start')}</Text>
-              </Pressable>
-            </View>
-          </View>
+          {sessionStates.map((sessionState) => (
+            <DayCard
+              key={`${sessionState.level}-${sessionState.dayInLevel}`}
+              sessionState={sessionState}
+              bannerSource={getExerciseVideoSource(activeLevel, language, gender, avatar)}
+              onStart={() =>
+                router.push(
+                  `/exercise/pain-score?level=${sessionState.level}&day=${sessionState.dayInLevel}`,
+                )
+              }
+            />
+          ))}
         </View>
+
+        {__DEV__ ? <DevPanel /> : null}
       </ScrollView>
 
       <Pressable style={styles.fab} accessibilityRole="button" accessibilityLabel="Chat">
@@ -154,6 +179,124 @@ export default function HomeScreen() {
         }}
       />
     </SafeAreaView>
+  );
+}
+
+function DayCard({
+  sessionState,
+  bannerSource,
+  onStart,
+}: {
+  sessionState: SessionState;
+  bannerSource: string | null;
+  onStart: () => void;
+}) {
+  const { t } = useTranslation();
+  const { status, remainingMs, blockedByPrevious, blockedByLevel, dayInLevel, level } =
+    sessionState;
+  const isLocked = status === 'locked';
+
+  return (
+    <View style={[styles.dayCard, isLocked && styles.dayCardLocked]}>
+      <View style={styles.exerciseBannerWrap}>
+        <ExerciseVideoBanner source={bannerSource} fallbackImage={EXERCISE_THUMBNAIL} />
+        {isLocked ? (
+          <View style={styles.lockOverlay} pointerEvents="none">
+            <Ionicons name="lock-closed" size={28} color="#FFFFFF" />
+          </View>
+        ) : null}
+      </View>
+      <View style={styles.dayCardBody}>
+        <Text style={styles.dayLabel}>
+          {t('home.dayLabel', { day: dayInLevel })}
+          <Text style={styles.levelLabel}>{t('home.levelSuffix', { level })}</Text>
+        </Text>
+        <Text style={styles.daySubtitle}>{t('home.daySubtitle')}</Text>
+
+        {status === 'completed' ? (
+          <View style={styles.completedButton}>
+            <Ionicons name="checkmark" size={16} color="#16A34A" />
+            <Text style={styles.completedButtonText}>{t('home.completed')}</Text>
+          </View>
+        ) : status === 'available' ? (
+          <Pressable style={styles.startButton} accessibilityRole="button" onPress={onStart}>
+            <Text style={styles.startButtonText}>{t('home.start')}</Text>
+          </Pressable>
+        ) : (
+          <View style={styles.lockedButton}>
+            <Ionicons name="lock-closed" size={15} color={colors.textMuted} />
+            <Text style={styles.lockedButtonText}>
+              {blockedByLevel
+                ? t('home.finishLevelToUnlock', { level: level - 1 })
+                : blockedByPrevious
+                  ? t('home.finishPrevToUnlock', { day: dayInLevel - 1 })
+                  : t('home.unlocksIn', { time: formatCountdown(remainingMs) })}
+            </Text>
+          </View>
+        )}
+      </View>
+    </View>
+  );
+}
+
+function DevPanel() {
+  const markSessionCompleted = useAppStore((state) => state.markSessionCompleted);
+  const setDevUnlockOverride = useAppStore((state) => state.setDevUnlockOverride);
+  const devResetProgress = useAppStore((state) => state.devResetProgress);
+  const devUnlockOverride = useAppStore((state) => state.devUnlockOverride);
+  const activeLevel = getActiveLevel(useAppStore.getState().dayCompletedAt);
+
+  return (
+    <View style={styles.devPanel}>
+      <Text style={styles.devTitle}>DEV TOOLS</Text>
+      <View style={styles.devRow}>
+        <Pressable
+          style={styles.devButton}
+          accessibilityRole="button"
+          onPress={() =>
+            markSessionCompleted(activeLevel, 1, Date.now() - 25 * 60 * 60 * 1000)
+          }
+        >
+          <Text style={styles.devButtonText}>Complete L{activeLevel}D1 (-25h)</Text>
+        </Pressable>
+        <Pressable
+          style={styles.devButton}
+          accessibilityRole="button"
+          onPress={() => markSessionCompleted(activeLevel, 1)}
+        >
+          <Text style={styles.devButtonText}>Complete L{activeLevel}D1 (now)</Text>
+        </Pressable>
+      </View>
+      <View style={styles.devRow}>
+        <Pressable
+          style={styles.devButton}
+          accessibilityRole="button"
+          onPress={() => {
+            for (let day = 1; day <= DAYS_PER_LEVEL; day += 1) {
+              markSessionCompleted(
+                activeLevel,
+                day,
+                Date.now() - (DAYS_PER_LEVEL - day) * 25 * 60 * 60 * 1000,
+              );
+            }
+          }}
+        >
+          <Text style={styles.devButtonText}>Complete all L{activeLevel}</Text>
+        </Pressable>
+        <Pressable
+          style={[styles.devButton, devUnlockOverride && styles.devButtonActive]}
+          accessibilityRole="button"
+          onPress={() => setDevUnlockOverride(!devUnlockOverride)}
+        >
+          <Text style={styles.devButtonText}>
+            Bypass 24h: {devUnlockOverride ? 'ON' : 'OFF'}
+          </Text>
+        </Pressable>
+      </View>
+      <Pressable style={styles.devButton} accessibilityRole="button" onPress={devResetProgress}>
+        <Text style={styles.devButtonText}>Reset progress</Text>
+      </Pressable>
+    </View>
   );
 }
 
@@ -274,6 +417,13 @@ const styles = StyleSheet.create({
     lineHeight: 28,
     paddingLeft: 13,
   },
+  levelHeading: {
+    fontSize: 16,
+    ...font('semiBold'),
+    color: colors.textPrimary,
+    paddingLeft: 13,
+    marginBottom: 4,
+  },
   dayCard: {
     marginTop: 8,
     marginHorizontal: 17,
@@ -283,9 +433,20 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     backgroundColor: colors.homeCardBg,
   },
+  dayCardLocked: {
+    opacity: 0.92,
+  },
   exerciseBannerWrap: {
     marginHorizontal: 14,
     marginTop: 15,
+    position: 'relative',
+  },
+  lockOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(17, 24, 39, 0.45)',
+    borderRadius: 12,
   },
   dayCardBody: {
     paddingHorizontal: 15,
@@ -299,6 +460,11 @@ const styles = StyleSheet.create({
     color: colors.textPrimary,
     letterSpacing: -0.26,
     lineHeight: 28,
+  },
+  levelLabel: {
+    fontSize: 14,
+    ...font('regular'),
+    color: colors.textMuted,
   },
   daySubtitle: {
     fontSize: 14,
@@ -323,6 +489,77 @@ const styles = StyleSheet.create({
     color: '#F9FAFB',
     letterSpacing: 0,
     textTransform: 'capitalize',
+  },
+  completedButton: {
+    height: 40,
+    borderRadius: 8,
+    backgroundColor: 'rgba(22, 163, 74, 0.08)',
+    borderWidth: 1,
+    borderColor: '#16A34A',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+  },
+  completedButtonText: {
+    fontSize: 14,
+    ...font('medium'),
+    color: '#16A34A',
+  },
+  lockedButton: {
+    height: 40,
+    borderRadius: 8,
+    backgroundColor: '#F3F4F6',
+    borderWidth: 1,
+    borderColor: colors.cardBorder,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+  },
+  lockedButtonText: {
+    fontSize: 14,
+    ...font('medium'),
+    color: colors.textMuted,
+  },
+  devPanel: {
+    marginTop: 20,
+    marginHorizontal: 17,
+    padding: 12,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderStyle: 'dashed',
+    borderColor: '#C084FC',
+    backgroundColor: 'rgba(192, 132, 252, 0.06)',
+    gap: 8,
+  },
+  devTitle: {
+    fontSize: 11,
+    ...font('semiBold'),
+    color: '#7C3AED',
+    letterSpacing: 1,
+  },
+  devRow: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  devButton: {
+    flex: 1,
+    paddingVertical: 8,
+    paddingHorizontal: 8,
+    borderRadius: 8,
+    backgroundColor: '#EDE9FE',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  devButtonActive: {
+    backgroundColor: '#C4B5FD',
+  },
+  devButtonText: {
+    fontSize: 11,
+    ...font('medium'),
+    color: '#5B21B6',
+    textAlign: 'center',
   },
   fab: {
     position: 'absolute',

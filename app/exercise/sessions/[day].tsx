@@ -8,6 +8,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { ExerciseSessionCard } from '../../../components/exercise/ExerciseSessionCard';
 import { PulseOximeterModal } from '../../../components/exercise/PulseOximeterModal';
 import { getDayExercises, getDaySession } from '../../../lib/getDayExercises';
+import { hasGuidedSession } from '../../../lib/getDay1Session';
 import { useAppStore } from '../../../store/useAppStore';
 import { colors } from '../../../theme/colors';
 import { font } from '../../../theme/fonts';
@@ -15,31 +16,34 @@ import { font } from '../../../theme/fonts';
 export default function ExerciseSessionsScreen() {
   const router = useRouter();
   const { t } = useTranslation();
-  const { day } = useLocalSearchParams<{ day: string }>();
-  const dayNumber = Number(day) || 1;
+  const { day, level: levelParam } = useLocalSearchParams<{ day: string; level?: string }>();
+  const dayInLevel = Number(day) || 1;
+  const level = Number(levelParam) || 1;
 
   const language = useAppStore((state) => state.language);
   const gender = useAppStore((state) => state.gender);
   const avatar = useAppStore((state) => state.avatar);
 
-  const session = getDaySession(dayNumber);
-  const exercises = getDayExercises(dayNumber, language, gender, avatar);
+  const session = getDaySession(level);
+  const exercises = getDayExercises(level, language, gender, avatar);
   const [showPulseModal, setShowPulseModal] = useState(false);
 
   const openExercise = (exerciseId: string, hasVideo: boolean) => {
     if (!hasVideo) return;
-    router.push(`/exercise/${dayNumber}?exercise=${exerciseId}`);
+    router.push(`/exercise/${dayInLevel}?exercise=${exerciseId}&level=${level}`);
   };
 
   const beginSession = () => {
-    if (dayNumber === 1) {
-      router.push(`/exercise/1?session=1&index=0&started=${Date.now()}`);
+    if (hasGuidedSession(level)) {
+      router.push(
+        `/exercise/${dayInLevel}?session=1&level=${level}&index=0&started=${Date.now()}`,
+      );
       return;
     }
 
     const firstPlayable = exercises.find((exercise) => exercise.playbackSource);
     if (firstPlayable) {
-      router.push(`/exercise/${dayNumber}?exercise=${firstPlayable.id}`);
+      router.push(`/exercise/${dayInLevel}?exercise=${firstPlayable.id}&level=${level}`);
     }
   };
 
@@ -60,9 +64,9 @@ export default function ExerciseSessionsScreen() {
         </Pressable>
         <View style={styles.headerText}>
           <Text style={styles.title}>
-            {t('daySession.welcomeTitle', { day: dayNumber })}
+            {t('daySession.welcomeTitle', { day: dayInLevel })}
             <Text style={styles.levelLabel}>
-              {t('daySession.levelLabel', { level: session?.level ?? 1 })}
+              {t('daySession.levelLabel', { level: session?.level ?? level })}
             </Text>
           </Text>
           <Text style={styles.subtitle}>{t('daySession.subtitle')}</Text>

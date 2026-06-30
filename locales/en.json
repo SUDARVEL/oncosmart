@@ -69,8 +69,14 @@
     "sessionTitle": "Today's Exercise",
     "sessionSubtitle": "Start Your Exercise",
     "dayLabel": "DAY {{day}}",
+    "levelSuffix": " - level {{level}}",
     "daySubtitle": "Exercise Session",
     "start": "Start",
+    "completed": "Completed",
+    "unlocksIn": "Unlocks in {{time}}",
+    "finishPrevToUnlock": "Finish Day {{day}} first",
+    "finishLevelToUnlock": "Complete Level {{level}} first",
+    "levelHeading": "LEVEL {{level}} — 7 days",
     "tabHome": "Home",
     "tabGrowth": "Your Growth",
     "tabSettings": "Settings"
@@ -97,6 +103,18 @@
     "pulseSubtitle": "Make sure your heart rate stays below 110 (bpm) during exercise session",
     "pulseCancel": "Cancel",
     "pulseStart": "Let's start"
+  },
+  "complete": {
+    "title": "Level {{level}} Completed!",
+    "levelTitle": "Level {{level}} Completed!",
+    "dayTitle": "Level {{level}} — Day {{day}} Done!",
+    "subtitle": "Great work. Your exercise session is saved.",
+    "unlockInfo": "Day {{day}} unlocks after 24 hours, around {{when}}.",
+    "nextDayUnlock": "Day {{day}} unlocks after 24 hours, around {{when}}.",
+    "nextLevelUnlock": "Level {{level}} unlocks after 24 hours, around {{when}}.",
+    "allDone": "You have completed all available days.",
+    "goHome": "Go to Home",
+    "viewProgress": "View Progress"
   },
   "sessionFlow": {
     "pause": "Pause",
@@ -160,6 +178,62 @@
       "straight-leg-raise-left": {
         "title": "Straight Leg Raise (Left)",
         "description": "Strengthens thigh muscles and improves knee stability. Lie on your back with the right knee bent and left leg straight. Lift the left leg up to the level of the opposite knee, then slowly lower it down."
+      },
+      "knee-to-chest-right": {
+        "title": "Knee to Chest (Right)",
+        "description": "Improves hip mobility and reduces stiffness."
+      },
+      "knee-to-chest-left": {
+        "title": "Knee to Chest (Left)",
+        "description": "Improves hip mobility and reduces stiffness."
+      },
+      "static-quadriceps-right": {
+        "title": "Static Quadriceps (Right)",
+        "description": "Strengthens thigh muscles and improves knee control."
+      },
+      "static-quadriceps-left": {
+        "title": "Static Quadriceps (Left)",
+        "description": "Strengthens thigh muscles and improves knee control."
+      },
+      "hamstring-stretch": {
+        "title": "Hamstring Stretch",
+        "description": "Improves flexibility of the back thigh muscles."
+      },
+      "quadriceps-stretch-right": {
+        "title": "Quadriceps Stretch (Right)",
+        "description": "Improves flexibility of the front thigh muscles."
+      },
+      "quadriceps-stretch-left": {
+        "title": "Quadriceps Stretch (Left)",
+        "description": "Improves flexibility of the front thigh muscles."
+      },
+      "calf-stretch-right": {
+        "title": "Calf Stretch (Right)",
+        "description": "Improves flexibility of the lower leg muscles."
+      },
+      "calf-stretch-left": {
+        "title": "Calf Stretch (Left)",
+        "description": "Improves flexibility of the lower leg muscles."
+      },
+      "chest-stretch": {
+        "title": "Chest Stretch",
+        "description": "Improves flexibility of chest muscles and improves posture."
+      },
+      "triceps-stretch-right": {
+        "title": "Triceps Stretch (Right)",
+        "description": "Improves flexibility of the back arm muscles."
+      },
+      "triceps-stretch-left": {
+        "title": "Triceps Stretch (Left)",
+        "description": "Improves flexibility of the back arm muscles."
+      },
+      "neck-stretch-right": {
+        "title": "Neck Stretch (Right)",
+        "description": "Relieves neck stiffness and improves flexibility."
+      },
+      "neck-stretch-left": {
+        "title": "Neck Stretch (Left)",
+        "description": "Relieves neck stiffness and improves flexibility."
       }
     }
   },

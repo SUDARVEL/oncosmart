@@ -15,8 +15,9 @@ import { font } from '../../theme/fonts';
 export default function PainScoreScreen() {
   const router = useRouter();
   const { t } = useTranslation();
-  const { day } = useLocalSearchParams<{ day?: string }>();
-  const dayNumber = Number(day) || 1;
+  const { day, level: levelParam } = useLocalSearchParams<{ day?: string; level?: string }>();
+  const dayInLevel = Number(day) || 1;
+  const level = Number(levelParam) || 1;
   const setPainScore = useAppStore((state) => state.setPainScore);
   const [score, setScore] = useState(0);
   const [showReadyModal, setShowReadyModal] = useState(false);
@@ -26,8 +27,8 @@ export default function PainScoreScreen() {
   };
 
   const goToDaySession = () => {
-    setPainScore(dayNumber, Math.round(score));
-    router.replace(`/exercise/sessions/${dayNumber}`);
+    setPainScore(level, dayInLevel, Math.round(score));
+    router.replace(`/exercise/sessions/${dayInLevel}?level=${level}`);
   };
 
   const handleContinue = () => {

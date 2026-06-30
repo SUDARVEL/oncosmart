@@ -11,10 +11,11 @@ import {
 } from '../../components/exercise/WhyDidYouStopModal';
 import { getSessionExerciseVideoSource } from '../../lib/getDayExercises';
 import {
-  getDay1RestSeconds,
-  getDay1SessionExercise,
-  getDay1SessionExercises,
-  isDay1SessionComplete,
+  getSessionExerciseForLevel,
+  getSessionExercisesForLevel,
+  getSessionRestSecondsForLevel,
+  hasGuidedSession,
+  isSessionCompleteForLevel,
 } from '../../lib/getDay1Session';
 import { resolveSessionVideoSources } from '../../lib/getPortraitVideoUrl';
 import { useAppStore } from '../../store/useAppStore';
@@ -23,8 +24,13 @@ import { font } from '../../theme/fonts';
 
 function LegacyExercisePreview() {
   const router = useRouter();
-  const { day, exercise } = useLocalSearchParams<{ day: string; exercise?: string }>();
-  const dayNumber = Number(day) || 1;
+  const { day, exercise, level: levelParam } = useLocalSearchParams<{
+    day: string;
+    exercise?: string;
+    level?: string;
+  }>();
+  const dayInLevel = Number(day) || 1;
+  const level = Number(levelParam) || 1;
   const exerciseId = typeof exercise === 'string' ? exercise : undefined;
 
   const language = useAppStore((state) => state.language);
@@ -32,11 +38,14 @@ function LegacyExercisePreview() {
   const avatar = useAppStore((state) => state.avatar);
 
   const source = exerciseId
-    ? getSessionExerciseVideoSource(dayNumber, exerciseId, language, gender, avatar)
+    ? getSessionExerciseVideoSource(level, exerciseId, language, gender, avatar)
     : null;
 
   const sessionExercise = exerciseId
-    ? getDay1SessionExercise(getDay1SessionExercises().findIndex((entry) => entry.id === exerciseId))
+    ? getSessionExerciseForLevel(
+        level,
+        getSessionExercisesForLevel(level).findIndex((entry) => entry.id === exerciseId),
+      )
     : null;
 
   useEffect(() => {
@@ -59,7 +68,15 @@ function LegacyExercisePreview() {
   );
 }
 
-function Day1SessionScreen({ sessionKey }: { sessionKey: string }) {
+function GuidedSessionScreen({
+  level,
+  dayInLevel,
+  sessionKey,
+}: {
+  level: number;
+  dayInLevel: number;
+  sessionKey: string;
+}) {
   const router = useRouter();
   const { index: indexParam } = useLocalSearchParams<{
     index?: string;
@@ -85,13 +102,13 @@ function Day1SessionScreen({ sessionKey }: { sessionKey: string }) {
     exerciseFinishedRef.current = false;
   }, [exerciseIndex]);
 
-  const sessionExercise = getDay1SessionExercise(exerciseIndex);
+  const sessionExercise = getSessionExerciseForLevel(level, exerciseIndex);
 
   const videoSources = useMemo(() => {
     if (!sessionExercise) return [];
 
     const landscapeFallback = getSessionExerciseVideoSource(
-      1,
+      level,
       sessionExercise.id,
       language,
       gender,
@@ -99,30 +116,29 @@ function Day1SessionScreen({ sessionKey }: { sessionKey: string }) {
     );
 
     return resolveSessionVideoSources(sessionExercise.portraitVideo, landscapeFallback);
-  }, [avatar, gender, language, sessionExercise]);
+  }, [avatar, level, gender, language, sessionExercise]);
 
   const completeSession = useCallback(() => {
-    const { levelsCompleted, setLevelsCompleted } = useAppStore.getState();
-    setLevelsCompleted(Math.max(levelsCompleted, 1));
-    router.replace('/growth');
-  }, [router]);
+    useAppStore.getState().markSessionCompleted(level, dayInLevel);
+    router.replace(`/exercise/complete?level=${level}&day=${dayInLevel}`);
+  }, [dayInLevel, level, router]);
 
   const handleExerciseComplete = useCallback(() => {
     if (exerciseFinishedRef.current) return;
     exerciseFinishedRef.current = true;
 
-    if (isDay1SessionComplete(exerciseIndex + 1)) {
+    if (isSessionCompleteForLevel(level, exerciseIndex + 1)) {
       completeSession();
       return;
     }
 
     setPhase('rest');
-  }, [completeSession, exerciseIndex]);
+  }, [completeSession, exerciseIndex, level]);
 
   const handleRestComplete = useCallback(() => {
     const nextIndex = exerciseIndex + 1;
 
-    if (isDay1SessionComplete(nextIndex)) {
+    if (isSessionCompleteForLevel(level, nextIndex)) {
       completeSession();
       return;
     }
@@ -130,7 +146,7 @@ function Day1SessionScreen({ sessionKey }: { sessionKey: string }) {
     exerciseFinishedRef.current = false;
     setExerciseIndex(nextIndex);
     setPhase('exercise');
-  }, [completeSession, exerciseIndex]);
+  }, [completeSession, exerciseIndex, level]);
 
   const exitSession = useCallback(() => {
     setShowStopModal(false);
@@ -163,7 +179,7 @@ function Day1SessionScreen({ sessionKey }: { sessionKey: string }) {
       <>
         <RestTimerScreen
           key={`rest-${exerciseIndex}`}
-          seconds={getDay1RestSeconds()}
+          seconds={getSessionRestSecondsForLevel(level)}
           onComplete={handleRestComplete}
           onBackPress={handleBackPress}
         />
@@ -210,22 +226,30 @@ function Day1SessionScreen({ sessionKey }: { sessionKey: string }) {
 
 export default function ExercisePlayerScreen() {
   const router = useRouter();
-  const { day, session, exercise, started } = useLocalSearchParams<{
+  const { day, session, exercise, started, level: levelParam } = useLocalSearchParams<{
     day: string;
     session?: string;
     exercise?: string;
     started?: string;
+    level?: string;
   }>();
-  const dayNumber = Number(day) || 1;
+  const dayInLevel = Number(day) || 1;
+  const level = Number(levelParam) || 1;
 
   useEffect(() => {
-    if (session === '1' && dayNumber === 1) return;
+    if (session === '1' && hasGuidedSession(level)) return;
     if (typeof exercise === 'string') return;
-    router.replace(`/exercise/sessions/${dayNumber}`);
-  }, [dayNumber, exercise, router, session]);
+    router.replace(`/exercise/sessions/${dayInLevel}?level=${level}`);
+  }, [dayInLevel, exercise, level, router, session]);
 
-  if (session === '1' && dayNumber === 1) {
-    return <Day1SessionScreen sessionKey={started ?? 'default'} />;
+  if (session === '1' && hasGuidedSession(level)) {
+    return (
+      <GuidedSessionScreen
+        level={level}
+        dayInLevel={dayInLevel}
+        sessionKey={started ?? 'default'}
+      />
+    );
   }
 
   if (typeof exercise === 'string') {

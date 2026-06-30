@@ -18,27 +18,38 @@ export type DayExercise = {
   videos: Record<VideoVariant, string>;
 };
 
-export type DaySession = {
-  day: number;
+export type LevelSession = {
   level: number;
   exercises: DayExercise[];
 };
 
 export type ResolvedDayExercise = DayExercise & {
-  /** Explicit uploaded video URL for this exercise. */
   videoSource: string | null;
-  /** URL used when opening the full player (explicit or Supabase guess). */
   playbackSource: string | null;
-  /** Static Figma thumbnail when no video is uploaded yet. */
   thumbnail: ImageSource | null;
-  /** Day-level landscape video used as a visual fallback preview. */
   previewFallbackVideo: string | null;
 };
 
-const sessions = dayExercisesData.days as DaySession[];
+type CatalogEntry = DayExercise;
+type LevelProgram = { level: number; exerciseIds: string[] };
 
-export function getDaySession(day: number): DaySession | null {
-  return sessions.find((entry) => entry.day === day) ?? null;
+const catalog = (dayExercisesData as { catalog: Record<string, CatalogEntry> }).catalog;
+const levelPrograms = (dayExercisesData as { levels: LevelProgram[] }).levels;
+
+export function getLevelSession(level: number): LevelSession | null {
+  const program = levelPrograms.find((entry) => entry.level === level);
+  if (!program) return null;
+
+  const exercises = program.exerciseIds
+    .map((id) => catalog[id])
+    .filter((entry): entry is CatalogEntry => Boolean(entry));
+
+  return { level, exercises };
+}
+
+/** @deprecated Use getLevelSession(level) */
+export function getDaySession(day: number): LevelSession | null {
+  return getLevelSession(day);
 }
 
 function resolveExplicitExerciseVideo(
@@ -52,21 +63,21 @@ function resolveExplicitExerciseVideo(
   return fallback ? resolveVideoUrl(fallback) : null;
 }
 
-export function getDayExercises(
-  day: number,
+export function getLevelExercises(
+  level: number,
   language: AppLanguage | null,
   gender: AppGender | null,
   avatar: AppAvatar | null,
 ): ResolvedDayExercise[] {
-  const session = getDaySession(day);
+  const session = getLevelSession(level);
   if (!session) return [];
 
   const variant = getVideoVariant(language, gender, avatar);
-  const dayPreviewFallback = getDayPreviewFallback(day, language, gender, avatar);
+  const dayPreviewFallback = getDayPreviewFallback(level, language, gender, avatar);
 
   return session.exercises.map((exercise) => {
     const videoSource = resolveExplicitExerciseVideo(exercise, variant);
-    const thumbnail = day === 1 ? getDay1Thumbnail(exercise.id) : null;
+    const thumbnail = getDay1Thumbnail(exercise.id);
 
     return {
       ...exercise,
@@ -78,14 +89,24 @@ export function getDayExercises(
   });
 }
 
-export function getSessionExerciseVideoSource(
+/** @deprecated Use getLevelExercises(level, ...) */
+export function getDayExercises(
   day: number,
+  language: AppLanguage | null,
+  gender: AppGender | null,
+  avatar: AppAvatar | null,
+): ResolvedDayExercise[] {
+  return getLevelExercises(day, language, gender, avatar);
+}
+
+export function getSessionExerciseVideoSource(
+  level: number,
   exerciseId: string,
   language: AppLanguage | null,
   gender: AppGender | null,
   avatar: AppAvatar | null,
 ): string | null {
-  const session = getDaySession(day);
+  const session = getLevelSession(level);
   if (!session) return null;
 
   const exercise = session.exercises.find((entry) => entry.id === exerciseId);
@@ -96,8 +117,8 @@ export function getSessionExerciseVideoSource(
   return resolveExercisePlaybackUrl(explicit, exercise.name, variant);
 }
 
-export function getSessionExerciseName(day: number, exerciseId: string): string | null {
-  const session = getDaySession(day);
+export function getSessionExerciseName(level: number, exerciseId: string): string | null {
+  const session = getLevelSession(level);
   const exercise = session?.exercises.find((entry) => entry.id === exerciseId);
   return exercise?.name ?? null;
 }

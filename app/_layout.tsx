@@ -82,6 +82,7 @@ export default function RootLayout() {
         <Stack.Screen name="home" />
         <Stack.Screen name="exercise/[day]" />
         <Stack.Screen name="exercise/sessions/[day]" />
+        <Stack.Screen name="exercise/complete" />
         <Stack.Screen
           name="exercise/pain-score"
           options={{ presentation: 'modal', animation: 'slide_from_bottom' }}

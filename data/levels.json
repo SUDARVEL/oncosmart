@@ -2,6 +2,40 @@
   "levels": [
     {
       "day": 1,
+      "level": 1,
+      "titleKey": "home.daySubtitle",
+      "videos": {
+        "male-en": "https://soyaeuffzytrjojifvdz.supabase.co/storage/v1/object/public/Oncosmart%20Videos%20and%20Assets/Male%20and%20Female%20png%20exports/Day%201%20Landscape%20Male.mp4",
+        "male-ta": "",
+        "female-en": "",
+        "female-ta": ""
+      }
+    },
+    {
+      "day": 2,
+      "level": 2,
+      "titleKey": "home.daySubtitle",
+      "videos": {
+        "male-en": "https://soyaeuffzytrjojifvdz.supabase.co/storage/v1/object/public/Oncosmart%20Videos%20and%20Assets/Male%20and%20Female%20png%20exports/Day%201%20Landscape%20Male.mp4",
+        "male-ta": "",
+        "female-en": "",
+        "female-ta": ""
+      }
+    },
+    {
+      "day": 3,
+      "level": 3,
+      "titleKey": "home.daySubtitle",
+      "videos": {
+        "male-en": "https://soyaeuffzytrjojifvdz.supabase.co/storage/v1/object/public/Oncosmart%20Videos%20and%20Assets/Male%20and%20Female%20png%20exports/Day%201%20Landscape%20Male.mp4",
+        "male-ta": "",
+        "female-en": "",
+        "female-ta": ""
+      }
+    },
+    {
+      "day": 4,
+      "level": 4,
       "titleKey": "home.daySubtitle",
       "videos": {
         "male-en": "https://soyaeuffzytrjojifvdz.supabase.co/storage/v1/object/public/Oncosmart%20Videos%20and%20Assets/Male%20and%20Female%20png%20exports/Day%201%20Landscape%20Male.mp4",

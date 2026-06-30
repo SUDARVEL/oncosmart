@@ -11,23 +11,22 @@ export type LevelWorkout = {
   photoSource: ImageSource | null;
 };
 
-type DaySession = {
-  day: number;
+type LevelProgram = {
   level: number;
-  exercises: { id: string }[];
+  exerciseIds: string[];
 };
 
-const sessions = dayExercisesData.days as DaySession[];
+const levelPrograms = (dayExercisesData as { levels: LevelProgram[] }).levels;
 
 export function getLevelWorkouts(level: number, gender: AppGender | null): LevelWorkout[] {
-  const session = sessions.find((entry) => entry.level === level);
-  if (!session) return [];
+  const program = levelPrograms.find((entry) => entry.level === level);
+  if (!program) return [];
 
-  return session.exercises.map((exercise) => ({
-    id: exercise.id,
-    titleKey: `growth.workouts.items.${exercise.id}.title`,
-    descriptionKey: `growth.workouts.items.${exercise.id}.description`,
-    photoSource: resolveWorkoutPhotoSource(exercise.id, gender),
+  return program.exerciseIds.map((id) => ({
+    id,
+    titleKey: `growth.workouts.items.${id}.title`,
+    descriptionKey: `growth.workouts.items.${id}.description`,
+    photoSource: resolveWorkoutPhotoSource(id, gender),
   }));
 }
 
