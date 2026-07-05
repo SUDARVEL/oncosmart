@@ -1,10 +1,11 @@
 import { Ionicons } from '@expo/vector-icons';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import type { Day1SessionExercise } from '../../lib/getDay1Session';
+import { formatExerciseDurationDisplay } from '../../lib/formatExerciseDuration';
 import { colors } from '../../theme/colors';
 import { font, displayFontStyle } from '../../theme/fonts';
 import { SessionVideoPlayer } from './SessionVideoPlayer';
@@ -22,12 +23,25 @@ export function ExercisePlayerView({ exercise, videoSources, onComplete, onBackP
   const [restartToken, setRestartToken] = useState(0);
   const [videoProgress, setVideoProgress] = useState(0);
   const [isBuffering, setIsBuffering] = useState(true);
+  const [playbackFailed, setPlaybackFailed] = useState(false);
+  const [videoDurationSeconds, setVideoDurationSeconds] = useState(0);
   const completedRef = useRef(false);
 
   const title = t(`sessionFlow.exercises.${exercise.id}.title`);
   const description = t(`sessionFlow.exercises.${exercise.id}.description`);
   const videoProgressPercent =
     videoProgress > 0 && videoProgress < 0.08 ? 8 : Math.round(videoProgress * 100);
+
+  const durationDisplay = useMemo(() => {
+    if (exercise.repType === 'duration' && videoDurationSeconds > 0) {
+      return formatExerciseDurationDisplay(videoDurationSeconds);
+    }
+
+    return {
+      displayValue: exercise.displayValue,
+      displayLabel: exercise.displayLabel,
+    };
+  }, [exercise.displayLabel, exercise.displayValue, exercise.repType, videoDurationSeconds]);
 
   const markComplete = useCallback(() => {
     if (completedRef.current) return;
@@ -41,6 +55,8 @@ export function ExercisePlayerView({ exercise, videoSources, onComplete, onBackP
     setRestartToken(0);
     setVideoProgress(0);
     setIsBuffering(true);
+    setPlaybackFailed(false);
+    setVideoDurationSeconds(0);
   }, [exercise.id, videoSources.join('|')]);
 
   const handleVideoEnded = useCallback(() => {
@@ -56,6 +72,8 @@ export function ExercisePlayerView({ exercise, videoSources, onComplete, onBackP
     setIsPaused(false);
     setVideoProgress(0);
     setIsBuffering(true);
+    setPlaybackFailed(false);
+    setVideoDurationSeconds(0);
     setRestartToken((value) => value + 1);
   };
 
@@ -81,11 +99,19 @@ export function ExercisePlayerView({ exercise, videoSources, onComplete, onBackP
             restartToken={restartToken}
             onProgress={setVideoProgress}
             onBuffering={setIsBuffering}
+            onDuration={setVideoDurationSeconds}
+            onPlaybackFailed={() => setPlaybackFailed(true)}
             onEnded={handleVideoEnded}
           />
-          {isBuffering ? (
+          {isBuffering && !playbackFailed ? (
             <View style={styles.videoLoaderOverlay} pointerEvents="none">
               <ActivityIndicator size="large" color="#FFFFFF" />
+            </View>
+          ) : null}
+          {playbackFailed ? (
+            <View style={styles.videoErrorOverlay} pointerEvents="none">
+              <Ionicons name="videocam-off-outline" size={40} color="#FFFFFF" />
+              <Text style={styles.videoErrorText}>{t('sessionFlow.videoUnavailable')}</Text>
             </View>
           ) : null}
         </View>
@@ -97,11 +123,13 @@ export function ExercisePlayerView({ exercise, videoSources, onComplete, onBackP
         <Text style={styles.exerciseTitle}>{title}</Text>
 
         <View style={styles.repRow}>
-          <Text style={styles.repValue}>{exercise.displayValue}</Text>
+          <Text style={styles.repValue}>{durationDisplay.displayValue}</Text>
           <Text style={styles.repLabel}>
-            {exercise.displayLabel === 'MINS'
+            {durationDisplay.displayLabel === 'MINS'
               ? t('sessionFlow.minsLabel')
-              : t('sessionFlow.repsLabel')}
+              : durationDisplay.displayLabel === 'SECS'
+                ? t('sessionFlow.secsLabel')
+                : t('sessionFlow.repsLabel')}
           </Text>
         </View>
 
@@ -170,6 +198,21 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: 'rgba(0, 0, 0, 0.35)',
+  },
+  videoErrorOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.65)',
+    paddingHorizontal: 24,
+    gap: 12,
+  },
+  videoErrorText: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    lineHeight: 20,
+    textAlign: 'center',
+    ...font('medium'),
   },
   videoProgressTrack: {
     width: 349,

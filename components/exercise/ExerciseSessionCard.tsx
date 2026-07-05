@@ -4,6 +4,7 @@ import { Image } from 'expo-image';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { ExerciseVideoBanner } from '../ExerciseVideoBanner';
+import { PLACEHOLDER_PREVIEW_VIDEO } from '../../lib/placeholderVideo';
 import { font } from '../../theme/fonts';
 
 const PREVIEW_ASPECT = 257 / 112;
@@ -37,21 +38,22 @@ export function ExerciseSessionCard({
             />
           ) : thumbnail ? (
             <>
-              <Image source={thumbnail} style={styles.thumbnail} contentFit="cover" />
+              <Image
+                source={thumbnail}
+                style={[styles.thumbnail, { aspectRatio: PREVIEW_ASPECT }]}
+                contentFit="cover"
+                contentPosition="top"
+              />
               <View style={styles.playOverlay} pointerEvents="none">
                 <Ionicons name="play-circle" size={32} color="rgba(255,255,255,0.9)" />
               </View>
             </>
-          ) : previewFallbackVideo ? (
+          ) : (
             <ExerciseVideoBanner
-              source={previewFallbackVideo}
+              source={previewFallbackVideo ?? PLACEHOLDER_PREVIEW_VIDEO}
               aspectRatio={PREVIEW_ASPECT}
               previewContentFit="cover"
             />
-          ) : (
-            <View style={styles.placeholder}>
-              <Ionicons name="play-circle" size={40} color="#FFFFFF" />
-            </View>
           )}
         </View>
         <Text style={styles.title} numberOfLines={2}>
@@ -87,20 +89,15 @@ const styles = StyleSheet.create({
   },
   previewWrap: {
     width: '100%',
-    aspectRatio: PREVIEW_ASPECT,
+    alignSelf: 'stretch',
     borderRadius: 8,
     overflow: 'hidden',
     backgroundColor: '#E5E7EB',
+    position: 'relative',
   },
   thumbnail: {
     width: '100%',
-    height: '100%',
-  },
-  placeholder: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#D1D5DB',
+    minHeight: 112,
   },
   playOverlay: {
     ...StyleSheet.absoluteFillObject,

@@ -37,7 +37,7 @@ const QUOTE_CARD_WIDTH = SCREEN_WIDTH - 32;
 const MALE_AVATAR = require('../assets/avatars/male-avatar.png');
 const FEMALE_AVATAR = require('../assets/avatars/female-avatar.png');
 const WALKING_CHARACTER = require('../assets/home/walking-character.png');
-const EXERCISE_THUMBNAIL = require('../assets/home/exercise-thumbnail.png');
+const DAY_CARD_PREVIEW_ASPECT = 257 / 112;
 
 const QUOTES = ['quote1', 'quote2', 'quote3'] as const;
 
@@ -193,7 +193,7 @@ function DayCard({
   return (
     <View style={[styles.dayCard, isLocked && styles.dayCardLocked]}>
       <View style={styles.exerciseBannerWrap}>
-        <ExerciseVideoBanner source={null} fallbackImage={EXERCISE_THUMBNAIL} />
+        <ExerciseVideoBanner aspectRatio={DAY_CARD_PREVIEW_ASPECT} />
         {isLocked ? (
           <View style={styles.lockOverlay} pointerEvents="none">
             <Ionicons name="lock-closed" size={28} color="#FFFFFF" />
@@ -434,13 +434,16 @@ const styles = StyleSheet.create({
     marginHorizontal: 14,
     marginTop: 15,
     position: 'relative',
+    alignSelf: 'stretch',
+    overflow: 'hidden',
+    borderRadius: 8,
   },
   lockOverlay: {
     ...StyleSheet.absoluteFillObject,
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: 'rgba(17, 24, 39, 0.45)',
-    borderRadius: 12,
+    borderRadius: 8,
   },
   dayCardBody: {
     paddingHorizontal: 15,

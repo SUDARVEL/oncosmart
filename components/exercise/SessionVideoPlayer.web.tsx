@@ -8,6 +8,8 @@ type Props = {
   restartToken: number;
   onProgress?: (progress: number) => void;
   onBuffering?: (isBuffering: boolean) => void;
+  onDuration?: (durationSeconds: number) => void;
+  onPlaybackFailed?: () => void;
   onEnded: () => void;
 };
 
@@ -18,6 +20,8 @@ export function SessionVideoPlayer({
   restartToken,
   onProgress,
   onBuffering,
+  onDuration,
+  onPlaybackFailed,
   onEnded,
 }: Props) {
   const [activeSource, setActiveSource] = useState(source);
@@ -25,6 +29,8 @@ export function SessionVideoPlayer({
   const onEndedRef = useRef(onEnded);
   const onProgressRef = useRef(onProgress);
   const onBufferingRef = useRef(onBuffering);
+  const onDurationRef = useRef(onDuration);
+  const onPlaybackFailedRef = useRef(onPlaybackFailed);
   const completedRef = useRef(false);
   const durationRef = useRef(0);
   const hasStartedRef = useRef(false);
@@ -35,6 +41,8 @@ export function SessionVideoPlayer({
   onEndedRef.current = onEnded;
   onProgressRef.current = onProgress;
   onBufferingRef.current = onBuffering;
+  onDurationRef.current = onDuration;
+  onPlaybackFailedRef.current = onPlaybackFailed;
   isPausedRef.current = isPaused;
   sourcesRef.current = [source, ...fallbackSources];
 
@@ -93,6 +101,7 @@ export function SessionVideoPlayer({
     const video = event.currentTarget as HTMLVideoElement;
     if (video.duration > 0) {
       durationRef.current = video.duration;
+      onDurationRef.current?.(video.duration);
     }
   };
 
@@ -136,6 +145,8 @@ export function SessionVideoPlayer({
 
   const handleError = () => {
     if (switchToNextSource()) return;
+    onBufferingRef.current?.(false);
+    onPlaybackFailedRef.current?.();
   };
 
   return (

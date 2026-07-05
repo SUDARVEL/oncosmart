@@ -122,6 +122,8 @@
     "restart": "மீண்டும் தொடங்கு",
     "repsLabel": "REPS",
     "minsLabel": "MINS",
+    "secsLabel": "SEC",
+    "videoUnavailable": "வீடியோ இன்னும் கிடைக்கவில்லை. Supabase-ல் பயிற்சி வீடியோக்களை பதிவேற்றவும்.",
     "restTitle": "REST",
     "restSubtitle": "அடுத்த பயிற்சிக்கு முன் சிறிய இடைவெளி எடுத்துக் கொள்ளுங்கள்.",
     "restSecondsUnit": "sec",

@@ -122,6 +122,8 @@
     "restart": "Restart",
     "repsLabel": "REPS",
     "minsLabel": "MINS",
+    "secsLabel": "SEC",
+    "videoUnavailable": "Video not available yet. Please upload exercise videos to Supabase.",
     "restTitle": "REST",
     "restSubtitle": "Take a short break before the next exercise.",
     "restSecondsUnit": "sec",

@@ -4,8 +4,9 @@ import { getDay1Thumbnail } from '../components/exercise/day1Thumbnails';
 import dayExercisesData from '../data/day-exercises.json';
 import type { AppAvatar, AppGender, AppLanguage } from '../store/useAppStore';
 import { getVideoVariant, type VideoVariant } from './getExerciseVideo';
+import { getPortraitVideoPath } from './exercisePortraitVideos';
+import { PLACEHOLDER_PREVIEW_VIDEO } from './placeholderVideo';
 import {
-  getDayPreviewFallback,
   guessSupabaseExerciseVideoUrl,
   resolveExercisePlaybackUrl,
 } from './resolveExercisePreview';
@@ -56,6 +57,11 @@ function resolveExplicitExerciseVideo(
   exercise: DayExercise,
   variant: VideoVariant,
 ): string | null {
+  if (variant === 'male-en') {
+    const portraitPath = getPortraitVideoPath(exercise.id);
+    if (portraitPath) return resolveVideoUrl(portraitPath);
+  }
+
   const preferred = exercise.videos[variant]?.trim();
   if (preferred) return resolveVideoUrl(preferred);
 
@@ -73,7 +79,6 @@ export function getLevelExercises(
   if (!session) return [];
 
   const variant = getVideoVariant(language, gender, avatar);
-  const dayPreviewFallback = getDayPreviewFallback(level, language, gender, avatar);
 
   return session.exercises.map((exercise) => {
     const videoSource = resolveExplicitExerciseVideo(exercise, variant);
@@ -84,7 +89,7 @@ export function getLevelExercises(
       videoSource,
       playbackSource: resolveExercisePlaybackUrl(videoSource, exercise.name, variant),
       thumbnail,
-      previewFallbackVideo: videoSource || thumbnail ? null : dayPreviewFallback,
+      previewFallbackVideo: videoSource || thumbnail ? null : PLACEHOLDER_PREVIEW_VIDEO,
     };
   });
 }

@@ -10,6 +10,8 @@ type Props = {
   restartToken: number;
   onProgress?: (progress: number) => void;
   onBuffering?: (isBuffering: boolean) => void;
+  onDuration?: (durationSeconds: number) => void;
+  onPlaybackFailed?: () => void;
   onEnded: () => void;
 };
 
@@ -20,6 +22,8 @@ export function SessionVideoPlayer({
   restartToken,
   onProgress,
   onBuffering,
+  onDuration,
+  onPlaybackFailed,
   onEnded,
 }: Props) {
   const [activeSource, setActiveSource] = useState(source);
@@ -36,11 +40,15 @@ export function SessionVideoPlayer({
   const handlePlaybackError = useCallback(() => {
     const nextIndex = sourceIndexRef.current + 1;
     const nextSource = sourcesRef.current[nextIndex];
-    if (!nextSource) return;
+    if (!nextSource) {
+      onBuffering?.(false);
+      onPlaybackFailed?.();
+      return;
+    }
 
     sourceIndexRef.current = nextIndex;
     setActiveSource(nextSource);
-  }, []);
+  }, [onBuffering, onPlaybackFailed]);
 
   return (
     <NativeSessionVideoPlayer
@@ -49,6 +57,7 @@ export function SessionVideoPlayer({
       restartToken={restartToken}
       onProgress={onProgress}
       onBuffering={onBuffering}
+      onDuration={onDuration}
       onEnded={onEnded}
       onPlaybackError={handlePlaybackError}
     />
@@ -61,6 +70,7 @@ function NativeSessionVideoPlayer({
   restartToken,
   onProgress,
   onBuffering,
+  onDuration,
   onEnded,
   onPlaybackError,
 }: {
@@ -69,12 +79,14 @@ function NativeSessionVideoPlayer({
   restartToken: number;
   onProgress?: (progress: number) => void;
   onBuffering?: (isBuffering: boolean) => void;
+  onDuration?: (durationSeconds: number) => void;
   onEnded: () => void;
   onPlaybackError: () => void;
 }) {
   const onEndedRef = useRef(onEnded);
   const onProgressRef = useRef(onProgress);
   const onBufferingRef = useRef(onBuffering);
+  const onDurationRef = useRef(onDuration);
   const completedRef = useRef(false);
   const durationRef = useRef(0);
   const hasStartedRef = useRef(false);
@@ -83,6 +95,7 @@ function NativeSessionVideoPlayer({
   onEndedRef.current = onEnded;
   onProgressRef.current = onProgress;
   onBufferingRef.current = onBuffering;
+  onDurationRef.current = onDuration;
   isPausedRef.current = isPaused;
 
   const resetProgress = useCallback(() => {
@@ -158,6 +171,7 @@ function NativeSessionVideoPlayer({
         onBufferingRef.current?.(false);
         if (player.duration > 0) {
           durationRef.current = player.duration;
+          onDurationRef.current?.(player.duration);
         }
       }
     });

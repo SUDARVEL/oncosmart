@@ -1,8 +1,10 @@
+import { PORTRAIT_VIDEO_FOLDER } from './exercisePortraitVideos';
+
 const SUPABASE_PUBLIC_BASE =
   'https://soyaeuffzytrjojifvdz.supabase.co/storage/v1/object/public/Oncosmart%20Videos%20and%20Assets';
 
 /** User-provided folder name in Supabase (spelling preserved). */
-const PORTRAIT_VIDEOS_PREFIX = 'Male Potrait English videos';
+const PORTRAIT_VIDEOS_PREFIX = PORTRAIT_VIDEO_FOLDER;
 
 function encodeObjectPath(objectPath: string): string {
   return objectPath

@@ -2,8 +2,8 @@ import { getExerciseVideoSource } from './getExerciseVideo';
 import type { VideoVariant } from './getExerciseVideo';
 import { resolveVideoUrl } from './resolveVideoUrl';
 
-const SUPABASE_EXPORTS_BASE =
-  'https://soyaeuffzytrjojifvdz.supabase.co/storage/v1/object/public/Oncosmart%20Videos%20and%20Assets/Male%20and%20Female%20png%20exports';
+const SUPABASE_PORTRAIT_BASE =
+  'https://soyaeuffzytrjojifvdz.supabase.co/storage/v1/object/public/Oncosmart%20Videos%20and%20Assets/Male%20Potrait%20Videos%20english%20CM';
 
 export function guessSupabaseExerciseVideoUrl(
   exerciseName: string,
@@ -11,8 +11,8 @@ export function guessSupabaseExerciseVideoUrl(
 ): string {
   const isFemale = variant.startsWith('female');
   const suffix = isFemale ? 'Female' : 'Male';
-  const fileName = `${exerciseName} ${suffix}.mp4`;
-  return `${SUPABASE_EXPORTS_BASE}/${encodeURIComponent(fileName)}`;
+  const fileName = `${exerciseName} English ${suffix}-1.mp4`;
+  return `${SUPABASE_PORTRAIT_BASE}/${encodeURIComponent(fileName)}`;
 }
 
 export function getDayPreviewFallback(

@@ -1,11 +1,11 @@
-import { Image } from 'expo-image';
 import { useVideoPlayer, VideoView } from 'expo-video';
 import { useEffect } from 'react';
 import { StyleSheet, View } from 'react-native';
 
+import { PLACEHOLDER_PREVIEW_VIDEO } from '../lib/placeholderVideo';
+
 type Props = {
-  source: string | null;
-  fallbackImage?: number;
+  source?: string | null;
   /** Width:height ratio for the preview area (landscape exercise videos). */
   aspectRatio?: number;
   previewContentFit?: 'cover' | 'contain';
@@ -35,7 +35,7 @@ function ExerciseVideoBannerPlayer({
   return (
     <View style={[styles.banner, { aspectRatio }]}>
       <VideoView
-        style={styles.video}
+        style={StyleSheet.absoluteFillObject}
         player={player}
         contentFit={previewContentFit}
         nativeControls={false}
@@ -46,24 +46,14 @@ function ExerciseVideoBannerPlayer({
 
 export function ExerciseVideoBanner({
   source,
-  fallbackImage,
   aspectRatio = 16 / 9,
   previewContentFit = 'cover',
 }: Props) {
-  if (!source) {
-    if (!fallbackImage) {
-      return <View style={[styles.banner, { aspectRatio, backgroundColor: '#E5E7EB' }]} />;
-    }
-    return (
-      <View style={[styles.banner, { aspectRatio }]}>
-        <Image source={fallbackImage} style={styles.fallback} contentFit="cover" />
-      </View>
-    );
-  }
+  const playbackSource = source?.trim() || PLACEHOLDER_PREVIEW_VIDEO;
 
   return (
     <ExerciseVideoBannerPlayer
-      source={source}
+      source={playbackSource}
       aspectRatio={aspectRatio}
       previewContentFit={previewContentFit}
     />
@@ -73,16 +63,9 @@ export function ExerciseVideoBanner({
 const styles = StyleSheet.create({
   banner: {
     width: '100%',
+    position: 'relative',
     borderRadius: 8,
     overflow: 'hidden',
     backgroundColor: '#E5E7EB',
-  },
-  video: {
-    width: '100%',
-    height: '100%',
-  },
-  fallback: {
-    width: '100%',
-    height: '100%',
   },
 });
