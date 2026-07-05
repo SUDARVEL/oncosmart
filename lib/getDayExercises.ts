@@ -3,6 +3,7 @@ import type { ImageSource } from 'expo-image';
 import { getDay1Thumbnail } from '../components/exercise/day1Thumbnails';
 import dayExercisesData from '../data/day-exercises.json';
 import type { AppAvatar, AppGender, AppLanguage } from '../store/useAppStore';
+import { getLevelExerciseProgram } from './levelExercisePrograms';
 import { getVideoVariant, type VideoVariant } from './getExerciseVideo';
 import { getPortraitVideoPath } from './exercisePortraitVideos';
 import { PLACEHOLDER_PREVIEW_VIDEO } from './placeholderVideo';
@@ -32,13 +33,11 @@ export type ResolvedDayExercise = DayExercise & {
 };
 
 type CatalogEntry = DayExercise;
-type LevelProgram = { level: number; exerciseIds: string[] };
 
 const catalog = (dayExercisesData as { catalog: Record<string, CatalogEntry> }).catalog;
-const levelPrograms = (dayExercisesData as { levels: LevelProgram[] }).levels;
 
 export function getLevelSession(level: number): LevelSession | null {
-  const program = levelPrograms.find((entry) => entry.level === level);
+  const program = getLevelExerciseProgram(level);
   if (!program) return null;
 
   const exercises = program.exerciseIds

@@ -1,5 +1,5 @@
-import dayExercisesData from '../data/day-exercises.json';
 import { EXERCISE_REP_CONFIG } from './exerciseRepConfig';
+import { getLevelExerciseProgram } from './levelExercisePrograms';
 import { TOTAL_LEVELS } from './programProgress';
 
 export type SessionRepType = 'reps' | 'duration';
@@ -22,10 +22,18 @@ export type GuidedSession = {
 
 type LevelProgram = {
   level: number;
-  exerciseIds: string[];
+  exerciseIds: readonly string[];
 };
 
-const levelPrograms = (dayExercisesData as { levels: LevelProgram[] }).levels;
+function getLevelPrograms(): LevelProgram[] {
+  return Array.from({ length: TOTAL_LEVELS }, (_, index) => {
+    const level = index + 1;
+    const program = getLevelExerciseProgram(level);
+    return program ? { level: program.level, exerciseIds: program.exerciseIds } : null;
+  }).filter((entry): entry is LevelProgram => entry != null);
+}
+
+const levelPrograms = getLevelPrograms();
 const REST_SECONDS = 20;
 
 function buildExercise(id: string): GuidedSessionExercise | null {

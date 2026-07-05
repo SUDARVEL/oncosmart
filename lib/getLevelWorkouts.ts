@@ -1,7 +1,7 @@
 import type { ImageSource } from 'expo-image';
 
-import dayExercisesData from '../data/day-exercises.json';
 import type { AppGender } from '../store/useAppStore';
+import { getLevelExerciseProgram } from './levelExercisePrograms';
 import { resolveWorkoutPhotoSource } from './resolveWorkoutPhoto';
 
 export type LevelWorkout = {
@@ -11,15 +11,8 @@ export type LevelWorkout = {
   photoSource: ImageSource | null;
 };
 
-type LevelProgram = {
-  level: number;
-  exerciseIds: string[];
-};
-
-const levelPrograms = (dayExercisesData as { levels: LevelProgram[] }).levels;
-
 export function getLevelWorkouts(level: number, gender: AppGender | null): LevelWorkout[] {
-  const program = levelPrograms.find((entry) => entry.level === level);
+  const program = getLevelExerciseProgram(level);
   if (!program) return [];
 
   return program.exerciseIds.map((id) => ({

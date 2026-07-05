@@ -17,6 +17,7 @@ import {
   hasGuidedSession,
   isSessionCompleteForLevel,
 } from '../../lib/getDay1Session';
+import { isExerciseInLevel } from '../../lib/levelExercisePrograms';
 import { resolveSessionVideoSources } from '../../lib/getPortraitVideoUrl';
 import { useAppStore } from '../../store/useAppStore';
 import { colors } from '../../theme/colors';
@@ -49,10 +50,10 @@ function LegacyExercisePreview() {
     : null;
 
   useEffect(() => {
-    if (!exerciseId || !source || !sessionExercise) {
+    if (!exerciseId || !isExerciseInLevel(level, exerciseId) || !source || !sessionExercise) {
       router.back();
     }
-  }, [exerciseId, router, sessionExercise, source]);
+  }, [exerciseId, level, router, sessionExercise, source]);
 
   if (!exerciseId || !source || !sessionExercise) {
     return null;

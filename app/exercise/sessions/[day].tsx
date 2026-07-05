@@ -7,8 +7,9 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ExerciseSessionCard } from '../../../components/exercise/ExerciseSessionCard';
 import { PulseOximeterModal } from '../../../components/exercise/PulseOximeterModal';
-import { getDayExercises, getDaySession } from '../../../lib/getDayExercises';
+import { getDayExercises, getLevelSession } from '../../../lib/getDayExercises';
 import { hasGuidedSession } from '../../../lib/getDay1Session';
+import { isExerciseInLevel } from '../../../lib/levelExercisePrograms';
 import { useAppStore } from '../../../store/useAppStore';
 import { colors } from '../../../theme/colors';
 import { font } from '../../../theme/fonts';
@@ -24,12 +25,12 @@ export default function ExerciseSessionsScreen() {
   const gender = useAppStore((state) => state.gender);
   const avatar = useAppStore((state) => state.avatar);
 
-  const session = getDaySession(level);
+  const session = getLevelSession(level);
   const exercises = getDayExercises(level, language, gender, avatar);
   const [showPulseModal, setShowPulseModal] = useState(false);
 
   const openExercise = (exerciseId: string, hasVideo: boolean) => {
-    if (!hasVideo) return;
+    if (!hasVideo || !isExerciseInLevel(level, exerciseId)) return;
     router.push(`/exercise/${dayInLevel}?exercise=${exerciseId}&level=${level}`);
   };
 
