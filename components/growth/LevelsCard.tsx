@@ -2,55 +2,72 @@ import { Image } from 'expo-image';
 import { useTranslation } from 'react-i18next';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
+import type { AppAvatar } from '../../store/useAppStore';
 import { colors } from '../../theme/colors';
 import { font } from '../../theme/fonts';
 import { GROWTH_ASSETS } from './assets';
+import { LevelsProgressRing } from './LevelsProgressRing';
+
+const FEMALE_AVATAR = require('../../assets/avatars/female-avatar.png');
 
 type LevelsCardProps = {
   completed: number;
   total: number;
   paused: boolean;
+  avatar: AppAvatar | null;
   onPause: () => void;
   onResume: () => void;
 };
 
-export function LevelsCard({ completed, total, paused, onPause, onResume }: LevelsCardProps) {
+export function LevelsCard({
+  completed,
+  total,
+  paused,
+  avatar,
+  onPause,
+  onResume,
+}: LevelsCardProps) {
   const { t } = useTranslation();
+  const avatarSource =
+    avatar === 'female' ? FEMALE_AVATAR : GROWTH_ASSETS.maleAvatarGrowth;
 
   return (
     <View style={styles.card}>
-      <View style={styles.headerRow}>
-        <Text style={styles.title}>{t('growth.levelsTitle')}</Text>
-        {paused ? (
-          <Pressable
-            style={styles.playButton}
-            onPress={onResume}
-            accessibilityRole="button"
-            accessibilityLabel={t('growth.resumeProgress')}
-          >
-            <Image source={GROWTH_ASSETS.playIcon} style={styles.playIcon} contentFit="contain" />
-          </Pressable>
-        ) : null}
-      </View>
+      <Text style={styles.title}>{t('growth.levelsTitle')}</Text>
 
-      <View style={styles.gaugeSection}>
-        <View style={styles.gaugeWrap}>
-          <Image
-            source={paused ? GROWTH_ASSETS.gaugePaused : GROWTH_ASSETS.gaugeActive}
-            style={styles.gauge}
-            contentFit="contain"
-          />
-          <View style={styles.gaugeText}>
-            <Text style={styles.levelCount}>
-              {t('growth.levelsCount', { completed, total })}
-            </Text>
-            <Text style={styles.levelSubtitle}>{t('growth.levelsCompleted')}</Text>
+      <View style={styles.heroRow}>
+        <View style={styles.gaugeColumn}>
+          <LevelsProgressRing completed={completed} total={total} paused={paused} />
+          <View style={styles.gaugeText} pointerEvents="none">
+            <View style={styles.gaugeTextInner}>
+              <Text style={styles.levelCount}>
+                {t('growth.levelsCount', { completed, total })}
+              </Text>
+              <Text style={styles.levelSubtitle}>{t('growth.levelsCompleted')}</Text>
+            </View>
           </View>
+        </View>
+
+        <View style={styles.avatarFrame}>
+          <Image
+            source={avatarSource}
+            style={styles.avatarImage}
+            contentFit="cover"
+            contentPosition="top center"
+          />
         </View>
       </View>
 
       {paused ? (
-        <Text style={styles.pausedLabel}>{t('growth.progressPaused')}</Text>
+        <Pressable
+          style={styles.resumeButton}
+          onPress={onResume}
+          accessibilityRole="button"
+          accessibilityLabel={t('growth.resumeProgress')}
+        >
+          <Image source={GROWTH_ASSETS.playIconGrey} style={styles.playIcon} contentFit="contain" />
+          <Text style={styles.resumeText}>{t('growth.resumeProgress')}</Text>
+        </Pressable>
       ) : (
         <Pressable
           style={styles.pauseButton}
@@ -69,82 +86,76 @@ export function LevelsCard({ completed, total, paused, onPause, onResume }: Leve
 const styles = StyleSheet.create({
   card: {
     width: 348,
+    minHeight: 276,
     backgroundColor: colors.background,
     borderWidth: 1,
     borderColor: colors.cardBorder,
     borderRadius: 16,
-    padding: 16,
-    gap: 16,
+    paddingTop: 15,
+    paddingHorizontal: 16,
+    paddingBottom: 16,
     alignItems: 'center',
-  },
-  headerRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    width: '100%',
-    gap: 2,
   },
   title: {
-    flex: 1,
+    alignSelf: 'stretch',
     fontSize: 16,
     ...font('semiBold'),
     color: colors.textPrimary,
     letterSpacing: -0.26,
     lineHeight: 28,
   },
-  playButton: {
-    width: 32,
-    height: 32,
-    borderRadius: 6,
-    backgroundColor: colors.optionBg,
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: '#000000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.3,
-    shadowRadius: 1.5,
-    elevation: 2,
+  heroRow: {
+    width: 233,
+    height: 153,
+    marginTop: 16,
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    justifyContent: 'space-between',
   },
-  playIcon: {
-    width: 11,
-    height: 14,
-  },
-  gaugeSection: {
-    height: 87,
-    width: '100%',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  gaugeWrap: {
-    width: 150,
-    height: 87,
-    alignItems: 'center',
-    justifyContent: 'flex-end',
-  },
-  gauge: {
-    position: 'absolute',
-    top: -32,
-    width: 150,
-    height: 164,
+  gaugeColumn: {
+    width: 175,
+    height: 153,
   },
   gaugeText: {
+    ...StyleSheet.absoluteFillObject,
     alignItems: 'center',
-    gap: 2,
-    zIndex: 1,
+    justifyContent: 'center',
+  },
+  gaugeTextInner: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    maxWidth: 86,
+    paddingHorizontal: 4,
   },
   levelCount: {
-    fontSize: 14,
-    ...font('semiBold'),
-    color: colors.textPrimary,
-    letterSpacing: 0.5,
-    lineHeight: 16,
+    fontSize: 22,
+    ...font('medium'),
+    color: '#262526',
+    letterSpacing: 0.3,
+    lineHeight: 24,
     textAlign: 'center',
   },
   levelSubtitle: {
-    fontSize: 12,
+    fontSize: 10,
     ...font('regular'),
-    color: '#99A1AF',
-    lineHeight: 14,
+    color: '#6B7280',
+    lineHeight: 12,
     textAlign: 'center',
+    letterSpacing: 0.1,
+    marginTop: 1,
+  },
+  avatarFrame: {
+    width: 69,
+    height: 172,
+    marginTop: -23,
+    overflow: 'hidden',
+    borderRadius: 4,
+  },
+  avatarImage: {
+    width: 142,
+    height: 248,
+    marginLeft: -41,
+    marginTop: -62,
   },
   pauseButton: {
     flexDirection: 'row',
@@ -158,10 +169,11 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     backgroundColor: colors.background,
     minWidth: 137,
+    marginTop: 16,
   },
   pauseIcon: {
-    width: 8,
-    height: 9,
+    width: 16,
+    height: 16,
   },
   pauseText: {
     fontSize: 12,
@@ -170,11 +182,29 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
     lineHeight: 16,
   },
-  pausedLabel: {
+  resumeButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    height: 35,
+    paddingHorizontal: 10,
+    borderWidth: 1,
+    borderColor: colors.cardBorder,
+    borderRadius: 8,
+    backgroundColor: colors.background,
+    minWidth: 147,
+    marginTop: 16,
+  },
+  playIcon: {
+    width: 24,
+    height: 24,
+  },
+  resumeText: {
     fontSize: 12,
-    ...font('medium'),
-    color: colors.textMuted,
-    lineHeight: 14,
-    textAlign: 'center',
+    ...font('semiBold'),
+    color: '#9CA3AF',
+    letterSpacing: 0.5,
+    lineHeight: 16,
   },
 });

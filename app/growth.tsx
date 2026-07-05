@@ -33,6 +33,7 @@ export default function GrowthScreen() {
   const progressPaused = useAppStore((state) => state.progressPaused);
   const setProgressPaused = useAppStore((state) => state.setProgressPaused);
   const levelsCompleted = useAppStore((state) => state.levelsCompleted);
+  const avatar = useAppStore((state) => state.avatar);
   const painScores = useAppStore((state) => state.painScores);
   const dayCompletedAt = useAppStore((state) => state.dayCompletedAt);
   const sessionsCompleted = getCompletedSessionCount(dayCompletedAt);
@@ -67,15 +68,12 @@ export default function GrowthScreen() {
               completed={levelsCompleted}
               total={LEVELS_TOTAL}
               paused={progressPaused}
+              avatar={avatar}
               onPause={() => setProgressPaused(true)}
               onResume={() => setProgressPaused(false)}
             />
             <StreakCard paused={progressPaused} completedDays={sessionsCompleted} />
-            <PainProgressCard
-              score={painScore}
-              paused={progressPaused}
-              hasProgress={levelsCompleted > 0}
-            />
+            <PainProgressCard score={painScore} paused={progressPaused} />
             <BadgesSection />
           </View>
         ) : (

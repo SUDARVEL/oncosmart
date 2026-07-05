@@ -9,7 +9,7 @@ const WEEKDAYS = ['MON', 'TUE', 'WED', 'THU', 'FRI'] as const;
 
 type StreakCardProps = {
   paused?: boolean;
-  /** Number of weekday circles filled (0–5). Empty until exercise days are completed. */
+  /** Number of weekday circles filled (0–5). */
   completedDays?: number;
 };
 
@@ -44,8 +44,8 @@ export function StreakCard({ paused = false, completedDays = 0 }: StreakCardProp
               ) : isGreyedActive ? (
                 <LinearGradient
                   colors={['rgba(255, 255, 255, 0)', 'rgba(102, 102, 102, 1)']}
-                  start={{ x: 0.2, y: 0 }}
-                  end={{ x: 0.8, y: 1 }}
+                  start={{ x: 0.15, y: 0 }}
+                  end={{ x: 0.85, y: 1 }}
                   style={styles.dayGradient}
                 >
                   <Text style={styles.dayLabel}>{day}</Text>

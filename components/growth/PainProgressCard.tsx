@@ -12,13 +12,11 @@ const Y_LABELS = ['8', '4', '0'] as const;
 type PainProgressCardProps = {
   score: number;
   paused?: boolean;
-  hasProgress?: boolean;
 };
 
-export function PainProgressCard({ score, paused = false, hasProgress = false }: PainProgressCardProps) {
+export function PainProgressCard({ score, paused = false }: PainProgressCardProps) {
   const { t } = useTranslation();
   const bars = paused ? GROWTH_ASSETS.barsPaused : GROWTH_ASSETS.barsActive;
-  const showBars = hasProgress;
 
   return (
     <View style={[styles.card, paused && styles.cardPaused]}>
@@ -36,7 +34,7 @@ export function PainProgressCard({ score, paused = false, hasProgress = false }:
           <View style={styles.yAxis}>
             {Y_LABELS.map((label) => (
               <View key={label} style={styles.yTickRow}>
-                <Text style={styles.yLabel}>{label}</Text>
+                <Text style={[styles.yLabel, paused && styles.axisLabelPaused]}>{label}</Text>
                 <Image
                   source={GROWTH_ASSETS.chartYLabelLine}
                   style={styles.yTickLine}
@@ -52,16 +50,14 @@ export function PainProgressCard({ score, paused = false, hasProgress = false }:
             </View>
 
             <View style={styles.barsRow}>
-              {showBars
-                ? bars.map((bar, index) => (
-                    <Image
-                      key={index}
-                      source={bar}
-                      style={[styles.bar, { height: CHART_BAR_HEIGHTS[index] }]}
-                      contentFit="fill"
-                    />
-                  ))
-                : null}
+              {bars.map((bar, index) => (
+                <Image
+                  key={index}
+                  source={bar}
+                  style={[styles.bar, { height: CHART_BAR_HEIGHTS[index] }]}
+                  contentFit="fill"
+                />
+              ))}
             </View>
 
             <Image source={GROWTH_ASSETS.chartBaseline} style={styles.baseline} contentFit="fill" />
@@ -70,14 +66,16 @@ export function PainProgressCard({ score, paused = false, hasProgress = false }:
               {X_LABELS.map((label) => (
                 <View key={label} style={styles.xLabelWrap}>
                   <Image source={GROWTH_ASSETS.chartTick} style={styles.xTick} contentFit="fill" />
-                  <Text style={styles.xLabel}>{label}</Text>
+                  <Text style={[styles.xLabel, paused && styles.axisLabelPaused]}>{label}</Text>
                 </View>
               ))}
             </View>
           </View>
         </View>
 
-        <Text style={styles.footer}>{t('growth.lowerIsBetter')}</Text>
+        <Text style={[styles.footer, paused && styles.axisLabelPaused]}>
+          {t('growth.lowerIsBetter')}
+        </Text>
       </View>
     </View>
   );
@@ -126,7 +124,7 @@ const styles = StyleSheet.create({
     lineHeight: 16,
   },
   scoreValuePaused: {
-    color: colors.textPlaceholder,
+    color: '#9CA3AF',
   },
   chart: {
     flexDirection: 'row',
@@ -149,6 +147,9 @@ const styles = StyleSheet.create({
     ...font('regular'),
     color: colors.textPlaceholder,
     textAlign: 'right',
+  },
+  axisLabelPaused: {
+    color: '#9CA3AF',
   },
   yTickLine: {
     width: 14,
