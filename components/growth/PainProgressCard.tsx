@@ -10,13 +10,33 @@ const X_LABELS = ['Mon', 'Wed', 'Fri', 'Sun'] as const;
 const Y_LABELS = ['8', '4', '0'] as const;
 
 type PainProgressCardProps = {
-  score: number;
+  /** 7 bars representing Day 1..Day 7 of the active level. Use null when missing. */
+  scoresByDay: Array<number | null>;
+  /** Used when there's no pain score for the active level yet. */
+  fallbackScore?: number;
   paused?: boolean;
 };
 
-export function PainProgressCard({ score, paused = false }: PainProgressCardProps) {
+function clamp(value: number, min: number, max: number): number {
+  return Math.min(max, Math.max(min, value));
+}
+
+function scoreToBarHeight(score: number): number {
+  // Map 0..10 pain into discrete bar heights (based on existing chart heights).
+  const normalized = clamp(score, 0, 10) / 10;
+  const idx = Math.round(normalized * (CHART_BAR_HEIGHTS.length - 1));
+  return CHART_BAR_HEIGHTS[idx];
+}
+
+export function PainProgressCard({
+  scoresByDay,
+  fallbackScore = 4,
+  paused = false,
+}: PainProgressCardProps) {
   const { t } = useTranslation();
   const bars = paused ? GROWTH_ASSETS.barsPaused : GROWTH_ASSETS.barsActive;
+  const currentScore =
+    [...scoresByDay].reverse().find((v): v is number => typeof v === 'number') ?? fallbackScore;
 
   return (
     <View style={[styles.card, paused && styles.cardPaused]}>
@@ -26,7 +46,7 @@ export function PainProgressCard({ score, paused = false }: PainProgressCardProp
         <View style={styles.scoreBlock}>
           <Text style={styles.scoreLabel}>{t('growth.painScore')}</Text>
           <Text style={[styles.scoreValue, paused && styles.scoreValuePaused]}>
-            {t('growth.painScoreValue', { score })}
+            {t('growth.painScoreValue', { score: currentScore })}
           </Text>
         </View>
 
@@ -50,14 +70,18 @@ export function PainProgressCard({ score, paused = false }: PainProgressCardProp
             </View>
 
             <View style={styles.barsRow}>
-              {bars.map((bar, index) => (
-                <Image
-                  key={index}
-                  source={bar}
-                  style={[styles.bar, { height: CHART_BAR_HEIGHTS[index] }]}
-                  contentFit="fill"
-                />
-              ))}
+              {bars.map((bar, index) => {
+                const score = scoresByDay[index];
+                const height = score == null ? 0 : scoreToBarHeight(score);
+                return (
+                  <Image
+                    key={index}
+                    source={bar}
+                    style={[styles.bar, { height }]}
+                    contentFit="fill"
+                  />
+                );
+              })}
             </View>
 
             <Image source={GROWTH_ASSETS.chartBaseline} style={styles.baseline} contentFit="fill" />

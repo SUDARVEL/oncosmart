@@ -19,7 +19,7 @@ import { StreakCard } from '../components/growth/StreakCard';
 import { BottomTabBar } from '../components/BottomTabBar';
 import { ScreenHeader } from '../components/ScreenHeader';
 import { getDisplayPainScore } from '../lib/getDisplayPainScore';
-import { getCompletedSessionCount } from '../lib/programProgress';
+import { DAYS_PER_LEVEL, getActiveLevel, sessionKey } from '../lib/programProgress';
 import { useAppStore } from '../store/useAppStore';
 import { colors } from '../theme/colors';
 
@@ -36,8 +36,23 @@ export default function GrowthScreen() {
   const avatar = useAppStore((state) => state.avatar);
   const painScores = useAppStore((state) => state.painScores);
   const dayCompletedAt = useAppStore((state) => state.dayCompletedAt);
-  const sessionsCompleted = getCompletedSessionCount(dayCompletedAt);
+  const activeLevel = getActiveLevel(dayCompletedAt);
 
+  // Streak card shows 5 weekdays; map them to Day 1..5 of the active level.
+  const completedDaysInWeek = Array.from({ length: 5 }, (_, i) => i + 1).reduce(
+    (count, dayInLevel) => (dayCompletedAt[sessionKey(activeLevel, dayInLevel)] ? count + 1 : count),
+    0,
+  );
+
+  // Pain chart shows 7 bars; map them to Day 1..7 of the active level.
+  const painScoresByDay = Array.from({ length: DAYS_PER_LEVEL }, (_, i) => {
+    const dayInLevel = i + 1;
+    const key = `${activeLevel}:${dayInLevel}`;
+    const value = painScores[key];
+    return value === undefined ? null : value;
+  });
+
+  // Fallback when there's no pain data for this level yet.
   const painScore = getDisplayPainScore(painScores);
 
   const handleTabPress = (tab: 'home' | 'growth' | 'settings') => {
@@ -72,8 +87,12 @@ export default function GrowthScreen() {
               onPause={() => setProgressPaused(true)}
               onResume={() => setProgressPaused(false)}
             />
-            <StreakCard paused={progressPaused} completedDays={sessionsCompleted} />
-            <PainProgressCard score={painScore} paused={progressPaused} />
+            <StreakCard paused={progressPaused} completedDays={completedDaysInWeek} />
+            <PainProgressCard
+              paused={progressPaused}
+              scoresByDay={painScoresByDay}
+              fallbackScore={painScore}
+            />
             <BadgesSection />
           </View>
         ) : (
