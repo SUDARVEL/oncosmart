@@ -15,6 +15,10 @@ export default function SettingsScreen() {
   const router = useRouter();
   const resetApp = useAppStore((state) => state.resetApp);
 
+  const handleMyProfile = () => {
+    router.push('/onboarding/username?from=settings');
+  };
+
   const handleTabPress = (tab: 'home' | 'growth' | 'settings') => {
     if (tab === 'home') router.replace('/home');
     if (tab === 'growth') router.replace('/growth');
@@ -43,6 +47,7 @@ export default function SettingsScreen() {
           title={t('settings.myProfile')}
           description={t('settings.myProfileDescription')}
           showChevron
+          onPress={handleMyProfile}
         />
         <SettingsRow
           title={t('settings.helpSupport')}

@@ -61,6 +61,7 @@
   },
   "home": {
     "welcome": "Welcome, {{name}}",
+    "changeAvatar": "Change avatar",
     "daysCompleted": "{{completed}} / {{total}} Days completed",
     "firstStep": "Let's make today your first step toward progress!",
     "quote1": "Strength today freedom always",

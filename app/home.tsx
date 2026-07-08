@@ -79,6 +79,10 @@ export default function HomeScreen() {
     if (tab === 'settings') router.push('/settings');
   };
 
+  const handleAvatarPress = () => {
+    router.push('/onboarding/avatar?from=home');
+  };
+
   return (
     <SafeAreaView style={styles.screen} edges={['top']}>
       <ScrollView
@@ -90,13 +94,18 @@ export default function HomeScreen() {
           <Text style={styles.welcome}>
             {t('home.welcome', { name: username || 'Guest' })}
           </Text>
-          <View style={styles.avatarRing}>
+          <Pressable
+            onPress={handleAvatarPress}
+            style={styles.avatarRing}
+            accessibilityRole="button"
+            accessibilityLabel={t('home.changeAvatar')}
+          >
             <Image
               source={avatar === 'female' ? FEMALE_AVATAR : MALE_AVATAR}
               style={styles.avatarImage}
               contentFit="cover"
             />
-          </View>
+          </Pressable>
         </View>
 
         <View style={styles.progressSection}>

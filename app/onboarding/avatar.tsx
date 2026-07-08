@@ -1,4 +1,4 @@
-import { useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, Text, View } from 'react-native';
@@ -17,6 +17,8 @@ const FEMALE_AVATAR = require('../../assets/avatars/female-avatar.png');
 export default function AvatarScreen() {
   const { t } = useTranslation();
   const router = useRouter();
+  const { from } = useLocalSearchParams<{ from?: string }>();
+  const isFromHome = from === 'home';
   const savedAvatar = useAppStore((state) => state.avatar);
   const gender = useAppStore((state) => state.gender);
   const setAvatar = useAppStore((state) => state.setAvatar);
@@ -31,12 +33,24 @@ export default function AvatarScreen() {
   const handleContinue = () => {
     if (!selected) return;
     setAvatar(selected);
+    if (isFromHome) {
+      router.replace('/home');
+      return;
+    }
     router.replace('/onboarding/parq');
+  };
+
+  const handleBack = () => {
+    if (isFromHome) {
+      router.replace('/home');
+      return;
+    }
+    router.back();
   };
 
   return (
     <SafeAreaView style={styles.screen}>
-      <ScreenHeader title="" showBack />
+      <ScreenHeader title="" showBack onBack={handleBack} />
 
       <View style={styles.content}>
         <View style={styles.intro}>

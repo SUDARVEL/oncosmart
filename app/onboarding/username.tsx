@@ -1,5 +1,5 @@
 import { Image } from 'expo-image';
-import { useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, Text, TextInput, View } from 'react-native';
@@ -14,6 +14,8 @@ import { font } from '../../theme/fonts';
 export default function UsernameScreen() {
   const { t } = useTranslation();
   const router = useRouter();
+  const { from } = useLocalSearchParams<{ from?: string }>();
+  const returnToSettings = from === 'settings';
   const savedUsername = useAppStore((state) => state.username);
   const setUsername = useAppStore((state) => state.setUsername);
   const [name, setName] = useState(savedUsername);
@@ -24,6 +26,10 @@ export default function UsernameScreen() {
   const handleContinue = () => {
     if (!canContinue) return;
     setUsername(trimmedName);
+    if (returnToSettings) {
+      router.replace('/settings');
+      return;
+    }
     router.push('/onboarding/age');
   };
 
