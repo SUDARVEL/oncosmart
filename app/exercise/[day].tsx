@@ -3,6 +3,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { DevSkipExerciseButton } from '../../components/exercise/DevSkipExerciseButton';
 import { ExercisePlayerView } from '../../components/exercise/ExercisePlayerView';
 import { RestTimerScreen } from '../../components/exercise/RestTimerScreen';
 import {
@@ -165,6 +166,23 @@ function GuidedSessionScreen({
     setShowStopModal(true);
   }, []);
 
+  const totalExercises = getSessionExercisesForLevel(level).length;
+
+  const devSkipExercise = useCallback(() => {
+    setShowStopModal(false);
+    exerciseFinishedRef.current = true;
+
+    const nextIndex = exerciseIndex + 1;
+    if (isSessionCompleteForLevel(level, nextIndex)) {
+      completeSession();
+      return;
+    }
+
+    exerciseFinishedRef.current = false;
+    setExerciseIndex(nextIndex);
+    setPhase('exercise');
+  }, [completeSession, exerciseIndex, level]);
+
   useEffect(() => {
     if (!sessionExercise) {
       completeSession();
@@ -175,6 +193,14 @@ function GuidedSessionScreen({
     return null;
   }
 
+  const devSkipButton = (
+    <DevSkipExerciseButton
+      exerciseNumber={exerciseIndex + 1}
+      totalExercises={totalExercises}
+      onPress={devSkipExercise}
+    />
+  );
+
   if (phase === 'rest') {
     return (
       <>
@@ -184,6 +210,7 @@ function GuidedSessionScreen({
           onComplete={handleRestComplete}
           onBackPress={handleBackPress}
         />
+        {devSkipButton}
         <WhyDidYouStopModal
           visible={showStopModal}
           onClose={() => setShowStopModal(false)}
@@ -203,6 +230,7 @@ function GuidedSessionScreen({
             <Text style={styles.emptyButtonText}>Go back</Text>
           </Pressable>
         </View>
+        {devSkipButton}
       </SafeAreaView>
     );
   }
@@ -216,6 +244,7 @@ function GuidedSessionScreen({
         onComplete={handleExerciseComplete}
         onBackPress={handleBackPress}
       />
+      {devSkipButton}
       <WhyDidYouStopModal
         visible={showStopModal}
         onClose={() => setShowStopModal(false)}
