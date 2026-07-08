@@ -24,6 +24,7 @@ import {
   getActiveLevel,
   getCompletedSessionCount,
   getSessionState,
+  sessionKey,
   TOTAL_SESSIONS,
   type SessionState,
 } from '../lib/programProgress';
@@ -247,7 +248,15 @@ function DevPanel() {
   const setDevUnlockOverride = useAppStore((state) => state.setDevUnlockOverride);
   const devResetProgress = useAppStore((state) => state.devResetProgress);
   const devUnlockOverride = useAppStore((state) => state.devUnlockOverride);
+  const dayCompletedAt = useAppStore((state) => state.dayCompletedAt);
   const activeLevel = getActiveLevel(useAppStore.getState().dayCompletedAt);
+
+  const nextDayToSkip = (() => {
+    for (let day = 1; day <= DAYS_PER_LEVEL; day += 1) {
+      if (!dayCompletedAt[sessionKey(activeLevel, day)]) return day;
+    }
+    return null;
+  })();
 
   return (
     <View style={styles.devPanel}>
@@ -268,6 +277,26 @@ function DevPanel() {
           onPress={() => markSessionCompleted(activeLevel, 1)}
         >
           <Text style={styles.devButtonText}>Complete L{activeLevel}D1 (now)</Text>
+        </Pressable>
+      </View>
+      <View style={styles.devRow}>
+        <Pressable
+          style={styles.devButton}
+          accessibilityRole="button"
+          disabled={!nextDayToSkip}
+          onPress={() => {
+            if (!nextDayToSkip) return;
+            // Complete the next incomplete day with (-25h) so the following day unlocks immediately.
+            markSessionCompleted(
+              activeLevel,
+              nextDayToSkip,
+              Date.now() - 25 * 60 * 60 * 1000,
+            );
+          }}
+        >
+          <Text style={styles.devButtonText}>
+            Skip next day (-25h)
+          </Text>
         </Pressable>
       </View>
       <View style={styles.devRow}>
