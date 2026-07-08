@@ -111,6 +111,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: 32,
     flex: 1,
-    maxHeight: 379,
+    // Match AvatarCard height so images appear larger.
+    maxHeight: 410,
   },
 });
