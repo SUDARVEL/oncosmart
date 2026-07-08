@@ -19,6 +19,7 @@ import { StreakCard } from '../components/growth/StreakCard';
 import { BottomTabBar } from '../components/BottomTabBar';
 import { ScreenHeader } from '../components/ScreenHeader';
 import { getDisplayPainScore } from '../lib/getDisplayPainScore';
+import { openWhatsAppSupport } from '../lib/openWhatsAppSupport';
 import { DAYS_PER_LEVEL, getActiveLevel, sessionKey } from '../lib/programProgress';
 import { useAppStore } from '../store/useAppStore';
 import { colors } from '../theme/colors';
@@ -100,7 +101,12 @@ export default function GrowthScreen() {
         )}
       </ScrollView>
 
-      <Pressable style={styles.fab} accessibilityRole="button" accessibilityLabel="Chat">
+      <Pressable
+        style={styles.fab}
+        accessibilityRole="button"
+        accessibilityLabel="Chat"
+        onPress={openWhatsAppSupport}
+      >
         <Ionicons name="chatbubble" size={24} color={colors.buttonPrimary} />
       </Pressable>
 

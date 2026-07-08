@@ -18,6 +18,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { BottomTabBar } from '../components/BottomTabBar';
 import { ExerciseVideoBanner } from '../components/ExerciseVideoBanner';
 import { ProgressLogo } from '../components/home/ProgressLogo';
+import { openWhatsAppSupport } from '../lib/openWhatsAppSupport';
 import {
   DAYS_PER_LEVEL,
   formatCountdown,
@@ -171,7 +172,12 @@ export default function HomeScreen() {
         {__DEV__ ? <DevPanel /> : null}
       </ScrollView>
 
-      <Pressable style={styles.fab} accessibilityRole="button" accessibilityLabel="Chat">
+      <Pressable
+        style={styles.fab}
+        accessibilityRole="button"
+        accessibilityLabel="Chat"
+        onPress={openWhatsAppSupport}
+      >
         <Ionicons name="chatbubble" size={24} color={colors.buttonPrimary} />
       </Pressable>
 

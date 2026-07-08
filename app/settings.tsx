@@ -7,6 +7,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { BottomTabBar } from '../components/BottomTabBar';
 import { ScreenHeader } from '../components/ScreenHeader';
 import { SettingsRow } from '../components/settings/SettingsRow';
+import { openWhatsAppSupport } from '../lib/openWhatsAppSupport';
 import { useAppStore } from '../store/useAppStore';
 import { colors } from '../theme/colors';
 
@@ -53,6 +54,7 @@ export default function SettingsScreen() {
           title={t('settings.helpSupport')}
           description={t('settings.helpSupportDescription')}
           showChevron
+          onPress={openWhatsAppSupport}
         />
         <SettingsRow
           title={t('settings.logout')}
@@ -61,7 +63,12 @@ export default function SettingsScreen() {
         />
       </ScrollView>
 
-      <Pressable style={styles.fab} accessibilityRole="button" accessibilityLabel="Chat">
+      <Pressable
+        style={styles.fab}
+        accessibilityRole="button"
+        accessibilityLabel="Chat"
+        onPress={openWhatsAppSupport}
+      >
         <Ionicons name="chatbubble" size={24} color={colors.buttonPrimary} />
       </Pressable>
 
