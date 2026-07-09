@@ -216,6 +216,7 @@
     "workouts": {
       "level": "நிலை {{level}}",
       "emptyLevel": "நிலை {{level}} பயிற்சிகள் விரைவில் வரும்.",
+      "counter": "{{current}} / {{total}}",
       "items": {
         "diaphragmatic-breathing": {
           "title": "இடைத்திசு சுவாசம்",
@@ -252,6 +253,10 @@
         "calf-raise": {
           "title": "கால் தூக்குதல்",
           "description": "கீழ் கால் தசைகளை வலுப்படுத்துகிறது."
+        },
+        "sit-to-stand": {
+          "title": "இருந்து எழுதல்",
+          "description": "கீழ் உடல் தசைகளை வலுப்படுத்தி சமநிலையை மேம்படுத்துகிறது."
         },
         "chair-squats": {
           "title": "இருந்து எழுதல்",

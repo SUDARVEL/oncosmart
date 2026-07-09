@@ -272,6 +272,7 @@
     "workouts": {
       "level": "Level {{level}}",
       "emptyLevel": "Level {{level}} workouts coming soon.",
+      "counter": "{{current}} / {{total}}",
       "items": {
         "diaphragmatic-breathing": {
           "title": "Diaphragmatic Breathing",
@@ -308,6 +309,10 @@
         "calf-raise": {
           "title": "Calf Raise",
           "description": "Strengthens lower leg muscles."
+        },
+        "sit-to-stand": {
+          "title": "Sit to Stand",
+          "description": "Strengthens lower body muscles and improves balance."
         },
         "chair-squats": {
           "title": "Sit to Stand",

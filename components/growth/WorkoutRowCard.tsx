@@ -1,7 +1,7 @@
 import { Image } from 'expo-image';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import type { LevelWorkout } from '../../lib/getLevelWorkouts';
 import { colors } from '../../theme/colors';
@@ -9,15 +9,21 @@ import { font } from '../../theme/fonts';
 
 type WorkoutRowCardProps = {
   workout: LevelWorkout;
+  onPress: () => void;
 };
 
-export function WorkoutRowCard({ workout }: WorkoutRowCardProps) {
+export function WorkoutRowCard({ workout, onPress }: WorkoutRowCardProps) {
   const { t } = useTranslation();
   const [imageFailed, setImageFailed] = useState(false);
   const showPhoto = workout.photoSource && !imageFailed;
 
   return (
-    <View style={styles.card}>
+    <Pressable
+      style={({ pressed }) => [styles.card, pressed && styles.cardPressed]}
+      onPress={onPress}
+      accessibilityRole="button"
+      accessibilityLabel={t(workout.titleKey)}
+    >
       <View style={styles.photoWrap}>
         {showPhoto ? (
           <Image
@@ -34,7 +40,7 @@ export function WorkoutRowCard({ workout }: WorkoutRowCardProps) {
         <Text style={styles.title}>{t(workout.titleKey)}</Text>
         <Text style={styles.description}>{t(workout.descriptionKey)}</Text>
       </View>
-    </View>
+    </Pressable>
   );
 }
 
@@ -51,6 +57,9 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.cardBorder,
     borderRadius: 8,
+  },
+  cardPressed: {
+    backgroundColor: '#F9FAFB',
   },
   photoWrap: {
     width: 66,
