@@ -60,7 +60,6 @@ export function WorkoutsSection() {
 
       <WorkoutDetailSlider
         visible={sliderVisible}
-        level={activeLevel}
         workouts={workoutDetails}
         initialIndex={selectedIndex}
         onClose={closeSlider}

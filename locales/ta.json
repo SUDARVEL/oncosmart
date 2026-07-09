@@ -217,6 +217,7 @@
       "level": "நிலை {{level}}",
       "emptyLevel": "நிலை {{level}} பயிற்சிகள் விரைவில் வரும்.",
       "counter": "{{current}} / {{total}}",
+      "exerciseInfoTitle": "பயிற்சி தகவல்",
       "items": {
         "diaphragmatic-breathing": {
           "title": "இடைத்திசு சுவாசம்",

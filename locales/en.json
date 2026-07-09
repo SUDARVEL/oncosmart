@@ -273,6 +273,7 @@
       "level": "Level {{level}}",
       "emptyLevel": "Level {{level}} workouts coming soon.",
       "counter": "{{current}} / {{total}}",
+      "exerciseInfoTitle": "Exercise Info",
       "items": {
         "diaphragmatic-breathing": {
           "title": "Diaphragmatic Breathing",

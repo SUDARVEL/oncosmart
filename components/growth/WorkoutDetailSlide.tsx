@@ -1,7 +1,7 @@
 import { Image } from 'expo-image';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import {
   EXERCISE_VIDEO_FRAME_BACKGROUND,
@@ -31,44 +31,42 @@ export function WorkoutDetailSlide({ workout, width }: Props) {
       : t('sessionFlow.repsLabel');
 
   return (
-    <View style={[styles.page, { width }]}>
-      <View style={styles.content}>
-        <View style={styles.mediaWrap}>
-          {showPhoto ? (
-            <Image
-              source={workout.photoSource!}
-              style={styles.media}
-              contentFit="contain"
-              contentPosition="center"
-              onError={() => setImageFailed(true)}
-            />
-          ) : (
-            <View style={styles.mediaPlaceholder} />
-          )}
-        </View>
-
-        <Text style={styles.exerciseTitle}>{title}</Text>
-
-        <View style={styles.repRow}>
-          <Text style={styles.repValue}>{workout.displayValue}</Text>
-          <Text style={styles.repLabel}>{repLabel}</Text>
-        </View>
-
-        <Text style={styles.description}>{description}</Text>
+    <ScrollView
+      style={{ width }}
+      contentContainerStyle={styles.content}
+      showsVerticalScrollIndicator={false}
+    >
+      <View style={styles.mediaWrap}>
+        {showPhoto ? (
+          <Image
+            source={workout.photoSource!}
+            style={styles.media}
+            contentFit="contain"
+            contentPosition="center"
+            onError={() => setImageFailed(true)}
+          />
+        ) : (
+          <View style={styles.mediaPlaceholder} />
+        )}
       </View>
-    </View>
+
+      <Text style={styles.exerciseTitle}>{title}</Text>
+
+      <View style={styles.repRow}>
+        <Text style={styles.repValue}>{workout.displayValue}</Text>
+        <Text style={styles.repLabel}>{repLabel}</Text>
+      </View>
+
+      <Text style={styles.description}>{description}</Text>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  page: {
-    alignItems: 'center',
-  },
   content: {
-    width: EXERCISE_VIDEO_FRAME_WIDTH,
     alignItems: 'center',
-    paddingTop: 8,
-    paddingBottom: 24,
+    paddingHorizontal: 16,
+    paddingBottom: 8,
   },
   mediaWrap: {
     width: EXERCISE_VIDEO_FRAME_WIDTH,
@@ -86,7 +84,7 @@ const styles = StyleSheet.create({
     backgroundColor: EXERCISE_VIDEO_FRAME_BACKGROUND,
   },
   exerciseTitle: {
-    marginTop: 13,
+    marginTop: 16,
     fontSize: 24,
     lineHeight: 28,
     color: '#262526',
@@ -99,7 +97,7 @@ const styles = StyleSheet.create({
     alignItems: 'flex-end',
     justifyContent: 'center',
     gap: 8,
-    marginTop: 20,
+    marginTop: 16,
     minHeight: 64,
   },
   repValue: {
@@ -121,6 +119,7 @@ const styles = StyleSheet.create({
     lineHeight: 20,
     color: colors.textMuted,
     textAlign: 'center',
+    maxWidth: EXERCISE_VIDEO_FRAME_WIDTH,
     ...font('regular'),
   },
 });
