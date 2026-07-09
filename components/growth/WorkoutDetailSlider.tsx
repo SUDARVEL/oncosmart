@@ -15,6 +15,7 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import type { WorkoutDetail } from '../../lib/getWorkoutDetails';
+import { WORKOUT_INFO_SLIDE_BODY_HEIGHT } from '../../lib/workoutInfoSheetLayout';
 import { colors } from '../../theme/colors';
 import { font } from '../../theme/fonts';
 import { WorkoutDetailSlide } from './WorkoutDetailSlide';
@@ -38,6 +39,7 @@ export function WorkoutDetailSlider({
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const scrollRef = useRef<ScrollView>(null);
+  const dotsRef = useRef<ScrollView>(null);
   const [activeIndex, setActiveIndex] = useState(initialIndex);
 
   useEffect(() => {
@@ -49,6 +51,10 @@ export function WorkoutDetailSlider({
         x: initialIndex * SLIDE_WIDTH,
         animated: false,
       });
+      dotsRef.current?.scrollTo({
+        x: Math.max(0, initialIndex * 14 - SCREEN_WIDTH / 2),
+        animated: false,
+      });
     });
   }, [initialIndex, visible]);
 
@@ -56,6 +62,10 @@ export function WorkoutDetailSlider({
     const offset = event.nativeEvent.contentOffset.x;
     const index = Math.round(offset / SLIDE_WIDTH);
     setActiveIndex(index);
+    dotsRef.current?.scrollTo({
+      x: Math.max(0, index * 14 - SCREEN_WIDTH / 2),
+      animated: true,
+    });
   };
 
   if (workouts.length === 0) return null;
@@ -65,7 +75,7 @@ export function WorkoutDetailSlider({
       <View style={styles.backdrop}>
         <Pressable style={styles.backdropTap} onPress={onClose} accessibilityRole="button" />
 
-        <View style={[styles.sheet, { paddingBottom: Math.max(insets.bottom, 16) }]}>
+        <View style={[styles.sheet, { paddingBottom: Math.max(insets.bottom, 20) }]}>
           <View style={styles.dragHandle} />
 
           <View style={styles.header}>
@@ -75,6 +85,8 @@ export function WorkoutDetailSlider({
             </Pressable>
           </View>
 
+          <View style={styles.divider} />
+
           <ScrollView
             ref={scrollRef}
             horizontal
@@ -82,8 +94,8 @@ export function WorkoutDetailSlider({
             showsHorizontalScrollIndicator={false}
             decelerationRate="fast"
             onMomentumScrollEnd={handleScrollEnd}
-            style={styles.slider}
-            contentContainerStyle={styles.sliderContent}
+            style={styles.pager}
+            contentContainerStyle={styles.pagerContent}
           >
             {workouts.map((workout) => (
               <WorkoutDetailSlide key={workout.id} workout={workout} width={SLIDE_WIDTH} />
@@ -91,7 +103,7 @@ export function WorkoutDetailSlider({
           </ScrollView>
 
           {workouts.length <= 15 ? (
-            <View style={styles.dots}>
+            <View style={styles.dotsContent}>
               {workouts.map((workout, index) => (
                 <View
                   key={workout.id}
@@ -100,12 +112,20 @@ export function WorkoutDetailSlider({
               ))}
             </View>
           ) : (
-            <Text style={styles.counter}>
-              {t('growth.workouts.counter', {
-                current: activeIndex + 1,
-                total: workouts.length,
-              })}
-            </Text>
+            <ScrollView
+              ref={dotsRef}
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.dotsContent}
+              style={styles.dotsScroller}
+            >
+              {workouts.map((workout, index) => (
+                <View
+                  key={workout.id}
+                  style={[styles.dot, activeIndex === index && styles.dotActive]}
+                />
+              ))}
+            </ScrollView>
           )}
         </View>
       </View>
@@ -124,7 +144,6 @@ const styles = StyleSheet.create({
   },
   sheet: {
     width: '100%',
-    maxHeight: '92%',
     backgroundColor: colors.background,
     borderTopLeftRadius: 16,
     borderTopRightRadius: 16,
@@ -141,41 +160,51 @@ const styles = StyleSheet.create({
     borderRadius: 2,
     backgroundColor: '#D1D5DB',
     marginTop: 10,
-    marginBottom: 8,
+    marginBottom: 4,
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 16,
-    paddingBottom: 12,
+    paddingTop: 8,
+    paddingBottom: 16,
   },
   headerTitle: {
+    flex: 1,
     fontSize: 20,
     lineHeight: 28,
     color: '#374151',
     ...font('medium'),
   },
   closeButton: {
-    width: 32,
-    height: 32,
+    width: 24,
+    height: 24,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  slider: {
-    flexGrow: 0,
+  divider: {
+    height: 1,
+    backgroundColor: '#E5E7EB',
   },
-  sliderContent: {
+  pager: {
+    height: WORKOUT_INFO_SLIDE_BODY_HEIGHT,
+  },
+  pagerContent: {
     alignItems: 'flex-start',
   },
-  dots: {
+  dotsScroller: {
+    maxHeight: 28,
+    marginTop: 8,
+  },
+  dotsContent: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
     justifyContent: 'center',
     alignItems: 'center',
-    gap: 6,
-    paddingVertical: 12,
+    gap: 8,
     paddingHorizontal: 16,
-    flexWrap: 'wrap',
+    paddingVertical: 12,
   },
   dot: {
     width: 6,
@@ -188,13 +217,5 @@ const styles = StyleSheet.create({
     width: 8,
     height: 8,
     borderRadius: 4,
-  },
-  counter: {
-    fontSize: 14,
-    lineHeight: 20,
-    color: colors.textMuted,
-    textAlign: 'center',
-    paddingVertical: 12,
-    ...font('regular'),
   },
 });
