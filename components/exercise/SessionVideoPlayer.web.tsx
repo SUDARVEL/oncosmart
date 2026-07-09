@@ -1,6 +1,11 @@
 import { createElement, useCallback, useEffect, useRef, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
+import {
+  EXERCISE_VIDEO_FRAME_BACKGROUND,
+  EXERCISE_VIDEO_FRAME_BORDER_RADIUS,
+} from '../../lib/exerciseVideoFrame';
+
 type Props = {
   source: string;
   fallbackSources?: string[];
@@ -175,12 +180,14 @@ const styles = StyleSheet.create({
   wrap: {
     width: '100%',
     height: '100%',
+    backgroundColor: EXERCISE_VIDEO_FRAME_BACKGROUND,
   },
   video: {
     width: '100%',
     height: '100%',
-    objectFit: 'cover',
-    borderRadius: 16,
-    backgroundColor: '#000000',
+    objectFit: 'contain',
+    objectPosition: 'center',
+    borderRadius: EXERCISE_VIDEO_FRAME_BORDER_RADIUS,
+    backgroundColor: EXERCISE_VIDEO_FRAME_BACKGROUND,
   } as object,
 });

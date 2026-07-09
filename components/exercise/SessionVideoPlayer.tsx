@@ -1,6 +1,8 @@
 import { useVideoPlayer, VideoView } from 'expo-video';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { StyleSheet, View } from 'react-native';
 
+import { EXERCISE_VIDEO_FRAME_BACKGROUND } from '../../lib/exerciseVideoFrame';
 import { canMarkVideoComplete } from './sessionVideoCompletion';
 
 type Props = {
@@ -213,11 +215,25 @@ function NativeSessionVideoPlayer({
   }, [onPlaybackError, player, tryComplete]);
 
   return (
-    <VideoView
-      style={{ width: '100%', height: '100%' }}
-      player={player}
-      contentFit="cover"
-      nativeControls={false}
-    />
+    <View style={styles.frame}>
+      <VideoView
+        style={styles.video}
+        player={player}
+        contentFit="contain"
+        nativeControls={false}
+      />
+    </View>
   );
 }
+
+const styles = StyleSheet.create({
+  frame: {
+    width: '100%',
+    height: '100%',
+    backgroundColor: EXERCISE_VIDEO_FRAME_BACKGROUND,
+  },
+  video: {
+    width: '100%',
+    height: '100%',
+  },
+});

@@ -19,6 +19,7 @@ import { BottomTabBar } from '../components/BottomTabBar';
 import { ExerciseVideoBanner } from '../components/ExerciseVideoBanner';
 import { ProgressLogo } from '../components/home/ProgressLogo';
 import { openWhatsAppSupport } from '../lib/openWhatsAppSupport';
+import { EXERCISE_VIDEO_FRAME_ASPECT } from '../lib/exerciseVideoFrame';
 import {
   DAYS_PER_LEVEL,
   formatCountdown,
@@ -39,7 +40,7 @@ const QUOTE_CARD_WIDTH = SCREEN_WIDTH - 32;
 const MALE_AVATAR = require('../assets/avatars/male-avatar.png');
 const FEMALE_AVATAR = require('../assets/avatars/female-avatar.png');
 const WALKING_CHARACTER = require('../assets/home/walking-character.png');
-const DAY_CARD_PREVIEW_ASPECT = 257 / 112;
+const DAY_CARD_PREVIEW_ASPECT = EXERCISE_VIDEO_FRAME_ASPECT;
 
 const QUOTES = ['quote1', 'quote2', 'quote3'] as const;
 

@@ -6,6 +6,12 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import type { Day1SessionExercise } from '../../lib/getDay1Session';
 import { formatExerciseDurationDisplay } from '../../lib/formatExerciseDuration';
+import {
+  EXERCISE_VIDEO_FRAME_BACKGROUND,
+  EXERCISE_VIDEO_FRAME_BORDER_RADIUS,
+  EXERCISE_VIDEO_FRAME_HEIGHT,
+  EXERCISE_VIDEO_FRAME_WIDTH,
+} from '../../lib/exerciseVideoFrame';
 import { colors } from '../../theme/colors';
 import { font, displayFontStyle } from '../../theme/fonts';
 import { SessionVideoPlayer } from './SessionVideoPlayer';
@@ -187,17 +193,17 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   videoWrap: {
-    width: 349,
-    height: 444,
-    borderRadius: 16,
+    width: EXERCISE_VIDEO_FRAME_WIDTH,
+    height: EXERCISE_VIDEO_FRAME_HEIGHT,
+    borderRadius: EXERCISE_VIDEO_FRAME_BORDER_RADIUS,
     overflow: 'hidden',
-    backgroundColor: '#000000',
+    backgroundColor: EXERCISE_VIDEO_FRAME_BACKGROUND,
   },
   videoLoaderOverlay: {
     ...StyleSheet.absoluteFillObject,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.35)',
+    backgroundColor: 'rgba(255, 255, 255, 0.75)',
   },
   videoErrorOverlay: {
     ...StyleSheet.absoluteFillObject,
@@ -215,7 +221,7 @@ const styles = StyleSheet.create({
     ...font('medium'),
   },
   videoProgressTrack: {
-    width: 349,
+    width: EXERCISE_VIDEO_FRAME_WIDTH,
     height: 8,
     marginTop: 10,
     borderRadius: 999,
@@ -265,7 +271,7 @@ const styles = StyleSheet.create({
     lineHeight: 20,
     color: '#6B7280',
     textAlign: 'center',
-    maxWidth: 349,
+    maxWidth: EXERCISE_VIDEO_FRAME_WIDTH,
     ...font('regular'),
   },
   footer: {

@@ -4,10 +4,11 @@ import { Image } from 'expo-image';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { ExerciseVideoBanner } from '../ExerciseVideoBanner';
+import { EXERCISE_VIDEO_FRAME_ASPECT, EXERCISE_VIDEO_FRAME_BACKGROUND } from '../../lib/exerciseVideoFrame';
 import { PLACEHOLDER_PREVIEW_VIDEO } from '../../lib/placeholderVideo';
 import { font } from '../../theme/fonts';
 
-const PREVIEW_ASPECT = 257 / 112;
+const PREVIEW_ASPECT = EXERCISE_VIDEO_FRAME_ASPECT;
 
 type Props = {
   name: string;
@@ -34,15 +35,15 @@ export function ExerciseSessionCard({
             <ExerciseVideoBanner
               source={videoSource}
               aspectRatio={PREVIEW_ASPECT}
-              previewContentFit="cover"
+              previewContentFit="contain"
             />
           ) : thumbnail ? (
             <>
               <Image
                 source={thumbnail}
                 style={[styles.thumbnail, { aspectRatio: PREVIEW_ASPECT }]}
-                contentFit="cover"
-                contentPosition="top"
+                contentFit="contain"
+                contentPosition="center"
               />
               <View style={styles.playOverlay} pointerEvents="none">
                 <Ionicons name="play-circle" size={32} color="rgba(255,255,255,0.9)" />
@@ -52,7 +53,7 @@ export function ExerciseSessionCard({
             <ExerciseVideoBanner
               source={previewFallbackVideo ?? PLACEHOLDER_PREVIEW_VIDEO}
               aspectRatio={PREVIEW_ASPECT}
-              previewContentFit="cover"
+              previewContentFit="contain"
             />
           )}
         </View>
@@ -92,7 +93,7 @@ const styles = StyleSheet.create({
     alignSelf: 'stretch',
     borderRadius: 8,
     overflow: 'hidden',
-    backgroundColor: '#E5E7EB',
+    backgroundColor: EXERCISE_VIDEO_FRAME_BACKGROUND,
     position: 'relative',
   },
   thumbnail: {

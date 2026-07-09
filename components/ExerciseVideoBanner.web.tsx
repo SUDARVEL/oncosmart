@@ -2,6 +2,10 @@ import { createElement, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import { PLACEHOLDER_PREVIEW_VIDEO } from '../lib/placeholderVideo';
+import {
+  EXERCISE_VIDEO_FRAME_ASPECT,
+  EXERCISE_VIDEO_FRAME_BACKGROUND,
+} from '../lib/exerciseVideoFrame';
 
 type Props = {
   source?: string | null;
@@ -11,8 +15,8 @@ type Props = {
 
 export function ExerciseVideoBanner({
   source,
-  aspectRatio = 16 / 9,
-  previewContentFit = 'cover',
+  aspectRatio = EXERCISE_VIDEO_FRAME_ASPECT,
+  previewContentFit = 'contain',
 }: Props) {
   const [failedSource, setFailedSource] = useState<string | null>(null);
   const preferred = source?.trim() || PLACEHOLDER_PREVIEW_VIDEO;
@@ -62,7 +66,7 @@ const styles = StyleSheet.create({
     position: 'relative',
     overflow: 'hidden',
     borderRadius: 8,
-    backgroundColor: '#E5E7EB',
+    backgroundColor: EXERCISE_VIDEO_FRAME_BACKGROUND,
   },
   video: {
     position: 'absolute',
