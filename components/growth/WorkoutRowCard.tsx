@@ -1,4 +1,4 @@
-import { Image } from 'expo-image';
+import { CachedMediaImage } from '../CachedMediaImage';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
@@ -26,10 +26,11 @@ export function WorkoutRowCard({ workout, onPress }: WorkoutRowCardProps) {
     >
       <View style={styles.photoWrap}>
         {showPhoto ? (
-          <Image
+          <CachedMediaImage
             source={workout.photoSource!}
             style={styles.photo}
             contentFit="cover"
+            recyclingKey={workout.id}
             onError={() => setImageFailed(true)}
           />
         ) : (

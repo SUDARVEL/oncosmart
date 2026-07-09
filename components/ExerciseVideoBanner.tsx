@@ -1,3 +1,8 @@
+/**
+ * Looped video banner — use ONLY for active single-video previews.
+ * WARNING: Autoplay + loop on list screens causes massive Supabase Cached Egress.
+ * Prefer CachedMediaImage / previewPhoto on grids and home cards.
+ */
 import { useVideoPlayer, VideoView } from 'expo-video';
 import { useEffect } from 'react';
 import { StyleSheet, View } from 'react-native';
@@ -13,16 +18,20 @@ type Props = {
   /** Width:height ratio for the preview area (portrait exercise videos). */
   aspectRatio?: number;
   previewContentFit?: 'cover' | 'contain';
+  /** When true, fills the parent instead of sizing from aspectRatio. */
+  fillContainer?: boolean;
 };
 
 function ExerciseVideoBannerPlayer({
   source,
   aspectRatio,
   previewContentFit,
+  fillContainer,
 }: {
   source: string;
   aspectRatio: number;
   previewContentFit: 'cover' | 'contain';
+  fillContainer: boolean;
 }) {
   const player = useVideoPlayer(source, (instance) => {
     instance.loop = true;
@@ -37,7 +46,7 @@ function ExerciseVideoBannerPlayer({
   }, [player, source]);
 
   return (
-    <View style={[styles.banner, { aspectRatio }]}>
+    <View style={[fillContainer ? styles.bannerFill : styles.banner, !fillContainer && { aspectRatio }]}>
       <VideoView
         style={StyleSheet.absoluteFillObject}
         player={player}
@@ -52,6 +61,7 @@ export function ExerciseVideoBanner({
   source,
   aspectRatio = EXERCISE_VIDEO_FRAME_ASPECT,
   previewContentFit = 'contain',
+  fillContainer = false,
 }: Props) {
   const playbackSource = source?.trim() || PLACEHOLDER_PREVIEW_VIDEO;
 
@@ -60,6 +70,7 @@ export function ExerciseVideoBanner({
       source={playbackSource}
       aspectRatio={aspectRatio}
       previewContentFit={previewContentFit}
+      fillContainer={fillContainer}
     />
   );
 }
@@ -71,5 +82,10 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     overflow: 'hidden',
     backgroundColor: EXERCISE_VIDEO_FRAME_BACKGROUND,
+  },
+  bannerFill: {
+    ...StyleSheet.absoluteFillObject,
+    overflow: 'hidden',
+    backgroundColor: 'transparent',
   },
 });

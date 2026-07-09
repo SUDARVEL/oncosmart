@@ -6,11 +6,11 @@ import type { AppAvatar, AppGender, AppLanguage } from '../store/useAppStore';
 import { getLevelExerciseProgram } from './levelExercisePrograms';
 import { getVideoVariant, type VideoVariant } from './getExerciseVideo';
 import { getPortraitVideoPath } from './exercisePortraitVideos';
-import { PLACEHOLDER_PREVIEW_VIDEO } from './placeholderVideo';
 import {
   guessSupabaseExerciseVideoUrl,
   resolveExercisePlaybackUrl,
 } from './resolveExercisePreview';
+import { resolveWorkoutPhotoSource } from './resolveWorkoutPhoto';
 import { resolveVideoUrl } from './resolveVideoUrl';
 
 export type DayExercise = {
@@ -26,15 +26,29 @@ export type LevelSession = {
 };
 
 export type ResolvedDayExercise = DayExercise & {
+  /** Resolved playback URL — only fetch during guided session or single-exercise preview. */
   videoSource: string | null;
   playbackSource: string | null;
+  /** Static preview for session list cards (local PNG preferred; remote PNG cached). */
+  previewPhoto: ImageSource | null;
+  /** @deprecated Use previewPhoto */
   thumbnail: ImageSource | null;
-  previewFallbackVideo: string | null;
 };
 
 type CatalogEntry = DayExercise;
 
 const catalog = (dayExercisesData as { catalog: Record<string, CatalogEntry> }).catalog;
+
+const levelExercisesCache = new Map<string, ResolvedDayExercise[]>();
+
+function exercisesCacheKey(
+  level: number,
+  language: AppLanguage | null,
+  gender: AppGender | null,
+  avatar: AppAvatar | null,
+): string {
+  return `${level}|${language ?? ''}|${gender ?? ''}|${avatar ?? ''}`;
+}
 
 export function getLevelSession(level: number): LevelSession | null {
   const program = getLevelExerciseProgram(level);
@@ -74,23 +88,31 @@ export function getLevelExercises(
   gender: AppGender | null,
   avatar: AppAvatar | null,
 ): ResolvedDayExercise[] {
+  const cacheKey = exercisesCacheKey(level, language, gender, avatar);
+  const cached = levelExercisesCache.get(cacheKey);
+  if (cached) return cached;
+
   const session = getLevelSession(level);
   if (!session) return [];
 
   const variant = getVideoVariant(language, gender, avatar);
 
-  return session.exercises.map((exercise) => {
+  const resolved = session.exercises.map((exercise) => {
     const videoSource = resolveExplicitExerciseVideo(exercise, variant);
+    const previewPhoto = resolveWorkoutPhotoSource(exercise.id, gender);
     const thumbnail = getDay1Thumbnail(exercise.id);
 
     return {
       ...exercise,
       videoSource,
       playbackSource: resolveExercisePlaybackUrl(videoSource, exercise.name, variant),
+      previewPhoto: previewPhoto ?? thumbnail,
       thumbnail,
-      previewFallbackVideo: videoSource || thumbnail ? null : PLACEHOLDER_PREVIEW_VIDEO,
     };
   });
+
+  levelExercisesCache.set(cacheKey, resolved);
+  return resolved;
 }
 
 /** @deprecated Use getLevelExercises(level, ...) */

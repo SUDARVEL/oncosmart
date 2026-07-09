@@ -1,4 +1,5 @@
 import { getPublicVideoUrl } from './supabaseStorage';
+import { memoizeStringResolver } from './urlCache';
 
 const DRIVE_FILE_ID_PATTERN =
   /(?:drive\.google\.com\/file\/d\/|drive\.google\.com\/open\?id=|drive\.google\.com\/uc\?(?:export=(?:view|download)&)?id=)([a-zA-Z0-9_-]+)/;
@@ -18,7 +19,7 @@ function isHttpUrl(value: string): boolean {
  * - Google Drive share/view/download links → direct stream URL
  * - Other https URLs pass through unchanged
  */
-export function resolveVideoUrl(source: string): string {
+function resolveVideoUrlUncached(source: string): string {
   const trimmed = source.trim();
   if (!trimmed) return trimmed;
 
@@ -35,3 +36,5 @@ export function resolveVideoUrl(source: string): string {
 
   return trimmed;
 }
+
+export const resolveVideoUrl = memoizeStringResolver(resolveVideoUrlUncached);

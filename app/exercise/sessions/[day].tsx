@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -9,7 +9,6 @@ import { ExerciseSessionCard } from '../../../components/exercise/ExerciseSessio
 import { PulseOximeterModal } from '../../../components/exercise/PulseOximeterModal';
 import { getDayExercises, getLevelSession } from '../../../lib/getDayExercises';
 import { hasGuidedSession } from '../../../lib/getDay1Session';
-import { isExerciseInLevel } from '../../../lib/levelExercisePrograms';
 import { useAppStore } from '../../../store/useAppStore';
 import { colors } from '../../../theme/colors';
 import { font } from '../../../theme/fonts';
@@ -26,13 +25,11 @@ export default function ExerciseSessionsScreen() {
   const avatar = useAppStore((state) => state.avatar);
 
   const session = getLevelSession(level);
-  const exercises = getDayExercises(level, language, gender, avatar);
+  const exercises = useMemo(
+    () => getDayExercises(level, language, gender, avatar),
+    [avatar, gender, language, level],
+  );
   const [showPulseModal, setShowPulseModal] = useState(false);
-
-  const openExercise = (exerciseId: string, hasVideo: boolean) => {
-    if (!hasVideo || !isExerciseInLevel(level, exerciseId)) return;
-    router.push(`/exercise/${dayInLevel}?exercise=${exerciseId}&level=${level}`);
-  };
 
   const beginSession = () => {
     if (hasGuidedSession(level)) {
@@ -82,12 +79,10 @@ export default function ExerciseSessionsScreen() {
         {exercises.map((exercise) => (
           <ExerciseSessionCard
             key={exercise.id}
+            exerciseId={exercise.id}
             name={exercise.name}
             repLabel={exercise.repLabel}
-            videoSource={exercise.videoSource}
-            thumbnail={exercise.thumbnail}
-            previewFallbackVideo={exercise.previewFallbackVideo}
-            onPress={() => openExercise(exercise.id, Boolean(exercise.playbackSource))}
+            previewPhoto={exercise.previewPhoto}
           />
         ))}
       </ScrollView>

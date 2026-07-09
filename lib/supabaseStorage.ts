@@ -1,5 +1,4 @@
 import { env, isStoragePublicConfigured } from './env';
-import { getSupabase } from './supabase';
 
 const FALLBACK_SUPABASE_URL = 'https://soyaeuffzytrjojifvdz.supabase.co';
 const FALLBACK_VIDEO_BUCKET = 'Oncosmart Videos and Assets';
@@ -29,14 +28,7 @@ export function getPublicStorageUrl(objectPath: string): string | null {
   return buildPublicStorageUrl(objectPath);
 }
 
-/** Same as getPublicStorageUrl but uses the Supabase SDK helper when client exists. */
+/** Same as getPublicStorageUrl — pure URL builder, no SDK/network call. */
 export function getPublicVideoUrl(objectPath: string): string | null {
-  const supabase = getSupabase();
-  if (!supabase) return getPublicStorageUrl(objectPath);
-
-  const normalized = objectPath.replace(/^\/+/, '');
-  if (!normalized) return null;
-
-  const { data } = supabase.storage.from(env.videoBucket).getPublicUrl(normalized);
-  return data.publicUrl;
+  return getPublicStorageUrl(objectPath);
 }

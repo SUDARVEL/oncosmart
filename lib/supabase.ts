@@ -20,10 +20,7 @@ export function getSupabase(): SupabaseClient | null {
   return client;
 }
 
+/** Returns whether Supabase env is configured. Does not call Storage API (saves quota). */
 export async function checkSupabaseConnection(): Promise<boolean> {
-  const supabase = getSupabase();
-  if (!supabase) return false;
-
-  const { error } = await supabase.storage.from(env.videoBucket).list('', { limit: 1 });
-  return !error;
+  return isSupabaseConfigured();
 }

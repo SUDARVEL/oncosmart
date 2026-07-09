@@ -6,6 +6,8 @@ const SUPABASE_PUBLIC_BASE =
 /** User-provided folder name in Supabase (spelling preserved). */
 const PORTRAIT_VIDEOS_PREFIX = PORTRAIT_VIDEO_FOLDER;
 
+const portraitUrlCache = new Map<string, string>();
+
 function encodeObjectPath(objectPath: string): string {
   return objectPath
     .split('/')
@@ -16,8 +18,14 @@ function encodeObjectPath(objectPath: string): string {
 export function getPortraitVideoUrl(filename: string | null | undefined): string | null {
   if (!filename?.trim()) return null;
 
-  const objectPath = `${PORTRAIT_VIDEOS_PREFIX}/${filename.trim()}`;
-  return `${SUPABASE_PUBLIC_BASE}/${encodeObjectPath(objectPath)}`;
+  const trimmed = filename.trim();
+  const cached = portraitUrlCache.get(trimmed);
+  if (cached) return cached;
+
+  const objectPath = `${PORTRAIT_VIDEOS_PREFIX}/${trimmed}`;
+  const url = `${SUPABASE_PUBLIC_BASE}/${encodeObjectPath(objectPath)}`;
+  portraitUrlCache.set(trimmed, url);
+  return url;
 }
 
 export function resolveSessionVideoUrl(

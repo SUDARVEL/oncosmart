@@ -19,7 +19,8 @@ import { BottomTabBar } from '../components/BottomTabBar';
 import { ExerciseVideoBanner } from '../components/ExerciseVideoBanner';
 import { ProgressLogo } from '../components/home/ProgressLogo';
 import { openWhatsAppSupport } from '../lib/openWhatsAppSupport';
-import { EXERCISE_VIDEO_FRAME_ASPECT } from '../lib/exerciseVideoFrame';
+import { HOME_PAGE_PLACEHOLDER_VIDEO } from '../lib/placeholderVideo';
+import { HOME_DAY_CARD_PREVIEW_ASPECT } from '../lib/exerciseVideoFrame';
 import {
   DAYS_PER_LEVEL,
   formatCountdown,
@@ -40,9 +41,24 @@ const QUOTE_CARD_WIDTH = SCREEN_WIDTH - 32;
 const MALE_AVATAR = require('../assets/avatars/male-avatar.png');
 const FEMALE_AVATAR = require('../assets/avatars/female-avatar.png');
 const WALKING_CHARACTER = require('../assets/home/walking-character.png');
-const DAY_CARD_PREVIEW_ASPECT = EXERCISE_VIDEO_FRAME_ASPECT;
+const DAY_CARD_PREVIEW_ASPECT = HOME_DAY_CARD_PREVIEW_ASPECT;
 
 const QUOTES = ['quote1', 'quote2', 'quote3'] as const;
+
+function getPrimarySessionState(states: SessionState[]): SessionState {
+  const available = states.find((state) => state.status === 'available');
+  if (available) return available;
+
+  const countdownLocked = states.find(
+    (state) => state.status === 'locked' && !state.blockedByLevel && !state.blockedByPrevious,
+  );
+  if (countdownLocked) return countdownLocked;
+
+  const levelLocked = states.find((state) => state.status === 'locked');
+  if (levelLocked) return levelLocked;
+
+  return states[states.length - 1];
+}
 
 export default function HomeScreen() {
   const { t } = useTranslation();
@@ -61,6 +77,7 @@ export default function HomeScreen() {
   const sessionStates = Array.from({ length: DAYS_PER_LEVEL }, (_, index) =>
     getSessionState(activeLevel, index + 1, dayCompletedAt, now, devUnlockOverride),
   );
+  const primarySession = getPrimarySessionState(sessionStates);
   const hasActiveCountdown = sessionStates.some(
     (state) => state.status === 'locked' && state.remainingMs > 0,
   );
@@ -153,21 +170,16 @@ export default function HomeScreen() {
 
         <View style={styles.sessionSection}>
           <Text style={styles.sessionTitle}>{t('home.sessionTitle')}</Text>
-          <Text style={styles.levelHeading}>
-            {t('home.levelHeading', { level: activeLevel })}
-          </Text>
 
-          {sessionStates.map((sessionState) => (
-            <DayCard
-              key={`${sessionState.level}-${sessionState.dayInLevel}`}
-              sessionState={sessionState}
-              onStart={() =>
-                router.push(
-                  `/exercise/pain-score?level=${sessionState.level}&day=${sessionState.dayInLevel}`,
-                )
-              }
-            />
-          ))}
+          <DayCard
+            key={`${primarySession.level}-${primarySession.dayInLevel}`}
+            sessionState={primarySession}
+            onStart={() =>
+              router.push(
+                `/exercise/pain-score?level=${primarySession.level}&day=${primarySession.dayInLevel}`,
+              )
+            }
+          />
         </View>
 
         {__DEV__ ? <DevPanel /> : null}
@@ -210,7 +222,12 @@ function DayCard({
   return (
     <View style={[styles.dayCard, isLocked && styles.dayCardLocked]}>
       <View style={styles.exerciseBannerWrap}>
-        <ExerciseVideoBanner aspectRatio={DAY_CARD_PREVIEW_ASPECT} />
+        <ExerciseVideoBanner
+          source={HOME_PAGE_PLACEHOLDER_VIDEO}
+          aspectRatio={DAY_CARD_PREVIEW_ASPECT}
+          previewContentFit="contain"
+          fillContainer
+        />
         {isLocked ? (
           <View style={styles.lockOverlay} pointerEvents="none">
             <Ionicons name="lock-closed" size={28} color="#FFFFFF" />
@@ -218,10 +235,7 @@ function DayCard({
         ) : null}
       </View>
       <View style={styles.dayCardBody}>
-        <Text style={styles.dayLabel}>
-          {t('home.dayLabel', { day: dayInLevel })}
-          <Text style={styles.levelLabel}>{t('home.levelSuffix', { level })}</Text>
-        </Text>
+        <Text style={styles.dayLabel}>{t('home.dayLabel', { day: dayInLevel })}</Text>
         <Text style={styles.daySubtitle}>{t('home.daySubtitle')}</Text>
 
         {status === 'completed' ? (
@@ -446,7 +460,6 @@ const styles = StyleSheet.create({
   sessionSection: {
     marginTop: 8,
     paddingHorizontal: 16,
-    gap: 8,
   },
   sessionTitle: {
     fontSize: 20,
@@ -455,22 +468,15 @@ const styles = StyleSheet.create({
     letterSpacing: -0.26,
     lineHeight: 28,
     paddingLeft: 13,
-  },
-  levelHeading: {
-    fontSize: 16,
-    ...font('semiBold'),
-    color: colors.textPrimary,
-    paddingLeft: 13,
-    marginBottom: 4,
+    marginBottom: 8,
   },
   dayCard: {
-    marginTop: 8,
-    marginHorizontal: 17,
+    marginHorizontal: 1,
     borderWidth: 1,
     borderColor: colors.cardBorder,
     borderRadius: 16,
-    overflow: 'hidden',
     backgroundColor: colors.homeCardBg,
+    paddingBottom: 16,
   },
   dayCardLocked: {
     opacity: 0.92,
@@ -480,8 +486,10 @@ const styles = StyleSheet.create({
     marginTop: 15,
     position: 'relative',
     alignSelf: 'stretch',
-    overflow: 'hidden',
+    aspectRatio: DAY_CARD_PREVIEW_ASPECT,
     borderRadius: 8,
+    overflow: 'hidden',
+    backgroundColor: '#FFFFFF',
   },
   lockOverlay: {
     ...StyleSheet.absoluteFillObject,
@@ -492,29 +500,24 @@ const styles = StyleSheet.create({
   },
   dayCardBody: {
     paddingHorizontal: 15,
-    paddingTop: 8,
-    paddingBottom: 16,
+    paddingTop: 12,
     gap: 2,
   },
   dayLabel: {
     fontSize: 16,
-    ...font('medium'),
+    ...font('semiBold'),
     color: colors.textPrimary,
     letterSpacing: -0.26,
-    lineHeight: 28,
-  },
-  levelLabel: {
-    fontSize: 14,
-    ...font('regular'),
-    color: colors.textMuted,
+    lineHeight: 22,
+    textTransform: 'uppercase',
   },
   daySubtitle: {
     fontSize: 14,
     ...font('regular'),
     color: colors.textMuted,
-    lineHeight: 28,
+    lineHeight: 20,
     letterSpacing: -0.26,
-    marginBottom: 8,
+    marginBottom: 12,
   },
   startButton: {
     height: 40,

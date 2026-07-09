@@ -11,36 +11,31 @@ type Props = {
   source?: string | null;
   aspectRatio?: number;
   previewContentFit?: 'cover' | 'contain';
+  fillContainer?: boolean;
 };
 
 export function ExerciseVideoBanner({
   source,
   aspectRatio = EXERCISE_VIDEO_FRAME_ASPECT,
   previewContentFit = 'contain',
+  fillContainer = false,
 }: Props) {
   const [failedSource, setFailedSource] = useState<string | null>(null);
   const preferred = source?.trim() || PLACEHOLDER_PREVIEW_VIDEO;
   const playbackSource =
     failedSource === preferred ? PLACEHOLDER_PREVIEW_VIDEO : preferred;
 
+  const bannerStyle = [
+    fillContainer ? styles.bannerFill : styles.banner,
+    !fillContainer && { aspectRatio },
+  ];
+
   if (failedSource === preferred && failedSource === PLACEHOLDER_PREVIEW_VIDEO) {
-    return (
-      <View
-        style={[
-          styles.banner,
-          { paddingBottom: `${(1 / aspectRatio) * 100}%` },
-        ]}
-      />
-    );
+    return <View style={bannerStyle} />;
   }
 
   return (
-    <View
-      style={[
-        styles.banner,
-        { paddingBottom: `${(1 / aspectRatio) * 100}%` },
-      ]}
-    >
+    <View style={bannerStyle}>
       {createElement('video', {
         key: playbackSource,
         src: playbackSource,
@@ -52,6 +47,7 @@ export function ExerciseVideoBanner({
         style: {
           ...styles.video,
           objectFit: previewContentFit,
+          backgroundColor: fillContainer ? 'transparent' : EXERCISE_VIDEO_FRAME_BACKGROUND,
         },
         onError: () => setFailedSource(playbackSource),
       })}
@@ -62,11 +58,15 @@ export function ExerciseVideoBanner({
 const styles = StyleSheet.create({
   banner: {
     width: '100%',
-    height: 0,
     position: 'relative',
     overflow: 'hidden',
     borderRadius: 8,
     backgroundColor: EXERCISE_VIDEO_FRAME_BACKGROUND,
+  },
+  bannerFill: {
+    ...StyleSheet.absoluteFillObject,
+    overflow: 'hidden',
+    backgroundColor: 'transparent',
   },
   video: {
     position: 'absolute',

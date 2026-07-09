@@ -4,6 +4,8 @@ const SUPABASE_PUBLIC_BASE =
 const MALE_PHOTOS_PREFIX = 'Male and Female png exports/Male photos';
 const FEMALE_PHOTOS_PREFIX = 'Male and Female png exports/Female photos';
 
+const photoUrlCache = new Map<string, string>();
+
 function encodeObjectPath(objectPath: string): string {
   return objectPath
     .split('/')
@@ -17,8 +19,14 @@ export function getWorkoutPhotoUrl(
 ): string | null {
   if (!photoFile?.trim()) return null;
 
+  const cacheKey = `${gender ?? 'male'}|${photoFile.trim()}`;
+  const cached = photoUrlCache.get(cacheKey);
+  if (cached) return cached;
+
   const prefix = gender === 'female' ? FEMALE_PHOTOS_PREFIX : MALE_PHOTOS_PREFIX;
   const objectPath = `${prefix}/${photoFile.trim()}`;
+  const url = `${SUPABASE_PUBLIC_BASE}/${encodeObjectPath(objectPath)}`;
 
-  return `${SUPABASE_PUBLIC_BASE}/${encodeObjectPath(objectPath)}`;
+  photoUrlCache.set(cacheKey, url);
+  return url;
 }

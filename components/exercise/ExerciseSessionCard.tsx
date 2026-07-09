@@ -1,60 +1,44 @@
-import { Ionicons } from '@expo/vector-icons';
 import type { ImageSource } from 'expo-image';
-import { Image } from 'expo-image';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Dimensions, StyleSheet, Text, View } from 'react-native';
 
-import { ExerciseVideoBanner } from '../ExerciseVideoBanner';
-import { EXERCISE_VIDEO_FRAME_ASPECT, EXERCISE_VIDEO_FRAME_BACKGROUND } from '../../lib/exerciseVideoFrame';
-import { PLACEHOLDER_PREVIEW_VIDEO } from '../../lib/placeholderVideo';
+import { CachedMediaImage } from '../CachedMediaImage';
+import {
+  SESSION_EXERCISE_CARD_PREVIEW_ASPECT,
+  SESSION_EXERCISE_CARD_PREVIEW_BACKGROUND,
+  SESSION_EXERCISE_CARD_PREVIEW_WIDTH,
+} from '../../lib/exerciseVideoFrame';
 import { font } from '../../theme/fonts';
 
-const PREVIEW_ASPECT = EXERCISE_VIDEO_FRAME_ASPECT;
+const CARD_HORIZONTAL_PADDING = 64;
+const previewWidth = Math.min(
+  Dimensions.get('window').width - CARD_HORIZONTAL_PADDING,
+  SESSION_EXERCISE_CARD_PREVIEW_WIDTH,
+);
+const previewHeight = previewWidth / SESSION_EXERCISE_CARD_PREVIEW_ASPECT;
 
 type Props = {
   name: string;
   repLabel: string;
-  videoSource: string | null;
-  thumbnail: ImageSource | null;
-  previewFallbackVideo: string | null;
-  onPress: () => void;
+  previewPhoto: ImageSource | null;
+  exerciseId: string;
 };
 
-export function ExerciseSessionCard({
-  name,
-  repLabel,
-  videoSource,
-  thumbnail,
-  previewFallbackVideo,
-  onPress,
-}: Props) {
+/** Static preview card — display only; playback starts via Start Session. */
+export function ExerciseSessionCard({ name, repLabel, previewPhoto, exerciseId }: Props) {
   return (
-    <Pressable style={styles.card} onPress={onPress} accessibilityRole="button">
+    <View style={styles.card} accessibilityRole="text">
       <View style={styles.body}>
-        <View style={styles.previewWrap}>
-          {videoSource ? (
-            <ExerciseVideoBanner
-              source={videoSource}
-              aspectRatio={PREVIEW_ASPECT}
-              previewContentFit="contain"
+        <View style={[styles.previewWrap, { width: previewWidth, height: previewHeight }]}>
+          {previewPhoto ? (
+            <CachedMediaImage
+              source={previewPhoto}
+              style={styles.previewImage}
+              contentFit="contain"
+              contentPosition="center"
+              recyclingKey={exerciseId}
             />
-          ) : thumbnail ? (
-            <>
-              <Image
-                source={thumbnail}
-                style={[styles.thumbnail, { aspectRatio: PREVIEW_ASPECT }]}
-                contentFit="contain"
-                contentPosition="center"
-              />
-              <View style={styles.playOverlay} pointerEvents="none">
-                <Ionicons name="play-circle" size={32} color="rgba(255,255,255,0.9)" />
-              </View>
-            </>
           ) : (
-            <ExerciseVideoBanner
-              source={previewFallbackVideo ?? PLACEHOLDER_PREVIEW_VIDEO}
-              aspectRatio={PREVIEW_ASPECT}
-              previewContentFit="contain"
-            />
+            <View style={styles.previewPlaceholder} />
           )}
         </View>
         <Text style={styles.title} numberOfLines={2}>
@@ -64,7 +48,7 @@ export function ExerciseSessionCard({
       <View style={styles.repBadge}>
         <Text style={styles.repText}>{repLabel}</Text>
       </View>
-    </Pressable>
+    </View>
   );
 }
 
@@ -89,22 +73,18 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   previewWrap: {
-    width: '100%',
-    alignSelf: 'stretch',
+    alignSelf: 'center',
     borderRadius: 8,
     overflow: 'hidden',
-    backgroundColor: EXERCISE_VIDEO_FRAME_BACKGROUND,
+    backgroundColor: SESSION_EXERCISE_CARD_PREVIEW_BACKGROUND,
     position: 'relative',
   },
-  thumbnail: {
-    width: '100%',
-    minHeight: 112,
-  },
-  playOverlay: {
+  previewImage: {
     ...StyleSheet.absoluteFillObject,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.12)',
+  },
+  previewPlaceholder: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: SESSION_EXERCISE_CARD_PREVIEW_BACKGROUND,
   },
   title: {
     fontSize: 16,

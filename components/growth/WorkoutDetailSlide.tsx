@@ -1,4 +1,4 @@
-import { Image } from 'expo-image';
+import { CachedMediaImage } from '../CachedMediaImage';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, Text, View } from 'react-native';
@@ -32,11 +32,12 @@ export function WorkoutDetailSlide({ workout, width }: Props) {
     <View style={[styles.slide, { width }]}>
       <View style={styles.mediaWrap}>
         {showPhoto ? (
-          <Image
+          <CachedMediaImage
             source={workout.photoSource!}
             style={styles.media}
             contentFit="contain"
             contentPosition="center"
+            recyclingKey={workout.id}
             onError={() => setImageFailed(true)}
           />
         ) : (
