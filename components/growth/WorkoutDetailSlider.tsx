@@ -16,7 +16,11 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import type { WorkoutDetail } from '../../lib/getWorkoutDetails';
-import { WORKOUT_SLIDER_BODY_HEIGHT } from '../../lib/workoutInfoSheetLayout';
+import {
+  WORKOUT_SHEET_MAX_HEIGHT,
+  WORKOUT_SHEET_TOP_RADIUS,
+  WORKOUT_SLIDER_BODY_HEIGHT,
+} from '../../lib/workoutInfoSheetLayout';
 import { colors } from '../../theme/colors';
 import { font } from '../../theme/fonts';
 import { WorkoutDetailSlide } from './WorkoutDetailSlide';
@@ -97,11 +101,27 @@ export function WorkoutDetailSlider({
 
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
-      <View style={styles.backdrop}>
-        <Pressable style={styles.backdropTap} onPress={onClose} accessibilityRole="button" />
+      <View style={styles.root}>
+        {/* Dimmed Growth screen behind the bottom sheet */}
+        <Pressable
+          style={styles.scrim}
+          onPress={onClose}
+          accessibilityRole="button"
+          accessibilityLabel="Dismiss"
+        />
 
-        <View style={[styles.sheet, { paddingBottom: Math.max(insets.bottom, 16) }]}>
-          <View style={styles.dragHandle} />
+        <View
+          style={[
+            styles.sheet,
+            {
+              maxHeight: WORKOUT_SHEET_MAX_HEIGHT,
+              paddingBottom: Math.max(insets.bottom, 12),
+            },
+          ]}
+        >
+          <View style={styles.handleHitArea}>
+            <View style={styles.dragHandle} />
+          </View>
 
           <View style={styles.header}>
             <Text style={styles.headerTitle}>{t('growth.workouts.exerciseInfoTitle')}</Text>
@@ -111,7 +131,7 @@ export function WorkoutDetailSlider({
               accessibilityRole="button"
               accessibilityLabel="Close"
             >
-              <Ionicons name="close" size={24} color="#374151" />
+              <Ionicons name="close" size={22} color="#374151" />
             </Pressable>
           </View>
 
@@ -161,46 +181,48 @@ export function WorkoutDetailSlider({
 }
 
 const styles = StyleSheet.create({
-  backdrop: {
+  root: {
     flex: 1,
-    backgroundColor: 'rgba(17, 24, 39, 0.45)',
     justifyContent: 'flex-end',
   },
-  backdropTap: {
+  scrim: {
     ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0, 0, 0, 0.45)',
   },
   sheet: {
     width: '100%',
     backgroundColor: '#FFFFFF',
-    borderTopLeftRadius: 16,
-    borderTopRightRadius: 16,
-    shadowColor: '#111827',
-    shadowOffset: { width: 0, height: -4 },
-    shadowOpacity: 0.12,
-    shadowRadius: 12,
-    elevation: 16,
+    borderTopLeftRadius: WORKOUT_SHEET_TOP_RADIUS,
+    borderTopRightRadius: WORKOUT_SHEET_TOP_RADIUS,
+    overflow: 'hidden',
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: -8 },
+    shadowOpacity: 0.18,
+    shadowRadius: 16,
+    elevation: 24,
+  },
+  handleHitArea: {
+    alignItems: 'center',
+    paddingTop: 10,
+    paddingBottom: 6,
   },
   dragHandle: {
-    alignSelf: 'center',
-    width: 40,
-    height: 4,
-    borderRadius: 2,
+    width: 48,
+    height: 5,
+    borderRadius: 3,
     backgroundColor: '#D1D5DB',
-    marginTop: 10,
-    marginBottom: 4,
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 16,
-    paddingTop: 8,
-    paddingBottom: 14,
+    paddingBottom: 12,
   },
   headerTitle: {
     flex: 1,
-    fontSize: 20,
-    lineHeight: 28,
+    fontSize: 18,
+    lineHeight: 24,
     color: '#374151',
     ...font('medium'),
   },
@@ -224,9 +246,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 8,
     paddingHorizontal: 16,
-    paddingTop: 8,
-    paddingBottom: 8,
-    minHeight: 36,
+    paddingTop: 10,
+    paddingBottom: 4,
+    minHeight: 32,
   },
   dot: {
     width: 6,
