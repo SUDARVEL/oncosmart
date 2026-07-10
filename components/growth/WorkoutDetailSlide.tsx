@@ -1,7 +1,7 @@
 import { CachedMediaImage } from '../CachedMediaImage';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import {
   EXERCISE_VIDEO_FRAME_BACKGROUND,
@@ -29,7 +29,12 @@ export function WorkoutDetailSlide({ workout, width }: Props) {
   const repLabel = getWorkoutRepLabel(workout, t);
 
   return (
-    <View style={[styles.slide, { width }]}>
+    <ScrollView
+      style={[styles.slide, { width }]}
+      contentContainerStyle={styles.slideContent}
+      showsVerticalScrollIndicator={false}
+      bounces={false}
+    >
       <View style={styles.mediaWrap}>
         {showPhoto ? (
           <CachedMediaImage
@@ -38,6 +43,7 @@ export function WorkoutDetailSlide({ workout, width }: Props) {
             contentFit="contain"
             contentPosition="center"
             recyclingKey={workout.id}
+            priority="high"
             onError={() => setImageFailed(true)}
           />
         ) : (
@@ -53,16 +59,20 @@ export function WorkoutDetailSlide({ workout, width }: Props) {
       </View>
 
       <Text style={styles.description}>{description}</Text>
-    </View>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
   slide: {
     height: WORKOUT_INFO_SLIDE_BODY_HEIGHT,
+  },
+  slideContent: {
     alignItems: 'center',
     paddingHorizontal: 16,
     paddingTop: 8,
+    paddingBottom: 16,
+    minHeight: WORKOUT_INFO_SLIDE_BODY_HEIGHT,
   },
   mediaWrap: {
     width: EXERCISE_VIDEO_FRAME_WIDTH,
@@ -70,13 +80,16 @@ const styles = StyleSheet.create({
     borderRadius: EXERCISE_VIDEO_FRAME_BORDER_RADIUS,
     overflow: 'hidden',
     backgroundColor: EXERCISE_VIDEO_FRAME_BACKGROUND,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   media: {
-    width: '100%',
-    height: '100%',
+    width: EXERCISE_VIDEO_FRAME_WIDTH,
+    height: EXERCISE_VIDEO_FRAME_HEIGHT,
   },
   mediaPlaceholder: {
-    flex: 1,
+    width: '100%',
+    height: '100%',
     backgroundColor: EXERCISE_VIDEO_FRAME_BACKGROUND,
   },
   exerciseTitle: {

@@ -3,6 +3,7 @@ import type { ImageSource } from 'expo-image';
 import { getDay1Thumbnail } from '../components/exercise/day1Thumbnails';
 import type { AppGender } from '../store/useAppStore';
 import { getWorkoutPhotoUrl } from './getWorkoutPhotoUrl';
+import { getWorkoutSliderPhotoUrl } from './workoutSliderPhotoUrls';
 import { getWorkoutLocalPhoto } from './workoutLocalPhotos';
 import workoutPhotos from '../data/workout-photos.json';
 
@@ -32,4 +33,17 @@ export function resolveWorkoutPhotoSource(
   const remoteUrl = getWorkoutPhotoUrl(photoFile, photoGender);
 
   return remoteUrl ? { uri: remoteUrl } : null;
+}
+
+/**
+ * Workout info slider — uses dedicated Male Slider Photos from Supabase when available.
+ */
+export function resolveWorkoutSliderPhotoSource(
+  exerciseId: string,
+  gender: AppGender | null,
+): ImageSource | null {
+  const sliderUrl = getWorkoutSliderPhotoUrl(exerciseId, gender);
+  if (sliderUrl) return { uri: sliderUrl };
+
+  return resolveWorkoutPhotoSource(exerciseId, gender);
 }

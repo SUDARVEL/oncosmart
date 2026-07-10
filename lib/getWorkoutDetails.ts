@@ -4,7 +4,7 @@ import type { AppAvatar, AppGender, AppLanguage } from '../store/useAppStore';
 import type { GuidedSessionExercise } from './getDay1Session';
 import { getSessionExercisesForLevel } from './getDay1Session';
 import { getLevelExercises } from './getDayExercises';
-import { resolveWorkoutPhotoSource } from './resolveWorkoutPhoto';
+import { resolveWorkoutSliderPhotoSource } from './resolveWorkoutPhoto';
 
 export type WorkoutDetail = GuidedSessionExercise & {
   photoSource: ImageSource | null;
@@ -26,7 +26,7 @@ export function getWorkoutDetailsForLevel(
     return {
       ...exercise,
       photoSource:
-        resolveWorkoutPhotoSource(exercise.id, gender) ?? media?.thumbnail ?? null,
+        resolveWorkoutSliderPhotoSource(exercise.id, gender) ?? media?.thumbnail ?? null,
     };
   });
 }
