@@ -6,9 +6,11 @@ import { StyleSheet, Text, View } from 'react-native';
 import type { WorkoutDetail } from '../../lib/getWorkoutDetails';
 import { getWorkoutRepLabel } from '../../lib/getWorkoutRepLabel';
 import {
-  WORKOUT_SLIDER_IMAGE_BOTTOM_RADIUS,
-  WORKOUT_SLIDER_IMAGE_HEIGHT,
-  WORKOUT_SLIDER_IMAGE_WIDTH,
+  WORKOUT_SLIDER_BODY_HEIGHT,
+  WORKOUT_SLIDER_MEDIA_BACKGROUND,
+  WORKOUT_SLIDER_MEDIA_HEIGHT,
+  WORKOUT_SLIDER_MEDIA_RADIUS,
+  WORKOUT_SLIDER_MEDIA_WIDTH,
 } from '../../lib/workoutInfoSheetLayout';
 import { colors } from '../../theme/colors';
 import { displayFontStyle, font } from '../../theme/fonts';
@@ -23,7 +25,7 @@ export function WorkoutDetailSlide({ workout, width }: Props) {
   const [imageFailed, setImageFailed] = useState(false);
   const title = t(`sessionFlow.exercises.${workout.id}.title`);
   const description = t(`sessionFlow.exercises.${workout.id}.description`);
-  const showPhoto = workout.photoSource && !imageFailed;
+  const showPhoto = Boolean(workout.photoSource) && !imageFailed;
   const repLabel = getWorkoutRepLabel(workout, t);
 
   return (
@@ -33,7 +35,7 @@ export function WorkoutDetailSlide({ workout, width }: Props) {
           <CachedMediaImage
             source={workout.photoSource!}
             style={styles.media}
-            contentFit="cover"
+            contentFit="contain"
             contentPosition="center"
             recyclingKey={workout.id}
             priority="high"
@@ -44,61 +46,64 @@ export function WorkoutDetailSlide({ workout, width }: Props) {
         )}
       </View>
 
-      <View style={styles.textBlock}>
-        <Text style={styles.exerciseTitle}>{title}</Text>
+      <Text style={styles.exerciseTitle} numberOfLines={2}>
+        {title}
+      </Text>
 
-        <View style={styles.repRow}>
-          <Text style={styles.repValue}>{workout.displayValue}</Text>
-          <Text style={styles.repLabel}>{repLabel}</Text>
-        </View>
-
-        <Text style={styles.description}>{description}</Text>
+      <View style={styles.repRow}>
+        <Text style={styles.repValue}>{workout.displayValue}</Text>
+        <Text style={styles.repLabel}>{repLabel}</Text>
       </View>
+
+      <Text style={styles.description} numberOfLines={5}>
+        {description}
+      </Text>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   slide: {
-    flex: 1,
+    height: WORKOUT_SLIDER_BODY_HEIGHT,
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingTop: 12,
   },
   mediaWrap: {
-    width: WORKOUT_SLIDER_IMAGE_WIDTH,
-    height: WORKOUT_SLIDER_IMAGE_HEIGHT,
+    width: WORKOUT_SLIDER_MEDIA_WIDTH,
+    height: WORKOUT_SLIDER_MEDIA_HEIGHT,
+    borderRadius: WORKOUT_SLIDER_MEDIA_RADIUS,
     overflow: 'hidden',
-    borderBottomLeftRadius: WORKOUT_SLIDER_IMAGE_BOTTOM_RADIUS,
-    borderBottomRightRadius: WORKOUT_SLIDER_IMAGE_BOTTOM_RADIUS,
-    backgroundColor: '#E8E8E8',
+    backgroundColor: WORKOUT_SLIDER_MEDIA_BACKGROUND,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   media: {
     width: '100%',
     height: '100%',
   },
   mediaPlaceholder: {
-    flex: 1,
-    backgroundColor: '#E5E7EB',
-  },
-  textBlock: {
-    flex: 1,
-    alignItems: 'center',
-    paddingHorizontal: 24,
-    paddingTop: 28,
-    paddingBottom: 8,
+    width: '100%',
+    height: '100%',
+    backgroundColor: WORKOUT_SLIDER_MEDIA_BACKGROUND,
   },
   exerciseTitle: {
-    fontSize: 28,
-    lineHeight: 34,
-    color: '#111111',
+    marginTop: 16,
+    fontSize: 24,
+    lineHeight: 28,
+    color: '#262526',
     textAlign: 'center',
     textTransform: 'uppercase',
-    ...displayFontStyle(),
+    maxWidth: WORKOUT_SLIDER_MEDIA_WIDTH,
+    ...font('semiBold'),
   },
   repRow: {
     flexDirection: 'row',
     alignItems: 'flex-end',
     justifyContent: 'center',
-    gap: 10,
-    marginTop: 18,
+    gap: 8,
+    marginTop: 16,
+    minHeight: 64,
   },
   repValue: {
     fontSize: 64,
@@ -110,16 +115,16 @@ const styles = StyleSheet.create({
     fontSize: 36,
     lineHeight: 40,
     color: '#00131F',
-    ...displayFontStyle(),
     marginBottom: 6,
+    ...displayFontStyle(),
   },
   description: {
-    marginTop: 20,
+    marginTop: 14,
     fontSize: 16,
-    lineHeight: 22,
+    lineHeight: 20,
     color: colors.textMuted,
     textAlign: 'center',
-    maxWidth: 320,
+    width: WORKOUT_SLIDER_MEDIA_WIDTH,
     ...font('regular'),
   },
 });

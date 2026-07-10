@@ -1,5 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Dimensions,
   FlatList,
@@ -8,18 +9,19 @@ import {
   type NativeSyntheticEvent,
   Pressable,
   StyleSheet,
+  Text,
   View,
   type ViewToken,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import type { WorkoutDetail } from '../../lib/getWorkoutDetails';
+import { WORKOUT_SLIDER_BODY_HEIGHT } from '../../lib/workoutInfoSheetLayout';
 import { colors } from '../../theme/colors';
+import { font } from '../../theme/fonts';
 import { WorkoutDetailSlide } from './WorkoutDetailSlide';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
-const SCREEN_HEIGHT = Dimensions.get('window').height;
-const DOTS_AREA_HEIGHT = 44;
 
 type Props = {
   visible: boolean;
@@ -34,14 +36,10 @@ export function WorkoutDetailSlider({
   initialIndex,
   onClose,
 }: Props) {
+  const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const listRef = useRef<FlatList<WorkoutDetail>>(null);
   const [activeIndex, setActiveIndex] = useState(initialIndex);
-
-  const slideHeight = useMemo(
-    () => SCREEN_HEIGHT - insets.top - insets.bottom - DOTS_AREA_HEIGHT,
-    [insets.bottom, insets.top],
-  );
 
   useEffect(() => {
     if (!visible || workouts.length === 0) return;
@@ -49,7 +47,7 @@ export function WorkoutDetailSlider({
     setActiveIndex(initialIndex);
     const frame = requestAnimationFrame(() => {
       listRef.current?.scrollToIndex({
-        index: initialIndex,
+        index: Math.min(initialIndex, workouts.length - 1),
         animated: false,
       });
     });
@@ -88,11 +86,9 @@ export function WorkoutDetailSlider({
 
   const renderItem = useCallback(
     ({ item }: { item: WorkoutDetail }) => (
-      <View style={{ width: SCREEN_WIDTH, height: slideHeight }}>
-        <WorkoutDetailSlide workout={item} width={SCREEN_WIDTH} />
-      </View>
+      <WorkoutDetailSlide workout={item} width={SCREEN_WIDTH} />
     ),
-    [slideHeight],
+    [],
   );
 
   const keyExtractor = useCallback((item: WorkoutDetail) => item.id, []);
@@ -100,54 +96,64 @@ export function WorkoutDetailSlider({
   if (workouts.length === 0) return null;
 
   return (
-    <Modal visible={visible} animationType="slide" onRequestClose={onClose}>
-      <View style={[styles.screen, { paddingTop: insets.top, paddingBottom: insets.bottom }]}>
-        <Pressable
-          onPress={onClose}
-          style={[styles.closeButton, { top: insets.top + 8 }]}
-          accessibilityRole="button"
-          accessibilityLabel="Close"
-        >
-          <Ionicons name="close" size={24} color="#374151" />
-        </Pressable>
+    <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
+      <View style={styles.backdrop}>
+        <Pressable style={styles.backdropTap} onPress={onClose} accessibilityRole="button" />
 
-        <FlatList
-          ref={listRef}
-          data={workouts}
-          keyExtractor={keyExtractor}
-          renderItem={renderItem}
-          horizontal
-          pagingEnabled
-          showsHorizontalScrollIndicator={false}
-          bounces={false}
-          decelerationRate="fast"
-          snapToInterval={SCREEN_WIDTH}
-          snapToAlignment="start"
-          disableIntervalMomentum
-          getItemLayout={getItemLayout}
-          initialScrollIndex={Math.min(initialIndex, workouts.length - 1)}
-          onMomentumScrollEnd={handleScrollEnd}
-          onViewableItemsChanged={onViewableItemsChanged}
-          viewabilityConfig={viewabilityConfig}
-          style={[styles.pager, { height: slideHeight }]}
-          windowSize={3}
-          initialNumToRender={2}
-          maxToRenderPerBatch={2}
-          removeClippedSubviews
-          onScrollToIndexFailed={({ index }) => {
-            requestAnimationFrame(() => {
-              listRef.current?.scrollToIndex({ index, animated: false });
-            });
-          }}
-        />
+        <View style={[styles.sheet, { paddingBottom: Math.max(insets.bottom, 16) }]}>
+          <View style={styles.dragHandle} />
 
-        <View style={styles.dotsRow}>
-          {workouts.map((workout, index) => (
-            <View
-              key={workout.id}
-              style={[styles.dot, activeIndex === index && styles.dotActive]}
-            />
-          ))}
+          <View style={styles.header}>
+            <Text style={styles.headerTitle}>{t('growth.workouts.exerciseInfoTitle')}</Text>
+            <Pressable
+              onPress={onClose}
+              style={styles.closeButton}
+              accessibilityRole="button"
+              accessibilityLabel="Close"
+            >
+              <Ionicons name="close" size={24} color="#374151" />
+            </Pressable>
+          </View>
+
+          <View style={styles.divider} />
+
+          <FlatList
+            ref={listRef}
+            data={workouts}
+            keyExtractor={keyExtractor}
+            renderItem={renderItem}
+            horizontal
+            pagingEnabled
+            showsHorizontalScrollIndicator={false}
+            bounces={false}
+            decelerationRate="fast"
+            snapToInterval={SCREEN_WIDTH}
+            snapToAlignment="start"
+            disableIntervalMomentum
+            getItemLayout={getItemLayout}
+            initialScrollIndex={Math.min(initialIndex, workouts.length - 1)}
+            onMomentumScrollEnd={handleScrollEnd}
+            onViewableItemsChanged={onViewableItemsChanged}
+            viewabilityConfig={viewabilityConfig}
+            style={styles.pager}
+            windowSize={3}
+            initialNumToRender={2}
+            maxToRenderPerBatch={2}
+            onScrollToIndexFailed={({ index }) => {
+              requestAnimationFrame(() => {
+                listRef.current?.scrollToIndex({ index, animated: false });
+              });
+            }}
+          />
+
+          <View style={styles.dotsRow}>
+            {workouts.map((workout, index) => (
+              <View
+                key={workout.id}
+                style={[styles.dot, activeIndex === index && styles.dotActive]}
+              />
+            ))}
+          </View>
         </View>
       </View>
     </Modal>
@@ -155,32 +161,72 @@ export function WorkoutDetailSlider({
 }
 
 const styles = StyleSheet.create({
-  screen: {
+  backdrop: {
     flex: 1,
+    backgroundColor: 'rgba(17, 24, 39, 0.45)',
+    justifyContent: 'flex-end',
+  },
+  backdropTap: {
+    ...StyleSheet.absoluteFillObject,
+  },
+  sheet: {
+    width: '100%',
     backgroundColor: '#FFFFFF',
+    borderTopLeftRadius: 16,
+    borderTopRightRadius: 16,
+    shadowColor: '#111827',
+    shadowOffset: { width: 0, height: -4 },
+    shadowOpacity: 0.12,
+    shadowRadius: 12,
+    elevation: 16,
+  },
+  dragHandle: {
+    alignSelf: 'center',
+    width: 40,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: '#D1D5DB',
+    marginTop: 10,
+    marginBottom: 4,
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    paddingTop: 8,
+    paddingBottom: 14,
+  },
+  headerTitle: {
+    flex: 1,
+    fontSize: 20,
+    lineHeight: 28,
+    color: '#374151',
+    ...font('medium'),
   },
   closeButton: {
-    position: 'absolute',
-    right: 16,
-    zIndex: 10,
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 32,
+    height: 32,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: 'rgba(255,255,255,0.92)',
+  },
+  divider: {
+    height: StyleSheet.hairlineWidth,
+    backgroundColor: '#E5E7EB',
   },
   pager: {
-    flexGrow: 0,
+    height: WORKOUT_SLIDER_BODY_HEIGHT,
   },
   dotsRow: {
-    height: DOTS_AREA_HEIGHT,
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'center',
     alignItems: 'center',
     gap: 8,
     paddingHorizontal: 16,
+    paddingTop: 8,
+    paddingBottom: 8,
+    minHeight: 36,
   },
   dot: {
     width: 6,
