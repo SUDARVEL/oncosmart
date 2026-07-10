@@ -1,6 +1,11 @@
-import { EXERCISE_VIDEO_FRAME_HEIGHT } from './exerciseVideoFrame';
+import { Dimensions } from 'react-native';
 
-/** Vertical space for title, reps, description, and padding below the image. */
-const TEXT_BLOCK_HEIGHT = 300;
+const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
-export const WORKOUT_INFO_SLIDE_BODY_HEIGHT = EXERCISE_VIDEO_FRAME_HEIGHT + TEXT_BLOCK_HEIGHT;
+/** Full-bleed slider image — matches Figma edge-to-edge media with rounded bottom. */
+export const WORKOUT_SLIDER_IMAGE_WIDTH = SCREEN_WIDTH;
+export const WORKOUT_SLIDER_IMAGE_HEIGHT = Math.min(
+  Math.round(SCREEN_WIDTH * (444 / 349)),
+  Math.round(SCREEN_HEIGHT * 0.48),
+);
+export const WORKOUT_SLIDER_IMAGE_BOTTOM_RADIUS = 24;

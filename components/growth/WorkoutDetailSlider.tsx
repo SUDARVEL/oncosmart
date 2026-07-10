@@ -1,27 +1,25 @@
 import { Ionicons } from '@expo/vector-icons';
-import { useEffect, useRef, useState } from 'react';
-import { useTranslation } from 'react-i18next';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   Dimensions,
+  FlatList,
   Modal,
-  NativeScrollEvent,
-  NativeSyntheticEvent,
+  type NativeScrollEvent,
+  type NativeSyntheticEvent,
   Pressable,
-  ScrollView,
   StyleSheet,
-  Text,
   View,
+  type ViewToken,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import type { WorkoutDetail } from '../../lib/getWorkoutDetails';
-import { WORKOUT_INFO_SLIDE_BODY_HEIGHT } from '../../lib/workoutInfoSheetLayout';
 import { colors } from '../../theme/colors';
-import { font } from '../../theme/fonts';
 import { WorkoutDetailSlide } from './WorkoutDetailSlide';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
-const SLIDE_WIDTH = SCREEN_WIDTH;
+const SCREEN_HEIGHT = Dimensions.get('window').height;
+const DOTS_AREA_HEIGHT = 44;
 
 type Props = {
   visible: boolean;
@@ -36,97 +34,120 @@ export function WorkoutDetailSlider({
   initialIndex,
   onClose,
 }: Props) {
-  const { t } = useTranslation();
   const insets = useSafeAreaInsets();
-  const scrollRef = useRef<ScrollView>(null);
-  const dotsRef = useRef<ScrollView>(null);
+  const listRef = useRef<FlatList<WorkoutDetail>>(null);
   const [activeIndex, setActiveIndex] = useState(initialIndex);
 
+  const slideHeight = useMemo(
+    () => SCREEN_HEIGHT - insets.top - insets.bottom - DOTS_AREA_HEIGHT,
+    [insets.bottom, insets.top],
+  );
+
   useEffect(() => {
-    if (!visible) return;
+    if (!visible || workouts.length === 0) return;
 
     setActiveIndex(initialIndex);
-    requestAnimationFrame(() => {
-      scrollRef.current?.scrollTo({
-        x: initialIndex * SLIDE_WIDTH,
-        animated: false,
-      });
-      dotsRef.current?.scrollTo({
-        x: Math.max(0, initialIndex * 14 - SCREEN_WIDTH / 2),
+    const frame = requestAnimationFrame(() => {
+      listRef.current?.scrollToIndex({
+        index: initialIndex,
         animated: false,
       });
     });
-  }, [initialIndex, visible]);
+
+    return () => cancelAnimationFrame(frame);
+  }, [initialIndex, visible, workouts.length]);
+
+  const onViewableItemsChanged = useRef(
+    ({ viewableItems }: { viewableItems: ViewToken[] }) => {
+      const index = viewableItems[0]?.index;
+      if (typeof index === 'number') {
+        setActiveIndex(index);
+      }
+    },
+  ).current;
+
+  const viewabilityConfig = useRef({
+    itemVisiblePercentThreshold: 60,
+  }).current;
+
+  const getItemLayout = useCallback(
+    (_: ArrayLike<WorkoutDetail> | null | undefined, index: number) => ({
+      length: SCREEN_WIDTH,
+      offset: SCREEN_WIDTH * index,
+      index,
+    }),
+    [],
+  );
 
   const handleScrollEnd = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
-    const offset = event.nativeEvent.contentOffset.x;
-    const index = Math.round(offset / SLIDE_WIDTH);
-    setActiveIndex(index);
-    dotsRef.current?.scrollTo({
-      x: Math.max(0, index * 14 - SCREEN_WIDTH / 2),
-      animated: true,
-    });
+    const index = Math.round(event.nativeEvent.contentOffset.x / SCREEN_WIDTH);
+    if (index >= 0 && index < workouts.length) {
+      setActiveIndex(index);
+    }
   };
+
+  const renderItem = useCallback(
+    ({ item }: { item: WorkoutDetail }) => (
+      <View style={{ width: SCREEN_WIDTH, height: slideHeight }}>
+        <WorkoutDetailSlide workout={item} width={SCREEN_WIDTH} />
+      </View>
+    ),
+    [slideHeight],
+  );
+
+  const keyExtractor = useCallback((item: WorkoutDetail) => item.id, []);
 
   if (workouts.length === 0) return null;
 
   return (
-    <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
-      <View style={styles.backdrop}>
-        <Pressable style={styles.backdropTap} onPress={onClose} accessibilityRole="button" />
+    <Modal visible={visible} animationType="slide" onRequestClose={onClose}>
+      <View style={[styles.screen, { paddingTop: insets.top, paddingBottom: insets.bottom }]}>
+        <Pressable
+          onPress={onClose}
+          style={[styles.closeButton, { top: insets.top + 8 }]}
+          accessibilityRole="button"
+          accessibilityLabel="Close"
+        >
+          <Ionicons name="close" size={24} color="#374151" />
+        </Pressable>
 
-        <View style={[styles.sheet, { paddingBottom: Math.max(insets.bottom, 20) }]}>
-          <View style={styles.dragHandle} />
+        <FlatList
+          ref={listRef}
+          data={workouts}
+          keyExtractor={keyExtractor}
+          renderItem={renderItem}
+          horizontal
+          pagingEnabled
+          showsHorizontalScrollIndicator={false}
+          bounces={false}
+          decelerationRate="fast"
+          snapToInterval={SCREEN_WIDTH}
+          snapToAlignment="start"
+          disableIntervalMomentum
+          getItemLayout={getItemLayout}
+          initialScrollIndex={Math.min(initialIndex, workouts.length - 1)}
+          onMomentumScrollEnd={handleScrollEnd}
+          onViewableItemsChanged={onViewableItemsChanged}
+          viewabilityConfig={viewabilityConfig}
+          style={[styles.pager, { height: slideHeight }]}
+          windowSize={3}
+          initialNumToRender={2}
+          maxToRenderPerBatch={2}
+          removeClippedSubviews
+          onScrollToIndexFailed={({ index }) => {
+            requestAnimationFrame(() => {
+              listRef.current?.scrollToIndex({ index, animated: false });
+            });
+          }}
+        />
 
-          <View style={styles.header}>
-            <Text style={styles.headerTitle}>{t('growth.workouts.exerciseInfoTitle')}</Text>
-            <Pressable onPress={onClose} style={styles.closeButton} accessibilityRole="button">
-              <Ionicons name="close" size={24} color="#374151" />
-            </Pressable>
-          </View>
-
-          <View style={styles.divider} />
-
-          <ScrollView
-            ref={scrollRef}
-            horizontal
-            pagingEnabled
-            showsHorizontalScrollIndicator={false}
-            decelerationRate="fast"
-            onMomentumScrollEnd={handleScrollEnd}
-            style={styles.pager}
-            contentContainerStyle={styles.pagerContent}
-          >
-            {workouts.map((workout) => (
-              <WorkoutDetailSlide key={workout.id} workout={workout} width={SLIDE_WIDTH} />
-            ))}
-          </ScrollView>
-
-          {workouts.length <= 15 ? (
-            <View style={styles.dotsContent}>
-              {workouts.map((workout, index) => (
-                <View
-                  key={workout.id}
-                  style={[styles.dot, activeIndex === index && styles.dotActive]}
-                />
-              ))}
-            </View>
-          ) : (
-            <ScrollView
-              ref={dotsRef}
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={styles.dotsContent}
-              style={styles.dotsScroller}
-            >
-              {workouts.map((workout, index) => (
-                <View
-                  key={workout.id}
-                  style={[styles.dot, activeIndex === index && styles.dotActive]}
-                />
-              ))}
-            </ScrollView>
-          )}
+        <View style={styles.dotsRow}>
+          {workouts.map((workout, index) => (
+            <View
+              key={workout.id}
+              style={[styles.dot, activeIndex === index && styles.dotActive]}
+            />
+          ))}
         </View>
       </View>
     </Modal>
@@ -134,77 +155,32 @@ export function WorkoutDetailSlider({
 }
 
 const styles = StyleSheet.create({
-  backdrop: {
+  screen: {
     flex: 1,
-    backgroundColor: 'rgba(17, 24, 39, 0.45)',
-    justifyContent: 'flex-end',
-  },
-  backdropTap: {
-    ...StyleSheet.absoluteFillObject,
-  },
-  sheet: {
-    width: '100%',
-    backgroundColor: colors.background,
-    borderTopLeftRadius: 16,
-    borderTopRightRadius: 16,
-    shadowColor: '#111827',
-    shadowOffset: { width: 0, height: -4 },
-    shadowOpacity: 0.12,
-    shadowRadius: 12,
-    elevation: 16,
-  },
-  dragHandle: {
-    alignSelf: 'center',
-    width: 40,
-    height: 4,
-    borderRadius: 2,
-    backgroundColor: '#D1D5DB',
-    marginTop: 10,
-    marginBottom: 4,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingTop: 8,
-    paddingBottom: 16,
-  },
-  headerTitle: {
-    flex: 1,
-    fontSize: 20,
-    lineHeight: 28,
-    color: '#374151',
-    ...font('medium'),
+    backgroundColor: '#FFFFFF',
   },
   closeButton: {
-    width: 24,
-    height: 24,
+    position: 'absolute',
+    right: 16,
+    zIndex: 10,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  divider: {
-    height: 1,
-    backgroundColor: '#E5E7EB',
+    backgroundColor: 'rgba(255,255,255,0.92)',
   },
   pager: {
-    height: WORKOUT_INFO_SLIDE_BODY_HEIGHT,
+    flexGrow: 0,
   },
-  pagerContent: {
-    alignItems: 'flex-start',
-  },
-  dotsScroller: {
-    maxHeight: 28,
-    marginTop: 8,
-  },
-  dotsContent: {
+  dotsRow: {
+    height: DOTS_AREA_HEIGHT,
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'center',
     alignItems: 'center',
     gap: 8,
     paddingHorizontal: 16,
-    paddingVertical: 12,
   },
   dot: {
     width: 6,

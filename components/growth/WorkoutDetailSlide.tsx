@@ -1,19 +1,17 @@
 import { CachedMediaImage } from '../CachedMediaImage';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 
-import {
-  EXERCISE_VIDEO_FRAME_BACKGROUND,
-  EXERCISE_VIDEO_FRAME_BORDER_RADIUS,
-  EXERCISE_VIDEO_FRAME_HEIGHT,
-  EXERCISE_VIDEO_FRAME_WIDTH,
-} from '../../lib/exerciseVideoFrame';
 import type { WorkoutDetail } from '../../lib/getWorkoutDetails';
 import { getWorkoutRepLabel } from '../../lib/getWorkoutRepLabel';
-import { WORKOUT_INFO_SLIDE_BODY_HEIGHT } from '../../lib/workoutInfoSheetLayout';
+import {
+  WORKOUT_SLIDER_IMAGE_BOTTOM_RADIUS,
+  WORKOUT_SLIDER_IMAGE_HEIGHT,
+  WORKOUT_SLIDER_IMAGE_WIDTH,
+} from '../../lib/workoutInfoSheetLayout';
 import { colors } from '../../theme/colors';
-import { font, displayFontStyle } from '../../theme/fonts';
+import { displayFontStyle, font } from '../../theme/fonts';
 
 type Props = {
   workout: WorkoutDetail;
@@ -29,18 +27,13 @@ export function WorkoutDetailSlide({ workout, width }: Props) {
   const repLabel = getWorkoutRepLabel(workout, t);
 
   return (
-    <ScrollView
-      style={[styles.slide, { width }]}
-      contentContainerStyle={styles.slideContent}
-      showsVerticalScrollIndicator={false}
-      bounces={false}
-    >
+    <View style={[styles.slide, { width }]}>
       <View style={styles.mediaWrap}>
         {showPhoto ? (
           <CachedMediaImage
             source={workout.photoSource!}
             style={styles.media}
-            contentFit="contain"
+            contentFit="cover"
             contentPosition="center"
             recyclingKey={workout.id}
             priority="high"
@@ -51,63 +44,61 @@ export function WorkoutDetailSlide({ workout, width }: Props) {
         )}
       </View>
 
-      <Text style={styles.exerciseTitle}>{title}</Text>
+      <View style={styles.textBlock}>
+        <Text style={styles.exerciseTitle}>{title}</Text>
 
-      <View style={styles.repRow}>
-        <Text style={styles.repValue}>{workout.displayValue}</Text>
-        <Text style={styles.repLabel}>{repLabel}</Text>
+        <View style={styles.repRow}>
+          <Text style={styles.repValue}>{workout.displayValue}</Text>
+          <Text style={styles.repLabel}>{repLabel}</Text>
+        </View>
+
+        <Text style={styles.description}>{description}</Text>
       </View>
-
-      <Text style={styles.description}>{description}</Text>
-    </ScrollView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   slide: {
-    height: WORKOUT_INFO_SLIDE_BODY_HEIGHT,
-  },
-  slideContent: {
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingTop: 8,
-    paddingBottom: 16,
-    minHeight: WORKOUT_INFO_SLIDE_BODY_HEIGHT,
+    flex: 1,
   },
   mediaWrap: {
-    width: EXERCISE_VIDEO_FRAME_WIDTH,
-    height: EXERCISE_VIDEO_FRAME_HEIGHT,
-    borderRadius: EXERCISE_VIDEO_FRAME_BORDER_RADIUS,
+    width: WORKOUT_SLIDER_IMAGE_WIDTH,
+    height: WORKOUT_SLIDER_IMAGE_HEIGHT,
     overflow: 'hidden',
-    backgroundColor: EXERCISE_VIDEO_FRAME_BACKGROUND,
-    alignItems: 'center',
-    justifyContent: 'center',
+    borderBottomLeftRadius: WORKOUT_SLIDER_IMAGE_BOTTOM_RADIUS,
+    borderBottomRightRadius: WORKOUT_SLIDER_IMAGE_BOTTOM_RADIUS,
+    backgroundColor: '#E8E8E8',
   },
   media: {
-    width: EXERCISE_VIDEO_FRAME_WIDTH,
-    height: EXERCISE_VIDEO_FRAME_HEIGHT,
-  },
-  mediaPlaceholder: {
     width: '100%',
     height: '100%',
-    backgroundColor: EXERCISE_VIDEO_FRAME_BACKGROUND,
+  },
+  mediaPlaceholder: {
+    flex: 1,
+    backgroundColor: '#E5E7EB',
+  },
+  textBlock: {
+    flex: 1,
+    alignItems: 'center',
+    paddingHorizontal: 24,
+    paddingTop: 28,
+    paddingBottom: 8,
   },
   exerciseTitle: {
-    marginTop: 13,
-    fontSize: 24,
-    lineHeight: 28,
-    color: '#262526',
+    fontSize: 28,
+    lineHeight: 34,
+    color: '#111111',
     textAlign: 'center',
     textTransform: 'uppercase',
-    ...font('semiBold'),
+    ...displayFontStyle(),
   },
   repRow: {
     flexDirection: 'row',
     alignItems: 'flex-end',
     justifyContent: 'center',
-    gap: 8,
-    marginTop: 20,
-    minHeight: 64,
+    gap: 10,
+    marginTop: 18,
   },
   repValue: {
     fontSize: 64,
@@ -123,12 +114,12 @@ const styles = StyleSheet.create({
     marginBottom: 6,
   },
   description: {
-    marginTop: 16,
+    marginTop: 20,
     fontSize: 16,
-    lineHeight: 20,
+    lineHeight: 22,
     color: colors.textMuted,
     textAlign: 'center',
-    width: EXERCISE_VIDEO_FRAME_WIDTH,
+    maxWidth: 320,
     ...font('regular'),
   },
 });
