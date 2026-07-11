@@ -238,6 +238,7 @@ const styles = StyleSheet.create({
   },
   pager: {
     height: WORKOUT_SLIDER_BODY_HEIGHT,
+    overflow: 'hidden',
   },
   dotsRow: {
     flexDirection: 'row',
@@ -246,9 +247,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 8,
     paddingHorizontal: 16,
-    paddingTop: 10,
+    paddingTop: 8,
     paddingBottom: 4,
-    minHeight: 32,
+    minHeight: 36,
+    backgroundColor: '#FFFFFF',
+    zIndex: 2,
   },
   dot: {
     width: 6,
