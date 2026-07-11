@@ -16,11 +16,11 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { BottomTabBar } from '../components/BottomTabBar';
-import { ExerciseVideoBanner } from '../components/ExerciseVideoBanner';
+import { CachedMediaImage } from '../components/CachedMediaImage';
 import { ProgressLogo } from '../components/home/ProgressLogo';
 import { openWhatsAppSupport } from '../lib/openWhatsAppSupport';
-import { HOME_PAGE_PLACEHOLDER_VIDEO } from '../lib/placeholderVideo';
 import { HOME_DAY_CARD_PREVIEW_ASPECT } from '../lib/exerciseVideoFrame';
+import { HOME_CARD_PLACEHOLDER_IMAGE } from '../lib/homePlaceholder';
 import {
   DAYS_PER_LEVEL,
   formatCountdown,
@@ -222,11 +222,11 @@ function DayCard({
   return (
     <View style={[styles.dayCard, isLocked && styles.dayCardLocked]}>
       <View style={styles.exerciseBannerWrap}>
-        <ExerciseVideoBanner
-          source={HOME_PAGE_PLACEHOLDER_VIDEO}
-          aspectRatio={DAY_CARD_PREVIEW_ASPECT}
-          previewContentFit="contain"
-          fillContainer
+        <CachedMediaImage
+          source={HOME_CARD_PLACEHOLDER_IMAGE}
+          style={styles.exerciseBannerImage}
+          contentFit="cover"
+          contentPosition="center"
         />
         {isLocked ? (
           <View style={styles.lockOverlay} pointerEvents="none">
@@ -489,7 +489,11 @@ const styles = StyleSheet.create({
     aspectRatio: DAY_CARD_PREVIEW_ASPECT,
     borderRadius: 8,
     overflow: 'hidden',
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#F3F4F6',
+  },
+  exerciseBannerImage: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: '#F3F4F6',
   },
   lockOverlay: {
     ...StyleSheet.absoluteFillObject,

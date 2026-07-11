@@ -145,7 +145,7 @@ const styles = StyleSheet.create({
     ...font('semiBold'),
     color: '#2563EB',
     letterSpacing: 0.5,
-    lineHeight: 16,
+    lineHeight: 28,
   },
   scoreValuePaused: {
     color: '#9CA3AF',
