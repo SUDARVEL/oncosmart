@@ -1,4 +1,4 @@
-import { Pressable, StyleSheet, Text } from 'react-native';
+import { Pressable, StyleSheet, Text, type StyleProp, type ViewStyle } from 'react-native';
 
 import { colors } from '../theme/colors';
 import { font } from '../theme/fonts';
@@ -8,6 +8,7 @@ type PrimaryButtonProps = {
   onPress: () => void;
   disabled?: boolean;
   variant?: 'primary' | 'muted';
+  style?: StyleProp<ViewStyle>;
 };
 
 export function PrimaryButton({
@@ -15,6 +16,7 @@ export function PrimaryButton({
   onPress,
   disabled = false,
   variant = 'primary',
+  style,
 }: PrimaryButtonProps) {
   return (
     <Pressable
@@ -24,6 +26,7 @@ export function PrimaryButton({
         styles.button,
         variant === 'muted' && styles.buttonMuted,
         disabled && styles.buttonDisabled,
+        style,
       ]}
       accessibilityRole="button"
       accessibilityState={{ disabled }}
