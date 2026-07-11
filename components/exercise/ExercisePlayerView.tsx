@@ -1,15 +1,23 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import {
+  ActivityIndicator,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  useWindowDimensions,
+  View,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import type { Day1SessionExercise } from '../../lib/getDay1Session';
 import { formatExerciseDurationDisplay } from '../../lib/formatExerciseDuration';
 import {
+  EXERCISE_VIDEO_FRAME_ASPECT,
   EXERCISE_VIDEO_FRAME_BACKGROUND,
   EXERCISE_VIDEO_FRAME_BORDER_RADIUS,
-  EXERCISE_VIDEO_FRAME_HEIGHT,
   EXERCISE_VIDEO_FRAME_WIDTH,
 } from '../../lib/exerciseVideoFrame';
 import { colors } from '../../theme/colors';
@@ -23,8 +31,11 @@ type Props = {
   onBackPress: () => void;
 };
 
+const FOOTER_HEIGHT = 72;
+
 export function ExercisePlayerView({ exercise, videoSources, onComplete, onBackPress }: Props) {
   const { t } = useTranslation();
+  const { width: screenWidth, height: screenHeight } = useWindowDimensions();
   const [isPaused, setIsPaused] = useState(false);
   const [restartToken, setRestartToken] = useState(0);
   const [videoProgress, setVideoProgress] = useState(0);
@@ -32,6 +43,13 @@ export function ExercisePlayerView({ exercise, videoSources, onComplete, onBackP
   const [playbackFailed, setPlaybackFailed] = useState(false);
   const [videoDurationSeconds, setVideoDurationSeconds] = useState(0);
   const completedRef = useRef(false);
+
+  const frameWidth = Math.min(EXERCISE_VIDEO_FRAME_WIDTH, screenWidth - 32);
+  const maxFrameHeight = Math.round(screenHeight * 0.42);
+  const frameHeight = Math.min(
+    Math.round(frameWidth / EXERCISE_VIDEO_FRAME_ASPECT),
+    maxFrameHeight,
+  );
 
   const title = t(`sessionFlow.exercises.${exercise.id}.title`);
   const description = t(`sessionFlow.exercises.${exercise.id}.description`);
@@ -93,10 +111,19 @@ export function ExercisePlayerView({ exercise, videoSources, onComplete, onBackP
 
       <ScrollView
         style={styles.scroll}
-        contentContainerStyle={styles.scrollContent}
+        contentContainerStyle={[styles.scrollContent, { paddingBottom: FOOTER_HEIGHT + 8 }]}
         showsVerticalScrollIndicator={false}
+        bounces={false}
       >
-        <View style={styles.videoWrap}>
+        <View
+          style={[
+            styles.videoWrap,
+            {
+              width: frameWidth,
+              height: frameHeight,
+            },
+          ]}
+        >
           <SessionVideoPlayer
             key={`${exercise.id}-${restartToken}`}
             source={videoSources[0]}
@@ -122,11 +149,13 @@ export function ExercisePlayerView({ exercise, videoSources, onComplete, onBackP
           ) : null}
         </View>
 
-        <View style={styles.videoProgressTrack}>
+        <View style={[styles.videoProgressTrack, { width: frameWidth }]}>
           <View style={[styles.videoProgressFill, { width: `${videoProgressPercent}%` }]} />
         </View>
 
-        <Text style={styles.exerciseTitle}>{title}</Text>
+        <Text style={[styles.exerciseTitle, { maxWidth: frameWidth }]} numberOfLines={2}>
+          {title}
+        </Text>
 
         <View style={styles.repRow}>
           <Text style={styles.repValue}>{durationDisplay.displayValue}</Text>
@@ -139,7 +168,9 @@ export function ExercisePlayerView({ exercise, videoSources, onComplete, onBackP
           </Text>
         </View>
 
-        <Text style={styles.description}>{description}</Text>
+        <Text style={[styles.description, { maxWidth: frameWidth }]} numberOfLines={4}>
+          {description}
+        </Text>
       </ScrollView>
 
       <View style={styles.footer}>
@@ -176,7 +207,7 @@ const styles = StyleSheet.create({
     height: 40,
     justifyContent: 'center',
     paddingHorizontal: 8,
-    marginTop: 13,
+    marginTop: 8,
   },
   backButton: {
     width: 40,
@@ -188,13 +219,10 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
-    paddingHorizontal: 20.5,
-    paddingBottom: 16,
+    paddingHorizontal: 16,
     alignItems: 'center',
   },
   videoWrap: {
-    width: EXERCISE_VIDEO_FRAME_WIDTH,
-    height: EXERCISE_VIDEO_FRAME_HEIGHT,
     borderRadius: EXERCISE_VIDEO_FRAME_BORDER_RADIUS,
     overflow: 'hidden',
     backgroundColor: EXERCISE_VIDEO_FRAME_BACKGROUND,
@@ -221,7 +249,6 @@ const styles = StyleSheet.create({
     ...font('medium'),
   },
   videoProgressTrack: {
-    width: EXERCISE_VIDEO_FRAME_WIDTH,
     height: 8,
     marginTop: 10,
     borderRadius: 999,
@@ -236,9 +263,9 @@ const styles = StyleSheet.create({
     backgroundColor: '#0074B8',
   },
   exerciseTitle: {
-    marginTop: 13,
-    fontSize: 24,
-    lineHeight: 28,
+    marginTop: 12,
+    fontSize: 22,
+    lineHeight: 26,
     color: '#262526',
     textAlign: 'center',
     textTransform: 'uppercase',
@@ -249,45 +276,50 @@ const styles = StyleSheet.create({
     alignItems: 'flex-end',
     justifyContent: 'center',
     gap: 8,
-    marginTop: 20,
-    minHeight: 64,
+    marginTop: 12,
+    minHeight: 52,
   },
   repValue: {
-    fontSize: 64,
-    lineHeight: 64,
+    fontSize: 56,
+    lineHeight: 56,
     color: '#00131F',
     ...displayFontStyle(),
   },
   repLabel: {
-    fontSize: 36,
-    lineHeight: 40,
+    fontSize: 32,
+    lineHeight: 36,
     color: '#00131F',
     ...displayFontStyle(),
-    marginBottom: 6,
+    marginBottom: 4,
   },
   description: {
-    marginTop: 16,
-    fontSize: 16,
+    marginTop: 12,
+    fontSize: 15,
     lineHeight: 20,
     color: '#6B7280',
     textAlign: 'center',
-    maxWidth: EXERCISE_VIDEO_FRAME_WIDTH,
     ...font('regular'),
   },
   footer: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
     gap: 8,
     paddingHorizontal: 15,
-    paddingBottom: 16,
-    paddingTop: 8,
+    paddingBottom: 12,
+    paddingTop: 10,
+    backgroundColor: colors.background,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: '#E5E7EB',
+    zIndex: 2,
   },
   pauseButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 4,
-    width: 248,
+    flex: 1,
+    maxWidth: 248,
     height: 48,
     borderRadius: 8,
     backgroundColor: '#005F99',

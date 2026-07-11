@@ -1,4 +1,5 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { font } from '../../theme/fonts';
 
@@ -8,11 +9,17 @@ type Props = {
   onPress: () => void;
 };
 
+/** Dev-only skip control — sits under the header so it never covers exercise text. */
 export function DevSkipExerciseButton({ exerciseNumber, totalExercises, onPress }: Props) {
+  const insets = useSafeAreaInsets();
+
   if (!__DEV__) return null;
 
   return (
-    <View style={styles.wrap} pointerEvents="box-none">
+    <View
+      style={[styles.wrap, { top: insets.top + 52 }]}
+      pointerEvents="box-none"
+    >
       <Pressable
         style={styles.button}
         onPress={onPress}
@@ -21,7 +28,7 @@ export function DevSkipExerciseButton({ exerciseNumber, totalExercises, onPress 
       >
         <Text style={styles.label}>DEV</Text>
         <Text style={styles.text}>
-          Skip exercise ({exerciseNumber}/{totalExercises})
+          Skip ({exerciseNumber}/{totalExercises})
         </Text>
       </Pressable>
     </View>
@@ -31,22 +38,20 @@ export function DevSkipExerciseButton({ exerciseNumber, totalExercises, onPress 
 const styles = StyleSheet.create({
   wrap: {
     position: 'absolute',
-    left: 12,
     right: 12,
-    bottom: 100,
     zIndex: 100,
-    alignItems: 'center',
+    alignItems: 'flex-end',
   },
   button: {
-    paddingVertical: 8,
-    paddingHorizontal: 14,
+    paddingVertical: 6,
+    paddingHorizontal: 10,
     borderRadius: 8,
     borderWidth: 1,
     borderStyle: 'dashed',
     borderColor: '#C084FC',
-    backgroundColor: 'rgba(192, 132, 252, 0.12)',
+    backgroundColor: 'rgba(255, 255, 255, 0.95)',
     alignItems: 'center',
-    gap: 2,
+    gap: 1,
   },
   label: {
     fontSize: 9,
