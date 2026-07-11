@@ -86,6 +86,6 @@ const styles = StyleSheet.create({
   bannerFill: {
     ...StyleSheet.absoluteFillObject,
     overflow: 'hidden',
-    backgroundColor: 'transparent',
+    backgroundColor: EXERCISE_VIDEO_FRAME_BACKGROUND,
   },
 });

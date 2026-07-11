@@ -1,21 +1,30 @@
 export type BadgeKey = 'startup' | 'consistent' | 'strength' | 'hero' | 'unstoppable';
 
-const BADGE_THRESHOLDS: Record<BadgeKey, number> = {
-  startup: 1,
-  consistent: 1,
-  strength: 2,
-  hero: 3,
-  unstoppable: 4,
-};
-
-export function getEarnedBadges(levelsCompleted: number): Set<BadgeKey> {
+/**
+ * Startup = first session completed.
+ * Other badges unlock by completed levels.
+ */
+export function getEarnedBadges(
+  levelsCompleted: number,
+  sessionsCompleted = 0,
+): Set<BadgeKey> {
   const earned = new Set<BadgeKey>();
 
-  (Object.keys(BADGE_THRESHOLDS) as BadgeKey[]).forEach((key) => {
-    if (levelsCompleted >= BADGE_THRESHOLDS[key]) {
-      earned.add(key);
-    }
-  });
+  if (sessionsCompleted >= 1 || levelsCompleted >= 1) {
+    earned.add('startup');
+  }
+  if (levelsCompleted >= 1) {
+    earned.add('consistent');
+  }
+  if (levelsCompleted >= 2) {
+    earned.add('strength');
+  }
+  if (levelsCompleted >= 3) {
+    earned.add('hero');
+  }
+  if (levelsCompleted >= 4) {
+    earned.add('unstoppable');
+  }
 
   return earned;
 }

@@ -47,7 +47,7 @@ export function ExerciseVideoBanner({
         style: {
           ...styles.video,
           objectFit: previewContentFit,
-          backgroundColor: fillContainer ? 'transparent' : EXERCISE_VIDEO_FRAME_BACKGROUND,
+          backgroundColor: EXERCISE_VIDEO_FRAME_BACKGROUND,
         },
         onError: () => setFailedSource(playbackSource),
       })}
@@ -66,7 +66,7 @@ const styles = StyleSheet.create({
   bannerFill: {
     ...StyleSheet.absoluteFillObject,
     overflow: 'hidden',
-    backgroundColor: 'transparent',
+    backgroundColor: EXERCISE_VIDEO_FRAME_BACKGROUND,
   },
   video: {
     position: 'absolute',

@@ -16,11 +16,15 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { BottomTabBar } from '../components/BottomTabBar';
-import { CachedMediaImage } from '../components/CachedMediaImage';
+import { ExerciseVideoBanner } from '../components/ExerciseVideoBanner';
 import { ProgressLogo } from '../components/home/ProgressLogo';
 import { openWhatsAppSupport } from '../lib/openWhatsAppSupport';
-import { HOME_DAY_CARD_PREVIEW_ASPECT } from '../lib/exerciseVideoFrame';
-import { HOME_CARD_PLACEHOLDER_IMAGE } from '../lib/homePlaceholder';
+import { HOME_PAGE_PLACEHOLDER_VIDEO } from '../lib/placeholderVideo';
+import {
+  HOME_DAY_CARD_PREVIEW_ASPECT,
+  HOME_DAY_CARD_PREVIEW_HEIGHT,
+  HOME_DAY_CARD_PREVIEW_WIDTH,
+} from '../lib/exerciseVideoFrame';
 import {
   DAYS_PER_LEVEL,
   formatCountdown,
@@ -42,6 +46,9 @@ const MALE_AVATAR = require('../assets/avatars/male-avatar.png');
 const FEMALE_AVATAR = require('../assets/avatars/female-avatar.png');
 const WALKING_CHARACTER = require('../assets/home/walking-character.png');
 const DAY_CARD_PREVIEW_ASPECT = HOME_DAY_CARD_PREVIEW_ASPECT;
+const DAY_CARD_MEDIA_WIDTH = HOME_DAY_CARD_PREVIEW_WIDTH;
+const DAY_CARD_MEDIA_HEIGHT = HOME_DAY_CARD_PREVIEW_HEIGHT;
+const DAY_CARD_WIDTH = DAY_CARD_MEDIA_WIDTH + 28;
 
 const QUOTES = ['quote1', 'quote2', 'quote3'] as const;
 
@@ -222,11 +229,11 @@ function DayCard({
   return (
     <View style={[styles.dayCard, isLocked && styles.dayCardLocked]}>
       <View style={styles.exerciseBannerWrap}>
-        <CachedMediaImage
-          source={HOME_CARD_PLACEHOLDER_IMAGE}
-          style={styles.exerciseBannerImage}
-          contentFit="cover"
-          contentPosition="center"
+        <ExerciseVideoBanner
+          source={HOME_PAGE_PLACEHOLDER_VIDEO}
+          aspectRatio={DAY_CARD_PREVIEW_ASPECT}
+          previewContentFit="cover"
+          fillContainer
         />
         {isLocked ? (
           <View style={styles.lockOverlay} pointerEvents="none">
@@ -460,6 +467,7 @@ const styles = StyleSheet.create({
   sessionSection: {
     marginTop: 8,
     paddingHorizontal: 16,
+    alignItems: 'center',
   },
   sessionTitle: {
     fontSize: 20,
@@ -469,30 +477,29 @@ const styles = StyleSheet.create({
     lineHeight: 28,
     paddingLeft: 13,
     marginBottom: 8,
+    alignSelf: 'stretch',
   },
   dayCard: {
-    marginHorizontal: 1,
+    width: DAY_CARD_WIDTH,
+    alignSelf: 'center',
     borderWidth: 1,
     borderColor: colors.cardBorder,
     borderRadius: 16,
     backgroundColor: colors.homeCardBg,
     paddingBottom: 16,
+    overflow: 'hidden',
   },
   dayCardLocked: {
     opacity: 0.92,
   },
   exerciseBannerWrap: {
+    width: DAY_CARD_MEDIA_WIDTH,
+    height: DAY_CARD_MEDIA_HEIGHT,
+    marginTop: 14,
     marginHorizontal: 14,
-    marginTop: 15,
     position: 'relative',
-    alignSelf: 'stretch',
-    aspectRatio: DAY_CARD_PREVIEW_ASPECT,
     borderRadius: 8,
     overflow: 'hidden',
-    backgroundColor: '#F3F4F6',
-  },
-  exerciseBannerImage: {
-    ...StyleSheet.absoluteFillObject,
     backgroundColor: '#F3F4F6',
   },
   lockOverlay: {

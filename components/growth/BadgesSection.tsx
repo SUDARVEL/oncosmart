@@ -2,9 +2,10 @@ import type { ImageSource } from 'expo-image';
 import type { ReactNode } from 'react';
 import { Image } from 'expo-image';
 import { useTranslation } from 'react-i18next';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 
 import { getEarnedBadges, type BadgeKey } from '../../lib/getEarnedBadges';
+import { getCompletedSessionCount } from '../../lib/programProgress';
 import { useAppStore } from '../../store/useAppStore';
 import { colors } from '../../theme/colors';
 import { font } from '../../theme/fonts';
@@ -27,14 +28,23 @@ function BadgeArt({
   earned: boolean;
 }) {
   return (
-    <View style={[styles.badgeArt, !earned && styles.badgeArtLocked]}>
-      <Image source={bg} style={styles.badgeBg} contentFit="contain" />
-      {children}
+    <View style={[styles.badgeArt, earned ? styles.badgeArtEarned : styles.badgeArtLocked]}>
+      <Image
+        source={bg}
+        style={[styles.badgeBg, !earned && styles.badgeLayerMuted]}
+        contentFit="contain"
+      />
+      <View style={!earned ? styles.badgeLayerMuted : undefined}>{children}</View>
+      {!earned ? <View style={styles.lockedScrim} pointerEvents="none" /> : null}
       {earned ? (
         <View style={styles.earnedBadge}>
           <Image source={GROWTH_ASSETS.badgeCheck} style={styles.earnedIcon} contentFit="contain" />
         </View>
-      ) : null}
+      ) : (
+        <View style={styles.lockedBadge}>
+          <Text style={styles.lockedBadgeText}>?</Text>
+        </View>
+      )}
     </View>
   );
 }
@@ -77,13 +87,22 @@ function StrengthBuilderBadge({ earned }: { earned: boolean }) {
 
 function FunctionalHeroBadge({ earned }: { earned: boolean }) {
   return (
-    <View style={[styles.badgeArt, !earned && styles.badgeArtLocked]}>
-      <Image source={GROWTH_ASSETS.badgeFunctionalHero} style={styles.badgeBg} contentFit="contain" />
+    <View style={[styles.badgeArt, earned ? styles.badgeArtEarned : styles.badgeArtLocked]}>
+      <Image
+        source={GROWTH_ASSETS.badgeFunctionalHero}
+        style={[styles.badgeBg, !earned && styles.badgeLayerMuted]}
+        contentFit="contain"
+      />
+      {!earned ? <View style={styles.lockedScrim} pointerEvents="none" /> : null}
       {earned ? (
         <View style={styles.earnedBadge}>
           <Image source={GROWTH_ASSETS.badgeCheck} style={styles.earnedIcon} contentFit="contain" />
         </View>
-      ) : null}
+      ) : (
+        <View style={styles.lockedBadge}>
+          <Text style={styles.lockedBadgeText}>?</Text>
+        </View>
+      )}
     </View>
   );
 }
@@ -109,18 +128,31 @@ function BadgeCard({
   children: ReactNode;
 }) {
   return (
-    <View style={styles.badgeCard}>
+    <View style={[styles.badgeCard, earned && styles.badgeCardEarned]}>
       {children}
-      <Text style={[styles.badgeTitle, !earned && styles.badgeTitleLocked]}>{title}</Text>
-      <Text style={[styles.badgeSubtitle, !earned && styles.badgeSubtitleLocked]}>{subtitle}</Text>
+      <Text style={[styles.badgeTitle, earned ? styles.badgeTitleEarned : styles.badgeTitleLocked]}>
+        {title}
+      </Text>
+      <Text
+        style={[styles.badgeSubtitle, earned ? styles.badgeSubtitleEarned : styles.badgeSubtitleLocked]}
+      >
+        {subtitle}
+      </Text>
+      <Text style={[styles.statusLabel, earned ? styles.statusEarned : styles.statusLocked]}>
+        {earned ? 'Earned' : 'Locked'}
+      </Text>
     </View>
   );
 }
 
 export function BadgesSection() {
   const { t } = useTranslation();
+  const { width: screenWidth } = useWindowDimensions();
   const levelsCompleted = useAppStore((state) => state.levelsCompleted);
-  const earnedBadges = getEarnedBadges(levelsCompleted);
+  const dayCompletedAt = useAppStore((state) => state.dayCompletedAt);
+  const sessionsCompleted = getCompletedSessionCount(dayCompletedAt);
+  const earnedBadges = getEarnedBadges(levelsCompleted, sessionsCompleted);
+  const gridWidth = Math.min(322, screenWidth - 42);
 
   const badges: BadgeItem[] = [
     {
@@ -155,8 +187,6 @@ export function BadgesSection() {
     },
   ];
 
-  const rows = [badges.slice(0, 2), badges.slice(2, 4), badges.slice(4)];
-
   return (
     <View style={styles.section}>
       <View style={styles.header}>
@@ -164,24 +194,20 @@ export function BadgesSection() {
         <Text style={styles.sectionSubtitle}>{t('growth.badgesSubtitle')}</Text>
       </View>
 
-      <View style={styles.grid}>
-        {rows.map((row, rowIndex) => (
-          <View key={rowIndex} style={styles.row}>
-            {row.map((badge) => {
-              const earned = earnedBadges.has(badge.key);
-              return (
-                <BadgeCard
-                  key={badge.key}
-                  title={t(badge.titleKey)}
-                  subtitle={t(badge.subtitleKey)}
-                  earned={earned}
-                >
-                  {badge.renderBadge(earned)}
-                </BadgeCard>
-              );
-            })}
-          </View>
-        ))}
+      <View style={[styles.grid, { width: gridWidth }]}>
+        {badges.map((badge) => {
+          const earned = earnedBadges.has(badge.key);
+          return (
+            <BadgeCard
+              key={badge.key}
+              title={t(badge.titleKey)}
+              subtitle={t(badge.subtitleKey)}
+              earned={earned}
+            >
+              {badge.renderBadge(earned)}
+            </BadgeCard>
+          );
+        })}
       </View>
     </View>
   );
@@ -190,13 +216,13 @@ export function BadgesSection() {
 const styles = StyleSheet.create({
   section: {
     width: '100%',
-    paddingHorizontal: 21,
+    paddingHorizontal: 16,
     gap: 16,
     alignItems: 'center',
   },
   header: {
     alignItems: 'center',
-    gap: 8,
+    gap: 6,
     alignSelf: 'stretch',
   },
   sectionTitle: {
@@ -204,7 +230,7 @@ const styles = StyleSheet.create({
     ...font('semiBold'),
     color: '#00131F',
     letterSpacing: 0.5,
-    lineHeight: 16,
+    lineHeight: 28,
     textAlign: 'center',
   },
   sectionSubtitle: {
@@ -214,29 +240,46 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   grid: {
-    width: 322,
-    gap: 40,
-    alignItems: 'center',
-  },
-  row: {
     flexDirection: 'row',
-    gap: 18,
+    flexWrap: 'wrap',
     justifyContent: 'center',
-    width: '100%',
+    gap: 16,
   },
   badgeCard: {
-    width: 149,
+    width: 148,
     alignItems: 'center',
-    gap: 8,
+    gap: 6,
+    paddingVertical: 12,
+    paddingHorizontal: 8,
+    borderRadius: 16,
+    backgroundColor: '#F9FAFB',
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+  },
+  badgeCardEarned: {
+    backgroundColor: '#FFFFFF',
+    borderColor: '#BFDBFE',
   },
   badgeArt: {
     width: 100,
     height: 100,
     alignItems: 'center',
     justifyContent: 'center',
+    borderRadius: 50,
+    overflow: 'hidden',
+  },
+  badgeArtEarned: {
+    backgroundColor: '#EFF6FF',
   },
   badgeArtLocked: {
-    opacity: 0.28,
+    backgroundColor: '#E5E7EB',
+  },
+  badgeLayerMuted: {
+    opacity: 0.35,
+  },
+  lockedScrim: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(156, 163, 175, 0.35)',
   },
   badgeBg: {
     width: 100,
@@ -277,41 +320,70 @@ const styles = StyleSheet.create({
   },
   earnedBadge: {
     position: 'absolute',
-    right: 0,
-    bottom: 0,
-    width: 32,
-    height: 32,
-    borderRadius: 16,
+    right: 2,
+    bottom: 2,
+    width: 28,
+    height: 28,
+    borderRadius: 14,
     backgroundColor: colors.buttonPrimary,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#000000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
-    elevation: 4,
+  },
+  lockedBadge: {
+    position: 'absolute',
+    right: 2,
+    bottom: 2,
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: '#9CA3AF',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  lockedBadgeText: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    ...font('semiBold'),
   },
   earnedIcon: {
-    width: 18,
-    height: 18,
+    width: 16,
+    height: 16,
   },
   badgeTitle: {
-    fontSize: 16,
+    fontSize: 14,
     ...font('semiBold'),
-    color: colors.textMuted,
-    lineHeight: 20,
+    lineHeight: 18,
     textAlign: 'center',
+  },
+  badgeTitleEarned: {
+    color: colors.textPrimary,
   },
   badgeTitleLocked: {
     color: '#9CA3AF',
   },
   badgeSubtitle: {
-    fontSize: 10,
+    fontSize: 11,
     ...font('regular'),
-    color: '#858E93',
+    lineHeight: 14,
     textAlign: 'center',
+    minHeight: 28,
+  },
+  badgeSubtitleEarned: {
+    color: '#6B7280',
   },
   badgeSubtitleLocked: {
+    color: '#9CA3AF',
+  },
+  statusLabel: {
+    fontSize: 11,
+    ...font('medium'),
+    textTransform: 'uppercase',
+    letterSpacing: 0.4,
+  },
+  statusEarned: {
+    color: '#2563EB',
+  },
+  statusLocked: {
     color: '#9CA3AF',
   },
 });
