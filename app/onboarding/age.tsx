@@ -68,30 +68,31 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.background,
   },
+  // Enlarge age options slightly for easier reading/tapping
   content: {
     flex: 1,
     justifyContent: 'center',
-    paddingHorizontal: 63,
-    gap: 24,
-    marginTop: -60,
+    paddingHorizontal: 40,
+    gap: 20,
+    marginTop: -40,
   },
   intro: {
-    gap: 4,
+    gap: 6,
   },
   title: {
-    fontSize: 14,
+    fontSize: 18,
     ...font('semiBold'),
     color: colors.textPrimary,
     textAlign: 'center',
   },
   subtitle: {
-    fontSize: 14,
+    fontSize: 15,
     ...font('medium'),
     color: colors.textSecondary,
-    lineHeight: 20,
+    lineHeight: 22,
     textAlign: 'center',
   },
   options: {
-    gap: 16,
+    gap: 14,
   },
 });

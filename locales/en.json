@@ -34,6 +34,20 @@
     "preferNot": "Preferred not to say",
     "continue": "Continue"
   },
+  "treatment": {
+    "header": "Treatment Details",
+    "cancerTypeLabel": "Cancer Type",
+    "cancerTypePlaceholder": "eg : breast cancer",
+    "treatmentLabel": "Treatment Undergoing",
+    "chemotherapy": "Chemotherapy",
+    "radiation": "Radiation Therapy",
+    "both": "Both",
+    "none": "None",
+    "surgeryLabel": "Whether you underwent surgery ?",
+    "yes": "Yes",
+    "no": "No",
+    "continue": "Continue"
+  },
   "avatar": {
     "title": "Choose Your Avatar",
     "subtitle": "This avatar will represent you in the app. You can change it later.",

@@ -8,12 +8,16 @@ export type AppLanguage = 'en' | 'ta';
 export type AppGender = 'male' | 'female' | 'prefer_not_to_say';
 export type AppAvatar = 'male' | 'female';
 export type AgeRange = '18-24' | '25-34' | '35-44' | '45-54' | '55-64';
+export type TreatmentType = 'chemotherapy' | 'radiation' | 'both' | 'none';
 
 type AppState = {
   language: AppLanguage | null;
   username: string;
   ageRange: AgeRange | null;
   gender: AppGender | null;
+  cancerType: string;
+  treatmentUndergoing: TreatmentType | null;
+  underwentSurgery: boolean | null;
   avatar: AppAvatar | null;
   parqAnswers: (boolean | null)[];
   parqCleared: boolean | null;
@@ -28,6 +32,9 @@ type AppState = {
   setUsername: (username: string) => void;
   setAgeRange: (ageRange: AgeRange) => void;
   setGender: (gender: AppGender) => void;
+  setCancerType: (cancerType: string) => void;
+  setTreatmentUndergoing: (treatment: TreatmentType) => void;
+  setUnderwentSurgery: (value: boolean) => void;
   setAvatar: (avatar: AppAvatar) => void;
   setParqAnswer: (index: number, value: boolean) => void;
   setParqCleared: (cleared: boolean) => void;
@@ -53,6 +60,9 @@ export const useAppStore = create<AppState>()(
       username: '',
       ageRange: null,
       gender: null,
+      cancerType: '',
+      treatmentUndergoing: null,
+      underwentSurgery: null,
       avatar: null,
       parqAnswers: [...INITIAL_PARQ_ANSWERS],
       parqCleared: null,
@@ -65,6 +75,9 @@ export const useAppStore = create<AppState>()(
       setUsername: (username) => set({ username }),
       setAgeRange: (ageRange) => set({ ageRange }),
       setGender: (gender) => set({ gender }),
+      setCancerType: (cancerType) => set({ cancerType }),
+      setTreatmentUndergoing: (treatmentUndergoing) => set({ treatmentUndergoing }),
+      setUnderwentSurgery: (underwentSurgery) => set({ underwentSurgery }),
       setAvatar: (avatar) => set({ avatar }),
       setParqAnswer: (index, value) =>
         set((state) => {
@@ -117,6 +130,9 @@ export const useAppStore = create<AppState>()(
           username: '',
           ageRange: null,
           gender: null,
+          cancerType: '',
+          treatmentUndergoing: null,
+          underwentSurgery: null,
           avatar: null,
           parqAnswers: [...INITIAL_PARQ_ANSWERS],
           parqCleared: null,
@@ -135,6 +151,9 @@ export const useAppStore = create<AppState>()(
         username: state.username,
         ageRange: state.ageRange,
         gender: state.gender,
+        cancerType: state.cancerType,
+        treatmentUndergoing: state.treatmentUndergoing,
+        underwentSurgery: state.underwentSurgery,
         avatar: state.avatar,
         parqAnswers: state.parqAnswers,
         parqCleared: state.parqCleared,

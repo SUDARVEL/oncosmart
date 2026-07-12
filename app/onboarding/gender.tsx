@@ -27,7 +27,7 @@ export default function GenderScreen() {
   const handleContinue = () => {
     if (!selected) return;
     setGender(selected);
-    router.replace('/onboarding/avatar');
+    router.push('/onboarding/treatment');
   };
 
   return (

@@ -39,8 +39,8 @@ export function PrimaryButton({
 const styles = StyleSheet.create({
   button: {
     width: '100%',
-    height: 40,
-    borderRadius: 8,
+    height: 52,
+    borderRadius: 10,
     backgroundColor: colors.buttonPrimary,
     alignItems: 'center',
     justifyContent: 'center',
@@ -53,7 +53,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.buttonDisabled,
   },
   label: {
-    fontSize: 14,
+    fontSize: 16,
     ...font('semiBold'),
     color: colors.buttonText,
     letterSpacing: 0.1,
