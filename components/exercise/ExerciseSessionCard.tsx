@@ -4,7 +4,6 @@ import { Dimensions, StyleSheet, Text, View } from 'react-native';
 import { CachedMediaImage } from '../CachedMediaImage';
 import {
   SESSION_EXERCISE_CARD_PREVIEW_ASPECT,
-  SESSION_EXERCISE_CARD_PREVIEW_BACKGROUND,
   SESSION_EXERCISE_CARD_PREVIEW_WIDTH,
 } from '../../lib/exerciseVideoFrame';
 import { font } from '../../theme/fonts';
@@ -33,7 +32,7 @@ export function ExerciseSessionCard({ name, repLabel, previewPhoto, exerciseId }
             <CachedMediaImage
               source={previewPhoto}
               style={styles.previewImage}
-              contentFit="contain"
+              contentFit="cover"
               contentPosition="center"
               recyclingKey={exerciseId}
             />
@@ -76,15 +75,16 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     borderRadius: 8,
     overflow: 'hidden',
-    backgroundColor: SESSION_EXERCISE_CARD_PREVIEW_BACKGROUND,
+    backgroundColor: '#FFFFFF',
     position: 'relative',
   },
   previewImage: {
     ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'transparent',
   },
   previewPlaceholder: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: SESSION_EXERCISE_CARD_PREVIEW_BACKGROUND,
+    backgroundColor: '#F3F4F6',
   },
   title: {
     fontSize: 16,

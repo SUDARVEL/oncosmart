@@ -11,6 +11,7 @@ import {
   resolveExercisePlaybackUrl,
 } from './resolveExercisePreview';
 import { resolveWorkoutPhotoSource } from './resolveWorkoutPhoto';
+import { resolveSessionLandscapePhotoSource } from './sessionLandscapePhotos';
 import { resolveVideoUrl } from './resolveVideoUrl';
 
 export type DayExercise = {
@@ -99,7 +100,9 @@ export function getLevelExercises(
 
   const resolved = session.exercises.map((exercise) => {
     const videoSource = resolveExplicitExerciseVideo(exercise, variant);
-    const previewPhoto = resolveWorkoutPhotoSource(exercise.id, gender);
+    const landscapePhoto = resolveSessionLandscapePhotoSource(exercise.id, gender);
+    const previewPhoto =
+      landscapePhoto ?? resolveWorkoutPhotoSource(exercise.id, gender);
     const thumbnail = getDay1Thumbnail(exercise.id);
 
     return {
