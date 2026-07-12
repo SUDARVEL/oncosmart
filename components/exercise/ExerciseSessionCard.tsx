@@ -41,7 +41,7 @@ export function ExerciseSessionCard({ name, repLabel, previewPhoto, exerciseId }
             <CachedMediaImage
               source={previewPhoto}
               style={styles.previewImage}
-              contentFit="cover"
+              contentFit="contain"
               contentPosition="center"
               recyclingKey={`session-card-${exerciseId}`}
               cachePolicy="memory-disk"
