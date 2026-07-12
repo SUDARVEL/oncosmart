@@ -1,0 +1,17 @@
+---
+description: Guardrails for guided exercise video playback so past bugs do not return
+globs: "{app/exercise/**,components/exercise/**,lib/exerciseMediaUrls.ts,lib/videoStoragePolicy.ts,lib/supabaseStorage.ts,lib/env.ts,lib/exerciseVideoFrame.ts,lib/getDayExercises.ts}"
+alwaysApply: false
+---
+
+# Guided exercise video playback
+
+When changing guided session video code, preserve these invariants:
+
+1. **Bucket**: Public videos must load from `Oncosmart Videos and Assets`. Never use `exercise-videos`. Remap legacy names via `lib/videoStoragePolicy.ts`.
+2. **Source**: Guided playback uses **portrait instructor videos only**. Never fall back to short landscape preview clips for the session player.
+3. **Frame**: Container is `349×444`, `border-radius: 16`, `flexShrink: 0`. Fit is **`contain`** (`EXERCISE_VIDEO_CONTENT_FIT`) so the full body is visible like Figma — do not switch back to `cover`.
+4. **Timing**: Complete an exercise only from a real end event after most of that video’s own duration has played (`shouldAcceptVideoEnd`). Do not mark complete from short near-end guesses or by substituting duration for currentTime.
+5. **Audio**: Keep unmuted guided playback + `ensureExerciseAudioSession`. Session-card loop videos stay muted.
+
+After playback changes, run: `npm run check:videos`

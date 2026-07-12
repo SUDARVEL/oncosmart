@@ -24,6 +24,10 @@ import {
   LEVEL_COMPLETION_BADGE,
 } from '../../lib/getEarnedBadges';
 import { resolveExerciseGuidedPortraitUrl } from '../../lib/exerciseMediaUrls';
+import {
+  isValidGuidedPlaybackUrl,
+  sanitizePublicVideoUrl,
+} from '../../lib/videoStoragePolicy';
 import { isExerciseInLevel } from '../../lib/levelExercisePrograms';
 import {
   DAYS_PER_LEVEL,
@@ -123,9 +127,11 @@ function GuidedSessionScreen({
       gender,
       avatar,
     );
-    if (portrait) return [portrait];
+    if (portrait && isValidGuidedPlaybackUrl(portrait)) {
+      return [portrait];
+    }
 
-    // Legacy catalog fallback (male-only paths in JSON while female maps grow).
+    // Legacy catalog fallback — sanitize bucket + reject landscape previews.
     const catalogFallback = getSessionExerciseVideoSource(
       level,
       sessionExercise.id,
@@ -133,7 +139,9 @@ function GuidedSessionScreen({
       gender,
       avatar,
     );
-    return catalogFallback ? [catalogFallback] : [];
+    if (!catalogFallback) return [];
+    const sanitized = sanitizePublicVideoUrl(catalogFallback);
+    return isValidGuidedPlaybackUrl(sanitized) ? [sanitized] : [];
   }, [avatar, level, gender, language, sessionExercise]);
 
   const completeSession = useCallback(() => {

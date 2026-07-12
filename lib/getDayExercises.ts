@@ -6,7 +6,7 @@ import type { AppAvatar, AppGender, AppLanguage } from '../store/useAppStore';
 import { getLevelExerciseProgram } from './levelExercisePrograms';
 import { getVideoVariant, type VideoVariant } from './getExerciseVideo';
 import {
-  getExercisePortraitObjectPath,
+  getExercisePortraitVideoUrl,
   getSessionLandscapeVideoUrl,
 } from './exerciseMediaUrls';
 import {
@@ -16,6 +16,7 @@ import {
 import { resolveSessionCardPhotoSource } from './resolveSessionCardPhoto';
 import { resolveSessionLandscapePhotoSource } from './sessionLandscapePhotos';
 import { resolveVideoUrl } from './resolveVideoUrl';
+import { isValidGuidedPlaybackUrl, sanitizePublicVideoUrl } from './videoStoragePolicy';
 
 export type DayExercise = {
   id: string;
@@ -79,8 +80,8 @@ function resolveExplicitExerciseVideo(
   avatar: AppAvatar | null,
 ): string | null {
   if (variant === 'male-en' || variant === 'female-en' || variant === 'female-ta') {
-    const portraitPath = getExercisePortraitObjectPath(exercise.id, gender, avatar);
-    if (portraitPath) return resolveVideoUrl(portraitPath);
+    const portraitUrl = getExercisePortraitVideoUrl(exercise.id, gender, avatar);
+    if (portraitUrl) return portraitUrl;
   }
 
   const preferred = exercise.videos[variant]?.trim();
@@ -88,8 +89,8 @@ function resolveExplicitExerciseVideo(
 
   // Female Tamil → English female portrait when Tamil files are absent.
   if (variant === 'female-ta') {
-    const enPath = getExercisePortraitObjectPath(exercise.id, 'female', 'female');
-    if (enPath) return resolveVideoUrl(enPath);
+    const enUrl = getExercisePortraitVideoUrl(exercise.id, 'female', 'female');
+    if (enUrl) return enUrl;
   }
 
   const fallback = Object.values(exercise.videos).find((url) => url.trim().length > 0);
@@ -160,7 +161,12 @@ export function getSessionExerciseVideoSource(
 
   const variant = getVideoVariant(language, gender, avatar);
   const explicit = resolveExplicitExerciseVideo(exercise, variant, gender, avatar);
-  return resolveExercisePlaybackUrl(explicit, exercise.name, variant);
+  const resolved = resolveExercisePlaybackUrl(explicit, exercise.name, variant);
+  if (!resolved) return null;
+
+  const sanitized = sanitizePublicVideoUrl(resolved);
+  // Guided / single-exercise playback must never use short landscape previews.
+  return isValidGuidedPlaybackUrl(sanitized) ? sanitized : null;
 }
 
 export function getSessionExerciseName(level: number, exerciseId: string): string | null {

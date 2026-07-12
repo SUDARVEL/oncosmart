@@ -107,13 +107,12 @@ export function resolveExerciseGuidedPortraitUrl(
   return getExercisePortraitVideoUrl(exerciseId, gender, avatar);
 }
 
-/** Portrait first, then landscape — for legacy callers only. */
+/** Portrait first only — landscape previews are NEVER guided playback sources. */
 export function resolveExercisePlaybackSources(
   exerciseId: string,
   gender: AppGender | null,
   avatar: AppAvatar | null = null,
 ): string[] {
   const portrait = getExercisePortraitVideoUrl(exerciseId, gender, avatar);
-  const landscape = getSessionLandscapeVideoUrl(exerciseId, gender, avatar);
-  return [...new Set([portrait, landscape].filter((v): v is string => Boolean(v?.trim())))];
+  return portrait ? [portrait] : [];
 }

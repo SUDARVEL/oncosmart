@@ -1,8 +1,12 @@
+import { CANONICAL_VIDEO_BUCKET, normalizeVideoBucket } from './videoStoragePolicy';
+
 const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL?.trim() ?? '';
 const supabaseAnonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY?.trim() ?? '';
-/** Must match the real public bucket name in Supabase Storage. */
-const videoBucket =
-  process.env.EXPO_PUBLIC_SUPABASE_VIDEO_BUCKET?.trim() || 'Oncosmart Videos and Assets';
+
+/** Always resolve to the real Oncosmart bucket (legacy `exercise-videos` is remapped). */
+const videoBucket = normalizeVideoBucket(
+  process.env.EXPO_PUBLIC_SUPABASE_VIDEO_BUCKET?.trim() || CANONICAL_VIDEO_BUCKET,
+);
 
 export const env = {
   supabaseUrl,

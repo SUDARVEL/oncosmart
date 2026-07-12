@@ -1,4 +1,4 @@
-import { getPublicVideoUrl } from './supabaseStorage';
+import { getPublicVideoUrl, sanitizePublicVideoUrl } from './supabaseStorage';
 import { memoizeStringResolver } from './urlCache';
 
 const DRIVE_FILE_ID_PATTERN =
@@ -15,9 +15,9 @@ function isHttpUrl(value: string): boolean {
 
 /**
  * Normalizes video sources for playback.
- * - Supabase storage paths (e.g. day-01/male-en.mp4) → public storage URL
+ * - Supabase storage paths → public URL on the canonical Oncosmart bucket
+ * - Legacy `exercise-videos` bucket URLs are rewritten automatically
  * - Google Drive share/view/download links → direct stream URL
- * - Other https URLs pass through unchanged
  */
 function resolveVideoUrlUncached(source: string): string {
   const trimmed = source.trim();
@@ -34,7 +34,7 @@ function resolveVideoUrlUncached(source: string): string {
     return toGoogleDriveStreamUrl(match[1]);
   }
 
-  return trimmed;
+  return sanitizePublicVideoUrl(trimmed);
 }
 
 export const resolveVideoUrl = memoizeStringResolver(resolveVideoUrlUncached);
