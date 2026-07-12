@@ -8,17 +8,19 @@ import {
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const SCREEN_HEIGHT = Dimensions.get('window').height;
 
-/** Taller bottom sheet while keeping a strip of dimmed Growth screen above. */
-export const WORKOUT_SHEET_MAX_HEIGHT = Math.round(SCREEN_HEIGHT * 0.92);
+/** Taller sheet so description has clear space above pagination dots. */
+export const WORKOUT_SHEET_MAX_HEIGHT = Math.round(SCREEN_HEIGHT * 0.94);
 export const WORKOUT_SHEET_TOP_RADIUS = 24;
 
-const SHEET_CHROME_HEIGHT = 128; // handle + header + divider + dots + padding
+const SHEET_CHROME_HEIGHT = 148; // handle + header + divider + dots + padding
 const AVAILABLE_BODY_HEIGHT = WORKOUT_SHEET_MAX_HEIGHT - SHEET_CHROME_HEIGHT;
 
-/** Space for title, reps, and description — keep text above dots. */
-export const WORKOUT_SLIDER_TEXT_BLOCK_HEIGHT = 200;
+/**
+ * Title + reps + description + breathing room before dots.
+ * Keep this large enough that description never sits on the dots.
+ */
+export const WORKOUT_SLIDER_TEXT_BLOCK_HEIGHT = 236;
 
-/** Inset media frame — tall enough for full-body slider photos with contain fit. */
 export const WORKOUT_SLIDER_MEDIA_WIDTH = Math.min(
   EXERCISE_VIDEO_FRAME_WIDTH,
   SCREEN_WIDTH - 32,
@@ -34,7 +36,6 @@ export const WORKOUT_SLIDER_MEDIA_HEIGHT = Math.min(
 );
 
 export const WORKOUT_SLIDER_MEDIA_RADIUS = 16;
-/** Room-grey frame so contain letterboxing matches slider photo backgrounds. */
 export const WORKOUT_SLIDER_MEDIA_BACKGROUND = '#E8E8E8';
 
 export const WORKOUT_SLIDER_BODY_HEIGHT =
