@@ -1,5 +1,5 @@
 import type { ImageSource } from 'expo-image';
-import { StyleSheet, Text, View } from 'react-native';
+import { Platform, StyleSheet, Text, View } from 'react-native';
 
 import { CachedMediaImage } from '../CachedMediaImage';
 import { SessionCardLoopVideo } from './SessionCardLoopVideo';
@@ -26,7 +26,7 @@ function formatRepBadge(repLabel: string): string {
   return trimmed;
 }
 
-/** Figma day-session card — 180px shell, fixed 257×112 landscape media. */
+/** Figma day-session card — 180px shell, 257×112 media, no letterbox / crop bars. */
 export function ExerciseSessionCard({
   name,
   repLabel,
@@ -44,8 +44,7 @@ export function ExerciseSessionCard({
             <CachedMediaImage
               source={previewPhoto}
               style={styles.previewImage}
-              contentFit="contain"
-              contentPosition="center"
+              contentFit="fill"
               recyclingKey={`session-card-${exerciseId}`}
               cachePolicy="memory-disk"
             />
@@ -73,12 +72,24 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#F3F4F6',
     borderRadius: 8,
-    shadowColor: '#000000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 4,
-    elevation: 3,
-    overflow: 'hidden',
+    // Shadow/Raised: 0 2px 4px -2px rgba(0,0,0,0.08), 0 4px 8px -2px rgba(0,0,0,0.04)
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.08,
+        shadowRadius: 4,
+      },
+      android: {
+        elevation: 2,
+      },
+      default: {
+        shadowColor: '#000000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.08,
+        shadowRadius: 4,
+      },
+    }),
   },
   body: {
     flex: 1,
@@ -94,12 +105,10 @@ const styles = StyleSheet.create({
     height: SESSION_EXERCISE_CARD_PREVIEW_HEIGHT,
     borderRadius: 8,
     overflow: 'hidden',
-    backgroundColor: '#FFFFFF',
   },
   previewImage: {
     width: SESSION_EXERCISE_CARD_PREVIEW_WIDTH,
     height: SESSION_EXERCISE_CARD_PREVIEW_HEIGHT,
-    backgroundColor: '#FFFFFF',
   },
   title: {
     fontSize: 16,

@@ -1,6 +1,6 @@
 /**
  * Web: muted looping landscape preview for session cards.
- * Keeps the fixed 257×112 preview frame; contain shows the full body.
+ * Fixed 257×112 — fill stretches to the frame (no letterbox bars, no crop).
  */
 import { createElement, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
@@ -18,38 +18,28 @@ export function SessionCardLoopVideo({ uri }: Props) {
   const [failed, setFailed] = useState(false);
 
   if (failed) {
-    return <View style={styles.wrap} />;
+    return <View style={styles.video} />;
   }
 
-  return (
-    <View style={styles.wrap}>
-      {createElement('video', {
-        key: uri,
-        src: uri,
-        autoPlay: true,
-        loop: true,
-        muted: true,
-        playsInline: true,
-        preload: 'metadata',
-        style: styles.video,
-        onError: () => setFailed(true),
-      })}
-    </View>
-  );
+  return createElement('video', {
+    key: uri,
+    src: uri,
+    autoPlay: true,
+    loop: true,
+    muted: true,
+    playsInline: true,
+    preload: 'metadata',
+    style: styles.video,
+    onError: () => setFailed(true),
+  });
 }
 
 const styles = StyleSheet.create({
-  wrap: {
-    width: SESSION_EXERCISE_CARD_PREVIEW_WIDTH,
-    height: SESSION_EXERCISE_CARD_PREVIEW_HEIGHT,
-    backgroundColor: '#FFFFFF',
-    overflow: 'hidden',
-    borderRadius: 8,
-  },
   video: {
     width: SESSION_EXERCISE_CARD_PREVIEW_WIDTH,
     height: SESSION_EXERCISE_CARD_PREVIEW_HEIGHT,
-    objectFit: 'contain',
+    borderRadius: 8,
+    objectFit: 'fill',
     display: 'block',
   } as object,
 });

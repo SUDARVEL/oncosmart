@@ -1,10 +1,10 @@
 /**
  * Muted looping landscape preview for Welcome-to-Day session cards (GIF-like).
- * Keeps the fixed 257×112 frame; contain shows the full body (no cropped legs).
+ * Fixed 257×112 — fill stretches to the frame (no letterbox bars, no crop).
  */
 import { useVideoPlayer, VideoView } from 'expo-video';
 import { useEffect } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { StyleSheet } from 'react-native';
 
 import {
   SESSION_EXERCISE_CARD_PREVIEW_HEIGHT,
@@ -29,27 +29,19 @@ export function SessionCardLoopVideo({ uri }: Props) {
   }, [player, uri]);
 
   return (
-    <View style={styles.wrap}>
-      <VideoView
-        style={styles.video}
-        player={player}
-        contentFit="contain"
-        nativeControls={false}
-      />
-    </View>
+    <VideoView
+      style={styles.video}
+      player={player}
+      contentFit="fill"
+      nativeControls={false}
+    />
   );
 }
 
 const styles = StyleSheet.create({
-  wrap: {
-    width: SESSION_EXERCISE_CARD_PREVIEW_WIDTH,
-    height: SESSION_EXERCISE_CARD_PREVIEW_HEIGHT,
-    backgroundColor: '#FFFFFF',
-    overflow: 'hidden',
-    borderRadius: 8,
-  },
   video: {
     width: SESSION_EXERCISE_CARD_PREVIEW_WIDTH,
     height: SESSION_EXERCISE_CARD_PREVIEW_HEIGHT,
+    borderRadius: 8,
   },
 });
