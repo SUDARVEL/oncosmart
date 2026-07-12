@@ -1,6 +1,7 @@
 import { Image } from 'expo-image';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, Text, useWindowDimensions, View } from 'react-native';
+import { SvgUri } from 'react-native-svg';
 
 import { getBadgeIconSource } from '../../lib/badgeIcons';
 import { getEarnedBadges, type BadgeKey } from '../../lib/getEarnedBadges';
@@ -18,8 +19,9 @@ type BadgeItem = {
 
 function RemoteBadgeIcon({ badgeKey, earned }: { badgeKey: BadgeKey; earned: boolean }) {
   const source = getBadgeIconSource(badgeKey);
+  const uri = source && typeof source === 'object' && 'uri' in source ? source.uri : null;
 
-  if (!source) {
+  if (!uri) {
     return (
       <View style={[styles.badgeArt, earned ? styles.badgeArtEarned : styles.badgeArtLocked]}>
         <Image
@@ -39,13 +41,9 @@ function RemoteBadgeIcon({ badgeKey, earned }: { badgeKey: BadgeKey; earned: boo
 
   return (
     <View style={[styles.badgeArt, earned ? styles.badgeArtEarned : styles.badgeArtLocked]}>
-      <Image
-        source={source}
-        style={[styles.badgeIcon, !earned && styles.badgeMuted]}
-        contentFit="contain"
-        recyclingKey={badgeKey}
-        priority="high"
-      />
+      <View style={!earned ? styles.badgeMuted : undefined}>
+        <SvgUri uri={uri} width={100} height={100} />
+      </View>
       {!earned ? <View style={styles.lockedScrim} pointerEvents="none" /> : null}
       <BadgeStatusMark earned={earned} />
     </View>
