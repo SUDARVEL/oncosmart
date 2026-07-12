@@ -229,7 +229,7 @@ function DayCard({
         <ExerciseVideoBanner
           source={HOME_PAGE_PLACEHOLDER_VIDEO}
           aspectRatio={DAY_CARD_PREVIEW_ASPECT}
-          previewContentFit="contain"
+          previewContentFit="cover"
           fillContainer
         />
         {isLocked ? (
@@ -464,7 +464,7 @@ const styles = StyleSheet.create({
   },
   dayCard: {
     width: DAY_CARD_WIDTH,
-    height: DAY_CARD_HEIGHT,
+    minHeight: DAY_CARD_HEIGHT,
     alignSelf: 'center',
     paddingVertical: 16,
     paddingHorizontal: 15,
@@ -483,7 +483,7 @@ const styles = StyleSheet.create({
     opacity: 0.92,
   },
   exerciseBannerWrap: {
-    width: DAY_CARD_MEDIA_WIDTH,
+    width: '100%',
     height: DAY_CARD_MEDIA_HEIGHT,
     flexShrink: 0,
     alignItems: 'center',
@@ -491,9 +491,8 @@ const styles = StyleSheet.create({
     position: 'relative',
     borderRadius: 8,
     overflow: 'hidden',
-    // Match video letterboxing so full body (incl. legs) stays visible with contain
-    backgroundColor: '#FFFFFF',
-    alignSelf: 'center',
+    backgroundColor: '#F3F4F6',
+    alignSelf: 'stretch',
   },
   lockOverlay: {
     ...StyleSheet.absoluteFillObject,
