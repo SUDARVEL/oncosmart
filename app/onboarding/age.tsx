@@ -34,7 +34,7 @@ export default function AgeScreen() {
 
   return (
     <SafeAreaView style={styles.screen}>
-      <ScreenHeader title={t('age.header')} showBack />
+      <ScreenHeader title={t('age.header')} showBack largeTitle />
 
       <View style={styles.content}>
         <View style={styles.intro}>
