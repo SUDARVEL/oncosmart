@@ -31,7 +31,7 @@ export default function ParqResultScreen() {
 
       <View style={styles.content}>
         <View style={styles.hero}>
-          <ParqCheckmarkIllustration />
+          <ParqCheckmarkIllustration size="large" />
 
           <View style={styles.textBlock}>
             <Text style={styles.title}>
@@ -47,6 +47,7 @@ export default function ParqResultScreen() {
           label={t('parq.startPlan')}
           onPress={handleStart}
           variant={cleared ? 'primary' : 'muted'}
+          style={styles.cta}
         />
       </View>
     </SafeAreaView>
@@ -59,49 +60,54 @@ const styles = StyleSheet.create({
     backgroundColor: colors.background,
   },
   header: {
-    height: 40,
+    minHeight: 48,
     marginTop: 8,
     paddingHorizontal: 16,
     justifyContent: 'center',
   },
   backSlot: {
-    width: 24,
-    height: 24,
+    width: 28,
+    height: 28,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   content: {
     flex: 1,
     justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingBottom: 24,
-    marginTop: 132,
+    paddingHorizontal: 24,
+    paddingBottom: 28,
+    paddingTop: 40,
   },
   hero: {
     alignItems: 'center',
     paddingHorizontal: 8,
-    maxWidth: 342,
+    maxWidth: 360,
     alignSelf: 'center',
     width: '100%',
+    gap: 24,
   },
   textBlock: {
-    marginTop: 16,
-    gap: 8,
+    gap: 12,
     alignItems: 'center',
     width: '100%',
   },
   title: {
-    fontSize: 14,
+    fontSize: 24,
+    lineHeight: 32,
     ...font('semiBold'),
     color: colors.textPrimary,
     textAlign: 'center',
-    letterSpacing: 0.1,
-    lineHeight: 20,
+    letterSpacing: -0.2,
   },
   subtitle: {
-    fontSize: 14,
-    ...font('medium'),
+    fontSize: 17,
+    lineHeight: 26,
+    ...font('regular'),
     color: colors.textSecondary,
     textAlign: 'center',
-    lineHeight: 20,
-    maxWidth: 329,
+    maxWidth: 340,
+  },
+  cta: {
+    height: 56,
   },
 });
