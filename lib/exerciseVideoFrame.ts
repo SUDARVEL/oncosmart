@@ -16,9 +16,12 @@ export const HOME_DAY_CARD_PREVIEW_ASPECT =
 export const HOME_DAY_CARD_WIDTH = 359;
 export const HOME_DAY_CARD_HEIGHT = 300;
 
-/** Session list exercise card preview — landscape frame matching Figma day-session cards. */
-export const SESSION_EXERCISE_CARD_PREVIEW_WIDTH = 328;
-export const SESSION_EXERCISE_CARD_PREVIEW_HEIGHT = 180;
+/** Session list exercise card — Figma 257×112 landscape preview. */
+export const SESSION_EXERCISE_CARD_PREVIEW_WIDTH = 257;
+export const SESSION_EXERCISE_CARD_PREVIEW_HEIGHT = 112;
 export const SESSION_EXERCISE_CARD_PREVIEW_ASPECT =
   SESSION_EXERCISE_CARD_PREVIEW_WIDTH / SESSION_EXERCISE_CARD_PREVIEW_HEIGHT;
 export const SESSION_EXERCISE_CARD_PREVIEW_BACKGROUND = '#F3F4F6';
+
+/** Session list card shell — Figma height 180. */
+export const SESSION_EXERCISE_CARD_HEIGHT = 180;

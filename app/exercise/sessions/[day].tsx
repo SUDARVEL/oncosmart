@@ -83,6 +83,7 @@ export default function ExerciseSessionsScreen() {
             name={exercise.name}
             repLabel={exercise.repLabel}
             previewPhoto={exercise.previewPhoto}
+            previewVideo={exercise.previewVideo}
           />
         ))}
       </ScrollView>

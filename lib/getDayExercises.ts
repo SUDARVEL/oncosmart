@@ -11,6 +11,7 @@ import {
   resolveExercisePlaybackUrl,
 } from './resolveExercisePreview';
 import { resolveSessionCardPhotoSource } from './resolveSessionCardPhoto';
+import { getSessionLandscapeVideoUrl } from './sessionLandscapeVideos';
 import { resolveVideoUrl } from './resolveVideoUrl';
 
 export type DayExercise = {
@@ -29,8 +30,10 @@ export type ResolvedDayExercise = DayExercise & {
   /** Resolved playback URL — only fetch during guided session or single-exercise preview. */
   videoSource: string | null;
   playbackSource: string | null;
-  /** Static preview for session list cards (local PNG preferred; remote PNG cached). */
+  /** Static preview for session list cards (used when no landscape loop video). */
   previewPhoto: ImageSource | null;
+  /** Muted looping landscape clip for session list cards (GIF-like). */
+  previewVideo: string | null;
   /** @deprecated Use previewPhoto */
   thumbnail: ImageSource | null;
 };
@@ -100,6 +103,7 @@ export function getLevelExercises(
   const resolved = session.exercises.map((exercise) => {
     const videoSource = resolveExplicitExerciseVideo(exercise, variant);
     const previewPhoto = resolveSessionCardPhotoSource(exercise.id, gender);
+    const previewVideo = getSessionLandscapeVideoUrl(exercise.id, gender);
     const thumbnail = getDay1Thumbnail(exercise.id);
 
     return {
@@ -107,6 +111,7 @@ export function getLevelExercises(
       videoSource,
       playbackSource: resolveExercisePlaybackUrl(videoSource, exercise.name, variant),
       previewPhoto: previewPhoto ?? thumbnail,
+      previewVideo,
       thumbnail,
     };
   });

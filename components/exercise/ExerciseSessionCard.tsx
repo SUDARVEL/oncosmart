@@ -2,9 +2,12 @@ import type { ImageSource } from 'expo-image';
 import { Dimensions, StyleSheet, Text, View } from 'react-native';
 
 import { CachedMediaImage } from '../CachedMediaImage';
+import { SessionCardLoopVideo } from './SessionCardLoopVideo';
 import {
+  SESSION_EXERCISE_CARD_HEIGHT,
   SESSION_EXERCISE_CARD_PREVIEW_ASPECT,
   SESSION_EXERCISE_CARD_PREVIEW_BACKGROUND,
+  SESSION_EXERCISE_CARD_PREVIEW_HEIGHT,
   SESSION_EXERCISE_CARD_PREVIEW_WIDTH,
 } from '../../lib/exerciseVideoFrame';
 import { font } from '../../theme/fonts';
@@ -14,12 +17,15 @@ const previewWidth = Math.min(
   Dimensions.get('window').width - CARD_HORIZONTAL_PADDING,
   SESSION_EXERCISE_CARD_PREVIEW_WIDTH,
 );
-const previewHeight = previewWidth / SESSION_EXERCISE_CARD_PREVIEW_ASPECT;
+const previewHeight = Math.round(
+  previewWidth / SESSION_EXERCISE_CARD_PREVIEW_ASPECT,
+);
 
 type Props = {
   name: string;
   repLabel: string;
   previewPhoto: ImageSource | null;
+  previewVideo: string | null;
   exerciseId: string;
 };
 
@@ -31,17 +37,25 @@ function formatRepBadge(repLabel: string): string {
   return trimmed;
 }
 
-/** Figma day-session card — landscape preview, title, X10 badge. */
-export function ExerciseSessionCard({ name, repLabel, previewPhoto, exerciseId }: Props) {
+/** Figma day-session card — 180px shell, 257×112 looping landscape video. */
+export function ExerciseSessionCard({
+  name,
+  repLabel,
+  previewPhoto,
+  previewVideo,
+  exerciseId,
+}: Props) {
   return (
     <View style={styles.card} accessibilityRole="text">
       <View style={styles.body}>
         <View style={[styles.previewWrap, { width: previewWidth, height: previewHeight }]}>
-          {previewPhoto ? (
+          {previewVideo ? (
+            <SessionCardLoopVideo uri={previewVideo} />
+          ) : previewPhoto ? (
             <CachedMediaImage
               source={previewPhoto}
               style={styles.previewImage}
-              contentFit="contain"
+              contentFit="cover"
               contentPosition="center"
               recyclingKey={`session-card-${exerciseId}`}
               cachePolicy="memory-disk"
@@ -66,6 +80,8 @@ export function ExerciseSessionCard({ name, repLabel, previewPhoto, exerciseId }
 const styles = StyleSheet.create({
   card: {
     width: '100%',
+    height: SESSION_EXERCISE_CARD_HEIGHT,
+    alignSelf: 'stretch',
     backgroundColor: '#FFFFFF',
     borderWidth: 1,
     borderColor: '#F3F4F6',
@@ -78,13 +94,17 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   body: {
-    paddingTop: 16,
+    flex: 1,
+    paddingTop: 12,
     paddingHorizontal: 16,
-    paddingBottom: 16,
-    gap: 12,
+    paddingBottom: 12,
+    gap: 8,
     alignItems: 'center',
+    justifyContent: 'center',
   },
   previewWrap: {
+    width: SESSION_EXERCISE_CARD_PREVIEW_WIDTH,
+    height: SESSION_EXERCISE_CARD_PREVIEW_HEIGHT,
     borderRadius: 8,
     overflow: 'hidden',
     backgroundColor: SESSION_EXERCISE_CARD_PREVIEW_BACKGROUND,
@@ -105,7 +125,6 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
     ...font('semiBold'),
     paddingHorizontal: 8,
-    paddingBottom: 4,
   },
   repBadge: {
     position: 'absolute',
