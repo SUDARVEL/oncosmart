@@ -4,6 +4,10 @@ import { Pressable, StyleSheet, View } from 'react-native';
 
 import { colors } from '../theme/colors';
 
+/** Figma avatar display size inside each choose-avatar card. */
+export const AVATAR_DISPLAY_WIDTH = 143;
+export const AVATAR_DISPLAY_HEIGHT = 363;
+
 type AvatarCardProps = {
   image: ImageSource;
   selected: boolean;
@@ -44,6 +48,8 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     backgroundColor: colors.optionBg,
     overflow: 'hidden',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   cardSelected: {
     backgroundColor: colors.optionBgSelected,
@@ -51,15 +57,14 @@ const styles = StyleSheet.create({
     borderColor: colors.optionBorderSelected,
   },
   imageFrame: {
-    flex: 1,
-    width: '100%',
-    paddingVertical: 4,
-    paddingHorizontal: 2,
-    backgroundColor: 'transparent',
+    width: AVATAR_DISPLAY_WIDTH,
+    height: AVATAR_DISPLAY_HEIGHT,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   image: {
-    width: '100%',
-    height: '100%',
+    width: AVATAR_DISPLAY_WIDTH,
+    height: AVATAR_DISPLAY_HEIGHT,
     backgroundColor: 'transparent',
   },
   checkBadge: {
