@@ -1,7 +1,8 @@
 import { CachedMediaImage } from '../CachedMediaImage';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { SvgUri } from 'react-native-svg';
 
 import type { LevelWorkout } from '../../lib/getLevelWorkouts';
 import { colors } from '../../theme/colors';
@@ -16,9 +17,19 @@ type WorkoutRowCardProps = {
 const PHOTO_WIDTH = 66;
 const PHOTO_HEIGHT = 70;
 
+function getRemoteUri(source: LevelWorkout['photoSource']): string | null {
+  if (!source || typeof source === 'number') return null;
+  if (typeof source === 'object' && 'uri' in source && typeof source.uri === 'string') {
+    return source.uri;
+  }
+  return null;
+}
+
 export function WorkoutRowCard({ workout, onPress }: WorkoutRowCardProps) {
   const { t } = useTranslation();
   const [imageFailed, setImageFailed] = useState(false);
+  const remoteUri = useMemo(() => getRemoteUri(workout.photoSource), [workout.photoSource]);
+  const isSvg = Boolean(remoteUri?.toLowerCase().includes('.svg'));
   const showPhoto = Boolean(workout.photoSource) && !imageFailed;
 
   useEffect(() => {
@@ -33,7 +44,14 @@ export function WorkoutRowCard({ workout, onPress }: WorkoutRowCardProps) {
       accessibilityLabel={t(workout.titleKey)}
     >
       <View style={styles.photoWrap}>
-        {showPhoto ? (
+        {showPhoto && isSvg && remoteUri ? (
+          <SvgUri
+            uri={remoteUri}
+            width={PHOTO_WIDTH}
+            height={PHOTO_HEIGHT}
+            onError={() => setImageFailed(true)}
+          />
+        ) : showPhoto ? (
           <CachedMediaImage
             source={workout.photoSource!}
             style={styles.photo}
