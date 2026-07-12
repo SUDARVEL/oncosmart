@@ -7,7 +7,6 @@ import type { WorkoutDetail } from '../../lib/getWorkoutDetails';
 import { getWorkoutRepLabel } from '../../lib/getWorkoutRepLabel';
 import {
   WORKOUT_SLIDER_BODY_HEIGHT,
-  WORKOUT_SLIDER_MEDIA_BACKGROUND,
   WORKOUT_SLIDER_MEDIA_HEIGHT,
   WORKOUT_SLIDER_MEDIA_RADIUS,
   WORKOUT_SLIDER_MEDIA_WIDTH,
@@ -76,17 +75,17 @@ const styles = StyleSheet.create({
     height: WORKOUT_SLIDER_MEDIA_HEIGHT,
     borderRadius: WORKOUT_SLIDER_MEDIA_RADIUS,
     overflow: 'hidden',
-    backgroundColor: WORKOUT_SLIDER_MEDIA_BACKGROUND,
+    backgroundColor: 'transparent',
   },
   media: {
     width: '100%',
     height: '100%',
-    backgroundColor: WORKOUT_SLIDER_MEDIA_BACKGROUND,
+    backgroundColor: 'transparent',
   },
   mediaPlaceholder: {
     width: '100%',
     height: '100%',
-    backgroundColor: WORKOUT_SLIDER_MEDIA_BACKGROUND,
+    backgroundColor: '#F3F4F6',
   },
   textBlock: {
     height: WORKOUT_SLIDER_TEXT_BLOCK_HEIGHT - 8,

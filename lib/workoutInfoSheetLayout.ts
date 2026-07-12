@@ -36,7 +36,8 @@ export const WORKOUT_SLIDER_MEDIA_HEIGHT = Math.min(
 );
 
 export const WORKOUT_SLIDER_MEDIA_RADIUS = 16;
-export const WORKOUT_SLIDER_MEDIA_BACKGROUND = '#E8E8E8';
+/** Transparent — no grey frame behind slider photos. */
+export const WORKOUT_SLIDER_MEDIA_BACKGROUND = 'transparent';
 
 export const WORKOUT_SLIDER_BODY_HEIGHT =
   WORKOUT_SLIDER_MEDIA_HEIGHT + WORKOUT_SLIDER_TEXT_BLOCK_HEIGHT;
