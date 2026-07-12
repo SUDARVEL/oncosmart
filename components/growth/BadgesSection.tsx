@@ -1,9 +1,8 @@
-import type { ImageSource } from 'expo-image';
-import type { ReactNode } from 'react';
 import { Image } from 'expo-image';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 
+import { getBadgeIconSource } from '../../lib/badgeIcons';
 import { getEarnedBadges, type BadgeKey } from '../../lib/getEarnedBadges';
 import { getCompletedSessionCount } from '../../lib/programProgress';
 import { useAppStore } from '../../store/useAppStore';
@@ -15,121 +14,74 @@ type BadgeItem = {
   key: BadgeKey;
   titleKey: string;
   subtitleKey: string;
-  renderBadge: (earned: boolean) => ReactNode;
 };
 
-function BadgeArt({
-  bg,
-  children,
-  earned,
-}: {
-  bg: ImageSource;
-  children: ReactNode;
-  earned: boolean;
-}) {
+function RemoteBadgeIcon({ badgeKey, earned }: { badgeKey: BadgeKey; earned: boolean }) {
+  const source = getBadgeIconSource(badgeKey);
+
+  if (!source) {
+    return (
+      <View style={[styles.badgeArt, earned ? styles.badgeArtEarned : styles.badgeArtLocked]}>
+        <Image
+          source={GROWTH_ASSETS.badgeBgAlt}
+          style={[styles.badgeIcon, !earned && styles.badgeMuted]}
+          contentFit="contain"
+        />
+        <Image
+          source={GROWTH_ASSETS.badgeTrophy}
+          style={[styles.fallbackTrophy, !earned && styles.badgeMuted]}
+          contentFit="contain"
+        />
+        <BadgeStatusMark earned={earned} />
+      </View>
+    );
+  }
+
   return (
     <View style={[styles.badgeArt, earned ? styles.badgeArtEarned : styles.badgeArtLocked]}>
       <Image
-        source={bg}
-        style={[styles.badgeBg, !earned && styles.badgeLayerMuted]}
+        source={source}
+        style={[styles.badgeIcon, !earned && styles.badgeMuted]}
         contentFit="contain"
+        recyclingKey={badgeKey}
+        priority="high"
       />
-      <View style={!earned ? styles.badgeLayerMuted : undefined}>{children}</View>
       {!earned ? <View style={styles.lockedScrim} pointerEvents="none" /> : null}
-      {earned ? (
-        <View style={styles.earnedBadge}>
-          <Image source={GROWTH_ASSETS.badgeCheck} style={styles.earnedIcon} contentFit="contain" />
-        </View>
-      ) : (
-        <View style={styles.lockedBadge}>
-          <Text style={styles.lockedBadgeText}>?</Text>
-        </View>
-      )}
+      <BadgeStatusMark earned={earned} />
     </View>
   );
 }
 
-function StartupChampionBadge({ earned }: { earned: boolean }) {
-  return (
-    <BadgeArt bg={GROWTH_ASSETS.badgeBg} earned={earned}>
-      <Image source={GROWTH_ASSETS.badgeRocket} style={styles.rocket} contentFit="contain" />
-      <Image source={GROWTH_ASSETS.badgeStars} style={styles.badgeStarsBottom} contentFit="contain" />
-    </BadgeArt>
-  );
-}
+function BadgeStatusMark({ earned }: { earned: boolean }) {
+  if (earned) {
+    return (
+      <View style={styles.earnedBadge}>
+        <Image source={GROWTH_ASSETS.badgeCheck} style={styles.earnedIcon} contentFit="contain" />
+      </View>
+    );
+  }
 
-function ConsistentStarBadge({ earned }: { earned: boolean }) {
   return (
-    <BadgeArt bg={GROWTH_ASSETS.badgeBg} earned={earned}>
-      <Image source={GROWTH_ASSETS.badgeCalendar} style={styles.calendarFrame} contentFit="contain" />
-      <Image
-        source={GROWTH_ASSETS.badgeCalendarHeader}
-        style={styles.calendarHeader}
-        contentFit="contain"
-      />
-      <Image
-        source={GROWTH_ASSETS.badgeCalendarStars}
-        style={styles.badgeStarsBottom}
-        contentFit="contain"
-      />
-    </BadgeArt>
-  );
-}
-
-function StrengthBuilderBadge({ earned }: { earned: boolean }) {
-  return (
-    <BadgeArt bg={GROWTH_ASSETS.badgeBgAlt} earned={earned}>
-      <Image source={GROWTH_ASSETS.badgeMuscle} style={styles.muscle} contentFit="contain" />
-      <Image source={GROWTH_ASSETS.badgeMuscleStars} style={styles.badgeStarsBottom} contentFit="contain" />
-    </BadgeArt>
-  );
-}
-
-function FunctionalHeroBadge({ earned }: { earned: boolean }) {
-  return (
-    <View style={[styles.badgeArt, earned ? styles.badgeArtEarned : styles.badgeArtLocked]}>
-      <Image
-        source={GROWTH_ASSETS.badgeFunctionalHero}
-        style={[styles.badgeBg, !earned && styles.badgeLayerMuted]}
-        contentFit="contain"
-      />
-      {!earned ? <View style={styles.lockedScrim} pointerEvents="none" /> : null}
-      {earned ? (
-        <View style={styles.earnedBadge}>
-          <Image source={GROWTH_ASSETS.badgeCheck} style={styles.earnedIcon} contentFit="contain" />
-        </View>
-      ) : (
-        <View style={styles.lockedBadge}>
-          <Text style={styles.lockedBadgeText}>?</Text>
-        </View>
-      )}
+    <View style={styles.lockedBadge}>
+      <Text style={styles.lockedBadgeText}>?</Text>
     </View>
-  );
-}
-
-function UnstoppableBadge({ earned }: { earned: boolean }) {
-  return (
-    <BadgeArt bg={GROWTH_ASSETS.badgeBgAlt} earned={earned}>
-      <Image source={GROWTH_ASSETS.badgeTrophy} style={styles.trophy} contentFit="contain" />
-      <Image source={GROWTH_ASSETS.badgeTrophyStars} style={styles.badgeStarsBottom} contentFit="contain" />
-    </BadgeArt>
   );
 }
 
 function BadgeCard({
+  badgeKey,
   title,
   subtitle,
   earned,
-  children,
 }: {
+  badgeKey: BadgeKey;
   title: string;
   subtitle: string;
   earned: boolean;
-  children: ReactNode;
 }) {
   return (
     <View style={[styles.badgeCard, earned && styles.badgeCardEarned]}>
-      {children}
+      <RemoteBadgeIcon badgeKey={badgeKey} earned={earned} />
       <Text style={[styles.badgeTitle, earned ? styles.badgeTitleEarned : styles.badgeTitleLocked]}>
         {title}
       </Text>
@@ -145,6 +97,34 @@ function BadgeCard({
   );
 }
 
+const BADGES: BadgeItem[] = [
+  {
+    key: 'startup',
+    titleKey: 'growth.badgeStartupTitle',
+    subtitleKey: 'growth.badgeStartupSubtitle',
+  },
+  {
+    key: 'consistent',
+    titleKey: 'growth.badgeConsistentTitle',
+    subtitleKey: 'growth.badgeConsistentSubtitle',
+  },
+  {
+    key: 'strength',
+    titleKey: 'growth.badgeStrengthTitle',
+    subtitleKey: 'growth.badgeStrengthSubtitle',
+  },
+  {
+    key: 'hero',
+    titleKey: 'growth.badgeHeroTitle',
+    subtitleKey: 'growth.badgeHeroSubtitle',
+  },
+  {
+    key: 'unstoppable',
+    titleKey: 'growth.badgeUnstoppableTitle',
+    subtitleKey: 'growth.badgeUnstoppableSubtitle',
+  },
+];
+
 export function BadgesSection() {
   const { t } = useTranslation();
   const { width: screenWidth } = useWindowDimensions();
@@ -154,39 +134,6 @@ export function BadgesSection() {
   const earnedBadges = getEarnedBadges(levelsCompleted, sessionsCompleted);
   const gridWidth = Math.min(322, screenWidth - 42);
 
-  const badges: BadgeItem[] = [
-    {
-      key: 'startup',
-      titleKey: 'growth.badgeStartupTitle',
-      subtitleKey: 'growth.badgeStartupSubtitle',
-      renderBadge: (earned) => <StartupChampionBadge earned={earned} />,
-    },
-    {
-      key: 'consistent',
-      titleKey: 'growth.badgeConsistentTitle',
-      subtitleKey: 'growth.badgeConsistentSubtitle',
-      renderBadge: (earned) => <ConsistentStarBadge earned={earned} />,
-    },
-    {
-      key: 'strength',
-      titleKey: 'growth.badgeStrengthTitle',
-      subtitleKey: 'growth.badgeStrengthSubtitle',
-      renderBadge: (earned) => <StrengthBuilderBadge earned={earned} />,
-    },
-    {
-      key: 'hero',
-      titleKey: 'growth.badgeHeroTitle',
-      subtitleKey: 'growth.badgeHeroSubtitle',
-      renderBadge: (earned) => <FunctionalHeroBadge earned={earned} />,
-    },
-    {
-      key: 'unstoppable',
-      titleKey: 'growth.badgeUnstoppableTitle',
-      subtitleKey: 'growth.badgeUnstoppableSubtitle',
-      renderBadge: (earned) => <UnstoppableBadge earned={earned} />,
-    },
-  ];
-
   return (
     <View style={styles.section}>
       <View style={styles.header}>
@@ -195,17 +142,16 @@ export function BadgesSection() {
       </View>
 
       <View style={[styles.grid, { width: gridWidth }]}>
-        {badges.map((badge) => {
+        {BADGES.map((badge) => {
           const earned = earnedBadges.has(badge.key);
           return (
             <BadgeCard
               key={badge.key}
+              badgeKey={badge.key}
               title={t(badge.titleKey)}
               subtitle={t(badge.subtitleKey)}
               earned={earned}
-            >
-              {badge.renderBadge(earned)}
-            </BadgeCard>
+            />
           );
         })}
       </View>
@@ -265,7 +211,7 @@ const styles = StyleSheet.create({
     height: 100,
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: 50,
+    borderRadius: 20,
     overflow: 'hidden',
   },
   badgeArtEarned: {
@@ -274,49 +220,21 @@ const styles = StyleSheet.create({
   badgeArtLocked: {
     backgroundColor: '#E5E7EB',
   },
-  badgeLayerMuted: {
-    opacity: 0.35,
+  badgeIcon: {
+    width: 100,
+    height: 100,
+  },
+  badgeMuted: {
+    opacity: 0.4,
   },
   lockedScrim: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(156, 163, 175, 0.35)',
+    backgroundColor: 'rgba(156, 163, 175, 0.28)',
   },
-  badgeBg: {
-    width: 100,
-    height: 100,
+  fallbackTrophy: {
     position: 'absolute',
-  },
-  rocket: {
-    width: 50,
-    height: 58,
-    marginTop: 8,
-  },
-  calendarFrame: {
-    width: 65,
-    height: 52,
-    marginTop: 10,
-  },
-  calendarHeader: {
-    position: 'absolute',
-    width: 46,
-    height: 28,
-    top: 24,
-  },
-  muscle: {
-    width: 69,
+    width: 52,
     height: 60,
-    marginTop: 8,
-  },
-  trophy: {
-    width: 53,
-    height: 62,
-    marginTop: 4,
-  },
-  badgeStarsBottom: {
-    position: 'absolute',
-    bottom: 12,
-    width: 48,
-    height: 12,
   },
   earnedBadge: {
     position: 'absolute',
