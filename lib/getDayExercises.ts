@@ -10,7 +10,6 @@ import {
   guessSupabaseExerciseVideoUrl,
   resolveExercisePlaybackUrl,
 } from './resolveExercisePreview';
-import { resolveWorkoutPhotoSource } from './resolveWorkoutPhoto';
 import { resolveSessionCardPhotoSource } from './resolveSessionCardPhoto';
 import { resolveVideoUrl } from './resolveVideoUrl';
 
