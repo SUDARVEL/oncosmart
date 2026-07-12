@@ -43,7 +43,6 @@ import { font } from '../theme/fonts';
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const QUOTE_CARD_WIDTH = SCREEN_WIDTH - 32;
 
-const MALE_AVATAR = require('../assets/avatars/male-avatar.png');
 const FEMALE_AVATAR = require('../assets/avatars/female-avatar.png');
 const WALKING_CHARACTER = require('../assets/home/walking-character.png');
 const DAY_CARD_PREVIEW_ASPECT = HOME_DAY_CARD_PREVIEW_ASPECT;
@@ -123,7 +122,8 @@ export default function HomeScreen() {
             {t('home.welcome', { name: username || 'Guest' })}
           </Text>
           <HomeAvatarButton
-            source={avatar === 'female' ? FEMALE_AVATAR : MALE_AVATAR}
+            avatar={avatar}
+            femaleSource={FEMALE_AVATAR}
             onPress={handleAvatarPress}
             accessibilityLabel={t('home.changeAvatar')}
           />

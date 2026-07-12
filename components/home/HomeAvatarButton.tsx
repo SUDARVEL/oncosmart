@@ -1,26 +1,41 @@
-import { Image } from 'expo-image';
+import { Image, type ImageSource } from 'expo-image';
 import { Pressable, StyleSheet, View } from 'react-native';
 import { SvgXml } from 'react-native-svg';
 
+import type { AppAvatar } from '../../store/useAppStore';
 import { colors } from '../../theme/colors';
 
-/** Onboarding Assets / Ellipse 15.svg — 64×64 white circle, #005F99 stroke. */
+/**
+ * Onboarding Assets / Ellipse 15.svg — ring around home avatar.
+ * Male face crop comes from Male Avatar DP Svg.svg framing.
+ */
 const ELLIPSE_15_XML = `<svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
 <circle cx="32" cy="32" r="31.5" fill="white" stroke="#005F99"/>
 </svg>`;
 
+const MALE_AVATAR_DP = require('../../assets/avatars/male-avatar-dp.png');
+
 const SIZE = 64;
-/** Keep avatar inside the 1px stroke (r=31.5). */
 const AVATAR_INSET = 1.5;
 
 type Props = {
-  source: number;
+  avatar: AppAvatar | null;
+  /** Female (or fallback) full avatar image. */
+  femaleSource: ImageSource;
   onPress: () => void;
   accessibilityLabel: string;
 };
 
-/** Home header avatar — Ellipse 15 ring, opens choose-avatar screen. */
-export function HomeAvatarButton({ source, onPress, accessibilityLabel }: Props) {
+/** Home header avatar circle — Male DP Svg framing + Ellipse 15 ring. */
+export function HomeAvatarButton({
+  avatar,
+  femaleSource,
+  onPress,
+  accessibilityLabel,
+}: Props) {
+  const source = avatar === 'female' ? femaleSource : MALE_AVATAR_DP;
+  const contentPosition = avatar === 'female' ? 'top' : 'center';
+
   return (
     <Pressable
       onPress={onPress}
@@ -34,7 +49,7 @@ export function HomeAvatarButton({ source, onPress, accessibilityLabel }: Props)
           source={source}
           style={styles.avatarImage}
           contentFit="cover"
-          contentPosition="top"
+          contentPosition={contentPosition}
           cachePolicy="memory-disk"
         />
       </View>
