@@ -15,6 +15,11 @@ type WorkoutRowCardProps = {
 /** Figma Growth row thumbnail. */
 const PHOTO_WIDTH = 66;
 const PHOTO_HEIGHT = 70;
+/**
+ * Full-body / landscape stills leave empty studio around the figure.
+ * Zoom into the subject so the oval is filled (cover alone is not enough).
+ */
+const PHOTO_ZOOM = 2.75;
 
 export function WorkoutRowCard({ workout, onPress }: WorkoutRowCardProps) {
   const { t } = useTranslation();
@@ -38,9 +43,7 @@ export function WorkoutRowCard({ workout, onPress }: WorkoutRowCardProps) {
             source={workout.photoSource!}
             style={styles.photo}
             contentFit="cover"
-            // Portrait full-body stills: pin to top so the person fills the oval
-            // instead of the grey studio wall at the image center.
-            contentPosition="top"
+            contentPosition="center"
             recyclingKey={`growth-row-${workout.id}`}
             onError={() => setImageFailed(true)}
           />
@@ -53,6 +56,9 @@ export function WorkoutRowCard({ workout, onPress }: WorkoutRowCardProps) {
     </Pressable>
   );
 }
+
+const zoomedWidth = PHOTO_WIDTH * PHOTO_ZOOM;
+const zoomedHeight = PHOTO_HEIGHT * PHOTO_ZOOM;
 
 const styles = StyleSheet.create({
   card: {
@@ -79,8 +85,12 @@ const styles = StyleSheet.create({
     backgroundColor: '#D1D5DB',
   },
   photo: {
-    width: PHOTO_WIDTH,
-    height: PHOTO_HEIGHT,
+    position: 'absolute',
+    width: zoomedWidth,
+    height: zoomedHeight,
+    // Center horizontally; bias slightly upward so standing/sitting figures fill the oval
+    left: (PHOTO_WIDTH - zoomedWidth) / 2,
+    top: (PHOTO_HEIGHT - zoomedHeight) / 2 - PHOTO_HEIGHT * 0.12,
   },
   textWrap: {
     flex: 1,
