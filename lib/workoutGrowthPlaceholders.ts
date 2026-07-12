@@ -12,6 +12,11 @@ const PLACEHOLDER_FOLDER = 'Male Workouts placeholder';
 const MALE_WORKOUT_PLACEHOLDER_FILES: Partial<Record<string, string>> = {
   'diaphragmatic-breathing': 'Diaphragmatic Breathing.svg',
   'ankle-pumps': 'Ankle Pumps.svg',
+  'arm-circles': 'arm circles.svg',
+  'straight-leg-raise-left': 'slr left.svg',
+  'straight-leg-raise-right': 'slr right.svg',
+  'knee-to-chest-left': 'knee to chest left.svg',
+  'knee-to-chest-right': 'knee to chest right.svg',
   'hamstring-stretch': 'hamstring stretch.svg',
   'chest-stretch': 'Chest stretch.svg',
   'quadriceps-stretch-left': 'quadriceps stretch left.svg',
