@@ -69,28 +69,29 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
     justifyContent: 'center',
-    paddingHorizontal: 60,
-    gap: 16,
-    marginTop: -40,
+    paddingHorizontal: 32,
+    gap: 20,
+    marginTop: -24,
   },
   intro: {
-    gap: 4,
+    gap: 6,
     marginBottom: 8,
   },
   title: {
-    fontSize: 14,
+    fontSize: 18,
     ...font('semiBold'),
     color: colors.textPrimary,
     textAlign: 'center',
   },
   subtitle: {
-    fontSize: 14,
+    fontSize: 15,
     ...font('medium'),
     color: colors.textSecondary,
+    lineHeight: 22,
     textAlign: 'center',
   },
   options: {
-    gap: 16,
-    marginBottom: 16,
+    gap: 14,
+    marginBottom: 8,
   },
 });

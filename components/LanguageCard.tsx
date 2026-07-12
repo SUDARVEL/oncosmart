@@ -26,23 +26,24 @@ export function LanguageCard({ label, glyph, selected, onPress }: LanguageCardPr
 
 const styles = StyleSheet.create({
   card: {
-    width: 126,
-    height: 97,
-    borderWidth: 1,
+    flex: 1,
+    minHeight: 128,
+    borderWidth: 1.5,
     borderColor: colors.cardBorder,
-    borderRadius: 8,
+    borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: colors.background,
-    gap: 8,
-    paddingVertical: 12,
+    gap: 10,
+    paddingVertical: 16,
+    paddingHorizontal: 12,
   },
   cardSelected: {
     borderColor: colors.optionBorderSelected,
     backgroundColor: colors.optionBgSelected,
   },
   label: {
-    fontSize: 14,
+    fontSize: 16,
     ...font('medium'),
     color: colors.optionTextUnselected,
     letterSpacing: 0.1,
@@ -52,10 +53,10 @@ const styles = StyleSheet.create({
     color: colors.optionTextSelected,
   },
   glyph: {
-    fontSize: 40,
+    fontSize: 44,
     ...font('medium'),
     color: colors.optionTextUnselected,
-    lineHeight: 48,
+    lineHeight: 52,
   },
   glyphSelected: {
     ...font('semiBold'),
