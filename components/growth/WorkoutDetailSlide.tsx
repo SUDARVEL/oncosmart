@@ -36,7 +36,7 @@ export function WorkoutDetailSlide({ workout, width }: Props) {
           <CachedMediaImage
             source={workout.photoSource!}
             style={styles.media}
-            contentFit="cover"
+            contentFit="contain"
             contentPosition="center"
             recyclingKey={workout.id}
             priority="high"

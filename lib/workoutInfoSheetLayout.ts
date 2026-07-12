@@ -16,9 +16,9 @@ const SHEET_CHROME_HEIGHT = 128; // handle + header + divider + dots + padding
 const AVAILABLE_BODY_HEIGHT = WORKOUT_SHEET_MAX_HEIGHT - SHEET_CHROME_HEIGHT;
 
 /** Space for title, reps, and description — keep text above dots. */
-export const WORKOUT_SLIDER_TEXT_BLOCK_HEIGHT = 210;
+export const WORKOUT_SLIDER_TEXT_BLOCK_HEIGHT = 200;
 
-/** Inset media frame — uses extra sheet height for a larger exercise image. */
+/** Inset media frame — tall enough for full-body slider photos with contain fit. */
 export const WORKOUT_SLIDER_MEDIA_WIDTH = Math.min(
   EXERCISE_VIDEO_FRAME_WIDTH,
   SCREEN_WIDTH - 32,
@@ -34,8 +34,8 @@ export const WORKOUT_SLIDER_MEDIA_HEIGHT = Math.min(
 );
 
 export const WORKOUT_SLIDER_MEDIA_RADIUS = 16;
-/** Matches Figma light-gray media frame — never show black letterboxing. */
-export const WORKOUT_SLIDER_MEDIA_BACKGROUND = '#F3F4F6';
+/** Room-grey frame so contain letterboxing matches slider photo backgrounds. */
+export const WORKOUT_SLIDER_MEDIA_BACKGROUND = '#E8E8E8';
 
 export const WORKOUT_SLIDER_BODY_HEIGHT =
   WORKOUT_SLIDER_MEDIA_HEIGHT + WORKOUT_SLIDER_TEXT_BLOCK_HEIGHT;
