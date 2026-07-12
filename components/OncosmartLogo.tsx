@@ -8,8 +8,7 @@ import {
 import { font } from '../theme/fonts';
 
 /** Figma node 2914:7747 — ONCOSMART wordmark under the ribbon. */
-const WORDMARK_WIDTH = 116;
-const WORDMARK_COLOR = '#2C2C8A';
+const WORDMARK_COLOR = '#273573';
 const ICON_TO_WORDMARK_GAP = 11;
 
 type Props = {
@@ -47,16 +46,17 @@ const styles = StyleSheet.create({
   wrap: {
     alignItems: 'center',
     justifyContent: 'center',
+    alignSelf: 'stretch',
   },
   wordmark: {
     marginTop: ICON_TO_WORDMARK_GAP,
-    width: WORDMARK_WIDTH,
-    fontSize: 14,
-    lineHeight: 15,
+    alignSelf: 'stretch',
+    flexShrink: 0,
+    fontSize: 16,
     color: WORDMARK_COLOR,
     textAlign: 'center',
-    letterSpacing: 1.2,
     textTransform: 'uppercase',
-    ...font('bold'),
+    includeFontPadding: false,
+    ...font('semiBold'),
   },
 });
