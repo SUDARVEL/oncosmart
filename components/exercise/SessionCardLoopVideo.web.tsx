@@ -1,8 +1,15 @@
 /**
  * Web: muted looping landscape preview for session cards.
+ * Fills the 257×112 preview frame edge-to-edge.
  */
 import { createElement, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
+
+import {
+  SESSION_EXERCISE_CARD_PREVIEW_BACKGROUND,
+  SESSION_EXERCISE_CARD_PREVIEW_HEIGHT,
+  SESSION_EXERCISE_CARD_PREVIEW_WIDTH,
+} from '../../lib/exerciseVideoFrame';
 
 type Props = {
   uri: string;
@@ -34,16 +41,15 @@ export function SessionCardLoopVideo({ uri }: Props) {
 
 const styles = StyleSheet.create({
   wrap: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: '#F3F4F6',
+    width: SESSION_EXERCISE_CARD_PREVIEW_WIDTH,
+    height: SESSION_EXERCISE_CARD_PREVIEW_HEIGHT,
+    backgroundColor: SESSION_EXERCISE_CARD_PREVIEW_BACKGROUND,
     overflow: 'hidden',
+    borderRadius: 8,
   },
   video: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    width: '100%',
-    height: '100%',
+    width: SESSION_EXERCISE_CARD_PREVIEW_WIDTH,
+    height: SESSION_EXERCISE_CARD_PREVIEW_HEIGHT,
     objectFit: 'cover',
     display: 'block',
   } as object,

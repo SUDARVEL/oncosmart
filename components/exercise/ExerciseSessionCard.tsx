@@ -1,25 +1,15 @@
 import type { ImageSource } from 'expo-image';
-import { Dimensions, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 
 import { CachedMediaImage } from '../CachedMediaImage';
 import { SessionCardLoopVideo } from './SessionCardLoopVideo';
 import {
   SESSION_EXERCISE_CARD_HEIGHT,
-  SESSION_EXERCISE_CARD_PREVIEW_ASPECT,
   SESSION_EXERCISE_CARD_PREVIEW_BACKGROUND,
   SESSION_EXERCISE_CARD_PREVIEW_HEIGHT,
   SESSION_EXERCISE_CARD_PREVIEW_WIDTH,
 } from '../../lib/exerciseVideoFrame';
 import { font } from '../../theme/fonts';
-
-const CARD_HORIZONTAL_PADDING = 32;
-const previewWidth = Math.min(
-  Dimensions.get('window').width - CARD_HORIZONTAL_PADDING,
-  SESSION_EXERCISE_CARD_PREVIEW_WIDTH,
-);
-const previewHeight = Math.round(
-  previewWidth / SESSION_EXERCISE_CARD_PREVIEW_ASPECT,
-);
 
 type Props = {
   name: string;
@@ -37,7 +27,7 @@ function formatRepBadge(repLabel: string): string {
   return trimmed;
 }
 
-/** Figma day-session card — 180px shell, 257×112 looping landscape video. */
+/** Figma day-session card — 180px shell, fixed 257×112 landscape media. */
 export function ExerciseSessionCard({
   name,
   repLabel,
@@ -48,7 +38,7 @@ export function ExerciseSessionCard({
   return (
     <View style={styles.card} accessibilityRole="text">
       <View style={styles.body}>
-        <View style={[styles.previewWrap, { width: previewWidth, height: previewHeight }]}>
+        <View style={styles.previewWrap}>
           {previewVideo ? (
             <SessionCardLoopVideo uri={previewVideo} />
           ) : previewPhoto ? (
@@ -87,7 +77,7 @@ const styles = StyleSheet.create({
     borderColor: '#F3F4F6',
     borderRadius: 8,
     shadowColor: '#000000',
-    shadowOffset: { width: 0, height: 4 },
+    shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.08,
     shadowRadius: 4,
     elevation: 3,
@@ -110,11 +100,12 @@ const styles = StyleSheet.create({
     backgroundColor: SESSION_EXERCISE_CARD_PREVIEW_BACKGROUND,
   },
   previewImage: {
-    width: '100%',
-    height: '100%',
+    width: SESSION_EXERCISE_CARD_PREVIEW_WIDTH,
+    height: SESSION_EXERCISE_CARD_PREVIEW_HEIGHT,
   },
   previewPlaceholder: {
-    flex: 1,
+    width: SESSION_EXERCISE_CARD_PREVIEW_WIDTH,
+    height: SESSION_EXERCISE_CARD_PREVIEW_HEIGHT,
     backgroundColor: SESSION_EXERCISE_CARD_PREVIEW_BACKGROUND,
   },
   title: {
