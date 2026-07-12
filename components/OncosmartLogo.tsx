@@ -1,15 +1,22 @@
-import { StyleSheet, Text, View } from 'react-native';
+import { Platform, StyleSheet, Text, View } from 'react-native';
 import { SvgXml } from 'react-native-svg';
 
 import {
   ONCOSMART_LOGO_ASPECT,
   ONCOSMART_LOGO_XML,
 } from '../lib/brand/oncosmartLogoXml';
-import { font } from '../theme/fonts';
 
 /** Figma node 2914:7747 — ONCOSMART wordmark under the ribbon. */
 const WORDMARK_COLOR = '#273573';
 const ICON_TO_WORDMARK_GAP = 11;
+
+/** Helvetica Neue Heavy — Figma handoff; Android falls back to black sans. */
+const WORDMARK_FONT_FAMILY = Platform.select({
+  ios: 'Helvetica Neue',
+  web: 'Helvetica Neue, Helvetica, Arial, sans-serif',
+  android: 'sans-serif-black',
+  default: 'Helvetica Neue',
+}) as string;
 
 type Props = {
   /** Ribbon icon width; height follows the SVG viewBox aspect ratio. */
@@ -50,13 +57,16 @@ const styles = StyleSheet.create({
   },
   wordmark: {
     marginTop: ICON_TO_WORDMARK_GAP,
-    alignSelf: 'stretch',
+    height: 14.71,
     flexShrink: 0,
-    fontSize: 16,
+    alignSelf: 'stretch',
     color: WORDMARK_COLOR,
+    fontFamily: WORDMARK_FONT_FAMILY,
+    fontSize: 16,
+    fontStyle: 'normal',
+    fontWeight: '800',
     textAlign: 'center',
     textTransform: 'uppercase',
     includeFontPadding: false,
-    ...font('semiBold'),
   },
 });
