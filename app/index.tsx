@@ -25,7 +25,7 @@ export default function SplashScreen() {
     <Pressable style={styles.pressable} onPress={goToOnboarding} accessibilityRole="button">
       <SafeAreaView style={styles.screen}>
         <View style={styles.centerContent}>
-          <OncosmartLogo width={116} />
+          <OncosmartLogo width={82} />
         </View>
         <SplashFooter />
       </SafeAreaView>
