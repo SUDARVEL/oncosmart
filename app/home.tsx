@@ -229,7 +229,7 @@ function DayCard({
         <ExerciseVideoBanner
           source={HOME_PAGE_PLACEHOLDER_VIDEO}
           aspectRatio={DAY_CARD_PREVIEW_ASPECT}
-          previewContentFit="cover"
+          previewContentFit="contain"
           fillContainer
         />
         {isLocked ? (
@@ -491,7 +491,8 @@ const styles = StyleSheet.create({
     position: 'relative',
     borderRadius: 8,
     overflow: 'hidden',
-    backgroundColor: '#F3F4F6',
+    // Match video letterboxing so full body (incl. legs) stays visible with contain
+    backgroundColor: '#FFFFFF',
     alignSelf: 'center',
   },
   lockOverlay: {
