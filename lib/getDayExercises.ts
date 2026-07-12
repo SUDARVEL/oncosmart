@@ -10,8 +10,8 @@ import {
   guessSupabaseExerciseVideoUrl,
   resolveExercisePlaybackUrl,
 } from './resolveExercisePreview';
-import { resolveWorkoutPhotoSource, resolveWorkoutSliderPhotoSource } from './resolveWorkoutPhoto';
-import { resolveSessionLandscapePhotoSource } from './sessionLandscapePhotos';
+import { resolveWorkoutPhotoSource } from './resolveWorkoutPhoto';
+import { resolveSessionCardPhotoSource } from './resolveSessionCardPhoto';
 import { resolveVideoUrl } from './resolveVideoUrl';
 
 export type DayExercise = {
@@ -100,14 +100,7 @@ export function getLevelExercises(
 
   const resolved = session.exercises.map((exercise) => {
     const videoSource = resolveExplicitExerciseVideo(exercise, variant);
-    /**
-     * Prefer high-res Male Slider Photos for session cards.
-     * Landscape folder assets are ~257px wide and look pixelated when enlarged.
-     */
-    const previewPhoto =
-      resolveWorkoutSliderPhotoSource(exercise.id, gender) ??
-      resolveSessionLandscapePhotoSource(exercise.id, gender) ??
-      resolveWorkoutPhotoSource(exercise.id, gender);
+    const previewPhoto = resolveSessionCardPhotoSource(exercise.id, gender);
     const thumbnail = getDay1Thumbnail(exercise.id);
 
     return {

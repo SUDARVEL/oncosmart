@@ -8,7 +8,7 @@ import {
 } from '../../lib/exerciseVideoFrame';
 import { font } from '../../theme/fonts';
 
-const CARD_HORIZONTAL_PADDING = 64;
+const CARD_HORIZONTAL_PADDING = 48;
 const previewWidth = Math.min(
   Dimensions.get('window').width - CARD_HORIZONTAL_PADDING,
   SESSION_EXERCISE_CARD_PREVIEW_WIDTH,
@@ -34,7 +34,7 @@ export function ExerciseSessionCard({ name, repLabel, previewPhoto, exerciseId }
               style={styles.previewImage}
               contentFit="contain"
               contentPosition="center"
-              recyclingKey={exerciseId}
+              recyclingKey={`session-card-${exerciseId}`}
               cachePolicy="memory-disk"
             />
           ) : (
@@ -67,21 +67,22 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   body: {
-    paddingTop: 16,
-    paddingHorizontal: 16,
+    paddingTop: 12,
+    paddingHorizontal: 12,
     paddingBottom: 12,
-    gap: 8,
+    gap: 10,
   },
   previewWrap: {
     alignSelf: 'center',
-    borderRadius: 8,
+    borderRadius: 12,
     overflow: 'hidden',
     backgroundColor: '#FFFFFF',
     position: 'relative',
   },
   previewImage: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'transparent',
+    width: '100%',
+    height: '100%',
+    backgroundColor: '#FFFFFF',
   },
   previewPlaceholder: {
     ...StyleSheet.absoluteFillObject,
