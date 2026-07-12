@@ -3,6 +3,7 @@ import { StyleSheet, View } from 'react-native';
 
 import { ensureExerciseAudioSession } from '../../lib/ensureExerciseAudioSession';
 import {
+  EXERCISE_VIDEO_CONTENT_FIT,
   EXERCISE_VIDEO_FRAME_BACKGROUND,
   EXERCISE_VIDEO_FRAME_BORDER_RADIUS,
 } from '../../lib/exerciseVideoFrame';
@@ -259,7 +260,7 @@ const styles = StyleSheet.create({
   video: {
     width: '100%',
     height: '100%',
-    objectFit: 'cover',
+    objectFit: EXERCISE_VIDEO_CONTENT_FIT,
     objectPosition: 'center',
     borderRadius: EXERCISE_VIDEO_FRAME_BORDER_RADIUS,
     backgroundColor: EXERCISE_VIDEO_FRAME_BACKGROUND,

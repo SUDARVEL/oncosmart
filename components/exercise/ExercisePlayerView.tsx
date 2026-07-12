@@ -285,9 +285,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   videoWrap: {
+    width: EXERCISE_VIDEO_FRAME_WIDTH,
+    height: EXERCISE_VIDEO_FRAME_HEIGHT,
     borderRadius: EXERCISE_VIDEO_FRAME_BORDER_RADIUS,
     overflow: 'hidden',
     backgroundColor: EXERCISE_VIDEO_FRAME_BACKGROUND,
+    flexShrink: 0,
   },
   videoLoaderOverlay: {
     ...StyleSheet.absoluteFillObject,

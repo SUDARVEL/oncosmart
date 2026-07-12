@@ -1,10 +1,12 @@
-/** Figma exercise video frame — keeps full body visible without black letterboxing. */
+/** Figma exercise video frame — 349×444, full body visible (contain, never crop). */
 export const EXERCISE_VIDEO_FRAME_WIDTH = 349;
 export const EXERCISE_VIDEO_FRAME_HEIGHT = 444;
 export const EXERCISE_VIDEO_FRAME_ASPECT =
   EXERCISE_VIDEO_FRAME_WIDTH / EXERCISE_VIDEO_FRAME_HEIGHT;
 export const EXERCISE_VIDEO_FRAME_BACKGROUND = '#FFFFFF';
 export const EXERCISE_VIDEO_FRAME_BORDER_RADIUS = 16;
+/** Fit mode for guided session videos — match Figma: entire subject visible. */
+export const EXERCISE_VIDEO_CONTENT_FIT = 'contain' as const;
 
 /** Home day-card video — full-bleed 16:9 inside the wide card. */
 export const HOME_DAY_CARD_PREVIEW_WIDTH = 343;

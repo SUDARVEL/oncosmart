@@ -3,7 +3,10 @@ import { useCallback, useEffect, useRef } from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import { ensureExerciseAudioSession } from '../../lib/ensureExerciseAudioSession';
-import { EXERCISE_VIDEO_FRAME_BACKGROUND } from '../../lib/exerciseVideoFrame';
+import {
+  EXERCISE_VIDEO_CONTENT_FIT,
+  EXERCISE_VIDEO_FRAME_BACKGROUND,
+} from '../../lib/exerciseVideoFrame';
 import { shouldAcceptVideoEnd } from './sessionVideoCompletion';
 
 type Props = {
@@ -213,7 +216,7 @@ export function SessionVideoPlayer({
       <VideoView
         style={styles.video}
         player={player}
-        contentFit="cover"
+        contentFit={EXERCISE_VIDEO_CONTENT_FIT}
         nativeControls={false}
       />
     </View>
