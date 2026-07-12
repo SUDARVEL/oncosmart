@@ -7,8 +7,10 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ExerciseSessionCard } from '../../../components/exercise/ExerciseSessionCard';
 import { PulseOximeterModal } from '../../../components/exercise/PulseOximeterModal';
+import { ReadyToBeginModal } from '../../../components/pain/ReadyToBeginModal';
 import { getDayExercises, getLevelSession } from '../../../lib/getDayExercises';
 import { hasGuidedSession } from '../../../lib/getDay1Session';
+import { getModerateHeartRateUpperLimit } from '../../../lib/moderateHeartRateLimit';
 import { useAppStore } from '../../../store/useAppStore';
 import { colors } from '../../../theme/colors';
 import { font } from '../../../theme/fonts';
@@ -23,12 +25,15 @@ export default function ExerciseSessionsScreen() {
   const language = useAppStore((state) => state.language);
   const gender = useAppStore((state) => state.gender);
   const avatar = useAppStore((state) => state.avatar);
+  const ageRange = useAppStore((state) => state.ageRange);
+  const maxBpm = getModerateHeartRateUpperLimit(ageRange);
 
   const session = getLevelSession(level);
   const exercises = useMemo(
     () => getDayExercises(level, language, gender, avatar),
     [avatar, gender, language, level],
   );
+  const [showReadyModal, setShowReadyModal] = useState(false);
   const [showPulseModal, setShowPulseModal] = useState(false);
 
   const beginSession = () => {
@@ -47,7 +52,7 @@ export default function ExerciseSessionsScreen() {
 
   const handleStartSession = () => {
     if (!exercises.some((exercise) => exercise.playbackSource)) return;
-    setShowPulseModal(true);
+    setShowReadyModal(true);
   };
 
   return (
@@ -102,8 +107,21 @@ export default function ExerciseSessionsScreen() {
         </Pressable>
       </SafeAreaView>
 
+      <ReadyToBeginModal
+        visible={showReadyModal}
+        onNo={() => {
+          setShowReadyModal(false);
+          router.replace('/home');
+        }}
+        onYes={() => {
+          setShowReadyModal(false);
+          setShowPulseModal(true);
+        }}
+      />
+
       <PulseOximeterModal
         visible={showPulseModal}
+        maxBpm={maxBpm}
         onCancel={() => setShowPulseModal(false)}
         onStart={() => {
           setShowPulseModal(false);

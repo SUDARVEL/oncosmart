@@ -115,7 +115,7 @@
     "subtitle": "Gentle moves to restore strength and support healing",
     "startSession": "Start Session",
     "pulseTitle": "Please wear your Pulse Oximeter !",
-    "pulseSubtitle": "Make sure your heart rate stays below 110 (bpm) during exercise session",
+    "pulseSubtitle": "Make sure your heart rate stays below {{bpm}} (bpm) during exercise session",
     "pulseCancel": "Cancel",
     "pulseStart": "Let's start"
   },

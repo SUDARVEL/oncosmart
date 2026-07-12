@@ -46,7 +46,7 @@ const styles = StyleSheet.create({
   },
   card: {
     width: '100%',
-    maxWidth: 356,
+    maxWidth: 362,
     backgroundColor: '#FFFFFF',
     borderRadius: 16,
     overflow: 'hidden',
@@ -57,10 +57,13 @@ const styles = StyleSheet.create({
     elevation: 12,
   },
   header: {
+    width: '100%',
     paddingTop: 20,
     paddingHorizontal: 16,
-    paddingBottom: 20,
-    gap: 4,
+    paddingBottom: 0,
+    gap: 12,
+    alignItems: 'flex-start',
+    alignSelf: 'stretch',
   },
   title: {
     fontSize: 18,

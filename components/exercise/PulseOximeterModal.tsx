@@ -6,11 +6,13 @@ import { font } from '../../theme/fonts';
 
 type Props = {
   visible: boolean;
+  /** Moderate-zone upper heart rate (bpm) from onboarding age. */
+  maxBpm: number;
   onCancel: () => void;
   onStart: () => void;
 };
 
-export function PulseOximeterModal({ visible, onCancel, onStart }: Props) {
+export function PulseOximeterModal({ visible, maxBpm, onCancel, onStart }: Props) {
   const { t } = useTranslation();
 
   return (
@@ -19,7 +21,9 @@ export function PulseOximeterModal({ visible, onCancel, onStart }: Props) {
         <View style={styles.card}>
           <View style={styles.header}>
             <Text style={styles.title}>{t('daySession.pulseTitle')}</Text>
-            <Text style={styles.subtitle}>{t('daySession.pulseSubtitle')}</Text>
+            <Text style={styles.subtitle}>
+              {t('daySession.pulseSubtitle', { bpm: maxBpm })}
+            </Text>
           </View>
 
           <View style={styles.actions}>
@@ -46,7 +50,7 @@ const styles = StyleSheet.create({
   },
   card: {
     width: '100%',
-    maxWidth: 356,
+    maxWidth: 362,
     backgroundColor: '#FFFFFF',
     borderRadius: 16,
     overflow: 'hidden',
@@ -57,9 +61,14 @@ const styles = StyleSheet.create({
     elevation: 12,
   },
   header: {
+    width: '100%',
     paddingTop: 20,
     paddingHorizontal: 16,
-    gap: 4,
+    paddingBottom: 0,
+    gap: 12,
+    alignItems: 'flex-start',
+    alignSelf: 'stretch',
+    backgroundColor: '#FFFFFF',
   },
   title: {
     fontSize: 18,
