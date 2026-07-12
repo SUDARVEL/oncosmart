@@ -1,6 +1,10 @@
 import { ScrollViewStyleReset } from 'expo-router/html';
 import type { PropsWithChildren } from 'react';
 
+/**
+ * Web / side-preview shell. Roboto is also loaded via useFonts in app/_layout;
+ * this CSS covers any Text that does not set fontFamily explicitly.
+ */
 export default function Root({ children }: PropsWithChildren) {
   return (
     <html lang="en">
@@ -13,6 +17,18 @@ export default function Root({ children }: PropsWithChildren) {
         <link
           href="https://fonts.googleapis.com/css2?family=Antonio:wght@700&family=Roboto:wght@400;500;600;700&display=swap"
           rel="stylesheet"
+        />
+        <style
+          dangerouslySetInnerHTML={{
+            __html: `
+              html, body, #root {
+                font-family: 'Roboto_400Regular', 'Roboto', system-ui, -apple-system, sans-serif;
+              }
+              input, button, textarea, select {
+                font-family: inherit;
+              }
+            `,
+          }}
         />
         <ScrollViewStyleReset />
       </head>
