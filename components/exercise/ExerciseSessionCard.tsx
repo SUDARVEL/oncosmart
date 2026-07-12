@@ -32,9 +32,10 @@ export function ExerciseSessionCard({ name, repLabel, previewPhoto, exerciseId }
             <CachedMediaImage
               source={previewPhoto}
               style={styles.previewImage}
-              contentFit="cover"
+              contentFit="contain"
               contentPosition="center"
               recyclingKey={exerciseId}
+              cachePolicy="memory-disk"
             />
           ) : (
             <View style={styles.previewPlaceholder} />
