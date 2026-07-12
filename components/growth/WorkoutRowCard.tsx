@@ -1,5 +1,5 @@
 import { CachedMediaImage } from '../CachedMediaImage';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
@@ -15,16 +15,60 @@ type WorkoutRowCardProps = {
 /** Figma Growth row thumbnail. */
 const PHOTO_WIDTH = 66;
 const PHOTO_HEIGHT = 70;
+
+type ThumbCrop = {
+  /** How much to enlarge the still inside the oval. */
+  zoom: number;
+  /** Vertical focal point in the source (0 = top, 100 = bottom). */
+  focusY: number;
+};
+
 /**
- * Full-body / landscape stills leave empty studio around the figure.
- * Zoom into the subject so the oval is filled (cover alone is not enough).
+ * Studio stills are full-body with empty grey above / around the figure.
+ * Floor poses sit near the bottom of the frame; standing poses sit mid-upper.
  */
-const PHOTO_ZOOM = 2.75;
+function getGrowthThumbCrop(exerciseId: string): ThumbCrop {
+  if (
+    exerciseId.includes('knee-to-chest') ||
+    exerciseId.includes('straight-leg-raise') ||
+    exerciseId.includes('hamstring') ||
+    exerciseId === 'ankle-pumps' ||
+    exerciseId === 'diaphragmatic-breathing' ||
+    exerciseId.includes('calf-stretch')
+  ) {
+    return { zoom: 2.45, focusY: 78 };
+  }
+
+  if (
+    exerciseId.includes('static-quadriceps') ||
+    exerciseId === 'sit-to-stand' ||
+    exerciseId.includes('quadriceps-stretch')
+  ) {
+    return { zoom: 2.35, focusY: 48 };
+  }
+
+  // Standing / upper-body work — keep head + torso in frame
+  return { zoom: 2.35, focusY: 34 };
+}
 
 export function WorkoutRowCard({ workout, onPress }: WorkoutRowCardProps) {
   const { t } = useTranslation();
   const [imageFailed, setImageFailed] = useState(false);
   const showPhoto = Boolean(workout.photoSource) && !imageFailed;
+  const crop = useMemo(() => getGrowthThumbCrop(workout.id), [workout.id]);
+
+  const photoStyle = useMemo(() => {
+    const width = PHOTO_WIDTH * crop.zoom;
+    const height = PHOTO_HEIGHT * crop.zoom;
+    return {
+      position: 'absolute' as const,
+      width,
+      height,
+      left: (PHOTO_WIDTH - width) / 2,
+      // Pin the focal point of the still to the vertical center of the oval
+      top: PHOTO_HEIGHT / 2 - (crop.focusY / 100) * height,
+    };
+  }, [crop]);
 
   useEffect(() => {
     setImageFailed(false);
@@ -41,7 +85,7 @@ export function WorkoutRowCard({ workout, onPress }: WorkoutRowCardProps) {
         {showPhoto ? (
           <CachedMediaImage
             source={workout.photoSource!}
-            style={styles.photo}
+            style={photoStyle}
             contentFit="cover"
             contentPosition="center"
             recyclingKey={`growth-row-${workout.id}`}
@@ -56,9 +100,6 @@ export function WorkoutRowCard({ workout, onPress }: WorkoutRowCardProps) {
     </Pressable>
   );
 }
-
-const zoomedWidth = PHOTO_WIDTH * PHOTO_ZOOM;
-const zoomedHeight = PHOTO_HEIGHT * PHOTO_ZOOM;
 
 const styles = StyleSheet.create({
   card: {
@@ -83,14 +124,6 @@ const styles = StyleSheet.create({
     borderRadius: 60,
     overflow: 'hidden',
     backgroundColor: '#D1D5DB',
-  },
-  photo: {
-    position: 'absolute',
-    width: zoomedWidth,
-    height: zoomedHeight,
-    // Center horizontally; bias slightly upward so standing/sitting figures fill the oval
-    left: (PHOTO_WIDTH - zoomedWidth) / 2,
-    top: (PHOTO_HEIGHT - zoomedHeight) / 2 - PHOTO_HEIGHT * 0.12,
   },
   textWrap: {
     flex: 1,
