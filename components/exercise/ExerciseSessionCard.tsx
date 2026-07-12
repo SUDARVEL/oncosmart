@@ -5,7 +5,6 @@ import { CachedMediaImage } from '../CachedMediaImage';
 import { SessionCardLoopVideo } from './SessionCardLoopVideo';
 import {
   SESSION_EXERCISE_CARD_HEIGHT,
-  SESSION_EXERCISE_CARD_PREVIEW_BACKGROUND,
   SESSION_EXERCISE_CARD_PREVIEW_HEIGHT,
   SESSION_EXERCISE_CARD_PREVIEW_WIDTH,
 } from '../../lib/exerciseVideoFrame';
@@ -50,9 +49,7 @@ export function ExerciseSessionCard({
               recyclingKey={`session-card-${exerciseId}`}
               cachePolicy="memory-disk"
             />
-          ) : (
-            <View style={styles.previewPlaceholder} />
-          )}
+          ) : null}
         </View>
 
         <Text style={styles.title} numberOfLines={2}>
@@ -97,16 +94,12 @@ const styles = StyleSheet.create({
     height: SESSION_EXERCISE_CARD_PREVIEW_HEIGHT,
     borderRadius: 8,
     overflow: 'hidden',
-    backgroundColor: SESSION_EXERCISE_CARD_PREVIEW_BACKGROUND,
+    backgroundColor: '#FFFFFF',
   },
   previewImage: {
     width: SESSION_EXERCISE_CARD_PREVIEW_WIDTH,
     height: SESSION_EXERCISE_CARD_PREVIEW_HEIGHT,
-  },
-  previewPlaceholder: {
-    width: SESSION_EXERCISE_CARD_PREVIEW_WIDTH,
-    height: SESSION_EXERCISE_CARD_PREVIEW_HEIGHT,
-    backgroundColor: SESSION_EXERCISE_CARD_PREVIEW_BACKGROUND,
+    backgroundColor: '#FFFFFF',
   },
   title: {
     fontSize: 16,

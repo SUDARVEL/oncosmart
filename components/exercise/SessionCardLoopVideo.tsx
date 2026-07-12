@@ -7,7 +7,6 @@ import { useEffect } from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import {
-  SESSION_EXERCISE_CARD_PREVIEW_BACKGROUND,
   SESSION_EXERCISE_CARD_PREVIEW_HEIGHT,
   SESSION_EXERCISE_CARD_PREVIEW_WIDTH,
 } from '../../lib/exerciseVideoFrame';
@@ -45,7 +44,7 @@ const styles = StyleSheet.create({
   wrap: {
     width: SESSION_EXERCISE_CARD_PREVIEW_WIDTH,
     height: SESSION_EXERCISE_CARD_PREVIEW_HEIGHT,
-    backgroundColor: SESSION_EXERCISE_CARD_PREVIEW_BACKGROUND,
+    backgroundColor: '#FFFFFF',
     overflow: 'hidden',
     borderRadius: 8,
   },
