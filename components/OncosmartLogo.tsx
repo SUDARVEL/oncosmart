@@ -10,13 +10,14 @@ import {
 const WORDMARK_COLOR = '#273573';
 const ICON_TO_WORDMARK_GAP = 11;
 
-/** Helvetica Neue Heavy — Figma handoff; Android falls back to black sans. */
+/** Helvetica Neue Semibold — Figma handoff; Android uses Roboto SemiBold. */
 const WORDMARK_FONT_FAMILY = Platform.select({
   ios: 'Helvetica Neue',
   web: 'Helvetica Neue, Helvetica, Arial, sans-serif',
-  android: 'sans-serif-black',
+  android: 'Roboto_600SemiBold',
   default: 'Helvetica Neue',
 }) as string;
+
 
 type Props = {
   /** Ribbon icon width; height follows the SVG viewBox aspect ratio. */
@@ -64,7 +65,11 @@ const styles = StyleSheet.create({
     fontFamily: WORDMARK_FONT_FAMILY,
     fontSize: 16,
     fontStyle: 'normal',
-    fontWeight: '800',
+    // iOS/web: Semibold via weight; Android face is already SemiBold
+    ...Platform.select({
+      android: {},
+      default: { fontWeight: '600' as const },
+    }),
     textAlign: 'center',
     textTransform: 'uppercase',
     includeFontPadding: false,
