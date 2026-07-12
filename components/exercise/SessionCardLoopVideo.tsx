@@ -1,6 +1,6 @@
 /**
  * Muted looping landscape preview for Welcome-to-Day session cards (GIF-like).
- * Fills the 257×112 preview frame edge-to-edge.
+ * Keeps the fixed 257×112 frame; contain shows the full body (no cropped legs).
  */
 import { useVideoPlayer, VideoView } from 'expo-video';
 import { useEffect } from 'react';
@@ -34,7 +34,7 @@ export function SessionCardLoopVideo({ uri }: Props) {
       <VideoView
         style={styles.video}
         player={player}
-        contentFit="cover"
+        contentFit="contain"
         nativeControls={false}
       />
     </View>

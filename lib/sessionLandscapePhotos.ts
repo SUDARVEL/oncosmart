@@ -12,6 +12,7 @@ const LANDSCAPE_FOLDER = 'Male Landscape Photos';
  * (Triceps filenames use the storage spelling "Landsacpe".)
  */
 const MALE_LANDSCAPE_PHOTO_FILES: Partial<Record<string, string>> = {
+  'hamstring-stretch': 'Male Hamstring Landscape.png',
   'chest-stretch': 'Chest Stretch back male 1.png',
   'calf-stretch-right': 'Calf stretch Male Right Landscape.png',
   'calf-stretch-left': 'Calf stretch Male Left Landscape.png',

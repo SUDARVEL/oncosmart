@@ -1,6 +1,6 @@
 /**
  * Web: muted looping landscape preview for session cards.
- * Fills the 257×112 preview frame edge-to-edge.
+ * Keeps the fixed 257×112 preview frame; contain shows the full body.
  */
 import { createElement, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
@@ -50,7 +50,7 @@ const styles = StyleSheet.create({
   video: {
     width: SESSION_EXERCISE_CARD_PREVIEW_WIDTH,
     height: SESSION_EXERCISE_CARD_PREVIEW_HEIGHT,
-    objectFit: 'cover',
+    objectFit: 'contain',
     display: 'block',
   } as object,
 });
