@@ -1,9 +1,9 @@
-import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 import { useCallback, useEffect } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { OncosmartLogo } from '../components/OncosmartLogo';
 import { SplashFooter } from '../components/SplashFooter';
 import { colors } from '../theme/colors';
 
@@ -25,11 +25,7 @@ export default function SplashScreen() {
     <Pressable style={styles.pressable} onPress={goToOnboarding} accessibilityRole="button">
       <SafeAreaView style={styles.screen}>
         <View style={styles.centerContent}>
-          <Image
-            source={require('../assets/splash/oncosmart-logo.png')}
-            style={styles.logo}
-            contentFit="contain"
-          />
+          <OncosmartLogo width={116} />
         </View>
         <SplashFooter />
       </SafeAreaView>
@@ -51,9 +47,5 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingTop: 40,
-  },
-  logo: {
-    width: 116,
-    height: 185,
   },
 });

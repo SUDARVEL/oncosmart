@@ -1,4 +1,3 @@
-import { Image } from 'expo-image';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -13,6 +12,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { OncosmartLogo } from '../../components/OncosmartLogo';
 import { PrimaryButton } from '../../components/PrimaryButton';
 import { ScreenHeader } from '../../components/ScreenHeader';
 import { useAppStore } from '../../store/useAppStore';
@@ -59,11 +59,7 @@ export default function UsernameScreen() {
         >
           <View style={styles.content}>
             <View style={styles.brandBlock}>
-              <Image
-                source={require('../../assets/splash/oncosmart-logo.png')}
-                style={styles.logo}
-                contentFit="contain"
-              />
+              <OncosmartLogo width={82} />
               <Text style={styles.welcome}>{t('username.welcome')}</Text>
               <Text style={styles.tagline}>{t('username.tagline')}</Text>
             </View>
@@ -120,10 +116,6 @@ const styles = StyleSheet.create({
   brandBlock: {
     alignItems: 'center',
     gap: 8,
-  },
-  logo: {
-    width: 82,
-    height: 140,
   },
   welcome: {
     fontSize: 14,
