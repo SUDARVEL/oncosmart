@@ -23,45 +23,29 @@ function RemoteBadgeIcon({ badgeKey, earned }: { badgeKey: BadgeKey; earned: boo
 
   if (!uri) {
     return (
-      <View style={[styles.badgeArt, earned ? styles.badgeArtEarned : styles.badgeArtLocked]}>
-        <Image
-          source={GROWTH_ASSETS.badgeBgAlt}
-          style={[styles.badgeIcon, !earned && styles.badgeMuted]}
-          contentFit="contain"
-        />
-        <Image
-          source={GROWTH_ASSETS.badgeTrophy}
-          style={[styles.fallbackTrophy, !earned && styles.badgeMuted]}
-          contentFit="contain"
-        />
-        <BadgeStatusMark earned={earned} />
+      <View style={styles.badgeArt}>
+        <View style={!earned ? styles.badgeMuted : undefined}>
+          <Image source={GROWTH_ASSETS.badgeTrophy} style={styles.fallbackTrophy} contentFit="contain" />
+        </View>
+        {earned ? (
+          <View style={styles.earnedBadge}>
+            <Image source={GROWTH_ASSETS.badgeCheck} style={styles.earnedIcon} contentFit="contain" />
+          </View>
+        ) : null}
       </View>
     );
   }
 
   return (
-    <View style={[styles.badgeArt, earned ? styles.badgeArtEarned : styles.badgeArtLocked]}>
+    <View style={styles.badgeArt}>
       <View style={!earned ? styles.badgeMuted : undefined}>
         <SvgUri uri={uri} width={100} height={100} />
       </View>
-      {!earned ? <View style={styles.lockedScrim} pointerEvents="none" /> : null}
-      <BadgeStatusMark earned={earned} />
-    </View>
-  );
-}
-
-function BadgeStatusMark({ earned }: { earned: boolean }) {
-  if (earned) {
-    return (
-      <View style={styles.earnedBadge}>
-        <Image source={GROWTH_ASSETS.badgeCheck} style={styles.earnedIcon} contentFit="contain" />
-      </View>
-    );
-  }
-
-  return (
-    <View style={styles.lockedBadge}>
-      <Text style={styles.lockedBadgeText}>?</Text>
+      {earned ? (
+        <View style={styles.earnedBadge}>
+          <Image source={GROWTH_ASSETS.badgeCheck} style={styles.earnedIcon} contentFit="contain" />
+        </View>
+      ) : null}
     </View>
   );
 }
@@ -78,19 +62,10 @@ function BadgeCard({
   earned: boolean;
 }) {
   return (
-    <View style={[styles.badgeCard, earned && styles.badgeCardEarned]}>
+    <View style={styles.badgeCard}>
       <RemoteBadgeIcon badgeKey={badgeKey} earned={earned} />
-      <Text style={[styles.badgeTitle, earned ? styles.badgeTitleEarned : styles.badgeTitleLocked]}>
-        {title}
-      </Text>
-      <Text
-        style={[styles.badgeSubtitle, earned ? styles.badgeSubtitleEarned : styles.badgeSubtitleLocked]}
-      >
-        {subtitle}
-      </Text>
-      <Text style={[styles.statusLabel, earned ? styles.statusEarned : styles.statusLocked]}>
-        {earned ? 'Earned' : 'Locked'}
-      </Text>
+      <Text style={[styles.badgeTitle, !earned && styles.badgeTitleLocked]}>{title}</Text>
+      <Text style={[styles.badgeSubtitle, !earned && styles.badgeSubtitleLocked]}>{subtitle}</Text>
     </View>
   );
 }
@@ -192,74 +167,34 @@ const styles = StyleSheet.create({
   badgeCard: {
     width: 148,
     alignItems: 'center',
-    gap: 6,
+    gap: 8,
     paddingVertical: 12,
     paddingHorizontal: 8,
-    borderRadius: 16,
-    backgroundColor: '#F9FAFB',
-    borderWidth: 1,
-    borderColor: '#E5E7EB',
-  },
-  badgeCardEarned: {
-    backgroundColor: '#FFFFFF',
-    borderColor: '#BFDBFE',
   },
   badgeArt: {
     width: 100,
     height: 100,
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: 20,
-    overflow: 'hidden',
-  },
-  badgeArtEarned: {
-    backgroundColor: '#EFF6FF',
-  },
-  badgeArtLocked: {
-    backgroundColor: '#E5E7EB',
-  },
-  badgeIcon: {
-    width: 100,
-    height: 100,
+    backgroundColor: 'transparent',
   },
   badgeMuted: {
-    opacity: 0.4,
-  },
-  lockedScrim: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(156, 163, 175, 0.28)',
+    opacity: 0.38,
   },
   fallbackTrophy: {
-    position: 'absolute',
-    width: 52,
-    height: 60,
+    width: 72,
+    height: 80,
   },
   earnedBadge: {
     position: 'absolute',
-    right: 2,
-    bottom: 2,
+    right: 0,
+    bottom: 0,
     width: 28,
     height: 28,
     borderRadius: 14,
     backgroundColor: colors.buttonPrimary,
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  lockedBadge: {
-    position: 'absolute',
-    right: 2,
-    bottom: 2,
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    backgroundColor: '#9CA3AF',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  lockedBadgeText: {
-    color: '#FFFFFF',
-    fontSize: 14,
-    ...font('semiBold'),
   },
   earnedIcon: {
     width: 16,
@@ -270,8 +205,6 @@ const styles = StyleSheet.create({
     ...font('semiBold'),
     lineHeight: 18,
     textAlign: 'center',
-  },
-  badgeTitleEarned: {
     color: colors.textPrimary,
   },
   badgeTitleLocked: {
@@ -283,23 +216,9 @@ const styles = StyleSheet.create({
     lineHeight: 14,
     textAlign: 'center',
     minHeight: 28,
-  },
-  badgeSubtitleEarned: {
     color: '#6B7280',
   },
   badgeSubtitleLocked: {
-    color: '#9CA3AF',
-  },
-  statusLabel: {
-    fontSize: 11,
-    ...font('medium'),
-    textTransform: 'uppercase',
-    letterSpacing: 0.4,
-  },
-  statusEarned: {
-    color: '#2563EB',
-  },
-  statusLocked: {
     color: '#9CA3AF',
   },
 });
