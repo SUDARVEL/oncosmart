@@ -17,6 +17,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { BottomTabBar } from '../components/BottomTabBar';
 import { ExerciseVideoBanner } from '../components/ExerciseVideoBanner';
+import { HomeAvatarButton } from '../components/home/HomeAvatarButton';
 import { ProgressLogo } from '../components/home/ProgressLogo';
 import { openWhatsAppSupport } from '../lib/openWhatsAppSupport';
 import { HOME_PAGE_PLACEHOLDER_VIDEO } from '../lib/placeholderVideo';
@@ -121,19 +122,11 @@ export default function HomeScreen() {
           <Text style={styles.welcome}>
             {t('home.welcome', { name: username || 'Guest' })}
           </Text>
-          <Pressable
+          <HomeAvatarButton
+            source={avatar === 'female' ? FEMALE_AVATAR : MALE_AVATAR}
             onPress={handleAvatarPress}
-            style={styles.avatarRing}
-            accessibilityRole="button"
             accessibilityLabel={t('home.changeAvatar')}
-          >
-            <Image
-              source={avatar === 'female' ? FEMALE_AVATAR : MALE_AVATAR}
-              style={styles.avatarImage}
-              contentFit="cover"
-              contentPosition="top"
-            />
-          </Pressable>
+          />
         </View>
 
         <View style={styles.progressSection}>
@@ -386,19 +379,6 @@ const styles = StyleSheet.create({
     color: colors.textPrimary,
     letterSpacing: -0.26,
     lineHeight: 28,
-  },
-  avatarRing: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
-    borderWidth: 1,
-    borderColor: colors.buttonPrimary,
-    overflow: 'hidden',
-    backgroundColor: colors.optionBgSelected,
-  },
-  avatarImage: {
-    width: '100%',
-    height: '100%',
   },
   progressSection: {
     marginTop: 16,
