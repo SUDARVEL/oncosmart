@@ -11,6 +11,7 @@ import {
   resolveExercisePlaybackUrl,
 } from './resolveExercisePreview';
 import { resolveSessionCardPhotoSource } from './resolveSessionCardPhoto';
+import { resolveSessionCardFallbackLandscapePhotoSource } from './sessionLandscapePhotos';
 import { getSessionLandscapeVideoUrl } from './sessionLandscapeVideos';
 import { resolveVideoUrl } from './resolveVideoUrl';
 
@@ -102,11 +103,15 @@ export function getLevelExercises(
 
   const resolved = session.exercises.map((exercise) => {
     const videoSource = resolveExplicitExerciseVideo(exercise, variant);
-    const previewPhoto = resolveSessionCardPhotoSource(exercise.id, gender);
     const previewVideo = exercise.id.includes('stretch')
       ? null
       : getSessionLandscapeVideoUrl(exercise.id, gender);
     const thumbnail = getDay1Thumbnail(exercise.id);
+    // No looping video → Male Landscape Photos (fits 257×112 on every level).
+    const previewPhoto = previewVideo
+      ? resolveSessionCardPhotoSource(exercise.id, gender)
+      : resolveSessionCardFallbackLandscapePhotoSource(exercise.id, gender) ??
+        resolveSessionCardPhotoSource(exercise.id, gender);
 
     return {
       ...exercise,
