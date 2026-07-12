@@ -17,6 +17,8 @@ const MALE_WORKOUT_PLACEHOLDER_FILES: Partial<Record<string, string>> = {
   'straight-leg-raise-right': 'slr right.svg',
   'knee-to-chest-left': 'knee to chest left.svg',
   'knee-to-chest-right': 'knee to chest right.svg',
+  'static-quadriceps-left': 'static quadriceps left.svg',
+  'static-quadriceps-right': 'static quadriceps right.svg',
   'hamstring-stretch': 'hamstring stretch.svg',
   'chest-stretch': 'Chest stretch.svg',
   'quadriceps-stretch-left': 'quadriceps stretch left.svg',
