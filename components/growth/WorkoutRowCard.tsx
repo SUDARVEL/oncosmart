@@ -12,10 +12,14 @@ type WorkoutRowCardProps = {
   onPress: () => void;
 };
 
+/** Figma Growth row thumbnail — oval crop. */
+const PHOTO_WIDTH = 66;
+const PHOTO_HEIGHT = 70;
+
 export function WorkoutRowCard({ workout, onPress }: WorkoutRowCardProps) {
   const { t } = useTranslation();
   const [imageFailed, setImageFailed] = useState(false);
-  const showPhoto = workout.photoSource && !imageFailed;
+  const showPhoto = Boolean(workout.photoSource) && !imageFailed;
 
   return (
     <Pressable
@@ -30,12 +34,11 @@ export function WorkoutRowCard({ workout, onPress }: WorkoutRowCardProps) {
             source={workout.photoSource!}
             style={styles.photo}
             contentFit="cover"
+            contentPosition="center"
             recyclingKey={workout.id}
             onError={() => setImageFailed(true)}
           />
-        ) : (
-          <View style={styles.photoPlaceholder} />
-        )}
+        ) : null}
       </View>
       <View style={styles.textWrap}>
         <Text style={styles.title}>{t(workout.titleKey)}</Text>
@@ -63,19 +66,15 @@ const styles = StyleSheet.create({
     backgroundColor: '#F9FAFB',
   },
   photoWrap: {
-    width: 66,
-    height: 70,
+    width: PHOTO_WIDTH,
+    height: PHOTO_HEIGHT,
     borderRadius: 60,
     overflow: 'hidden',
-    backgroundColor: '#E5E7EB',
+    backgroundColor: '#D1D5DB',
   },
   photo: {
-    width: 66,
-    height: 70,
-  },
-  photoPlaceholder: {
-    flex: 1,
-    backgroundColor: '#D1D5DB',
+    width: PHOTO_WIDTH,
+    height: PHOTO_HEIGHT,
   },
   textWrap: {
     flex: 1,
