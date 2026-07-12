@@ -32,7 +32,7 @@ export default function GenderScreen() {
 
   return (
     <SafeAreaView style={styles.screen}>
-      <ScreenHeader title={t('gender.header')} showBack />
+      <ScreenHeader title={t('gender.header')} showBack largeTitle />
 
       <View style={styles.content}>
         <View style={styles.intro}>

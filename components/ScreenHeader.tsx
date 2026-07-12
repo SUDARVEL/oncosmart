@@ -44,8 +44,9 @@ export function ScreenHeader({ title, showBack = false, onBack, largeTitle = fal
 
 const styles = StyleSheet.create({
   container: {
-    height: 40,
+    minHeight: 48,
     marginTop: 8,
+    marginBottom: 4,
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 16,
@@ -71,9 +72,9 @@ const styles = StyleSheet.create({
     letterSpacing: 0.15,
   },
   titleLarge: {
-    fontSize: 22,
-    lineHeight: 28,
-    letterSpacing: -0.26,
-    ...font('bold'),
+    fontSize: 24,
+    lineHeight: 30,
+    letterSpacing: -0.2,
+    ...font('semiBold'),
   },
 });

@@ -76,7 +76,7 @@ export default function TreatmentScreen() {
 
   return (
     <SafeAreaView style={styles.screen} edges={['top', 'bottom']}>
-      <ScreenHeader title={t('treatment.header')} showBack />
+      <ScreenHeader title={t('treatment.header')} showBack largeTitle />
 
       <KeyboardAvoidingView
         style={styles.flex}
@@ -215,7 +215,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     lineHeight: 22,
     textAlign: 'center',
-    ...font('medium'),
+    ...font('regular'),
     color: colors.textPrimary,
   },
   chipTextSelected: {

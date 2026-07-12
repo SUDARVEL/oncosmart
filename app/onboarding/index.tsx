@@ -32,7 +32,7 @@ export default function LanguageScreen() {
 
   return (
     <SafeAreaView style={styles.screen}>
-      <ScreenHeader title={t('language.header')} />
+      <ScreenHeader title={t('language.header')} largeTitle />
 
       <View style={styles.content}>
         <View style={styles.intro}>

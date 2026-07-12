@@ -44,7 +44,7 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 16,
-    ...font('medium'),
+    ...font('regular'),
     color: colors.optionTextUnselected,
     letterSpacing: 0.1,
   },
@@ -54,7 +54,7 @@ const styles = StyleSheet.create({
   },
   glyph: {
     fontSize: 44,
-    ...font('medium'),
+    ...font('regular'),
     color: colors.optionTextUnselected,
     lineHeight: 52,
   },

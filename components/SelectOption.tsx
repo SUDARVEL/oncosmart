@@ -64,7 +64,7 @@ const styles = StyleSheet.create({
   },
   labelUnselected: {
     fontSize: 16,
-    ...font('medium'),
+    ...font('regular'),
     color: colors.optionTextUnselected,
     letterSpacing: 0.1,
     lineHeight: 22,
