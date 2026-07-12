@@ -21,6 +21,7 @@ const MALE_SLIDER_PHOTO_FILES: Record<string, string> = {
   'straight-leg-raise-left': 'straight leg raise left slider.png',
   'knee-to-chest-right': 'Knee to chest right.png',
   'knee-to-chest-left': 'Knee to chest left.png',
+  'static-quadriceps-right': 'Static quadricepts left.png',
   'static-quadriceps-left': 'Static quadricepts left.png',
   'hamstring-stretch': 'hamstring stretch.png',
   'quadriceps-stretch-right': 'quadricep right stretch.png',

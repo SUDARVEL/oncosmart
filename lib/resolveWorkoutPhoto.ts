@@ -14,33 +14,28 @@ function getPhotoFile(exerciseId: string): string | null {
 }
 
 /**
- * Picks the best available workout photo for Growth list cards:
- * 1. Male Landscape Photos (Supabase)
- * 2. Male Slider Photos (Supabase)
- * 3. Bundled workout / Day 1 assets
- * 4. Other Male photos folder
+ * Growth list oval thumbnails — prefer Male Slider Photos (portrait full-body),
+ * then Male Landscape Photos. Avoid local Figma circle exports (grey dome baked in).
  */
 export function resolveWorkoutPhotoSource(
   exerciseId: string,
   gender: AppGender | null,
 ): ImageSource | null {
-  const landscape = resolveSessionLandscapePhotoSource(exerciseId, gender);
-  if (landscape) return landscape;
-
   const sliderUrl = getWorkoutSliderPhotoUrl(exerciseId, gender);
   if (sliderUrl) return { uri: sliderUrl };
 
-  const localPhoto = getWorkoutLocalPhoto(exerciseId);
-  if (localPhoto) return localPhoto;
-
-  const day1Photo = getDay1Thumbnail(exerciseId);
-  if (day1Photo) return day1Photo;
+  const landscape = resolveSessionLandscapePhotoSource(exerciseId, gender);
+  if (landscape) return landscape;
 
   const photoFile = getPhotoFile(exerciseId);
   const photoGender = gender === 'female' ? 'female' : 'male';
   const remoteUrl = getWorkoutPhotoUrl(photoFile, photoGender);
+  if (remoteUrl) return { uri: remoteUrl };
 
-  return remoteUrl ? { uri: remoteUrl } : null;
+  const day1Photo = getDay1Thumbnail(exerciseId);
+  if (day1Photo) return day1Photo;
+
+  return getWorkoutLocalPhoto(exerciseId);
 }
 
 /**

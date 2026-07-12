@@ -1,5 +1,5 @@
 import { CachedMediaImage } from '../CachedMediaImage';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
@@ -12,7 +12,7 @@ type WorkoutRowCardProps = {
   onPress: () => void;
 };
 
-/** Figma Growth row thumbnail — oval crop. */
+/** Figma Growth row thumbnail. */
 const PHOTO_WIDTH = 66;
 const PHOTO_HEIGHT = 70;
 
@@ -20,6 +20,10 @@ export function WorkoutRowCard({ workout, onPress }: WorkoutRowCardProps) {
   const { t } = useTranslation();
   const [imageFailed, setImageFailed] = useState(false);
   const showPhoto = Boolean(workout.photoSource) && !imageFailed;
+
+  useEffect(() => {
+    setImageFailed(false);
+  }, [workout.id, workout.photoSource]);
 
   return (
     <Pressable
@@ -34,8 +38,10 @@ export function WorkoutRowCard({ workout, onPress }: WorkoutRowCardProps) {
             source={workout.photoSource!}
             style={styles.photo}
             contentFit="cover"
-            contentPosition="center"
-            recyclingKey={workout.id}
+            // Portrait full-body stills: pin to top so the person fills the oval
+            // instead of the grey studio wall at the image center.
+            contentPosition="top"
+            recyclingKey={`growth-row-${workout.id}`}
             onError={() => setImageFailed(true)}
           />
         ) : null}
