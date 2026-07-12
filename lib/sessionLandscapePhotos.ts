@@ -8,17 +8,20 @@ const SUPABASE_PUBLIC_BASE =
 const LANDSCAPE_FOLDER = 'Male Landscape Photos';
 
 /**
- * Exact filenames verified in Male Landscape Photos.
- * Naming example: "biceps curls male landscape.png"
+ * Exact filenames from Male Landscape Photos — matched to exercise IDs.
+ * (Triceps filenames use the storage spelling "Landsacpe".)
  */
 const MALE_LANDSCAPE_PHOTO_FILES: Partial<Record<string, string>> = {
-  'biceps-curls': 'biceps curls male landscape.png',
-  'calf-stretch-left': 'Calf stretch Male Left Landscape.png',
+  'chest-stretch': 'Chest Stretch back male 1.png',
   'calf-stretch-right': 'Calf stretch Male Right Landscape.png',
+  'calf-stretch-left': 'Calf stretch Male Left Landscape.png',
+  'neck-stretch-left': 'Neck stretch Left Male Landscape.png',
+  'neck-stretch-right': 'Neck stretch Right Male Landscape.png',
+  'quadriceps-stretch-left': 'Quadriceps Stretch Male Left.png',
+  'quadriceps-stretch-right': 'Quadriceps Stretch Male Right.png',
+  'triceps-stretch-left': 'Triceps Stretch Left Male Landsacpe.png',
+  'triceps-stretch-right': 'Triceps Stretch Right Male Landsacpe.png',
 };
-
-/** Shared landscape still for session cards that have no looping video yet. */
-const DEFAULT_LANDSCAPE_PHOTO = 'biceps curls male landscape.png';
 
 const landscapeUrlCache = new Map<string, string>();
 
@@ -50,41 +53,10 @@ export function getSessionLandscapePhotoUrl(
   return url;
 }
 
-/**
- * Landscape photo for session cards with no looping video (stretches, etc.).
- * Uses exercise-specific Male Landscape Photos when available; otherwise the
- * shared landscape still so the 257×112 frame stays filled on every level.
- */
-export function getSessionCardFallbackLandscapePhotoUrl(
-  exerciseId: string,
-  gender: AppGender | null,
-): string | null {
-  if (gender === 'female') return null;
-
-  const specific = getSessionLandscapePhotoUrl(exerciseId, gender);
-  if (specific) return specific;
-
-  const cacheKey = `default-landscape|${DEFAULT_LANDSCAPE_PHOTO}`;
-  const cached = landscapeUrlCache.get(cacheKey);
-  if (cached) return cached;
-
-  const url = buildLandscapeUrl(DEFAULT_LANDSCAPE_PHOTO);
-  landscapeUrlCache.set(cacheKey, url);
-  return url;
-}
-
 export function resolveSessionLandscapePhotoSource(
   exerciseId: string,
   gender: AppGender | null,
 ): ImageSource | null {
   const url = getSessionLandscapePhotoUrl(exerciseId, gender);
-  return url ? { uri: url } : null;
-}
-
-export function resolveSessionCardFallbackLandscapePhotoSource(
-  exerciseId: string,
-  gender: AppGender | null,
-): ImageSource | null {
-  const url = getSessionCardFallbackLandscapePhotoUrl(exerciseId, gender);
   return url ? { uri: url } : null;
 }
