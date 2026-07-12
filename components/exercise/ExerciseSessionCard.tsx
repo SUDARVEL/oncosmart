@@ -4,11 +4,12 @@ import { Dimensions, StyleSheet, Text, View } from 'react-native';
 import { CachedMediaImage } from '../CachedMediaImage';
 import {
   SESSION_EXERCISE_CARD_PREVIEW_ASPECT,
+  SESSION_EXERCISE_CARD_PREVIEW_BACKGROUND,
   SESSION_EXERCISE_CARD_PREVIEW_WIDTH,
 } from '../../lib/exerciseVideoFrame';
 import { font } from '../../theme/fonts';
 
-const CARD_HORIZONTAL_PADDING = 48;
+const CARD_HORIZONTAL_PADDING = 32;
 const previewWidth = Math.min(
   Dimensions.get('window').width - CARD_HORIZONTAL_PADDING,
   SESSION_EXERCISE_CARD_PREVIEW_WIDTH,
@@ -22,7 +23,15 @@ type Props = {
   exerciseId: string;
 };
 
-/** Static preview card — display only; playback starts via Start Session. */
+function formatRepBadge(repLabel: string): string {
+  const trimmed = repLabel.trim();
+  if (/^x\d+/i.test(trimmed)) {
+    return trimmed.toUpperCase();
+  }
+  return trimmed;
+}
+
+/** Figma day-session card — landscape preview, title, X10 badge. */
 export function ExerciseSessionCard({ name, repLabel, previewPhoto, exerciseId }: Props) {
   return (
     <View style={styles.card} accessibilityRole="text">
@@ -32,7 +41,7 @@ export function ExerciseSessionCard({ name, repLabel, previewPhoto, exerciseId }
             <CachedMediaImage
               source={previewPhoto}
               style={styles.previewImage}
-              contentFit="contain"
+              contentFit="cover"
               contentPosition="center"
               recyclingKey={`session-card-${exerciseId}`}
               cachePolicy="memory-disk"
@@ -41,12 +50,14 @@ export function ExerciseSessionCard({ name, repLabel, previewPhoto, exerciseId }
             <View style={styles.previewPlaceholder} />
           )}
         </View>
+
         <Text style={styles.title} numberOfLines={2}>
           {name}
         </Text>
       </View>
+
       <View style={styles.repBadge}>
-        <Text style={styles.repText}>{repLabel}</Text>
+        <Text style={styles.repText}>{formatRepBadge(repLabel)}</Text>
       </View>
     </View>
   );
@@ -67,26 +78,24 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   body: {
-    paddingTop: 12,
-    paddingHorizontal: 12,
-    paddingBottom: 12,
-    gap: 10,
+    paddingTop: 16,
+    paddingHorizontal: 16,
+    paddingBottom: 16,
+    gap: 12,
+    alignItems: 'center',
   },
   previewWrap: {
-    alignSelf: 'center',
-    borderRadius: 12,
+    borderRadius: 8,
     overflow: 'hidden',
-    backgroundColor: '#FFFFFF',
-    position: 'relative',
+    backgroundColor: SESSION_EXERCISE_CARD_PREVIEW_BACKGROUND,
   },
   previewImage: {
     width: '100%',
     height: '100%',
-    backgroundColor: '#FFFFFF',
   },
   previewPlaceholder: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: '#F3F4F6',
+    flex: 1,
+    backgroundColor: SESSION_EXERCISE_CARD_PREVIEW_BACKGROUND,
   },
   title: {
     fontSize: 16,
@@ -94,26 +103,26 @@ const styles = StyleSheet.create({
     color: '#000000',
     textAlign: 'center',
     textTransform: 'uppercase',
-    ...font('medium'),
+    ...font('semiBold'),
     paddingHorizontal: 8,
-    minHeight: 28,
+    paddingBottom: 4,
   },
   repBadge: {
     position: 'absolute',
     right: 0,
     bottom: 0,
-    minWidth: 37,
-    height: 26,
+    minWidth: 44,
+    height: 28,
     backgroundColor: '#6B7280',
     borderTopLeftRadius: 8,
     borderBottomRightRadius: 8,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingHorizontal: 8,
+    paddingHorizontal: 10,
   },
   repText: {
     fontSize: 14,
     color: '#F9FAFB',
-    ...font('medium'),
+    ...font('semiBold'),
   },
 });
