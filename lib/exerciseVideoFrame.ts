@@ -6,15 +6,15 @@ export const EXERCISE_VIDEO_FRAME_ASPECT =
 export const EXERCISE_VIDEO_FRAME_BACKGROUND = '#FFFFFF';
 export const EXERCISE_VIDEO_FRAME_BORDER_RADIUS = 16;
 
-/** Compact home day-card preview — full-bleed 16:9 (294×165) so body/legs aren’t cropped. */
-export const HOME_DAY_CARD_PREVIEW_WIDTH = 294;
-export const HOME_DAY_CARD_PREVIEW_HEIGHT = 165;
+/** Home day-card video — full-bleed 16:9 inside the wide card. */
+export const HOME_DAY_CARD_PREVIEW_WIDTH = 343;
+export const HOME_DAY_CARD_PREVIEW_HEIGHT = 193;
 export const HOME_DAY_CARD_PREVIEW_ASPECT =
   HOME_DAY_CARD_PREVIEW_WIDTH / HOME_DAY_CARD_PREVIEW_HEIGHT;
 
-/** Home "Today's Exercise" card — Figma width; height grows with 16:9 preview. */
-export const HOME_DAY_CARD_WIDTH = 324;
-export const HOME_DAY_CARD_HEIGHT = 254;
+/** Home "Today's Exercise" card — nearly full screen width. */
+export const HOME_DAY_CARD_WIDTH = 359;
+export const HOME_DAY_CARD_HEIGHT = 300;
 
 /** Session list exercise card preview — landscape frame matching Figma day-session cards. */
 export const SESSION_EXERCISE_CARD_PREVIEW_WIDTH = 328;

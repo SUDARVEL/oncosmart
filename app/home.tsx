@@ -22,11 +22,7 @@ import { ProgressLogo } from '../components/home/ProgressLogo';
 import { openWhatsAppSupport } from '../lib/openWhatsAppSupport';
 import { HOME_PAGE_PLACEHOLDER_VIDEO } from '../lib/placeholderVideo';
 import {
-  HOME_DAY_CARD_HEIGHT,
   HOME_DAY_CARD_PREVIEW_ASPECT,
-  HOME_DAY_CARD_PREVIEW_HEIGHT,
-  HOME_DAY_CARD_PREVIEW_WIDTH,
-  HOME_DAY_CARD_WIDTH,
 } from '../lib/exerciseVideoFrame';
 import {
   DAYS_PER_LEVEL,
@@ -44,14 +40,12 @@ import { font } from '../theme/fonts';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const QUOTE_CARD_WIDTH = SCREEN_WIDTH - 32;
+const DAY_CARD_WIDTH = SCREEN_WIDTH - 32;
+const DAY_CARD_MEDIA_HEIGHT = Math.round(DAY_CARD_WIDTH * (9 / 16));
+const DAY_CARD_PREVIEW_ASPECT = HOME_DAY_CARD_PREVIEW_ASPECT;
 
 const FEMALE_AVATAR = require('../assets/avatars/female-avatar.png');
 const WALKING_CHARACTER = require('../assets/home/walking-character.png');
-const DAY_CARD_PREVIEW_ASPECT = HOME_DAY_CARD_PREVIEW_ASPECT;
-const DAY_CARD_MEDIA_WIDTH = HOME_DAY_CARD_PREVIEW_WIDTH;
-const DAY_CARD_MEDIA_HEIGHT = HOME_DAY_CARD_PREVIEW_HEIGHT;
-const DAY_CARD_WIDTH = HOME_DAY_CARD_WIDTH;
-const DAY_CARD_HEIGHT = HOME_DAY_CARD_HEIGHT;
 
 const QUOTES = ['quote1', 'quote2', 'quote3'] as const;
 
@@ -239,30 +233,32 @@ function DayCard({
         ) : null}
       </View>
 
-      <Text style={styles.dayLabel}>{t('home.dayLabel', { day: dayInLevel })}</Text>
-      <Text style={styles.daySubtitle}>{t('home.daySubtitle')}</Text>
+      <View style={styles.dayCardBody}>
+        <Text style={styles.dayLabel}>{t('home.dayLabel', { day: dayInLevel })}</Text>
+        <Text style={styles.daySubtitle}>{t('home.daySubtitle')}</Text>
 
-      {status === 'completed' ? (
-        <View style={styles.completedButton}>
-          <Ionicons name="checkmark" size={16} color="#16A34A" />
-          <Text style={styles.completedButtonText}>{t('home.completed')}</Text>
-        </View>
-      ) : status === 'available' ? (
-        <Pressable style={styles.startButton} accessibilityRole="button" onPress={onStart}>
-          <Text style={styles.startButtonText}>{t('home.start')}</Text>
-        </Pressable>
-      ) : (
-        <View style={styles.lockedButton}>
-          <Ionicons name="lock-closed" size={15} color={colors.textMuted} />
-          <Text style={styles.lockedButtonText}>
-            {blockedByLevel
-              ? t('home.finishLevelToUnlock', { level: level - 1 })
-              : blockedByPrevious
-                ? t('home.finishPrevToUnlock', { day: dayInLevel - 1 })
-                : t('home.unlocksIn', { time: formatCountdown(remainingMs) })}
-          </Text>
-        </View>
-      )}
+        {status === 'completed' ? (
+          <View style={styles.completedButton}>
+            <Ionicons name="checkmark" size={16} color="#16A34A" />
+            <Text style={styles.completedButtonText}>{t('home.completed')}</Text>
+          </View>
+        ) : status === 'available' ? (
+          <Pressable style={styles.startButton} accessibilityRole="button" onPress={onStart}>
+            <Text style={styles.startButtonText}>{t('home.start')}</Text>
+          </Pressable>
+        ) : (
+          <View style={styles.lockedButton}>
+            <Ionicons name="lock-closed" size={15} color={colors.textMuted} />
+            <Text style={styles.lockedButtonText}>
+              {blockedByLevel
+                ? t('home.finishLevelToUnlock', { level: level - 1 })
+                : blockedByPrevious
+                  ? t('home.finishPrevToUnlock', { day: dayInLevel - 1 })
+                  : t('home.unlocksIn', { time: formatCountdown(remainingMs) })}
+            </Text>
+          </View>
+        )}
+      </View>
     </View>
   );
 }
@@ -464,14 +460,8 @@ const styles = StyleSheet.create({
   },
   dayCard: {
     width: DAY_CARD_WIDTH,
-    minHeight: DAY_CARD_HEIGHT,
     alignSelf: 'center',
-    paddingVertical: 16,
-    paddingHorizontal: 15,
     flexDirection: 'column',
-    justifyContent: 'center',
-    alignItems: 'flex-start',
-    gap: 8,
     flexShrink: 0,
     borderRadius: 16,
     borderWidth: 1,
@@ -486,20 +476,22 @@ const styles = StyleSheet.create({
     width: '100%',
     height: DAY_CARD_MEDIA_HEIGHT,
     flexShrink: 0,
-    alignItems: 'center',
-    justifyContent: 'center',
     position: 'relative',
-    borderRadius: 8,
     overflow: 'hidden',
     backgroundColor: '#F3F4F6',
-    alignSelf: 'stretch',
   },
   lockOverlay: {
     ...StyleSheet.absoluteFillObject,
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: 'rgba(17, 24, 39, 0.45)',
-    borderRadius: 8,
+  },
+  dayCardBody: {
+    width: '100%',
+    paddingHorizontal: 16,
+    paddingTop: 12,
+    paddingBottom: 16,
+    gap: 8,
   },
   dayLabel: {
     fontSize: 16,
@@ -519,7 +511,7 @@ const styles = StyleSheet.create({
     alignSelf: 'stretch',
   },
   startButton: {
-    height: 40,
+    height: 44,
     alignSelf: 'stretch',
     borderRadius: 8,
     backgroundColor: colors.buttonPrimary,
@@ -527,6 +519,7 @@ const styles = StyleSheet.create({
     borderColor: '#92A9B8',
     alignItems: 'center',
     justifyContent: 'center',
+    marginTop: 4,
   },
   startButtonText: {
     fontSize: 14,
@@ -536,7 +529,7 @@ const styles = StyleSheet.create({
     textTransform: 'capitalize',
   },
   completedButton: {
-    height: 40,
+    height: 44,
     alignSelf: 'stretch',
     borderRadius: 8,
     backgroundColor: 'rgba(22, 163, 74, 0.08)',
@@ -553,7 +546,7 @@ const styles = StyleSheet.create({
     color: '#16A34A',
   },
   lockedButton: {
-    height: 40,
+    height: 44,
     alignSelf: 'stretch',
     borderRadius: 8,
     backgroundColor: '#F3F4F6',
