@@ -1,23 +1,15 @@
-import { Platform, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import { SvgXml } from 'react-native-svg';
 
 import {
   ONCOSMART_LOGO_ASPECT,
   ONCOSMART_LOGO_XML,
 } from '../lib/brand/oncosmartLogoXml';
+import { font } from '../theme/fonts';
 
 /** Figma node 2914:7747 — ONCOSMART wordmark under the ribbon. */
 const WORDMARK_COLOR = '#273573';
 const ICON_TO_WORDMARK_GAP = 11;
-
-/** Helvetica Neue Semibold — Figma handoff; Android uses Roboto SemiBold. */
-const WORDMARK_FONT_FAMILY = Platform.select({
-  ios: 'Helvetica Neue',
-  web: 'Helvetica Neue, Helvetica, Arial, sans-serif',
-  android: 'Roboto_600SemiBold',
-  default: 'Helvetica Neue',
-}) as string;
-
 
 type Props = {
   /** Ribbon icon width; height follows the SVG viewBox aspect ratio. */
@@ -62,16 +54,11 @@ const styles = StyleSheet.create({
     flexShrink: 0,
     alignSelf: 'stretch',
     color: WORDMARK_COLOR,
-    fontFamily: WORDMARK_FONT_FAMILY,
     fontSize: 16,
     fontStyle: 'normal',
-    // iOS/web: Semibold via weight; Android face is already SemiBold
-    ...Platform.select({
-      android: {},
-      default: { fontWeight: '600' as const },
-    }),
     textAlign: 'center',
     textTransform: 'uppercase',
     includeFontPadding: false,
+    ...font('bold'),
   },
 });
