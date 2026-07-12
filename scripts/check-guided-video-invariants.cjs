@@ -29,8 +29,8 @@ function assert(condition, message) {
 
 const frame = read('lib/exerciseVideoFrame.ts');
 assert(
-  /EXERCISE_VIDEO_CONTENT_FIT\s*=\s*'contain'/.test(frame),
-  'Guided frame fit must be contain (full body visible)',
+  /EXERCISE_VIDEO_SOURCE_HEIGHT\s*=\s*578/.test(frame),
+  'Figma source composition height must stay 578',
 );
 assert(
   /EXERCISE_VIDEO_FRAME_WIDTH\s*=\s*349/.test(frame),
@@ -38,11 +38,15 @@ assert(
 );
 assert(
   /EXERCISE_VIDEO_FRAME_HEIGHT\s*=\s*444/.test(frame),
-  'Frame height must stay 444',
+  'Visible crop height must stay 444',
 );
 assert(
   /EXERCISE_VIDEO_FRAME_BORDER_RADIUS\s*=\s*16/.test(frame),
   'Frame radius must stay 16',
+);
+assert(
+  /EXERCISE_VIDEO_OBJECT_POSITION\s*=\s*'center bottom'/.test(frame),
+  'Crop must be bottom-anchored like Figma',
 );
 
 const policy = read('lib/videoStoragePolicy.ts');
@@ -87,22 +91,26 @@ assert(
 
 const nativePlayer = read('components/exercise/SessionVideoPlayer.tsx');
 assert(
-  nativePlayer.includes('EXERCISE_VIDEO_CONTENT_FIT'),
-  'Native player must use shared contain fit constant',
+  nativePlayer.includes('EXERCISE_VIDEO_SOURCE_ASPECT'),
+  'Native player must use Figma source aspect crop box',
 );
 assert(
-  !/contentFit=["']cover["']/.test(nativePlayer),
-  'Native guided player must not use cover',
+  nativePlayer.includes('sourceBox'),
+  'Native player must bottom-align the tall source inside the crop window',
 );
 
 const webPlayer = read('components/exercise/SessionVideoPlayer.web.tsx');
 assert(
-  webPlayer.includes('EXERCISE_VIDEO_CONTENT_FIT'),
-  'Web player must use shared contain fit constant',
+  webPlayer.includes('EXERCISE_VIDEO_SOURCE_ASPECT'),
+  'Web player must use Figma source aspect crop box',
 );
 assert(
-  !/objectFit:\s*['"]cover['"]/.test(webPlayer),
-  'Web guided player must not use cover',
+  webPlayer.includes('EXERCISE_VIDEO_OBJECT_POSITION'),
+  'Web player must bottom-anchor object position',
+);
+assert(
+  webPlayer.includes('sourceBox'),
+  'Web player must bottom-align the tall source inside the crop window',
 );
 
 const completion = read('components/exercise/sessionVideoCompletion.ts');

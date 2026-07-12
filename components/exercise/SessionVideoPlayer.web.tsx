@@ -6,6 +6,8 @@ import {
   EXERCISE_VIDEO_CONTENT_FIT,
   EXERCISE_VIDEO_FRAME_BACKGROUND,
   EXERCISE_VIDEO_FRAME_BORDER_RADIUS,
+  EXERCISE_VIDEO_OBJECT_POSITION,
+  EXERCISE_VIDEO_SOURCE_ASPECT,
 } from '../../lib/exerciseVideoFrame';
 import { shouldAcceptVideoEnd } from './sessionVideoCompletion';
 
@@ -226,25 +228,28 @@ export function SessionVideoPlayer({
 
   return (
     <View style={styles.wrap}>
-      {createElement('video', {
-        key: `${source}-${restartToken}`,
-        ref: videoRef,
-        src: source,
-        playsInline: true,
-        preload: 'auto',
-        controls: false,
-        muted: false,
-        defaultMuted: false,
-        style: styles.video,
-        onLoadStart: handleWaiting,
-        onWaiting: handleWaiting,
-        onCanPlay: handleCanPlay,
-        onPlaying: handlePlaying,
-        onLoadedMetadata: handleLoadedMetadata,
-        onTimeUpdate: handleTimeUpdate,
-        onEnded: handleEnded,
-        onError: handleError,
-      })}
+      {/* Figma: 349×578 source, bottom-aligned inside 349×444 crop window */}
+      <View style={styles.sourceBox}>
+        {createElement('video', {
+          key: `${source}-${restartToken}`,
+          ref: videoRef,
+          src: source,
+          playsInline: true,
+          preload: 'auto',
+          controls: false,
+          muted: false,
+          defaultMuted: false,
+          style: styles.video,
+          onLoadStart: handleWaiting,
+          onWaiting: handleWaiting,
+          onCanPlay: handleCanPlay,
+          onPlaying: handlePlaying,
+          onLoadedMetadata: handleLoadedMetadata,
+          onTimeUpdate: handleTimeUpdate,
+          onEnded: handleEnded,
+          onError: handleError,
+        })}
+      </View>
     </View>
   );
 }
@@ -257,12 +262,19 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     borderRadius: EXERCISE_VIDEO_FRAME_BORDER_RADIUS,
   },
+  sourceBox: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 0,
+    width: '100%',
+    aspectRatio: EXERCISE_VIDEO_SOURCE_ASPECT,
+  },
   video: {
     width: '100%',
     height: '100%',
     objectFit: EXERCISE_VIDEO_CONTENT_FIT,
-    objectPosition: 'center',
-    borderRadius: EXERCISE_VIDEO_FRAME_BORDER_RADIUS,
+    objectPosition: EXERCISE_VIDEO_OBJECT_POSITION,
     backgroundColor: EXERCISE_VIDEO_FRAME_BACKGROUND,
   } as object,
 });

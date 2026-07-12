@@ -6,6 +6,7 @@ import { ensureExerciseAudioSession } from '../../lib/ensureExerciseAudioSession
 import {
   EXERCISE_VIDEO_CONTENT_FIT,
   EXERCISE_VIDEO_FRAME_BACKGROUND,
+  EXERCISE_VIDEO_SOURCE_ASPECT,
 } from '../../lib/exerciseVideoFrame';
 import { shouldAcceptVideoEnd } from './sessionVideoCompletion';
 
@@ -213,12 +214,15 @@ export function SessionVideoPlayer({
 
   return (
     <View style={styles.frame}>
-      <VideoView
-        style={styles.video}
-        player={player}
-        contentFit={EXERCISE_VIDEO_CONTENT_FIT}
-        nativeControls={false}
-      />
+      {/* Figma: 349×578 source, bottom-aligned inside 349×444 crop window */}
+      <View style={styles.sourceBox}>
+        <VideoView
+          style={styles.video}
+          player={player}
+          contentFit={EXERCISE_VIDEO_CONTENT_FIT}
+          nativeControls={false}
+        />
+      </View>
     </View>
   );
 }
@@ -229,6 +233,14 @@ const styles = StyleSheet.create({
     height: '100%',
     backgroundColor: EXERCISE_VIDEO_FRAME_BACKGROUND,
     overflow: 'hidden',
+  },
+  sourceBox: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 0,
+    width: '100%',
+    aspectRatio: EXERCISE_VIDEO_SOURCE_ASPECT,
   },
   video: {
     width: '100%',
