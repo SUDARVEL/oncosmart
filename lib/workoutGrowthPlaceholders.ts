@@ -6,12 +6,22 @@ const SUPABASE_PUBLIC_BASE =
 const PLACEHOLDER_FOLDER = 'Male Workouts placeholder';
 
 /**
- * Exact filenames verified in Male Workouts placeholder (66×70 circular SVGs).
- * Add more entries as files are uploaded to this folder.
+ * Exact filenames in Male Workouts placeholder (66×70 circular SVGs).
+ * Filenames must match storage exactly (including casing / missing spaces).
  */
 const MALE_WORKOUT_PLACEHOLDER_FILES: Partial<Record<string, string>> = {
-  'diaphragmatic-breathing': '0001-0060 9Diaphragmatic Breathing .svg',
+  'diaphragmatic-breathing': 'Diaphragmatic Breathing.svg',
   'ankle-pumps': 'Ankle Pumps.svg',
+  'hamstring-stretch': 'hamstring stretch.svg',
+  'chest-stretch': 'Chest stretch.svg',
+  'quadriceps-stretch-left': 'quadriceps stretch left.svg',
+  'quadriceps-stretch-right': 'quadriceps stretch right.svg',
+  'calf-stretch-left': 'calf stretch left.svg',
+  'calf-stretch-right': 'calf stretch right.svg',
+  'triceps-stretch-right': 'triceps stretch right.svg',
+  'triceps-stretch-left': 'triceps stretchleft.svg',
+  'neck-stretch-left': 'neck stretch left.svg',
+  'neck-stretch-right': 'neck stretch right.svg',
 };
 
 const urlCache = new Map<string, string>();

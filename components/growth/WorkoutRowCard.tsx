@@ -45,12 +45,14 @@ export function WorkoutRowCard({ workout, onPress }: WorkoutRowCardProps) {
     >
       <View style={styles.photoWrap}>
         {showPhoto && isSvg && remoteUri ? (
-          <SvgUri
-            uri={remoteUri}
-            width={PHOTO_WIDTH}
-            height={PHOTO_HEIGHT}
-            onError={() => setImageFailed(true)}
-          />
+          <View style={styles.svgClip}>
+            <SvgUri
+              uri={remoteUri}
+              width={PHOTO_WIDTH}
+              height={PHOTO_HEIGHT}
+              onError={() => setImageFailed(true)}
+            />
+          </View>
         ) : showPhoto ? (
           <CachedMediaImage
             source={workout.photoSource!}
@@ -93,6 +95,14 @@ const styles = StyleSheet.create({
     borderRadius: 60,
     overflow: 'hidden',
     backgroundColor: '#D1D5DB',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  svgClip: {
+    width: PHOTO_WIDTH,
+    height: PHOTO_HEIGHT,
+    overflow: 'hidden',
+    borderRadius: 60,
   },
   photo: {
     width: PHOTO_WIDTH,
