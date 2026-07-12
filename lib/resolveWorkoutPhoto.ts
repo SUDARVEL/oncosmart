@@ -6,6 +6,7 @@ import { getWorkoutPhotoUrl } from './getWorkoutPhotoUrl';
 import { getWorkoutSliderPhotoUrl } from './workoutSliderPhotoUrls';
 import { getWorkoutLocalPhoto } from './workoutLocalPhotos';
 import { resolveSessionLandscapePhotoSource } from './sessionLandscapePhotos';
+import { getWorkoutGrowthPlaceholderUrl } from './workoutGrowthPlaceholders';
 import workoutPhotos from '../data/workout-photos.json';
 
 function getPhotoFile(exerciseId: string): string | null {
@@ -14,13 +15,16 @@ function getPhotoFile(exerciseId: string): string | null {
 }
 
 /**
- * Growth list oval thumbnails — prefer Male Slider Photos (portrait full-body),
- * then Male Landscape Photos. Avoid local Figma circle exports (grey dome baked in).
+ * Growth list oval thumbnails (66×70).
+ * Prefer Male Workouts placeholder SVGs (already circular-cropped), then slider/landscape.
  */
 export function resolveWorkoutPhotoSource(
   exerciseId: string,
   gender: AppGender | null,
 ): ImageSource | null {
+  const placeholderUrl = getWorkoutGrowthPlaceholderUrl(exerciseId, gender);
+  if (placeholderUrl) return { uri: placeholderUrl };
+
   const sliderUrl = getWorkoutSliderPhotoUrl(exerciseId, gender);
   if (sliderUrl) return { uri: sliderUrl };
 
