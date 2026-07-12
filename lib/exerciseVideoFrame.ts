@@ -6,11 +6,15 @@ export const EXERCISE_VIDEO_FRAME_ASPECT =
 export const EXERCISE_VIDEO_FRAME_BACKGROUND = '#FFFFFF';
 export const EXERCISE_VIDEO_FRAME_BORDER_RADIUS = 16;
 
-/** Compact home day-card preview — video ~40% of card height in Figma. */
-export const HOME_DAY_CARD_PREVIEW_WIDTH = 321;
-export const HOME_DAY_CARD_PREVIEW_HEIGHT = 200;
+/** Compact home day-card preview — Figma placeholder video 294×112. */
+export const HOME_DAY_CARD_PREVIEW_WIDTH = 294;
+export const HOME_DAY_CARD_PREVIEW_HEIGHT = 112;
 export const HOME_DAY_CARD_PREVIEW_ASPECT =
   HOME_DAY_CARD_PREVIEW_WIDTH / HOME_DAY_CARD_PREVIEW_HEIGHT;
+
+/** Home "Today's Exercise" card — Figma node 2914:7095. */
+export const HOME_DAY_CARD_WIDTH = 324;
+export const HOME_DAY_CARD_HEIGHT = 254;
 
 /** Session list exercise card preview — landscape frame matching Figma day-session cards. */
 export const SESSION_EXERCISE_CARD_PREVIEW_WIDTH = 328;
