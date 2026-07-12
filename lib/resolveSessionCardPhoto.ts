@@ -1,7 +1,5 @@
 import type { ImageSource } from 'expo-image';
 
-import type { ImageSource } from 'expo-image';
-
 import type { AppGender } from '../store/useAppStore';
 import { getWorkoutPhotoUrl } from './getWorkoutPhotoUrl';
 import { getWorkoutLocalPhoto } from './workoutLocalPhotos';
