@@ -103,7 +103,9 @@ export function getLevelExercises(
   const resolved = session.exercises.map((exercise) => {
     const videoSource = resolveExplicitExerciseVideo(exercise, variant);
     const previewPhoto = resolveSessionCardPhotoSource(exercise.id, gender);
-    const previewVideo = getSessionLandscapeVideoUrl(exercise.id, gender);
+    const previewVideo = exercise.id.includes('stretch')
+      ? null
+      : getSessionLandscapeVideoUrl(exercise.id, gender);
     const thumbnail = getDay1Thumbnail(exercise.id);
 
     return {

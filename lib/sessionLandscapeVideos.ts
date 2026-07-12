@@ -13,6 +13,7 @@ const LANDSCAPE_FOLDER =
 const MALE_LANDSCAPE_VIDEO_FILES: Partial<Record<string, string>> = {
   'diaphragmatic-breathing': 'Diaphragmatic Breathing Male Landscape.mp4',
   'ankle-pumps': 'Ankle Pumps Male Landscape.mp4',
+  'thoracic-expansion': 'Thoracic Expansion Excercise Male Landscape.mp4',
   'arm-circles': 'Arm Circle Male Landscape.mp4',
   'spot-marching': 'Spot Marching Male Landscape.mp4',
   'shoulder-shrugging': 'Shoulder Shrug Male Landscape.mp4',

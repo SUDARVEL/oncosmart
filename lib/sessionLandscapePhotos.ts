@@ -5,20 +5,19 @@ import type { AppGender } from '../store/useAppStore';
 const SUPABASE_PUBLIC_BASE =
   'https://soyaeuffzytrjojifvdz.supabase.co/storage/v1/object/public/Oncosmart%20Videos%20and%20Assets';
 
-const LANDSCAPE_FOLDER = 'Oncomsart Male Landscape Photos';
+const LANDSCAPE_FOLDER = 'Male Landscape Photos';
 
 /**
- * Exact Supabase filenames in Oncomsart Male Landscape Photos.
- * The number before "Images" matches the exercise order in the Level 1 program.
+ * Exact filenames in Male Landscape Photos (landscape stills for stretch cards).
+ * Naming follows: "{Exercise} stretch Male {Side?} Landscape.png"
  */
 const MALE_LANDSCAPE_PHOTO_FILES: Partial<Record<string, string>> = {
-  'diaphragmatic-breathing': '0001-0070 1Images Landscape Male .jpg',
-  'ankle-pumps': '0001-0075 2Images Landscape Male .jpg',
-  'arm-circles': '0001-0080 4Images Landscape Male .jpg',
-  'spot-marching': '0001-0080 5Images Landscape Male .jpg',
-  'quadriceps-stretch-right': '0001-0060 7Images Landscape Male .jpg',
-  'triceps-stretch-right': '0001-0060 12Images Landscape Male .jpg',
+  'calf-stretch-left': 'Calf stretch Male Left Landscape.png',
+  'calf-stretch-right': 'Calf stretch Male Right Landscape.png',
 };
+
+/** Stretch IDs verified present in Male Landscape Photos. */
+const CONFIRMED_LANDSCAPE_PHOTO_IDS = new Set(Object.keys(MALE_LANDSCAPE_PHOTO_FILES));
 
 const landscapeUrlCache = new Map<string, string>();
 
@@ -34,6 +33,8 @@ export function getSessionLandscapePhotoUrl(
   gender: AppGender | null,
 ): string | null {
   if (gender === 'female') return null;
+
+  if (!CONFIRMED_LANDSCAPE_PHOTO_IDS.has(exerciseId)) return null;
 
   const file = MALE_LANDSCAPE_PHOTO_FILES[exerciseId];
   if (!file) return null;

@@ -14,17 +14,17 @@ function getPhotoFile(exerciseId: string): string | null {
 
 /**
  * Session list card preview for Figma landscape cards.
- * Prefer Male Slider Photos (sharp), then landscape stills, then other photos.
+ * Stretches prefer Male Landscape Photos; otherwise Male Slider Photos, then fallbacks.
  */
 export function resolveSessionCardPhotoSource(
   exerciseId: string,
   gender: AppGender | null,
 ): ImageSource | null {
-  const sliderUrl = getWorkoutSliderPhotoUrl(exerciseId, gender);
-  if (sliderUrl) return { uri: sliderUrl };
-
   const landscape = resolveSessionLandscapePhotoSource(exerciseId, gender);
   if (landscape) return landscape;
+
+  const sliderUrl = getWorkoutSliderPhotoUrl(exerciseId, gender);
+  if (sliderUrl) return { uri: sliderUrl };
 
   const localPhoto = getWorkoutLocalPhoto(exerciseId);
   if (localPhoto) return localPhoto;
