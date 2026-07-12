@@ -1,14 +1,20 @@
 import { Image } from 'expo-image';
 import { useTranslation } from 'react-i18next';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
+import { SvgXml } from 'react-native-svg';
 
 import type { AppAvatar } from '../../store/useAppStore';
 import { colors } from '../../theme/colors';
 import { font } from '../../theme/fonts';
+import { PressableScale } from '../PressableScale';
 import { GROWTH_ASSETS } from './assets';
 import { LevelsProgressRing } from './LevelsProgressRing';
 
 const FEMALE_AVATAR = require('../../assets/avatars/female-avatar.png');
+
+/** Figma pause / resume glyphs — SvgXml so they render on native + web. */
+const PAUSE_ICON_XML = `<svg viewBox="0 0 8 9.33333" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M5.33333 9.33333V0H8V9.33333H5.33333ZM0 9.33333V0H2.66667V9.33333H0Z" fill="#005F99"/></svg>`;
+const PLAY_ICON_XML = `<svg viewBox="0 0 11 14" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M0 14V0L11 7L0 14Z" fill="#9CA3AF"/></svg>`;
 
 type LevelsCardProps = {
   completed: number;
@@ -59,25 +65,25 @@ export function LevelsCard({
       </View>
 
       {paused ? (
-        <Pressable
+        <PressableScale
           style={styles.resumeButton}
           onPress={onResume}
           accessibilityRole="button"
           accessibilityLabel={t('growth.resumeProgress')}
         >
-          <Image source={GROWTH_ASSETS.playIconGrey} style={styles.playIcon} contentFit="contain" />
+          <SvgXml xml={PLAY_ICON_XML} width={12} height={16} />
           <Text style={styles.resumeText}>{t('growth.resumeProgress')}</Text>
-        </Pressable>
+        </PressableScale>
       ) : (
-        <Pressable
+        <PressableScale
           style={styles.pauseButton}
           onPress={onPause}
           accessibilityRole="button"
           accessibilityLabel={t('growth.pauseProgress')}
         >
-          <Image source={GROWTH_ASSETS.pauseIcon} style={styles.pauseIcon} contentFit="contain" />
+          <SvgXml xml={PAUSE_ICON_XML} width={10} height={12} />
           <Text style={styles.pauseText}>{t('growth.pauseProgress')}</Text>
-        </Pressable>
+        </PressableScale>
       )}
     </View>
   );
@@ -86,7 +92,7 @@ export function LevelsCard({
 const styles = StyleSheet.create({
   card: {
     width: 348,
-    minHeight: 276,
+    minHeight: 288,
     backgroundColor: colors.background,
     borderWidth: 1,
     borderColor: colors.cardBorder,
@@ -105,16 +111,16 @@ const styles = StyleSheet.create({
     lineHeight: 28,
   },
   heroRow: {
-    width: 233,
-    height: 153,
-    marginTop: 16,
+    width: 268,
+    height: 168,
+    marginTop: 12,
     flexDirection: 'row',
     alignItems: 'flex-start',
     justifyContent: 'space-between',
   },
   gaugeColumn: {
-    width: 175,
-    height: 153,
+    width: 192,
+    height: 168,
   },
   gaugeText: {
     ...StyleSheet.absoluteFillObject,
@@ -124,15 +130,15 @@ const styles = StyleSheet.create({
   gaugeTextInner: {
     alignItems: 'center',
     justifyContent: 'center',
-    maxWidth: 86,
+    maxWidth: 96,
     paddingHorizontal: 4,
   },
   levelCount: {
-    fontSize: 22,
+    fontSize: 24,
     ...font('medium'),
     color: '#262526',
     letterSpacing: 0.3,
-    lineHeight: 24,
+    lineHeight: 26,
     textAlign: 'center',
   },
   levelSubtitle: {
@@ -145,23 +151,23 @@ const styles = StyleSheet.create({
     marginTop: 1,
   },
   avatarFrame: {
-    width: 69,
-    height: 172,
-    marginTop: -23,
+    width: 80,
+    height: 198,
+    marginTop: -26,
     overflow: 'hidden',
     borderRadius: 4,
   },
   avatarImage: {
-    width: 142,
-    height: 248,
-    marginLeft: -41,
-    marginTop: -62,
+    width: 164,
+    height: 286,
+    marginLeft: -47,
+    marginTop: -72,
   },
   pauseButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 4,
+    gap: 6,
     height: 35,
     paddingHorizontal: 16,
     borderWidth: 1,
@@ -169,11 +175,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     backgroundColor: colors.background,
     minWidth: 137,
-    marginTop: 16,
-  },
-  pauseIcon: {
-    width: 16,
-    height: 16,
+    marginTop: 12,
   },
   pauseText: {
     fontSize: 12,
@@ -194,11 +196,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     backgroundColor: colors.background,
     minWidth: 147,
-    marginTop: 16,
-  },
-  playIcon: {
-    width: 24,
-    height: 24,
+    marginTop: 12,
   },
   resumeText: {
     fontSize: 12,

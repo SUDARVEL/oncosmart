@@ -13,6 +13,7 @@ const BADGE_SVG_FILES: Partial<Record<BadgeKey, string>> = {
   consistent: 'Consistent Star Badge 100x 100.svg',
   strength: 'Strength Builder Badge 100x100.svg',
   hero: 'Functional Hero 100x100.svg',
+  unstoppable: 'The Unstoppable 100x100.svg',
 };
 
 function encodeObjectPath(objectPath: string): string {

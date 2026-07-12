@@ -1,4 +1,5 @@
-import { Pressable, StyleSheet, Text, type StyleProp, type ViewStyle } from 'react-native';
+import { PressableScale } from './PressableScale';
+import { StyleSheet, Text, type StyleProp, type ViewStyle } from 'react-native';
 
 import { colors } from '../theme/colors';
 import { font } from '../theme/fonts';
@@ -19,7 +20,7 @@ export function PrimaryButton({
   style,
 }: PrimaryButtonProps) {
   return (
-    <Pressable
+    <PressableScale
       onPress={onPress}
       disabled={disabled}
       style={[
@@ -32,7 +33,7 @@ export function PrimaryButton({
       accessibilityState={{ disabled }}
     >
       <Text style={styles.label}>{label}</Text>
-    </Pressable>
+    </PressableScale>
   );
 }
 

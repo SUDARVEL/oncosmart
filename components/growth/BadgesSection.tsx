@@ -1,3 +1,4 @@
+import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, Text, useWindowDimensions, View } from 'react-native';
@@ -21,29 +22,22 @@ function RemoteBadgeIcon({ badgeKey, earned }: { badgeKey: BadgeKey; earned: boo
   const source = getBadgeIconSource(badgeKey);
   const uri = source && typeof source === 'object' && 'uri' in source ? source.uri : null;
 
-  if (!uri) {
-    return (
-      <View style={styles.badgeArt}>
-        <View style={!earned ? styles.badgeMuted : undefined}>
-          <Image source={GROWTH_ASSETS.badgeTrophy} style={styles.fallbackTrophy} contentFit="contain" />
-        </View>
-        {earned ? (
-          <View style={styles.earnedBadge}>
-            <Image source={GROWTH_ASSETS.badgeCheck} style={styles.earnedIcon} contentFit="contain" />
-          </View>
-        ) : null}
-      </View>
-    );
-  }
-
   return (
     <View style={styles.badgeArt}>
-      <View style={!earned ? styles.badgeMuted : undefined}>
-        <SvgUri uri={uri} width={100} height={100} />
+      <View style={[styles.badgePlate, !earned && styles.badgeMuted]}>
+        {uri ? (
+          <SvgUri uri={uri} width={100} height={100} />
+        ) : (
+          <Image
+            source={GROWTH_ASSETS.badgeTrophy}
+            style={styles.fallbackTrophy}
+            contentFit="contain"
+          />
+        )}
       </View>
       {earned ? (
-        <View style={styles.earnedBadge}>
-          <Image source={GROWTH_ASSETS.badgeCheck} style={styles.earnedIcon} contentFit="contain" />
+        <View style={styles.earnedBadge} accessibilityLabel="Earned">
+          <Ionicons name="checkmark" size={16} color="#FFFFFF" />
         </View>
       ) : null}
     </View>
@@ -170,16 +164,26 @@ const styles = StyleSheet.create({
     gap: 8,
     paddingVertical: 12,
     paddingHorizontal: 8,
+    overflow: 'visible',
   },
   badgeArt: {
-    width: 100,
-    height: 100,
+    width: 112,
+    height: 112,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: 'transparent',
+    overflow: 'visible',
+  },
+  badgePlate: {
+    width: 104,
+    height: 104,
+    borderRadius: 52,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#F3F8FC',
+    overflow: 'hidden',
   },
   badgeMuted: {
-    opacity: 0.38,
+    opacity: 0.4,
   },
   fallbackTrophy: {
     width: 72,
@@ -189,16 +193,16 @@ const styles = StyleSheet.create({
     position: 'absolute',
     right: 0,
     bottom: 0,
-    width: 28,
-    height: 28,
-    borderRadius: 14,
+    width: 30,
+    height: 30,
+    borderRadius: 15,
     backgroundColor: colors.buttonPrimary,
+    borderWidth: 2,
+    borderColor: '#FFFFFF',
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  earnedIcon: {
-    width: 16,
-    height: 16,
+    zIndex: 2,
+    elevation: 4,
   },
   badgeTitle: {
     fontSize: 14,

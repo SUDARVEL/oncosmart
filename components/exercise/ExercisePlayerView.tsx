@@ -3,6 +3,8 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   ActivityIndicator,
+  LayoutChangeEvent,
+  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -18,10 +20,12 @@ import {
   EXERCISE_VIDEO_FRAME_ASPECT,
   EXERCISE_VIDEO_FRAME_BACKGROUND,
   EXERCISE_VIDEO_FRAME_BORDER_RADIUS,
+  EXERCISE_VIDEO_FRAME_HEIGHT,
   EXERCISE_VIDEO_FRAME_WIDTH,
 } from '../../lib/exerciseVideoFrame';
 import { colors } from '../../theme/colors';
 import { font, displayFontStyle } from '../../theme/fonts';
+import { PressableScale } from '../PressableScale';
 import { SessionVideoPlayer } from './SessionVideoPlayer';
 
 type Props = {
@@ -29,32 +33,52 @@ type Props = {
   videoSources: string[];
   onComplete: () => void;
   onBackPress: () => void;
+  /** Keep video paused while an overlay (e.g. quit reason modal) is open. */
+  overlayPaused?: boolean;
 };
 
 const FOOTER_HEIGHT = 72;
 
-export function ExercisePlayerView({ exercise, videoSources, onComplete, onBackPress }: Props) {
+export function ExercisePlayerView({
+  exercise,
+  videoSources,
+  onComplete,
+  onBackPress,
+  overlayPaused = false,
+}: Props) {
   const { t } = useTranslation();
-  const { width: screenWidth, height: screenHeight } = useWindowDimensions();
-  const [isPaused, setIsPaused] = useState(false);
+  const { width: screenWidth } = useWindowDimensions();
+  const [isPaused, setIsPaused] = useState(() => Platform.OS === 'web');
   const [restartToken, setRestartToken] = useState(0);
   const [videoProgress, setVideoProgress] = useState(0);
   const [isBuffering, setIsBuffering] = useState(true);
   const [playbackFailed, setPlaybackFailed] = useState(false);
   const [videoDurationSeconds, setVideoDurationSeconds] = useState(0);
-  const completedRef = useRef(false);
-
-  const frameWidth = Math.min(EXERCISE_VIDEO_FRAME_WIDTH, screenWidth - 32);
-  const maxFrameHeight = Math.round(screenHeight * 0.42);
-  const frameHeight = Math.min(
-    Math.round(frameWidth / EXERCISE_VIDEO_FRAME_ASPECT),
-    maxFrameHeight,
+  const [seekRequest, setSeekRequest] = useState<{ fraction: number; token: number } | null>(
+    null,
   );
+  const [audioUnlockToken, setAudioUnlockToken] = useState(0);
+  const [progressTrackWidth, setProgressTrackWidth] = useState(0);
+  const completedRef = useRef(false);
+  const seekTokenRef = useRef(0);
+
+  const unlockAudio = useCallback(() => {
+    setAudioUnlockToken((value) => value + 1);
+  }, []);
+
+  const playbackPaused = isPaused || overlayPaused;
+  const primarySource = videoSources[0]?.trim() ?? '';
+
+  // Exact 349×444 aspect — scale width only on narrow screens; never clamp height.
+  const frameWidth = Math.min(EXERCISE_VIDEO_FRAME_WIDTH, Math.max(0, screenWidth - 32));
+  const frameHeight =
+    frameWidth >= EXERCISE_VIDEO_FRAME_WIDTH
+      ? EXERCISE_VIDEO_FRAME_HEIGHT
+      : Math.round(frameWidth / EXERCISE_VIDEO_FRAME_ASPECT);
 
   const title = t(`sessionFlow.exercises.${exercise.id}.title`);
   const description = t(`sessionFlow.exercises.${exercise.id}.description`);
-  const videoProgressPercent =
-    videoProgress > 0 && videoProgress < 0.08 ? 8 : Math.round(videoProgress * 100);
+  const videoProgressPercent = Math.round(Math.min(Math.max(videoProgress, 0), 1) * 100);
 
   const durationDisplay = useMemo(() => {
     if (exercise.repType === 'duration' && videoDurationSeconds > 0) {
@@ -75,12 +99,14 @@ export function ExercisePlayerView({ exercise, videoSources, onComplete, onBackP
 
   useEffect(() => {
     completedRef.current = false;
-    setIsPaused(false);
+    setIsPaused(Platform.OS === 'web');
     setRestartToken(0);
     setVideoProgress(0);
     setIsBuffering(true);
     setPlaybackFailed(false);
     setVideoDurationSeconds(0);
+    setSeekRequest(null);
+    setAudioUnlockToken((value) => value + 1);
   }, [exercise.id, videoSources.join('|')]);
 
   const handleVideoEnded = useCallback(() => {
@@ -88,23 +114,47 @@ export function ExercisePlayerView({ exercise, videoSources, onComplete, onBackP
   }, [markComplete]);
 
   const handlePauseToggle = () => {
+    if (overlayPaused) return;
+    setPlaybackFailed(false);
+    unlockAudio();
     setIsPaused((value) => !value);
   };
 
+  const handleBackPress = () => {
+    setIsPaused(true);
+    onBackPress();
+  };
+
   const handleRestart = () => {
+    if (overlayPaused) return;
+    unlockAudio();
     completedRef.current = false;
     setIsPaused(false);
     setVideoProgress(0);
     setIsBuffering(true);
     setPlaybackFailed(false);
     setVideoDurationSeconds(0);
+    setSeekRequest(null);
     setRestartToken((value) => value + 1);
+  };
+
+  const handleProgressTrackLayout = (event: LayoutChangeEvent) => {
+    setProgressTrackWidth(event.nativeEvent.layout.width);
+  };
+
+  const seekFromLocationX = (locationX: number) => {
+    if (progressTrackWidth <= 0 || overlayPaused) return;
+    unlockAudio();
+    const fraction = Math.min(Math.max(locationX / progressTrackWidth, 0), 1);
+    seekTokenRef.current += 1;
+    setSeekRequest({ fraction, token: seekTokenRef.current });
+    setVideoProgress(fraction);
   };
 
   return (
     <SafeAreaView style={styles.screen} edges={['top', 'bottom']}>
       <View style={styles.header}>
-        <Pressable onPress={onBackPress} style={styles.backButton} accessibilityRole="button">
+        <Pressable onPress={handleBackPress} style={styles.backButton} accessibilityRole="button">
           <Ionicons name="arrow-back" size={24} color={colors.textPrimary} />
         </Pressable>
       </View>
@@ -115,7 +165,7 @@ export function ExercisePlayerView({ exercise, videoSources, onComplete, onBackP
         showsVerticalScrollIndicator={false}
         bounces={false}
       >
-        <View
+        <Pressable
           style={[
             styles.videoWrap,
             {
@@ -123,19 +173,25 @@ export function ExercisePlayerView({ exercise, videoSources, onComplete, onBackP
               height: frameHeight,
             },
           ]}
+          onPress={unlockAudio}
+          accessibilityRole="button"
+          accessibilityLabel="Unlock video sound"
         >
-          <SessionVideoPlayer
-            key={`${exercise.id}-${restartToken}`}
-            source={videoSources[0]}
-            fallbackSources={videoSources.slice(1)}
-            isPaused={isPaused}
-            restartToken={restartToken}
-            onProgress={setVideoProgress}
-            onBuffering={setIsBuffering}
-            onDuration={setVideoDurationSeconds}
-            onPlaybackFailed={() => setPlaybackFailed(true)}
-            onEnded={handleVideoEnded}
-          />
+          {primarySource ? (
+            <SessionVideoPlayer
+              key={`${exercise.id}-${primarySource}-${restartToken}`}
+              source={primarySource}
+              isPaused={playbackPaused}
+              restartToken={restartToken}
+              seekRequest={seekRequest}
+              audioUnlockToken={audioUnlockToken}
+              onProgress={setVideoProgress}
+              onBuffering={setIsBuffering}
+              onDuration={setVideoDurationSeconds}
+              onPlaybackFailed={() => setPlaybackFailed(true)}
+              onEnded={handleVideoEnded}
+            />
+          ) : null}
           {isBuffering && !playbackFailed ? (
             <View style={styles.videoLoaderOverlay} pointerEvents="none">
               <ActivityIndicator size="large" color="#FFFFFF" />
@@ -147,11 +203,17 @@ export function ExercisePlayerView({ exercise, videoSources, onComplete, onBackP
               <Text style={styles.videoErrorText}>{t('sessionFlow.videoUnavailable')}</Text>
             </View>
           ) : null}
-        </View>
+        </Pressable>
 
-        <View style={[styles.videoProgressTrack, { width: frameWidth }]}>
+        <Pressable
+          style={[styles.videoProgressTrack, { width: frameWidth }]}
+          onLayout={handleProgressTrackLayout}
+          onPress={(event) => seekFromLocationX(event.nativeEvent.locationX)}
+          accessibilityRole="adjustable"
+          accessibilityLabel="Video progress"
+        >
           <View style={[styles.videoProgressFill, { width: `${videoProgressPercent}%` }]} />
-        </View>
+        </Pressable>
 
         <Text style={[styles.exerciseTitle, { maxWidth: frameWidth }]} numberOfLines={2}>
           {title}
@@ -174,25 +236,25 @@ export function ExercisePlayerView({ exercise, videoSources, onComplete, onBackP
       </ScrollView>
 
       <View style={styles.footer}>
-        <Pressable
+        <PressableScale
           style={styles.pauseButton}
           onPress={handlePauseToggle}
           accessibilityRole="button"
         >
-          <Ionicons name={isPaused ? 'play' : 'pause'} size={24} color="#FFFFFF" />
+          <Ionicons name={playbackPaused ? 'play' : 'pause'} size={24} color="#FFFFFF" />
           <Text style={styles.pauseButtonText}>
-            {isPaused ? t('sessionFlow.resume') : t('sessionFlow.pause')}
+            {playbackPaused ? t('sessionFlow.resume') : t('sessionFlow.pause')}
           </Text>
-        </Pressable>
+        </PressableScale>
 
-        <Pressable
+        <PressableScale
           style={styles.restartButton}
           onPress={handleRestart}
           accessibilityRole="button"
         >
           <Ionicons name="refresh" size={24} color="#374151" />
           <Text style={styles.restartButtonText}>{t('sessionFlow.restart')}</Text>
-        </Pressable>
+        </PressableScale>
       </View>
     </SafeAreaView>
   );

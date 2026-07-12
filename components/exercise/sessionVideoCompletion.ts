@@ -1,24 +1,13 @@
-/** Minimum seconds played before an end signal is accepted. */
-const MIN_WATCHED_SECONDS = 1;
+/** Ignore end signals that fire before real playback begins. */
+const MIN_PLAYED_SECONDS = 0.75;
 
-/** Seconds from the reported duration that still count as finished. */
-const END_EPSILON_SECONDS = 0.5;
-
-export function canMarkVideoComplete(
-  duration: number,
+export function shouldAcceptVideoEnd(
   currentTime: number,
+  duration: number,
   hasStarted: boolean,
 ): boolean {
   if (!hasStarted) return false;
-  if (!Number.isFinite(duration) || duration < MIN_WATCHED_SECONDS) return false;
-  if (!Number.isFinite(currentTime) || currentTime < MIN_WATCHED_SECONDS) return false;
-
-  return duration - currentTime <= END_EPSILON_SECONDS;
-}
-
-export function isNearVideoEnd(duration: number, currentTime: number): boolean {
-  if (!Number.isFinite(duration) || duration < MIN_WATCHED_SECONDS) return false;
-  if (!Number.isFinite(currentTime)) return false;
-
-  return duration - currentTime <= END_EPSILON_SECONDS;
+  if (!Number.isFinite(currentTime) || currentTime < MIN_PLAYED_SECONDS) return false;
+  if (!Number.isFinite(duration) || duration <= 0) return true;
+  return currentTime >= duration - 1.5 || currentTime / duration >= 0.9;
 }

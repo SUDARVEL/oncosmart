@@ -1,12 +1,14 @@
 import { CachedMediaImage } from '../CachedMediaImage';
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { SvgUri } from 'react-native-svg';
+import { StyleSheet, Text, View } from 'react-native';
 
 import type { LevelWorkout } from '../../lib/getLevelWorkouts';
+import { getWorkoutGrowthPlaceholderFit } from '../../lib/workoutGrowthPlaceholders';
 import { colors } from '../../theme/colors';
 import { font } from '../../theme/fonts';
+import { PressableScale } from '../PressableScale';
+import { GrowthPlaceholderSvg } from './GrowthPlaceholderSvg';
 
 type WorkoutRowCardProps = {
   workout: LevelWorkout;
@@ -31,14 +33,21 @@ export function WorkoutRowCard({ workout, onPress }: WorkoutRowCardProps) {
   const remoteUri = useMemo(() => getRemoteUri(workout.photoSource), [workout.photoSource]);
   const isSvg = Boolean(remoteUri?.toLowerCase().includes('.svg'));
   const showPhoto = Boolean(workout.photoSource) && !imageFailed;
+  const svgFit = useMemo(
+    () => (isSvg ? getWorkoutGrowthPlaceholderFit(workout.id) : null),
+    [isSvg, workout.id],
+  );
+  const handleImageError = useCallback(() => setImageFailed(true), []);
 
   useEffect(() => {
     setImageFailed(false);
   }, [workout.id, workout.photoSource]);
 
   return (
-    <Pressable
-      style={({ pressed }) => [styles.card, pressed && styles.cardPressed]}
+    <PressableScale
+      style={styles.card}
+      pressedScale={0.985}
+      pressedOpacity={0.94}
       onPress={onPress}
       accessibilityRole="button"
       accessibilityLabel={t(workout.titleKey)}
@@ -46,11 +55,12 @@ export function WorkoutRowCard({ workout, onPress }: WorkoutRowCardProps) {
       <View style={styles.photoWrap}>
         {showPhoto && isSvg && remoteUri ? (
           <View style={styles.svgClip}>
-            <SvgUri
+            <GrowthPlaceholderSvg
               uri={remoteUri}
               width={PHOTO_WIDTH}
               height={PHOTO_HEIGHT}
-              onError={() => setImageFailed(true)}
+              fit={svgFit}
+              onError={handleImageError}
             />
           </View>
         ) : showPhoto ? (
@@ -60,7 +70,7 @@ export function WorkoutRowCard({ workout, onPress }: WorkoutRowCardProps) {
             contentFit="cover"
             contentPosition="center"
             recyclingKey={`growth-row-${workout.id}`}
-            onError={() => setImageFailed(true)}
+            onError={handleImageError}
           />
         ) : null}
       </View>
@@ -68,7 +78,7 @@ export function WorkoutRowCard({ workout, onPress }: WorkoutRowCardProps) {
         <Text style={styles.title}>{t(workout.titleKey)}</Text>
         <Text style={styles.description}>{t(workout.descriptionKey)}</Text>
       </View>
-    </Pressable>
+    </PressableScale>
   );
 }
 
@@ -85,9 +95,6 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.cardBorder,
     borderRadius: 8,
-  },
-  cardPressed: {
-    backgroundColor: '#F9FAFB',
   },
   photoWrap: {
     width: PHOTO_WIDTH,

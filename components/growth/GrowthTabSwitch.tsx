@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next';
-import { Pressable, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
+import { StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 
+import { PressableScale } from '../PressableScale';
 import { colors } from '../../theme/colors';
 import { font } from '../../theme/fonts';
 
@@ -18,8 +19,9 @@ export function GrowthTabSwitch({ activeTab, onTabChange }: GrowthTabSwitchProps
 
   return (
     <View style={[styles.container, { width: switchWidth }]}>
-      <Pressable
+      <PressableScale
         style={[styles.tab, activeTab === 'progress' && styles.tabActive]}
+        pressedScale={0.96}
         onPress={() => onTabChange('progress')}
         accessibilityRole="button"
         accessibilityState={{ selected: activeTab === 'progress' }}
@@ -32,9 +34,10 @@ export function GrowthTabSwitch({ activeTab, onTabChange }: GrowthTabSwitchProps
         >
           {t('growth.tabProgress')}
         </Text>
-      </Pressable>
-      <Pressable
+      </PressableScale>
+      <PressableScale
         style={[styles.tab, activeTab === 'workouts' && styles.tabActive]}
+        pressedScale={0.96}
         onPress={() => onTabChange('workouts')}
         accessibilityRole="button"
         accessibilityState={{ selected: activeTab === 'workouts' }}
@@ -51,7 +54,7 @@ export function GrowthTabSwitch({ activeTab, onTabChange }: GrowthTabSwitchProps
         >
           {t('growth.tabWorkouts')}
         </Text>
-      </Pressable>
+      </PressableScale>
     </View>
   );
 }

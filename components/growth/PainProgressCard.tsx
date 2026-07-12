@@ -4,10 +4,13 @@ import { StyleSheet, Text, View } from 'react-native';
 
 import { colors } from '../../theme/colors';
 import { font } from '../../theme/fonts';
-import { CHART_BAR_HEIGHTS, GROWTH_ASSETS } from './assets';
+import { GROWTH_ASSETS } from './assets';
 
 const X_LABELS = ['Mon', 'Wed', 'Fri', 'Sun'] as const;
 const Y_LABELS = ['8', '4', '0'] as const;
+
+/** Slightly taller bars than the Figma base set for a clearer chart. */
+const BAR_HEIGHTS = [80, 70, 60, 60, 50, 40, 40] as const;
 
 type PainProgressCardProps = {
   /** 7 bars representing Day 1..Day 7 of the active level. Use null when missing. */
@@ -22,10 +25,9 @@ function clamp(value: number, min: number, max: number): number {
 }
 
 function scoreToBarHeight(score: number): number {
-  // Map 0..10 pain into discrete bar heights (based on existing chart heights).
   const normalized = clamp(score, 0, 10) / 10;
-  const idx = Math.round(normalized * (CHART_BAR_HEIGHTS.length - 1));
-  return CHART_BAR_HEIGHTS[idx];
+  const idx = Math.round(normalized * (BAR_HEIGHTS.length - 1));
+  return BAR_HEIGHTS[idx];
 }
 
 export function PainProgressCard({
@@ -40,33 +42,32 @@ export function PainProgressCard({
 
   return (
     <View style={[styles.card, paused && styles.cardPaused]}>
-      <Text style={styles.title}>{t('growth.yourProgress')}</Text>
-
-      <View style={styles.content}>
+      <View style={styles.headerRow}>
+        <Text style={styles.title}>{t('growth.yourProgress')}</Text>
         <View style={styles.scoreBlock}>
           <Text style={styles.scoreLabel}>{t('growth.painScore')}</Text>
           <Text style={[styles.scoreValue, paused && styles.scoreValuePaused]}>
             {t('growth.painScoreValue', { score: currentScore })}
           </Text>
         </View>
+      </View>
 
+      <View style={styles.content}>
         <View style={styles.chart}>
           <View style={styles.yAxis}>
             {Y_LABELS.map((label) => (
               <View key={label} style={styles.yTickRow}>
                 <Text style={[styles.yLabel, paused && styles.axisLabelPaused]}>{label}</Text>
-                <Image
-                  source={GROWTH_ASSETS.chartYLabelLine}
-                  style={styles.yTickLine}
-                  contentFit="fill"
-                />
+                <View style={[styles.yTickLine, paused && styles.yTickLinePaused]} />
               </View>
             ))}
           </View>
 
           <View style={styles.chartBody}>
-            <View style={styles.gridLayer}>
-              <Image source={GROWTH_ASSETS.chartGrid} style={styles.gridImage} contentFit="fill" />
+            <View style={styles.gridLines}>
+              <View style={[styles.gridLine, paused && styles.gridLinePaused]} />
+              <View style={[styles.gridLine, paused && styles.gridLinePaused]} />
+              <View style={[styles.gridLine, paused && styles.gridLinePaused]} />
             </View>
 
             <View style={styles.barsRow}>
@@ -84,12 +85,12 @@ export function PainProgressCard({
               })}
             </View>
 
-            <Image source={GROWTH_ASSETS.chartBaseline} style={styles.baseline} contentFit="fill" />
+            <View style={[styles.baseline, paused && styles.baselinePaused]} />
 
             <View style={styles.xLabelsRow}>
               {X_LABELS.map((label) => (
                 <View key={label} style={styles.xLabelWrap}>
-                  <Image source={GROWTH_ASSETS.chartTick} style={styles.xTick} contentFit="fill" />
+                  <View style={[styles.xTick, paused && styles.xTickPaused]} />
                   <Text style={[styles.xLabel, paused && styles.axisLabelPaused]}>{label}</Text>
                 </View>
               ))}
@@ -108,57 +109,66 @@ export function PainProgressCard({
 const styles = StyleSheet.create({
   card: {
     width: 350,
-    minHeight: 239,
+    minHeight: 260,
     backgroundColor: colors.background,
     borderWidth: 1,
     borderColor: colors.cardBorder,
     borderRadius: 16,
     padding: 16,
-    gap: 16,
-    alignItems: 'center',
+    gap: 14,
   },
   cardPaused: {
     opacity: 0.28,
   },
+  headerRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    justifyContent: 'space-between',
+    gap: 12,
+  },
   title: {
-    alignSelf: 'stretch',
+    flex: 1,
     fontSize: 16,
     ...font('semiBold'),
     color: colors.textPrimary,
     letterSpacing: -0.26,
     lineHeight: 28,
   },
-  content: {
-    width: 317,
-    gap: 16,
-  },
   scoreBlock: {
-    gap: 8,
+    alignItems: 'flex-end',
+    gap: 2,
   },
   scoreLabel: {
     fontSize: 14,
     ...font('medium'),
     color: '#4B5563',
+    textAlign: 'right',
   },
   scoreValue: {
-    fontSize: 20,
+    fontSize: 22,
     ...font('semiBold'),
-    color: '#2563EB',
+    color: colors.buttonPrimary,
     letterSpacing: 0.5,
     lineHeight: 28,
+    textAlign: 'right',
   },
   scoreValuePaused: {
     color: '#9CA3AF',
   },
+  content: {
+    width: '100%',
+    gap: 12,
+  },
   chart: {
     flexDirection: 'row',
-    gap: 4,
+    gap: 6,
+    minHeight: 120,
   },
   yAxis: {
-    width: 22,
+    width: 24,
     justifyContent: 'space-between',
-    paddingBottom: 24,
-    paddingTop: 4,
+    paddingBottom: 28,
+    paddingTop: 2,
   },
   yTickRow: {
     flexDirection: 'row',
@@ -167,7 +177,7 @@ const styles = StyleSheet.create({
   },
   yLabel: {
     width: 16,
-    fontSize: 10,
+    fontSize: 11,
     ...font('regular'),
     color: colors.textPlaceholder,
     textAlign: 'right',
@@ -176,54 +186,72 @@ const styles = StyleSheet.create({
     color: '#9CA3AF',
   },
   yTickLine: {
-    width: 14,
+    width: 4,
     height: 1,
+    backgroundColor: '#D1D5DB',
+  },
+  yTickLinePaused: {
+    backgroundColor: '#E5E7EB',
   },
   chartBody: {
     flex: 1,
-    height: 80,
+    height: 118,
     justifyContent: 'flex-end',
   },
-  gridLayer: {
+  gridLines: {
     ...StyleSheet.absoluteFillObject,
-    bottom: 20,
+    bottom: 28,
+    justifyContent: 'space-between',
+    paddingTop: 2,
   },
-  gridImage: {
-    width: '100%',
-    height: '100%',
+  gridLine: {
+    height: StyleSheet.hairlineWidth,
+    backgroundColor: '#E5E7EB',
+  },
+  gridLinePaused: {
+    backgroundColor: '#F3F4F6',
   },
   barsRow: {
     flexDirection: 'row',
     alignItems: 'flex-end',
-    gap: 10,
-    paddingLeft: 4,
-    height: 63,
-    marginBottom: 2,
+    justifyContent: 'space-between',
+    height: 80,
+    marginBottom: 4,
+    paddingHorizontal: 4,
   },
   bar: {
-    width: 29,
+    width: 32,
+    borderRadius: 2,
   },
   baseline: {
     width: '100%',
-    height: 1,
-    marginBottom: 4,
+    height: StyleSheet.hairlineWidth,
+    backgroundColor: '#9CA3AF',
+    marginBottom: 6,
+  },
+  baselinePaused: {
+    backgroundColor: '#D1D5DB',
   },
   xLabelsRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    paddingHorizontal: 2,
+    paddingHorizontal: 6,
   },
   xLabelWrap: {
     alignItems: 'center',
-    minWidth: 40,
+    minWidth: 44,
   },
   xTick: {
     width: 1,
     height: 6,
+    backgroundColor: '#D1D5DB',
     marginBottom: 2,
   },
+  xTickPaused: {
+    backgroundColor: '#E5E7EB',
+  },
   xLabel: {
-    fontSize: 10,
+    fontSize: 11,
     ...font('regular'),
     color: colors.textPlaceholder,
     textAlign: 'center',

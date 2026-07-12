@@ -1,7 +1,8 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 
+import { PressableScale } from './PressableScale';
 import { colors } from '../theme/colors';
 import { font } from '../theme/fonts';
 
@@ -26,9 +27,14 @@ export function ScreenHeader({ title, showBack = false, onBack, largeTitle = fal
   return (
     <View style={styles.container}>
       {showBack ? (
-        <Pressable onPress={handleBack} style={styles.backButton} accessibilityRole="button">
+        <PressableScale
+          onPress={handleBack}
+          style={styles.backButton}
+          pressedScale={0.9}
+          accessibilityRole="button"
+        >
           <Ionicons name="arrow-back" size={24} color={colors.textPrimary} />
-        </Pressable>
+        </PressableScale>
       ) : (
         <View style={styles.sideSlot} />
       )}

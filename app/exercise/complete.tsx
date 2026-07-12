@@ -1,13 +1,15 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { BadgeCelebrationModal } from '../../components/growth/BadgeCelebrationModal';
+import { PressableScale } from '../../components/PressableScale';
 import {
   DAYS_PER_LEVEL,
   getNextSession,
-  TOTAL_LEVELS,
   UNLOCK_DELAY_MS,
 } from '../../lib/programProgress';
 import { useAppStore } from '../../store/useAppStore';
@@ -39,6 +41,13 @@ export default function SessionCompleteScreen() {
   const completedAt = useAppStore(
     (state) => state.dayCompletedAt[`L${level}D${dayInLevel}`],
   );
+  const pendingBadges = useAppStore((state) => state.pendingBadgeCelebrations);
+  const dismissBadgeCelebration = useAppStore((state) => state.dismissBadgeCelebration);
+  const activeBadge = pendingBadges[0] ?? null;
+
+  const handleCelebrationDismiss = useCallback(() => {
+    dismissBadgeCelebration();
+  }, [dismissBadgeCelebration]);
 
   const next = getNextSession(level, dayInLevel);
   const unlockAt = completedAt ? completedAt + UNLOCK_DELAY_MS : Date.now() + UNLOCK_DELAY_MS;
@@ -83,21 +92,27 @@ export default function SessionCompleteScreen() {
       </View>
 
       <View style={styles.footer}>
-        <Pressable
+        <PressableScale
           style={styles.primaryButton}
           accessibilityRole="button"
           onPress={() => router.replace('/home')}
         >
           <Text style={styles.primaryButtonText}>{t('complete.goHome')}</Text>
-        </Pressable>
-        <Pressable
+        </PressableScale>
+        <PressableScale
           style={styles.secondaryButton}
           accessibilityRole="button"
           onPress={() => router.replace('/growth')}
         >
           <Text style={styles.secondaryButtonText}>{t('complete.viewProgress')}</Text>
-        </Pressable>
+        </PressableScale>
       </View>
+
+      <BadgeCelebrationModal
+        badgeKey={activeBadge}
+        visible={activeBadge != null}
+        onDismiss={handleCelebrationDismiss}
+      />
     </SafeAreaView>
   );
 }

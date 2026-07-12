@@ -6,12 +6,12 @@ type LevelsProgressRingProps = {
   paused: boolean;
 };
 
-const WIDTH = 175;
-const HEIGHT = 153;
-const CX = 87.5;
-const CY = 76.5;
-const STROKE = 20;
-const RADIUS = 63;
+const WIDTH = 192;
+const HEIGHT = 168;
+const CX = 96;
+const CY = 84;
+const STROKE = 22;
+const RADIUS = 70;
 
 export function LevelsProgressRing({ completed, total, paused }: LevelsProgressRingProps) {
   const progress = total > 0 ? Math.min(Math.max(completed / total, 0), 1) : 0;

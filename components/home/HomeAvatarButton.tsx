@@ -1,8 +1,9 @@
 import { Image, type ImageSource } from 'expo-image';
-import { Pressable, StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { SvgXml } from 'react-native-svg';
 
 import type { AppAvatar } from '../../store/useAppStore';
+import { PressableScale } from '../PressableScale';
 import { colors } from '../../theme/colors';
 
 /**
@@ -37,9 +38,10 @@ export function HomeAvatarButton({
   const contentPosition = avatar === 'female' ? 'top' : 'center';
 
   return (
-    <Pressable
+    <PressableScale
       onPress={onPress}
       style={styles.wrap}
+      pressedScale={0.94}
       accessibilityRole="button"
       accessibilityLabel={accessibilityLabel}
     >
@@ -53,7 +55,7 @@ export function HomeAvatarButton({
           cachePolicy="memory-disk"
         />
       </View>
-    </Pressable>
+    </PressableScale>
   );
 }
 

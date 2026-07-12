@@ -1,16 +1,19 @@
-import { createElement, useCallback, useEffect, useRef, useState } from 'react';
+import { createElement, useCallback, useEffect, useRef } from 'react';
 import { StyleSheet, View } from 'react-native';
 
+import { ensureExerciseAudioSession } from '../../lib/ensureExerciseAudioSession';
 import {
   EXERCISE_VIDEO_FRAME_BACKGROUND,
   EXERCISE_VIDEO_FRAME_BORDER_RADIUS,
 } from '../../lib/exerciseVideoFrame';
+import { shouldAcceptVideoEnd } from './sessionVideoCompletion';
 
 type Props = {
   source: string;
-  fallbackSources?: string[];
   isPaused: boolean;
   restartToken: number;
+  seekRequest?: { fraction: number; token: number } | null;
+  audioUnlockToken?: number;
   onProgress?: (progress: number) => void;
   onBuffering?: (isBuffering: boolean) => void;
   onDuration?: (durationSeconds: number) => void;
@@ -20,16 +23,16 @@ type Props = {
 
 export function SessionVideoPlayer({
   source,
-  fallbackSources = [],
   isPaused,
   restartToken,
+  seekRequest = null,
+  audioUnlockToken = 0,
   onProgress,
   onBuffering,
   onDuration,
   onPlaybackFailed,
   onEnded,
 }: Props) {
-  const [activeSource, setActiveSource] = useState(source);
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const onEndedRef = useRef(onEnded);
   const onProgressRef = useRef(onProgress);
@@ -40,8 +43,9 @@ export function SessionVideoPlayer({
   const durationRef = useRef(0);
   const hasStartedRef = useRef(false);
   const isPausedRef = useRef(isPaused);
-  const sourceIndexRef = useRef(0);
-  const sourcesRef = useRef<string[]>([source, ...fallbackSources]);
+  const lastSeekTokenRef = useRef<number | null>(null);
+  const lastAudioUnlockTokenRef = useRef(0);
+  const needsAudioUnlockRef = useRef(false);
 
   onEndedRef.current = onEnded;
   onProgressRef.current = onProgress;
@@ -49,9 +53,8 @@ export function SessionVideoPlayer({
   onDurationRef.current = onDuration;
   onPlaybackFailedRef.current = onPlaybackFailed;
   isPausedRef.current = isPaused;
-  sourcesRef.current = [source, ...fallbackSources];
 
-  const resetProgress = useCallback(() => {
+  const resetPlaybackState = useCallback(() => {
     completedRef.current = false;
     durationRef.current = 0;
     hasStartedRef.current = false;
@@ -59,36 +62,55 @@ export function SessionVideoPlayer({
     onBufferingRef.current?.(true);
   }, []);
 
-  const playVideo = useCallback(async (video?: HTMLVideoElement | null) => {
-    const element = video ?? videoRef.current;
-    if (!element || isPausedRef.current) return;
-
-    element.muted = false;
-    element.volume = 1;
-
-    try {
-      await element.play();
-    } catch {
-      // Browser autoplay policy — user can tap Resume to start with sound.
-    }
+  const forceUnmute = useCallback((video: HTMLVideoElement) => {
+    video.muted = false;
+    video.volume = 1;
+    video.defaultMuted = false;
+    needsAudioUnlockRef.current = false;
   }, []);
 
-  const switchToNextSource = useCallback(() => {
-    const nextIndex = sourceIndexRef.current + 1;
-    const nextSource = sourcesRef.current[nextIndex];
-    if (!nextSource) return false;
+  const playWithSound = useCallback(
+    async (video: HTMLVideoElement) => {
+      if (isPausedRef.current || completedRef.current) return;
 
-    sourceIndexRef.current = nextIndex;
-    resetProgress();
-    setActiveSource(nextSource);
-    return true;
-  }, [resetProgress]);
+      await ensureExerciseAudioSession();
+      video.volume = 1;
+      video.defaultMuted = false;
+      video.muted = false;
+
+      try {
+        await video.play();
+        forceUnmute(video);
+      } catch {
+        needsAudioUnlockRef.current = true;
+        video.muted = true;
+        try {
+          await video.play();
+        } catch {
+          // Browser still blocking — user must tap Resume.
+        }
+      }
+    },
+    [forceUnmute],
+  );
+
+  const unlockAndPlay = useCallback(async () => {
+    const video = videoRef.current;
+    if (!video || isPausedRef.current || completedRef.current) return;
+
+    await ensureExerciseAudioSession();
+    forceUnmute(video);
+    try {
+      await video.play();
+      forceUnmute(video);
+    } catch {
+      // Ignore — user gesture may still be required.
+    }
+  }, [forceUnmute]);
 
   useEffect(() => {
-    sourceIndexRef.current = 0;
-    resetProgress();
-    setActiveSource(source);
-  }, [resetProgress, source, fallbackSources.join('|'), restartToken]);
+    resetPlaybackState();
+  }, [resetPlaybackState, source, restartToken]);
 
   useEffect(() => {
     const video = videoRef.current;
@@ -99,35 +121,74 @@ export function SessionVideoPlayer({
       return;
     }
 
-    void playVideo(video);
-  }, [isPaused, playVideo]);
+    void playWithSound(video);
+  }, [isPaused, playWithSound]);
+
+  useEffect(() => {
+    if (!audioUnlockToken || audioUnlockToken === lastAudioUnlockTokenRef.current) return;
+    lastAudioUnlockTokenRef.current = audioUnlockToken;
+    void unlockAndPlay();
+  }, [audioUnlockToken, unlockAndPlay]);
+
+  useEffect(() => {
+    if (!seekRequest) return;
+    if (lastSeekTokenRef.current === seekRequest.token) return;
+    lastSeekTokenRef.current = seekRequest.token;
+
+    const video = videoRef.current;
+    if (!video) return;
+
+    const duration = durationRef.current > 0 ? durationRef.current : video.duration;
+    if (!Number.isFinite(duration) || duration <= 0) return;
+
+    completedRef.current = false;
+    video.currentTime = Math.min(Math.max(seekRequest.fraction, 0), 1) * duration;
+    onProgressRef.current?.(Math.min(video.currentTime / duration, 1));
+    void unlockAndPlay();
+  }, [seekRequest, unlockAndPlay]);
 
   const handleLoadedMetadata = (event: Event) => {
     const video = event.currentTarget as HTMLVideoElement;
-    if (video.duration > 0) {
+    if (video.duration > 0 && Number.isFinite(video.duration)) {
       durationRef.current = video.duration;
       onDurationRef.current?.(video.duration);
+    }
+    if (!isPausedRef.current) {
+      void playWithSound(video);
     }
   };
 
   const handleWaiting = () => {
-    if (completedRef.current) return;
-    onBufferingRef.current?.(true);
+    if (!completedRef.current) {
+      onBufferingRef.current?.(true);
+    }
   };
 
   const handlePlaying = () => {
     onBufferingRef.current?.(false);
+    const video = videoRef.current;
+    if (video && !needsAudioUnlockRef.current) {
+      forceUnmute(video);
+    }
+  };
+
+  const handleCanPlay = (event: Event) => {
+    onBufferingRef.current?.(false);
+    const video = event.currentTarget as HTMLVideoElement;
+    if (!isPausedRef.current && video.paused) {
+      void playWithSound(video);
+    }
   };
 
   const handleTimeUpdate = (event: Event) => {
-    if (isPausedRef.current || completedRef.current) return;
+    if (completedRef.current) return;
 
     const video = event.currentTarget as HTMLVideoElement;
     if (video.currentTime > 0.5) {
       hasStartedRef.current = true;
     }
 
-    if (video.duration > 0) {
+    if (video.duration > 0 && Number.isFinite(video.duration)) {
       durationRef.current = video.duration;
     }
 
@@ -141,6 +202,11 @@ export function SessionVideoPlayer({
     const video = event.currentTarget as HTMLVideoElement;
     if (completedRef.current) return;
 
+    const duration = durationRef.current > 0 ? durationRef.current : video.duration;
+    if (!shouldAcceptVideoEnd(video.currentTime, duration, hasStartedRef.current)) {
+      return;
+    }
+
     completedRef.current = true;
     onProgressRef.current?.(1);
     onBufferingRef.current?.(false);
@@ -149,23 +215,29 @@ export function SessionVideoPlayer({
   };
 
   const handleError = () => {
-    if (switchToNextSource()) return;
     onBufferingRef.current?.(false);
     onPlaybackFailedRef.current?.();
   };
 
+  if (!source?.trim()) {
+    return <View style={styles.wrap} />;
+  }
+
   return (
     <View style={styles.wrap}>
       {createElement('video', {
-        key: `${activeSource}-${restartToken}`,
+        key: `${source}-${restartToken}`,
         ref: videoRef,
-        src: activeSource,
+        src: source,
         playsInline: true,
         preload: 'auto',
+        controls: false,
+        muted: false,
+        defaultMuted: false,
         style: styles.video,
         onLoadStart: handleWaiting,
         onWaiting: handleWaiting,
-        onCanPlay: handlePlaying,
+        onCanPlay: handleCanPlay,
         onPlaying: handlePlaying,
         onLoadedMetadata: handleLoadedMetadata,
         onTimeUpdate: handleTimeUpdate,
@@ -181,11 +253,13 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
     backgroundColor: EXERCISE_VIDEO_FRAME_BACKGROUND,
+    overflow: 'hidden',
+    borderRadius: EXERCISE_VIDEO_FRAME_BORDER_RADIUS,
   },
   video: {
     width: '100%',
     height: '100%',
-    objectFit: 'contain',
+    objectFit: 'cover',
     objectPosition: 'center',
     borderRadius: EXERCISE_VIDEO_FRAME_BORDER_RADIUS,
     backgroundColor: EXERCISE_VIDEO_FRAME_BACKGROUND,

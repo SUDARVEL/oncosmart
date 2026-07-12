@@ -19,12 +19,15 @@ export function SessionCardLoopVideo({ uri }: Props) {
   const player = useVideoPlayer(uri, (instance) => {
     instance.loop = true;
     instance.muted = true;
+    // Never steal audio focus from the guided session player.
+    instance.audioMixingMode = 'mixWithOthers';
     instance.play();
   });
 
   useEffect(() => {
     player.loop = true;
     player.muted = true;
+    player.audioMixingMode = 'mixWithOthers';
     player.play();
   }, [player, uri]);
 

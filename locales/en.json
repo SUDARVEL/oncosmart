@@ -283,6 +283,9 @@
     "badgeHeroSubtitle": "Complete Level 3",
     "badgeUnstoppableTitle": "The Unstoppable",
     "badgeUnstoppableSubtitle": "Complete Level 4",
+    "badgeEarnedHeadline": "You earned {{badge}}!",
+    "badgeEarnedBody": "Congratulations! {{detail}}",
+    "badgeEarnedGotIt": "Got it!",
     "workouts": {
       "level": "Level {{level}}",
       "emptyLevel": "Level {{level}} workouts coming soon.",

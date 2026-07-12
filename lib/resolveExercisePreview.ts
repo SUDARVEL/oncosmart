@@ -30,5 +30,7 @@ export function resolveExercisePlaybackUrl(
   variant: VideoVariant,
 ): string | null {
   if (explicitUrl) return explicitUrl;
+  // Do not invent female URLs under the male portrait folder — wastes cache/egress on 404s.
+  if (variant.startsWith('female')) return null;
   return resolveVideoUrl(guessSupabaseExerciseVideoUrl(exerciseName, variant));
 }

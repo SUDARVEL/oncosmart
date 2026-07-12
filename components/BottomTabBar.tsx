@@ -1,6 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 
+import { PressableScale } from './PressableScale';
 import { colors } from '../theme/colors';
 import { font } from '../theme/fonts';
 
@@ -28,10 +29,11 @@ export function BottomTabBar({ activeTab, onTabPress, labels }: BottomTabBarProp
       {TABS.map((tab) => {
         const isActive = activeTab === tab.key;
         return (
-          <Pressable
+          <PressableScale
             key={tab.key}
             onPress={() => onTabPress(tab.key)}
             style={styles.tab}
+            pressedScale={0.94}
             accessibilityRole="button"
             accessibilityState={{ selected: isActive }}
           >
@@ -43,7 +45,7 @@ export function BottomTabBar({ activeTab, onTabPress, labels }: BottomTabBarProp
               />
             </View>
             <Text style={[styles.label, isActive && styles.labelActive]}>{labels[tab.key]}</Text>
-          </Pressable>
+          </PressableScale>
         );
       })}
     </View>

@@ -5,14 +5,16 @@ import dayExercisesData from '../data/day-exercises.json';
 import type { AppAvatar, AppGender, AppLanguage } from '../store/useAppStore';
 import { getLevelExerciseProgram } from './levelExercisePrograms';
 import { getVideoVariant, type VideoVariant } from './getExerciseVideo';
-import { getPortraitVideoPath } from './exercisePortraitVideos';
+import {
+  getExercisePortraitObjectPath,
+  getSessionLandscapeVideoUrl,
+} from './exerciseMediaUrls';
 import {
   guessSupabaseExerciseVideoUrl,
   resolveExercisePlaybackUrl,
 } from './resolveExercisePreview';
 import { resolveSessionCardPhotoSource } from './resolveSessionCardPhoto';
 import { resolveSessionLandscapePhotoSource } from './sessionLandscapePhotos';
-import { getSessionLandscapeVideoUrl } from './sessionLandscapeVideos';
 import { resolveVideoUrl } from './resolveVideoUrl';
 
 export type DayExercise = {
@@ -73,14 +75,22 @@ export function getDaySession(day: number): LevelSession | null {
 function resolveExplicitExerciseVideo(
   exercise: DayExercise,
   variant: VideoVariant,
+  gender: AppGender | null,
+  avatar: AppAvatar | null,
 ): string | null {
-  if (variant === 'male-en') {
-    const portraitPath = getPortraitVideoPath(exercise.id);
+  if (variant === 'male-en' || variant === 'female-en' || variant === 'female-ta') {
+    const portraitPath = getExercisePortraitObjectPath(exercise.id, gender, avatar);
     if (portraitPath) return resolveVideoUrl(portraitPath);
   }
 
   const preferred = exercise.videos[variant]?.trim();
   if (preferred) return resolveVideoUrl(preferred);
+
+  // Female Tamil → English female portrait when Tamil files are absent.
+  if (variant === 'female-ta') {
+    const enPath = getExercisePortraitObjectPath(exercise.id, 'female', 'female');
+    if (enPath) return resolveVideoUrl(enPath);
+  }
 
   const fallback = Object.values(exercise.videos).find((url) => url.trim().length > 0);
   return fallback ? resolveVideoUrl(fallback) : null;
@@ -102,12 +112,11 @@ export function getLevelExercises(
   const variant = getVideoVariant(language, gender, avatar);
 
   const resolved = session.exercises.map((exercise) => {
-    const videoSource = resolveExplicitExerciseVideo(exercise, variant);
+    const videoSource = resolveExplicitExerciseVideo(exercise, variant, gender, avatar);
     const previewVideo = exercise.id.includes('stretch')
       ? null
-      : getSessionLandscapeVideoUrl(exercise.id, gender);
+      : getSessionLandscapeVideoUrl(exercise.id, gender, avatar);
     const thumbnail = getDay1Thumbnail(exercise.id);
-    // Prefer matched Male Landscape Photos for stretch / no-video cards.
     const previewPhoto =
       resolveSessionLandscapePhotoSource(exercise.id, gender) ??
       resolveSessionCardPhotoSource(exercise.id, gender);
@@ -150,7 +159,7 @@ export function getSessionExerciseVideoSource(
   if (!exercise) return null;
 
   const variant = getVideoVariant(language, gender, avatar);
-  const explicit = resolveExplicitExerciseVideo(exercise, variant);
+  const explicit = resolveExplicitExerciseVideo(exercise, variant, gender, avatar);
   return resolveExercisePlaybackUrl(explicit, exercise.name, variant);
 }
 

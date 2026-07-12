@@ -3,6 +3,7 @@ import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 
 import { getCompletedLevelsCount, sessionKey } from '../lib/programProgress';
+import type { BadgeKey } from '../lib/getEarnedBadges';
 
 export type AppLanguage = 'en' | 'ta';
 export type AppGender = 'male' | 'female' | 'prefer_not_to_say';
@@ -28,6 +29,8 @@ type AppState = {
   dayCompletedAt: Record<string, number>;
   /** Dev-only flag that bypasses the 24h unlock delay between days. */
   devUnlockOverride: boolean;
+  /** Ephemeral queue of badge celebrations to show after a session. */
+  pendingBadgeCelebrations: BadgeKey[];
   setLanguage: (language: AppLanguage) => void;
   setUsername: (username: string) => void;
   setAgeRange: (ageRange: AgeRange) => void;
@@ -46,6 +49,8 @@ type AppState = {
   /** @deprecated Use markSessionCompleted */
   markDayCompleted: (day: number, when?: number) => void;
   setDevUnlockOverride: (value: boolean) => void;
+  enqueueBadgeCelebrations: (badges: BadgeKey[]) => void;
+  dismissBadgeCelebration: () => void;
   /** Dev-only: wipe day progress without touching onboarding profile. */
   devResetProgress: () => void;
   resetApp: () => void;
@@ -71,6 +76,7 @@ export const useAppStore = create<AppState>()(
       levelsCompleted: 0,
       dayCompletedAt: {},
       devUnlockOverride: false,
+      pendingBadgeCelebrations: [],
       setLanguage: (language) => set({ language }),
       setUsername: (username) => set({ username }),
       setAgeRange: (ageRange) => set({ ageRange }),
@@ -117,12 +123,30 @@ export const useAppStore = create<AppState>()(
           };
         }),
       setDevUnlockOverride: (value) => set({ devUnlockOverride: value }),
+      enqueueBadgeCelebrations: (badges) =>
+        set((state) => {
+          if (badges.length === 0) return state;
+          const existing = new Set(state.pendingBadgeCelebrations);
+          const next = [...state.pendingBadgeCelebrations];
+          for (const badge of badges) {
+            if (!existing.has(badge)) {
+              existing.add(badge);
+              next.push(badge);
+            }
+          }
+          return { pendingBadgeCelebrations: next };
+        }),
+      dismissBadgeCelebration: () =>
+        set((state) => ({
+          pendingBadgeCelebrations: state.pendingBadgeCelebrations.slice(1),
+        })),
       devResetProgress: () =>
         set({
           dayCompletedAt: {},
           levelsCompleted: 0,
           devUnlockOverride: false,
           painScores: {},
+          pendingBadgeCelebrations: [],
         }),
       resetApp: () =>
         set({
@@ -141,6 +165,7 @@ export const useAppStore = create<AppState>()(
           levelsCompleted: 0,
           dayCompletedAt: {},
           devUnlockOverride: false,
+          pendingBadgeCelebrations: [],
         }),
     }),
     {

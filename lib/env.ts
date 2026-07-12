@@ -1,6 +1,8 @@
 const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL?.trim() ?? '';
 const supabaseAnonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY?.trim() ?? '';
-const videoBucket = process.env.EXPO_PUBLIC_SUPABASE_VIDEO_BUCKET?.trim() || 'exercise-videos';
+/** Must match the real public bucket name in Supabase Storage. */
+const videoBucket =
+  process.env.EXPO_PUBLIC_SUPABASE_VIDEO_BUCKET?.trim() || 'Oncosmart Videos and Assets';
 
 export const env = {
   supabaseUrl,

@@ -1,15 +1,17 @@
 import { useVideoPlayer, VideoView } from 'expo-video';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import { StyleSheet, View } from 'react-native';
 
+import { ensureExerciseAudioSession } from '../../lib/ensureExerciseAudioSession';
 import { EXERCISE_VIDEO_FRAME_BACKGROUND } from '../../lib/exerciseVideoFrame';
-import { canMarkVideoComplete } from './sessionVideoCompletion';
+import { shouldAcceptVideoEnd } from './sessionVideoCompletion';
 
 type Props = {
   source: string;
-  fallbackSources?: string[];
   isPaused: boolean;
   restartToken: number;
+  seekRequest?: { fraction: number; token: number } | null;
+  audioUnlockToken?: number;
   onProgress?: (progress: number) => void;
   onBuffering?: (isBuffering: boolean) => void;
   onDuration?: (durationSeconds: number) => void;
@@ -17,90 +19,48 @@ type Props = {
   onEnded: () => void;
 };
 
+function applyAudiblePlayback(player: {
+  muted: boolean;
+  volume: number;
+  audioMixingMode: 'mixWithOthers' | 'duckOthers' | 'auto' | 'doNotMix';
+}) {
+  player.muted = false;
+  player.volume = 1;
+  player.audioMixingMode = 'doNotMix';
+}
+
 export function SessionVideoPlayer({
   source,
-  fallbackSources = [],
   isPaused,
   restartToken,
+  seekRequest = null,
+  audioUnlockToken = 0,
   onProgress,
   onBuffering,
   onDuration,
   onPlaybackFailed,
   onEnded,
 }: Props) {
-  const [activeSource, setActiveSource] = useState(source);
-  const sourceIndexRef = useRef(0);
-  const sourcesRef = useRef<string[]>([source, ...fallbackSources]);
-
-  sourcesRef.current = [source, ...fallbackSources];
-
-  useEffect(() => {
-    sourceIndexRef.current = 0;
-    setActiveSource(source);
-  }, [source, fallbackSources.join('|'), restartToken]);
-
-  const handlePlaybackError = useCallback(() => {
-    const nextIndex = sourceIndexRef.current + 1;
-    const nextSource = sourcesRef.current[nextIndex];
-    if (!nextSource) {
-      onBuffering?.(false);
-      onPlaybackFailed?.();
-      return;
-    }
-
-    sourceIndexRef.current = nextIndex;
-    setActiveSource(nextSource);
-  }, [onBuffering, onPlaybackFailed]);
-
-  return (
-    <NativeSessionVideoPlayer
-      source={activeSource}
-      isPaused={isPaused}
-      restartToken={restartToken}
-      onProgress={onProgress}
-      onBuffering={onBuffering}
-      onDuration={onDuration}
-      onEnded={onEnded}
-      onPlaybackError={handlePlaybackError}
-    />
-  );
-}
-
-function NativeSessionVideoPlayer({
-  source,
-  isPaused,
-  restartToken,
-  onProgress,
-  onBuffering,
-  onDuration,
-  onEnded,
-  onPlaybackError,
-}: {
-  source: string;
-  isPaused: boolean;
-  restartToken: number;
-  onProgress?: (progress: number) => void;
-  onBuffering?: (isBuffering: boolean) => void;
-  onDuration?: (durationSeconds: number) => void;
-  onEnded: () => void;
-  onPlaybackError: () => void;
-}) {
   const onEndedRef = useRef(onEnded);
   const onProgressRef = useRef(onProgress);
   const onBufferingRef = useRef(onBuffering);
   const onDurationRef = useRef(onDuration);
+  const onPlaybackFailedRef = useRef(onPlaybackFailed);
   const completedRef = useRef(false);
   const durationRef = useRef(0);
   const hasStartedRef = useRef(false);
   const isPausedRef = useRef(isPaused);
+  const lastSeekTokenRef = useRef<number | null>(null);
+  const lastAudioUnlockTokenRef = useRef(0);
 
   onEndedRef.current = onEnded;
   onProgressRef.current = onProgress;
   onBufferingRef.current = onBuffering;
   onDurationRef.current = onDuration;
+  onPlaybackFailedRef.current = onPlaybackFailed;
   isPausedRef.current = isPaused;
 
-  const resetProgress = useCallback(() => {
+  const resetPlaybackState = useCallback(() => {
     completedRef.current = false;
     durationRef.current = 0;
     hasStartedRef.current = false;
@@ -108,39 +68,27 @@ function NativeSessionVideoPlayer({
     onBufferingRef.current?.(true);
   }, []);
 
-  const tryComplete = useCallback(
-    (currentTime: number) => {
-      if (completedRef.current || isPausedRef.current) return;
-
-      const duration = durationRef.current > 0 ? durationRef.current : 0;
-      if (!canMarkVideoComplete(duration, currentTime, hasStartedRef.current)) {
-        return;
-      }
-
-      completedRef.current = true;
-      onEndedRef.current();
-    },
-    [],
-  );
+  const startPlayback = useCallback(async (player: ReturnType<typeof useVideoPlayer>) => {
+    if (isPausedRef.current || completedRef.current) return;
+    await ensureExerciseAudioSession();
+    applyAudiblePlayback(player);
+    player.play();
+  }, []);
 
   const player = useVideoPlayer(source, (instance) => {
     instance.loop = false;
-    instance.muted = false;
-    instance.volume = 1;
-    instance.audioMixingMode = 'mixWithOthers';
+    applyAudiblePlayback(instance);
     instance.timeUpdateEventInterval = 0.25;
-    instance.play();
   });
 
   useEffect(() => {
-    resetProgress();
-  }, [resetProgress, source, restartToken]);
+    resetPlaybackState();
+  }, [resetPlaybackState, source, restartToken]);
 
   useEffect(() => {
     player.loop = false;
-    player.muted = false;
-    player.volume = 1;
-    player.audioMixingMode = 'mixWithOthers';
+    applyAudiblePlayback(player);
+    player.timeUpdateEventInterval = 0.25;
   }, [player]);
 
   useEffect(() => {
@@ -148,25 +96,58 @@ function NativeSessionVideoPlayer({
       player.pause();
       return;
     }
-
-    player.play();
-  }, [isPaused, player]);
+    void startPlayback(player);
+  }, [isPaused, player, startPlayback]);
 
   useEffect(() => {
-    resetProgress();
-    player.currentTime = 0;
-    player.play();
-  }, [player, resetProgress, restartToken]);
+    if (!audioUnlockToken || audioUnlockToken === lastAudioUnlockTokenRef.current) return;
+    lastAudioUnlockTokenRef.current = audioUnlockToken;
+    void startPlayback(player);
+  }, [audioUnlockToken, player, startPlayback]);
+
+  useEffect(() => {
+    resetPlaybackState();
+    try {
+      player.currentTime = 0;
+    } catch {
+      // Player may not be ready yet.
+    }
+    if (!isPausedRef.current) {
+      void startPlayback(player);
+    } else {
+      player.pause();
+    }
+  }, [player, resetPlaybackState, restartToken, startPlayback]);
+
+  useEffect(() => {
+    if (!seekRequest) return;
+    if (lastSeekTokenRef.current === seekRequest.token) return;
+    lastSeekTokenRef.current = seekRequest.token;
+
+    const duration = durationRef.current > 0 ? durationRef.current : player.duration;
+    if (!Number.isFinite(duration) || duration <= 0) return;
+
+    const nextTime = Math.min(Math.max(seekRequest.fraction, 0), 1) * duration;
+    completedRef.current = false;
+    try {
+      player.currentTime = nextTime;
+    } catch {
+      return;
+    }
+    onProgressRef.current?.(Math.min(nextTime / duration, 1));
+  }, [player, seekRequest]);
 
   useEffect(() => {
     const statusSubscription = player.addListener('statusChange', (payload) => {
       if (payload.status === 'error') {
-        onPlaybackError();
+        onBufferingRef.current?.(false);
+        onPlaybackFailedRef.current?.();
         return;
       }
 
       if (payload.status === 'loading') {
         onBufferingRef.current?.(true);
+        return;
       }
 
       if (payload.status === 'readyToPlay') {
@@ -175,11 +156,14 @@ function NativeSessionVideoPlayer({
           durationRef.current = player.duration;
           onDurationRef.current?.(player.duration);
         }
+        if (!isPausedRef.current && !completedRef.current) {
+          void startPlayback(player);
+        }
       }
     });
 
     const timeSubscription = player.addListener('timeUpdate', (payload) => {
-      if (isPausedRef.current || completedRef.current) return;
+      if (completedRef.current) return;
 
       const currentTime = payload.currentTime;
       if (currentTime > 0.5) {
@@ -188,23 +172,29 @@ function NativeSessionVideoPlayer({
 
       if (player.duration > 0) {
         durationRef.current = player.duration;
+        onDurationRef.current?.(player.duration);
       }
 
       onBufferingRef.current?.(false);
-      const duration = durationRef.current;
-      if (duration > 0) {
-        onProgressRef.current?.(Math.min(currentTime / duration, 1));
+      if (durationRef.current > 0) {
+        onProgressRef.current?.(Math.min(currentTime / durationRef.current, 1));
       }
     });
 
     const endSubscription = player.addListener('playToEnd', () => {
-      if (player.duration > 0) {
-        durationRef.current = player.duration;
+      if (completedRef.current) return;
+
+      const duration = durationRef.current > 0 ? durationRef.current : player.duration;
+      const currentTime = player.currentTime;
+
+      if (!shouldAcceptVideoEnd(currentTime, duration, hasStartedRef.current)) {
+        return;
       }
 
+      completedRef.current = true;
       onProgressRef.current?.(1);
       player.pause();
-      tryComplete(player.currentTime);
+      onEndedRef.current();
     });
 
     return () => {
@@ -212,14 +202,18 @@ function NativeSessionVideoPlayer({
       timeSubscription.remove();
       endSubscription.remove();
     };
-  }, [onPlaybackError, player, tryComplete]);
+  }, [onPlaybackFailed, player, startPlayback]);
+
+  if (!source?.trim()) {
+    return <View style={styles.frame} />;
+  }
 
   return (
     <View style={styles.frame}>
       <VideoView
         style={styles.video}
         player={player}
-        contentFit="contain"
+        contentFit="cover"
         nativeControls={false}
       />
     </View>
@@ -231,6 +225,7 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
     backgroundColor: EXERCISE_VIDEO_FRAME_BACKGROUND,
+    overflow: 'hidden',
   },
   video: {
     width: '100%',

@@ -18,8 +18,17 @@ import {
   hasGuidedSession,
   isSessionCompleteForLevel,
 } from '../../lib/getDay1Session';
+import {
+  getEarnedBadges,
+  getNewlyEarnedBadges,
+  LEVEL_COMPLETION_BADGE,
+} from '../../lib/getEarnedBadges';
+import { resolveExerciseGuidedPortraitUrl } from '../../lib/exerciseMediaUrls';
 import { isExerciseInLevel } from '../../lib/levelExercisePrograms';
-import { resolveSessionVideoSources } from '../../lib/getPortraitVideoUrl';
+import {
+  DAYS_PER_LEVEL,
+  getCompletedSessionCount,
+} from '../../lib/programProgress';
 import { useAppStore } from '../../store/useAppStore';
 import { colors } from '../../theme/colors';
 import { font } from '../../theme/fonts';
@@ -109,19 +118,52 @@ function GuidedSessionScreen({
   const videoSources = useMemo(() => {
     if (!sessionExercise) return [];
 
-    const landscapeFallback = getSessionExerciseVideoSource(
+    const portrait = resolveExerciseGuidedPortraitUrl(
+      sessionExercise.id,
+      gender,
+      avatar,
+    );
+    if (portrait) return [portrait];
+
+    // Legacy catalog fallback (male-only paths in JSON while female maps grow).
+    const catalogFallback = getSessionExerciseVideoSource(
       level,
       sessionExercise.id,
       language,
       gender,
       avatar,
     );
-
-    return resolveSessionVideoSources(sessionExercise.portraitVideo, landscapeFallback);
+    return catalogFallback ? [catalogFallback] : [];
   }, [avatar, level, gender, language, sessionExercise]);
 
   const completeSession = useCallback(() => {
-    useAppStore.getState().markSessionCompleted(level, dayInLevel);
+    const state = useAppStore.getState();
+    const before = getEarnedBadges(
+      state.levelsCompleted,
+      getCompletedSessionCount(state.dayCompletedAt),
+    );
+
+    state.markSessionCompleted(level, dayInLevel);
+
+    const afterState = useAppStore.getState();
+    const after = getEarnedBadges(
+      afterState.levelsCompleted,
+      getCompletedSessionCount(afterState.dayCompletedAt),
+    );
+    const newlyEarned = getNewlyEarnedBadges(before, after);
+
+    // Always celebrate the level badge when that level's last day is finished.
+    if (dayInLevel >= DAYS_PER_LEVEL) {
+      const levelBadge = LEVEL_COMPLETION_BADGE[level];
+      if (levelBadge && after.has(levelBadge) && !newlyEarned.includes(levelBadge)) {
+        newlyEarned.push(levelBadge);
+      }
+    }
+
+    if (newlyEarned.length > 0) {
+      afterState.enqueueBadgeCelebrations(newlyEarned);
+    }
+
     router.replace(`/exercise/complete?level=${level}&day=${dayInLevel}`);
   }, [dayInLevel, level, router]);
 
@@ -243,6 +285,7 @@ function GuidedSessionScreen({
         videoSources={videoSources}
         onComplete={handleExerciseComplete}
         onBackPress={handleBackPress}
+        overlayPaused={showStopModal}
       />
       {devSkipButton}
       <WhyDidYouStopModal

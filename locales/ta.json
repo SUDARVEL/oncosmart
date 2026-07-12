@@ -227,6 +227,9 @@
     "badgeHeroSubtitle": "நிலை 3 ஐ முடிக்கவும்",
     "badgeUnstoppableTitle": "நிறுத்த முடியாதவர்",
     "badgeUnstoppableSubtitle": "நிலை 4 ஐ முடிக்கவும்",
+    "badgeEarnedHeadline": "நீங்கள் {{badge}} பெற்றுள்ளீர்கள்!",
+    "badgeEarnedBody": "வாழ்த்துக்கள்! {{detail}}",
+    "badgeEarnedGotIt": "சரி!",
     "workouts": {
       "level": "நிலை {{level}}",
       "emptyLevel": "நிலை {{level}} பயிற்சிகள் விரைவில் வரும்.",

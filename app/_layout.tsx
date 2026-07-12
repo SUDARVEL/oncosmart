@@ -18,6 +18,7 @@ import { ActivityIndicator, Platform, StyleSheet, View } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { isSupabaseConfigured } from '../lib/env';
+import { ensureExerciseAudioSession } from '../lib/ensureExerciseAudioSession';
 import { checkSupabaseConnection } from '../lib/supabase';
 import { colors } from '../theme/colors';
 
@@ -63,6 +64,10 @@ export default function RootLayout() {
     void checkSupabaseConnection().then((ok) => {
       console.log(`[Supabase] Storage connection: ${ok ? 'OK' : 'check bucket name and keys'}`);
     });
+  }, []);
+
+  useEffect(() => {
+    void ensureExerciseAudioSession();
   }, []);
 
   if (!appReady) {

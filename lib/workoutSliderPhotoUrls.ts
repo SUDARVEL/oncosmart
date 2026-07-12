@@ -28,9 +28,9 @@ const MALE_SLIDER_PHOTO_FILES: Record<string, string> = {
   'quadriceps-stretch-left': 'Quadricep left stretch.png',
   'calf-stretch-right': 'Calf strectch right slider.png',
   'calf-stretch-left': 'Calf stretch left slider.png',
-  'chest-stretch': 'Pectoral Stretch Slider.png',
-  'triceps-stretch-right': 'Triceps Stretch (Right).png',
-  'triceps-stretch-left': 'Triceps Stretch (left).png',
+  'chest-stretch': 'Pectorals Stretch Slider.png',
+  'triceps-stretch-right': 'Tricep Stretch Slider Right.png',
+  'triceps-stretch-left': 'Tricep Stretch Slider Left.png',
   'neck-stretch-right': 'Neck Stretch ( right ).png',
   'neck-stretch-left': 'Neck Stretch Left.png',
 };

@@ -1,6 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 
+import { PressableScale } from '../PressableScale';
 import { font } from '../../theme/fonts';
 
 type SettingsRowProps = {
@@ -28,9 +29,9 @@ export function SettingsRow({ title, description, showChevron = false, onPress }
   }
 
   return (
-    <Pressable onPress={onPress} accessibilityRole="button">
+    <PressableScale onPress={onPress} accessibilityRole="button" pressedScale={0.99} pressedOpacity={0.9}>
       {content}
-    </Pressable>
+    </PressableScale>
   );
 }
 

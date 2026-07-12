@@ -19,6 +19,7 @@ import { BottomTabBar } from '../components/BottomTabBar';
 import { ExerciseVideoBanner } from '../components/ExerciseVideoBanner';
 import { HomeAvatarButton } from '../components/home/HomeAvatarButton';
 import { ProgressLogo } from '../components/home/ProgressLogo';
+import { PressableScale } from '../components/PressableScale';
 import { openWhatsAppSupport } from '../lib/openWhatsAppSupport';
 import { HOME_PAGE_PLACEHOLDER_VIDEO } from '../lib/placeholderVideo';
 import {
@@ -39,7 +40,10 @@ import { colors } from '../theme/colors';
 import { font } from '../theme/fonts';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
-const QUOTE_CARD_WIDTH = SCREEN_WIDTH - 32;
+const QUOTE_SIDE_INSET = 16;
+const QUOTE_GAP = 8;
+const QUOTE_CARD_WIDTH = SCREEN_WIDTH - QUOTE_SIDE_INSET * 2;
+const QUOTE_SNAP_INTERVAL = QUOTE_CARD_WIDTH + QUOTE_GAP;
 const DAY_CARD_WIDTH = SCREEN_WIDTH - 32;
 const DAY_CARD_MEDIA_HEIGHT = Math.round(DAY_CARD_WIDTH * (9 / 16));
 const DAY_CARD_PREVIEW_ASPECT = HOME_DAY_CARD_PREVIEW_ASPECT;
@@ -94,8 +98,8 @@ export default function HomeScreen() {
 
   const handleQuoteScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
     const offset = event.nativeEvent.contentOffset.x;
-    const index = Math.round(offset / QUOTE_CARD_WIDTH);
-    setActiveQuote(index);
+    const index = Math.round(offset / QUOTE_SNAP_INTERVAL);
+    setActiveQuote(Math.max(0, Math.min(QUOTES.length - 1, index)));
   };
 
   const handleTabPress = (tab: 'home' | 'growth' | 'settings') => {
@@ -136,12 +140,15 @@ export default function HomeScreen() {
         <ScrollView
           ref={scrollRef}
           horizontal
-          pagingEnabled
           showsHorizontalScrollIndicator={false}
           onMomentumScrollEnd={handleQuoteScroll}
+          onScrollEndDrag={handleQuoteScroll}
           contentContainerStyle={styles.quoteScroll}
           decelerationRate="fast"
-          snapToInterval={QUOTE_CARD_WIDTH}
+          snapToInterval={QUOTE_SNAP_INTERVAL}
+          snapToAlignment="start"
+          disableIntervalMomentum
+          bounces
         >
           {QUOTES.map((key) => (
             <View key={key} style={[styles.quoteCard, { width: QUOTE_CARD_WIDTH }]}>
@@ -183,14 +190,15 @@ export default function HomeScreen() {
         {__DEV__ ? <DevPanel /> : null}
       </ScrollView>
 
-      <Pressable
+      <PressableScale
         style={styles.fab}
         accessibilityRole="button"
         accessibilityLabel="Chat"
         onPress={openWhatsAppSupport}
+        pressedScale={0.92}
       >
         <Ionicons name="chatbubble" size={24} color={colors.buttonPrimary} />
-      </Pressable>
+      </PressableScale>
 
       <BottomTabBar
         activeTab="home"
@@ -243,9 +251,9 @@ function DayCard({
             <Text style={styles.completedButtonText}>{t('home.completed')}</Text>
           </View>
         ) : status === 'available' ? (
-          <Pressable style={styles.startButton} accessibilityRole="button" onPress={onStart}>
+          <PressableScale style={styles.startButton} accessibilityRole="button" onPress={onStart}>
             <Text style={styles.startButtonText}>{t('home.start')}</Text>
-          </Pressable>
+          </PressableScale>
         ) : (
           <View style={styles.lockedButton}>
             <Ionicons name="lock-closed" size={15} color={colors.textMuted} />
@@ -410,8 +418,9 @@ const styles = StyleSheet.create({
     backgroundColor: colors.dotActive,
   },
   quoteScroll: {
-    paddingHorizontal: 16,
+    paddingHorizontal: QUOTE_SIDE_INSET,
     marginTop: 16,
+    gap: QUOTE_GAP,
   },
   quoteCard: {
     flexDirection: 'row',
