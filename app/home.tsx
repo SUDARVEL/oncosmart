@@ -131,6 +131,7 @@ export default function HomeScreen() {
               source={avatar === 'female' ? FEMALE_AVATAR : MALE_AVATAR}
               style={styles.avatarImage}
               contentFit="cover"
+              contentPosition="top"
             />
           </Pressable>
         </View>

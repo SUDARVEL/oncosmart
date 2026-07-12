@@ -1,11 +1,11 @@
 import { Ionicons } from '@expo/vector-icons';
-import { Image } from 'expo-image';
+import { Image, type ImageSource } from 'expo-image';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { colors } from '../theme/colors';
 
 type AvatarCardProps = {
-  image: number;
+  image: ImageSource;
   selected: boolean;
   onPress: () => void;
 };
@@ -18,7 +18,16 @@ export function AvatarCard({ image, selected, onPress }: AvatarCardProps) {
       accessibilityRole="button"
       accessibilityState={{ selected }}
     >
-      <Image source={image} style={styles.image} contentFit="cover" />
+      <View style={styles.imageFrame}>
+        <Image
+          source={image}
+          style={styles.image}
+          contentFit="contain"
+          contentPosition="center"
+          cachePolicy="memory-disk"
+          recyclingKey={typeof image === 'number' ? `avatar-${image}` : undefined}
+        />
+      </View>
       {selected ? (
         <View style={styles.checkBadge}>
           <Ionicons name="checkmark-circle" size={20} color={colors.buttonPrimary} />
@@ -34,8 +43,6 @@ const styles = StyleSheet.create({
     height: 410,
     borderRadius: 8,
     backgroundColor: colors.optionBg,
-    // Reduce padding so the avatar image fills more of the card.
-    padding: 0,
     overflow: 'hidden',
   },
   cardSelected: {
@@ -43,13 +50,16 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.optionBorderSelected,
   },
-  image: {
+  imageFrame: {
     flex: 1,
+    marginVertical: 12,
+    marginHorizontal: 8,
+    backgroundColor: 'transparent',
+  },
+  image: {
     width: '100%',
     height: '100%',
     backgroundColor: 'transparent',
-    // Make the avatar figure fill more of the card area.
-    transform: [{ scale: 1.08 }],
   },
   checkBadge: {
     position: 'absolute',
