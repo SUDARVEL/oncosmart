@@ -8,20 +8,20 @@ import {
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const SCREEN_HEIGHT = Dimensions.get('window').height;
 
-/** Bottom sheet should leave dimmed Growth screen visible above. */
-export const WORKOUT_SHEET_MAX_HEIGHT = Math.round(SCREEN_HEIGHT * 0.88);
+/** Taller bottom sheet while keeping a strip of dimmed Growth screen above. */
+export const WORKOUT_SHEET_MAX_HEIGHT = Math.round(SCREEN_HEIGHT * 0.92);
 export const WORKOUT_SHEET_TOP_RADIUS = 24;
 
-const SHEET_CHROME_HEIGHT = 140; // handle + header + divider + dots + padding
+const SHEET_CHROME_HEIGHT = 128; // handle + header + divider + dots + padding
 const AVAILABLE_BODY_HEIGHT = WORKOUT_SHEET_MAX_HEIGHT - SHEET_CHROME_HEIGHT;
 
-/** Space reserved for title, reps, and description — keep text above dots. */
-export const WORKOUT_SLIDER_TEXT_BLOCK_HEIGHT = 200;
+/** Space for title, reps, and description — keep text above dots. */
+export const WORKOUT_SLIDER_TEXT_BLOCK_HEIGHT = 210;
 
-/** Inset media frame — scaled so text never overflows under the dots. */
+/** Inset media frame — uses extra sheet height for a larger exercise image. */
 export const WORKOUT_SLIDER_MEDIA_WIDTH = Math.min(
   EXERCISE_VIDEO_FRAME_WIDTH,
-  SCREEN_WIDTH - 40,
+  SCREEN_WIDTH - 32,
 );
 
 const idealMediaHeight = Math.round(

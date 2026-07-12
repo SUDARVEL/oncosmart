@@ -57,7 +57,7 @@ export function WorkoutDetailSlide({ workout, width }: Props) {
           <Text style={styles.repLabel}>{repLabel}</Text>
         </View>
 
-        <Text style={styles.description} numberOfLines={3}>
+        <Text style={styles.description} numberOfLines={4}>
           {description}
         </Text>
       </View>
@@ -70,7 +70,7 @@ const styles = StyleSheet.create({
     height: WORKOUT_SLIDER_BODY_HEIGHT,
     alignItems: 'center',
     paddingHorizontal: 16,
-    paddingTop: 8,
+    paddingTop: 10,
     overflow: 'hidden',
   },
   mediaWrap: {
@@ -91,16 +91,16 @@ const styles = StyleSheet.create({
     backgroundColor: WORKOUT_SLIDER_MEDIA_BACKGROUND,
   },
   textBlock: {
-    height: WORKOUT_SLIDER_TEXT_BLOCK_HEIGHT - 8,
+    height: WORKOUT_SLIDER_TEXT_BLOCK_HEIGHT - 10,
     width: WORKOUT_SLIDER_MEDIA_WIDTH,
     alignItems: 'center',
     justifyContent: 'flex-start',
-    paddingTop: 10,
+    paddingTop: 12,
     overflow: 'hidden',
   },
   exerciseTitle: {
-    fontSize: 20,
-    lineHeight: 24,
+    fontSize: 22,
+    lineHeight: 26,
     color: '#262526',
     textAlign: 'center',
     textTransform: 'uppercase',
@@ -111,26 +111,26 @@ const styles = StyleSheet.create({
     alignItems: 'flex-end',
     justifyContent: 'center',
     gap: 8,
-    marginTop: 10,
-    minHeight: 48,
+    marginTop: 12,
+    minHeight: 52,
   },
   repValue: {
-    fontSize: 48,
-    lineHeight: 48,
+    fontSize: 52,
+    lineHeight: 52,
     color: '#00131F',
     ...displayFontStyle(),
   },
   repLabel: {
-    fontSize: 28,
-    lineHeight: 32,
+    fontSize: 30,
+    lineHeight: 34,
     color: '#00131F',
     marginBottom: 2,
     ...displayFontStyle(),
   },
   description: {
-    marginTop: 10,
-    fontSize: 14,
-    lineHeight: 18,
+    marginTop: 12,
+    fontSize: 15,
+    lineHeight: 20,
     color: colors.textMuted,
     textAlign: 'center',
     ...font('regular'),
