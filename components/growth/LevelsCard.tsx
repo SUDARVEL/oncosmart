@@ -3,11 +3,9 @@ import { useTranslation } from "react-i18next";
 import { StyleSheet, Text, View } from "react-native";
 import { SvgXml } from "react-native-svg";
 
-import { GROWTH_CARD_FEMALE_IMAGE_URL } from "../../lib/homePageCardImage";
 import type { AppAvatar } from "../../store/useAppStore";
 import { colors } from "../../theme/colors";
 import { font } from "../../theme/fonts";
-import { CachedMediaImage } from "../CachedMediaImage";
 import { PressableScale } from "../PressableScale";
 import { GROWTH_ASSETS } from "./assets";
 import { LevelsProgressRing } from "./LevelsProgressRing";
@@ -35,6 +33,9 @@ export function LevelsCard({
 }: LevelsCardProps) {
   const { t } = useTranslation();
   const isFemale = avatar === "female";
+  const avatarSource = isFemale
+    ? GROWTH_ASSETS.femaleAvatarGrowth
+    : GROWTH_ASSETS.maleAvatarGrowth;
 
   return (
     <View style={styles.card}>
@@ -60,22 +61,12 @@ export function LevelsCard({
         </View>
 
         <View style={styles.avatarFrame}>
-          {isFemale ? (
-            <CachedMediaImage
-              source={{ uri: GROWTH_CARD_FEMALE_IMAGE_URL }}
-              style={styles.femaleAvatarImage}
-              contentFit="contain"
-              contentPosition="center"
-              recyclingKey="growth-levels-female"
-            />
-          ) : (
-            <Image
-              source={GROWTH_ASSETS.maleAvatarGrowth}
-              style={styles.avatarImage}
-              contentFit="cover"
-              contentPosition="top center"
-            />
-          )}
+          <Image
+            source={avatarSource}
+            style={isFemale ? styles.femaleAvatarImage : styles.avatarImage}
+            contentFit={isFemale ? "contain" : "cover"}
+            contentPosition={isFemale ? "center" : "top center"}
+          />
         </View>
       </View>
 

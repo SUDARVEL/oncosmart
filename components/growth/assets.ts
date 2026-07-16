@@ -2,6 +2,7 @@ export const GROWTH_ASSETS = {
   pieRingActive: require('../../assets/growth/cbe411a90627324237e6f6bfebe7e1742e01f7d3.svg'),
   pieRingPaused: require('../../assets/growth/bf78c98749a87ad47a8e092446712a5ac260432e.svg'),
   maleAvatarGrowth: require('../../assets/growth/f70c96f94741ca80698f28901e8a6f26dedf70ac.png'),
+  femaleAvatarGrowth: require('../../assets/growth/female-avatar-growth.png'),
   pauseIcon: require('../../assets/growth/0fa1b421824a115dcdc2a69f1c591ed5e5d0bba4.svg'),
   playIconGrey: require('../../assets/growth/8cf49dabba38bd0479ba88fafcb7af5c917b858d.svg'),
   chartGrid: require('../../assets/growth/c0dc5eddcd187b6a785fb3d7ce34af9befdfbebb.svg'),
