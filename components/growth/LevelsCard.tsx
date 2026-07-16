@@ -63,9 +63,9 @@ export function LevelsCard({
         <View style={styles.avatarFrame}>
           <Image
             source={avatarSource}
-            style={isFemale ? styles.femaleAvatarImage : styles.avatarImage}
-            contentFit={isFemale ? "contain" : "cover"}
-            contentPosition={isFemale ? "center" : "top center"}
+            style={styles.avatarImage}
+            contentFit="cover"
+            contentPosition="top center"
           />
         </View>
       </View>
@@ -163,21 +163,12 @@ const styles = StyleSheet.create({
     overflow: "hidden",
     borderRadius: 4,
   },
-  /** Male PNG — Figma crop into the 80×198 slot. */
+  /** Same Figma crop into the 80×198 slot for male and female. */
   avatarImage: {
     width: 164,
     height: 286,
     marginLeft: -47,
     marginTop: -72,
-  },
-  /**
-   * Female SVG is a full standing figure (same asset as home quote card).
-   * Contain + slight scale so head-to-feet match the male silhouette weight.
-   */
-  femaleAvatarImage: {
-    width: 96,
-    height: 198,
-    marginLeft: -8,
   },
   pauseButton: {
     flexDirection: "row",
