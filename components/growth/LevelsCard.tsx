@@ -1,16 +1,16 @@
-import { Image } from 'expo-image';
-import { useTranslation } from 'react-i18next';
-import { StyleSheet, Text, View } from 'react-native';
-import { SvgXml } from 'react-native-svg';
+import { Image } from "expo-image";
+import { useTranslation } from "react-i18next";
+import { StyleSheet, Text, View } from "react-native";
+import { SvgXml } from "react-native-svg";
 
-import type { AppAvatar } from '../../store/useAppStore';
-import { colors } from '../../theme/colors';
-import { font } from '../../theme/fonts';
-import { PressableScale } from '../PressableScale';
-import { GROWTH_ASSETS } from './assets';
-import { LevelsProgressRing } from './LevelsProgressRing';
-
-const FEMALE_AVATAR = require('../../assets/avatars/female-avatar.png');
+import { GROWTH_CARD_FEMALE_IMAGE_URL } from "../../lib/homePageCardImage";
+import type { AppAvatar } from "../../store/useAppStore";
+import { colors } from "../../theme/colors";
+import { font } from "../../theme/fonts";
+import { CachedMediaImage } from "../CachedMediaImage";
+import { PressableScale } from "../PressableScale";
+import { GROWTH_ASSETS } from "./assets";
+import { LevelsProgressRing } from "./LevelsProgressRing";
 
 /** Figma pause / resume glyphs — SvgXml so they render on native + web. */
 const PAUSE_ICON_XML = `<svg viewBox="0 0 8 9.33333" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M5.33333 9.33333V0H8V9.33333H5.33333ZM0 9.33333V0H2.66667V9.33333H0Z" fill="#005F99"/></svg>`;
@@ -34,33 +34,48 @@ export function LevelsCard({
   onResume,
 }: LevelsCardProps) {
   const { t } = useTranslation();
-  const avatarSource =
-    avatar === 'female' ? FEMALE_AVATAR : GROWTH_ASSETS.maleAvatarGrowth;
+  const isFemale = avatar === "female";
 
   return (
     <View style={styles.card}>
-      <Text style={styles.title}>{t('growth.levelsTitle')}</Text>
+      <Text style={styles.title}>{t("growth.levelsTitle")}</Text>
 
       <View style={styles.heroRow}>
         <View style={styles.gaugeColumn}>
-          <LevelsProgressRing completed={completed} total={total} paused={paused} />
+          <LevelsProgressRing
+            completed={completed}
+            total={total}
+            paused={paused}
+          />
           <View style={styles.gaugeText} pointerEvents="none">
             <View style={styles.gaugeTextInner}>
               <Text style={styles.levelCount}>
-                {t('growth.levelsCount', { completed, total })}
+                {t("growth.levelsCount", { completed, total })}
               </Text>
-              <Text style={styles.levelSubtitle}>{t('growth.levelsCompleted')}</Text>
+              <Text style={styles.levelSubtitle}>
+                {t("growth.levelsCompleted")}
+              </Text>
             </View>
           </View>
         </View>
 
         <View style={styles.avatarFrame}>
-          <Image
-            source={avatarSource}
-            style={styles.avatarImage}
-            contentFit="cover"
-            contentPosition="top center"
-          />
+          {isFemale ? (
+            <CachedMediaImage
+              source={{ uri: GROWTH_CARD_FEMALE_IMAGE_URL }}
+              style={styles.femaleAvatarImage}
+              contentFit="contain"
+              contentPosition="center"
+              recyclingKey="growth-levels-female"
+            />
+          ) : (
+            <Image
+              source={GROWTH_ASSETS.maleAvatarGrowth}
+              style={styles.avatarImage}
+              contentFit="cover"
+              contentPosition="top center"
+            />
+          )}
         </View>
       </View>
 
@@ -69,20 +84,20 @@ export function LevelsCard({
           style={styles.resumeButton}
           onPress={onResume}
           accessibilityRole="button"
-          accessibilityLabel={t('growth.resumeProgress')}
+          accessibilityLabel={t("growth.resumeProgress")}
         >
           <SvgXml xml={PLAY_ICON_XML} width={12} height={16} />
-          <Text style={styles.resumeText}>{t('growth.resumeProgress')}</Text>
+          <Text style={styles.resumeText}>{t("growth.resumeProgress")}</Text>
         </PressableScale>
       ) : (
         <PressableScale
           style={styles.pauseButton}
           onPress={onPause}
           accessibilityRole="button"
-          accessibilityLabel={t('growth.pauseProgress')}
+          accessibilityLabel={t("growth.pauseProgress")}
         >
           <SvgXml xml={PAUSE_ICON_XML} width={10} height={12} />
-          <Text style={styles.pauseText}>{t('growth.pauseProgress')}</Text>
+          <Text style={styles.pauseText}>{t("growth.pauseProgress")}</Text>
         </PressableScale>
       )}
     </View>
@@ -100,12 +115,12 @@ const styles = StyleSheet.create({
     paddingTop: 15,
     paddingHorizontal: 16,
     paddingBottom: 16,
-    alignItems: 'center',
+    alignItems: "center",
   },
   title: {
-    alignSelf: 'stretch',
+    alignSelf: "stretch",
     fontSize: 16,
-    ...font('semiBold'),
+    ...font("semiBold"),
     color: colors.textPrimary,
     letterSpacing: -0.26,
     lineHeight: 28,
@@ -114,9 +129,9 @@ const styles = StyleSheet.create({
     width: 268,
     height: 168,
     marginTop: 12,
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    alignItems: "flex-start",
+    justifyContent: "space-between",
   },
   gaugeColumn: {
     width: 192,
@@ -124,29 +139,29 @@ const styles = StyleSheet.create({
   },
   gaugeText: {
     ...StyleSheet.absoluteFillObject,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
   },
   gaugeTextInner: {
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     maxWidth: 96,
     paddingHorizontal: 4,
   },
   levelCount: {
     fontSize: 24,
-    ...font('medium'),
-    color: '#262526',
+    ...font("medium"),
+    color: "#262526",
     letterSpacing: 0.3,
     lineHeight: 26,
-    textAlign: 'center',
+    textAlign: "center",
   },
   levelSubtitle: {
     fontSize: 10,
-    ...font('regular'),
-    color: '#6B7280',
+    ...font("regular"),
+    color: "#6B7280",
     lineHeight: 12,
-    textAlign: 'center',
+    textAlign: "center",
     letterSpacing: 0.1,
     marginTop: 1,
   },
@@ -154,19 +169,29 @@ const styles = StyleSheet.create({
     width: 80,
     height: 198,
     marginTop: -26,
-    overflow: 'hidden',
+    overflow: "hidden",
     borderRadius: 4,
   },
+  /** Male PNG — Figma crop into the 80×198 slot. */
   avatarImage: {
     width: 164,
     height: 286,
     marginLeft: -47,
     marginTop: -72,
   },
+  /**
+   * Female SVG is a full standing figure (same asset as home quote card).
+   * Contain + slight scale so head-to-feet match the male silhouette weight.
+   */
+  femaleAvatarImage: {
+    width: 96,
+    height: 198,
+    marginLeft: -8,
+  },
   pauseButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
     gap: 6,
     height: 35,
     paddingHorizontal: 16,
@@ -179,15 +204,15 @@ const styles = StyleSheet.create({
   },
   pauseText: {
     fontSize: 12,
-    ...font('semiBold'),
+    ...font("semiBold"),
     color: colors.buttonPrimary,
     letterSpacing: 0.5,
     lineHeight: 16,
   },
   resumeButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
     gap: 8,
     height: 35,
     paddingHorizontal: 10,
@@ -200,8 +225,8 @@ const styles = StyleSheet.create({
   },
   resumeText: {
     fontSize: 12,
-    ...font('semiBold'),
-    color: '#9CA3AF',
+    ...font("semiBold"),
+    color: "#9CA3AF",
     letterSpacing: 0.5,
     lineHeight: 16,
   },

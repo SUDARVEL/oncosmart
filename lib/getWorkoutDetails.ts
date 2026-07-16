@@ -1,10 +1,10 @@
-import type { ImageSource } from 'expo-image';
+import type { ImageSource } from "expo-image";
 
-import type { AppAvatar, AppGender, AppLanguage } from '../store/useAppStore';
-import type { GuidedSessionExercise } from './getDay1Session';
-import { getSessionExercisesForLevel } from './getDay1Session';
-import { getLevelExercises } from './getDayExercises';
-import { resolveWorkoutSliderPhotoSource } from './resolveWorkoutPhoto';
+import type { AppAvatar, AppGender, AppLanguage } from "../store/useAppStore";
+import type { GuidedSessionExercise } from "./getDay1Session";
+import { getSessionExercisesForLevel } from "./getDay1Session";
+import { getLevelExercises } from "./getDayExercises";
+import { resolveWorkoutSliderPhotoSource } from "./resolveWorkoutPhoto";
 
 export type WorkoutDetail = GuidedSessionExercise & {
   photoSource: ImageSource | null;
@@ -18,7 +18,10 @@ export function getWorkoutDetailsForLevel(
 ): WorkoutDetail[] {
   const exercises = getSessionExercisesForLevel(level);
   const resolvedById = Object.fromEntries(
-    getLevelExercises(level, language, gender, avatar).map((exercise) => [exercise.id, exercise]),
+    getLevelExercises(level, language, gender, avatar).map((exercise) => [
+      exercise.id,
+      exercise,
+    ]),
   );
 
   return exercises.map((exercise) => {
@@ -26,7 +29,9 @@ export function getWorkoutDetailsForLevel(
     return {
       ...exercise,
       photoSource:
-        resolveWorkoutSliderPhotoSource(exercise.id, gender) ?? media?.thumbnail ?? null,
+        resolveWorkoutSliderPhotoSource(exercise.id, gender, avatar) ??
+        media?.thumbnail ??
+        null,
     };
   });
 }

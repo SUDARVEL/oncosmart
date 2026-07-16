@@ -1,8 +1,8 @@
-import { Ionicons } from '@expo/vector-icons';
-import { Image } from 'expo-image';
-import { useRouter } from 'expo-router';
-import { useEffect, useRef, useState } from 'react';
-import { useTranslation } from 'react-i18next';
+import { Ionicons } from "@expo/vector-icons";
+import { Image } from "expo-image";
+import { useRouter } from "expo-router";
+import { useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   Dimensions,
   NativeScrollEvent,
@@ -12,19 +12,19 @@ import {
   StyleSheet,
   Text,
   View,
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
-import { BottomTabBar } from '../components/BottomTabBar';
-import { ExerciseVideoBanner } from '../components/ExerciseVideoBanner';
-import { HomeAvatarButton } from '../components/home/HomeAvatarButton';
-import { ProgressLogo } from '../components/home/ProgressLogo';
-import { PressableScale } from '../components/PressableScale';
-import { openWhatsAppSupport } from '../lib/openWhatsAppSupport';
-import { HOME_PAGE_PLACEHOLDER_VIDEO } from '../lib/placeholderVideo';
-import {
-  HOME_DAY_CARD_PREVIEW_ASPECT,
-} from '../lib/exerciseVideoFrame';
+import { BottomTabBar } from "../components/BottomTabBar";
+import { CachedMediaImage } from "../components/CachedMediaImage";
+import { ExerciseVideoBanner } from "../components/ExerciseVideoBanner";
+import { HomeAvatarButton } from "../components/home/HomeAvatarButton";
+import { ProgressLogo } from "../components/home/ProgressLogo";
+import { PressableScale } from "../components/PressableScale";
+import { openWhatsAppSupport } from "../lib/openWhatsAppSupport";
+import { CARD_FEMALE_IMAGE_URL } from "../lib/homePageCardImage";
+import { getHomePagePlaceholderVideo } from "../lib/placeholderVideo";
+import { HOME_DAY_CARD_PREVIEW_ASPECT } from "../lib/exerciseVideoFrame";
 import {
   DAYS_PER_LEVEL,
   formatCountdown,
@@ -34,12 +34,12 @@ import {
   sessionKey,
   TOTAL_SESSIONS,
   type SessionState,
-} from '../lib/programProgress';
-import { useAppStore } from '../store/useAppStore';
-import { colors } from '../theme/colors';
-import { font } from '../theme/fonts';
+} from "../lib/programProgress";
+import { useAppStore } from "../store/useAppStore";
+import { colors } from "../theme/colors";
+import { font } from "../theme/fonts";
 
-const SCREEN_WIDTH = Dimensions.get('window').width;
+const SCREEN_WIDTH = Dimensions.get("window").width;
 const QUOTE_SIDE_INSET = 16;
 const QUOTE_GAP = 8;
 const QUOTE_CARD_WIDTH = SCREEN_WIDTH - QUOTE_SIDE_INSET * 2;
@@ -48,21 +48,24 @@ const DAY_CARD_WIDTH = SCREEN_WIDTH - 32;
 const DAY_CARD_MEDIA_HEIGHT = Math.round(DAY_CARD_WIDTH * (9 / 16));
 const DAY_CARD_PREVIEW_ASPECT = HOME_DAY_CARD_PREVIEW_ASPECT;
 
-const FEMALE_AVATAR = require('../assets/avatars/female-avatar.png');
-const WALKING_CHARACTER = require('../assets/home/walking-character.png');
+const FEMALE_AVATAR = require("../assets/avatars/female-avatar.png");
+const WALKING_CHARACTER = require("../assets/home/walking-character.png");
 
-const QUOTES = ['quote1', 'quote2', 'quote3'] as const;
+const QUOTES = ["quote1", "quote2", "quote3"] as const;
 
 function getPrimarySessionState(states: SessionState[]): SessionState {
-  const available = states.find((state) => state.status === 'available');
+  const available = states.find((state) => state.status === "available");
   if (available) return available;
 
   const countdownLocked = states.find(
-    (state) => state.status === 'locked' && !state.blockedByLevel && !state.blockedByPrevious,
+    (state) =>
+      state.status === "locked" &&
+      !state.blockedByLevel &&
+      !state.blockedByPrevious,
   );
   if (countdownLocked) return countdownLocked;
 
-  const levelLocked = states.find((state) => state.status === 'locked');
+  const levelLocked = states.find((state) => state.status === "locked");
   if (levelLocked) return levelLocked;
 
   return states[states.length - 1];
@@ -73,6 +76,8 @@ export default function HomeScreen() {
   const router = useRouter();
   const username = useAppStore((state) => state.username);
   const avatar = useAppStore((state) => state.avatar);
+  const gender = useAppStore((state) => state.gender);
+  const isFemaleUser = avatar === "female" || (!avatar && gender === "female");
   const dayCompletedAt = useAppStore((state) => state.dayCompletedAt);
   const devUnlockOverride = useAppStore((state) => state.devUnlockOverride);
 
@@ -83,11 +88,17 @@ export default function HomeScreen() {
   const completedCount = getCompletedSessionCount(dayCompletedAt);
   const activeLevel = getActiveLevel(dayCompletedAt);
   const sessionStates = Array.from({ length: DAYS_PER_LEVEL }, (_, index) =>
-    getSessionState(activeLevel, index + 1, dayCompletedAt, now, devUnlockOverride),
+    getSessionState(
+      activeLevel,
+      index + 1,
+      dayCompletedAt,
+      now,
+      devUnlockOverride,
+    ),
   );
   const primarySession = getPrimarySessionState(sessionStates);
   const hasActiveCountdown = sessionStates.some(
-    (state) => state.status === 'locked' && state.remainingMs > 0,
+    (state) => state.status === "locked" && state.remainingMs > 0,
   );
 
   useEffect(() => {
@@ -96,23 +107,25 @@ export default function HomeScreen() {
     return () => clearInterval(interval);
   }, [hasActiveCountdown]);
 
-  const handleQuoteScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
+  const handleQuoteScroll = (
+    event: NativeSyntheticEvent<NativeScrollEvent>,
+  ) => {
     const offset = event.nativeEvent.contentOffset.x;
     const index = Math.round(offset / QUOTE_SNAP_INTERVAL);
     setActiveQuote(Math.max(0, Math.min(QUOTES.length - 1, index)));
   };
 
-  const handleTabPress = (tab: 'home' | 'growth' | 'settings') => {
-    if (tab === 'growth') router.push('/growth');
-    if (tab === 'settings') router.push('/settings');
+  const handleTabPress = (tab: "home" | "growth" | "settings") => {
+    if (tab === "growth") router.push("/growth");
+    if (tab === "settings") router.push("/settings");
   };
 
   const handleAvatarPress = () => {
-    router.push('/onboarding/avatar?from=home');
+    router.push("/onboarding/avatar?from=home");
   };
 
   return (
-    <SafeAreaView style={styles.screen} edges={['top']}>
+    <SafeAreaView style={styles.screen} edges={["top"]}>
       <ScrollView
         style={styles.scroll}
         contentContainerStyle={styles.scrollContent}
@@ -120,20 +133,23 @@ export default function HomeScreen() {
       >
         <View style={styles.headerRow}>
           <Text style={styles.welcome}>
-            {t('home.welcome', { name: username || 'Guest' })}
+            {t("home.welcome", { name: username || "Guest" })}
           </Text>
           <HomeAvatarButton
             avatar={avatar}
             femaleSource={FEMALE_AVATAR}
             onPress={handleAvatarPress}
-            accessibilityLabel={t('home.changeAvatar')}
+            accessibilityLabel={t("home.changeAvatar")}
           />
         </View>
 
         <View style={styles.progressSection}>
           <ProgressLogo width={79} height={80} />
           <Text style={styles.daysCompleted}>
-            {t('home.daysCompleted', { completed: completedCount, total: TOTAL_SESSIONS })}
+            {t("home.daysCompleted", {
+              completed: completedCount,
+              total: TOTAL_SESSIONS,
+            })}
           </Text>
         </View>
 
@@ -151,13 +167,25 @@ export default function HomeScreen() {
           bounces
         >
           {QUOTES.map((key) => (
-            <View key={key} style={[styles.quoteCard, { width: QUOTE_CARD_WIDTH }]}>
+            <View
+              key={key}
+              style={[styles.quoteCard, { width: QUOTE_CARD_WIDTH }]}
+            >
               <View style={styles.quoteIllustration}>
-                <Image
-                  source={WALKING_CHARACTER}
-                  style={styles.quoteCharacter}
-                  contentFit="contain"
-                />
+                {isFemaleUser ? (
+                  <CachedMediaImage
+                    source={{ uri: CARD_FEMALE_IMAGE_URL }}
+                    style={styles.quoteCharacter}
+                    contentFit="contain"
+                    recyclingKey="quote-character-female"
+                  />
+                ) : (
+                  <Image
+                    source={WALKING_CHARACTER}
+                    style={styles.quoteCharacter}
+                    contentFit="contain"
+                  />
+                )}
               </View>
               <Text style={styles.quoteText}>{t(`home.${key}`)}</Text>
             </View>
@@ -174,11 +202,13 @@ export default function HomeScreen() {
         </View>
 
         <View style={styles.sessionSection}>
-          <Text style={styles.sessionTitle}>{t('home.sessionTitle')}</Text>
+          <Text style={styles.sessionTitle}>{t("home.sessionTitle")}</Text>
 
           <DayCard
-            key={`${primarySession.level}-${primarySession.dayInLevel}`}
+            key={`${primarySession.level}-${primarySession.dayInLevel}-${avatar ?? gender ?? "male"}`}
             sessionState={primarySession}
+            avatar={avatar}
+            gender={gender}
             onStart={() =>
               router.push(
                 `/exercise/pain-score?level=${primarySession.level}&day=${primarySession.dayInLevel}`,
@@ -204,9 +234,9 @@ export default function HomeScreen() {
         activeTab="home"
         onTabPress={handleTabPress}
         labels={{
-          home: t('home.tabHome'),
-          growth: t('home.tabGrowth'),
-          settings: t('home.tabSettings'),
+          home: t("home.tabHome"),
+          growth: t("home.tabGrowth"),
+          settings: t("home.tabSettings"),
         }}
       />
     </SafeAreaView>
@@ -216,20 +246,32 @@ export default function HomeScreen() {
 function DayCard({
   sessionState,
   onStart,
+  avatar,
+  gender,
 }: {
   sessionState: SessionState;
   onStart: () => void;
+  avatar: "male" | "female" | null;
+  gender: "male" | "female" | "prefer_not_to_say" | null;
 }) {
   const { t } = useTranslation();
-  const { status, remainingMs, blockedByPrevious, blockedByLevel, dayInLevel, level } =
-    sessionState;
-  const isLocked = status === 'locked';
+  const {
+    status,
+    remainingMs,
+    blockedByPrevious,
+    blockedByLevel,
+    dayInLevel,
+    level,
+  } = sessionState;
+  const isLocked = status === "locked";
+  const placeholderVideo = getHomePagePlaceholderVideo(avatar, gender);
 
   return (
     <View style={[styles.dayCard, isLocked && styles.dayCardLocked]}>
       <View style={styles.exerciseBannerWrap}>
         <ExerciseVideoBanner
-          source={HOME_PAGE_PLACEHOLDER_VIDEO}
+          key={placeholderVideo}
+          source={placeholderVideo}
           aspectRatio={DAY_CARD_PREVIEW_ASPECT}
           previewContentFit="cover"
           fillContainer
@@ -242,27 +284,35 @@ function DayCard({
       </View>
 
       <View style={styles.dayCardBody}>
-        <Text style={styles.dayLabel}>{t('home.dayLabel', { day: dayInLevel })}</Text>
-        <Text style={styles.daySubtitle}>{t('home.daySubtitle')}</Text>
+        <Text style={styles.dayLabel}>
+          {t("home.dayLabel", { day: dayInLevel })}
+        </Text>
+        <Text style={styles.daySubtitle}>{t("home.daySubtitle")}</Text>
 
-        {status === 'completed' ? (
+        {status === "completed" ? (
           <View style={styles.completedButton}>
             <Ionicons name="checkmark" size={16} color="#16A34A" />
-            <Text style={styles.completedButtonText}>{t('home.completed')}</Text>
+            <Text style={styles.completedButtonText}>
+              {t("home.completed")}
+            </Text>
           </View>
-        ) : status === 'available' ? (
-          <PressableScale style={styles.startButton} accessibilityRole="button" onPress={onStart}>
-            <Text style={styles.startButtonText}>{t('home.start')}</Text>
+        ) : status === "available" ? (
+          <PressableScale
+            style={styles.startButton}
+            accessibilityRole="button"
+            onPress={onStart}
+          >
+            <Text style={styles.startButtonText}>{t("home.start")}</Text>
           </PressableScale>
         ) : (
           <View style={styles.lockedButton}>
             <Ionicons name="lock-closed" size={15} color={colors.textMuted} />
             <Text style={styles.lockedButtonText}>
               {blockedByLevel
-                ? t('home.finishLevelToUnlock', { level: level - 1 })
+                ? t("home.finishLevelToUnlock", { level: level - 1 })
                 : blockedByPrevious
-                  ? t('home.finishPrevToUnlock', { day: dayInLevel - 1 })
-                  : t('home.unlocksIn', { time: formatCountdown(remainingMs) })}
+                  ? t("home.finishPrevToUnlock", { day: dayInLevel - 1 })
+                  : t("home.unlocksIn", { time: formatCountdown(remainingMs) })}
             </Text>
           </View>
         )}
@@ -272,8 +322,12 @@ function DayCard({
 }
 
 function DevPanel() {
-  const markSessionCompleted = useAppStore((state) => state.markSessionCompleted);
-  const setDevUnlockOverride = useAppStore((state) => state.setDevUnlockOverride);
+  const markSessionCompleted = useAppStore(
+    (state) => state.markSessionCompleted,
+  );
+  const setDevUnlockOverride = useAppStore(
+    (state) => state.setDevUnlockOverride,
+  );
   const devResetProgress = useAppStore((state) => state.devResetProgress);
   const devUnlockOverride = useAppStore((state) => state.devUnlockOverride);
   const dayCompletedAt = useAppStore((state) => state.dayCompletedAt);
@@ -294,17 +348,25 @@ function DevPanel() {
           style={styles.devButton}
           accessibilityRole="button"
           onPress={() =>
-            markSessionCompleted(activeLevel, 1, Date.now() - 25 * 60 * 60 * 1000)
+            markSessionCompleted(
+              activeLevel,
+              1,
+              Date.now() - 25 * 60 * 60 * 1000,
+            )
           }
         >
-          <Text style={styles.devButtonText}>Complete L{activeLevel}D1 (-25h)</Text>
+          <Text style={styles.devButtonText}>
+            Complete L{activeLevel}D1 (-25h)
+          </Text>
         </Pressable>
         <Pressable
           style={styles.devButton}
           accessibilityRole="button"
           onPress={() => markSessionCompleted(activeLevel, 1)}
         >
-          <Text style={styles.devButtonText}>Complete L{activeLevel}D1 (now)</Text>
+          <Text style={styles.devButtonText}>
+            Complete L{activeLevel}D1 (now)
+          </Text>
         </Pressable>
       </View>
       <View style={styles.devRow}>
@@ -322,9 +384,7 @@ function DevPanel() {
             );
           }}
         >
-          <Text style={styles.devButtonText}>
-            Skip next day (-25h)
-          </Text>
+          <Text style={styles.devButtonText}>Skip next day (-25h)</Text>
         </Pressable>
       </View>
       <View style={styles.devRow}>
@@ -344,16 +404,23 @@ function DevPanel() {
           <Text style={styles.devButtonText}>Complete all L{activeLevel}</Text>
         </Pressable>
         <Pressable
-          style={[styles.devButton, devUnlockOverride && styles.devButtonActive]}
+          style={[
+            styles.devButton,
+            devUnlockOverride && styles.devButtonActive,
+          ]}
           accessibilityRole="button"
           onPress={() => setDevUnlockOverride(!devUnlockOverride)}
         >
           <Text style={styles.devButtonText}>
-            Bypass 24h: {devUnlockOverride ? 'ON' : 'OFF'}
+            Bypass 24h: {devUnlockOverride ? "ON" : "OFF"}
           </Text>
         </Pressable>
       </View>
-      <Pressable style={styles.devButton} accessibilityRole="button" onPress={devResetProgress}>
+      <Pressable
+        style={styles.devButton}
+        accessibilityRole="button"
+        onPress={devResetProgress}
+      >
         <Text style={styles.devButtonText}>Reset progress</Text>
       </Pressable>
     </View>
@@ -374,35 +441,35 @@ const styles = StyleSheet.create({
   headerRow: {
     marginTop: 16,
     paddingHorizontal: 16,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
   },
   welcome: {
     flex: 1,
     fontSize: 21,
-    ...font('semiBold'),
+    ...font("semiBold"),
     color: colors.textPrimary,
     letterSpacing: -0.26,
     lineHeight: 28,
   },
   progressSection: {
     marginTop: 16,
-    alignItems: 'center',
+    alignItems: "center",
     gap: 8,
     paddingHorizontal: 16,
   },
   daysCompleted: {
     fontSize: 20,
-    ...font('semiBold'),
+    ...font("semiBold"),
     color: colors.progressText,
-    textAlign: 'center',
+    textAlign: "center",
     letterSpacing: -0.23,
     lineHeight: 20,
   },
   dots: {
-    flexDirection: 'row',
-    justifyContent: 'center',
+    flexDirection: "row",
+    justifyContent: "center",
     gap: 7,
     marginTop: 16,
     marginBottom: 16,
@@ -423,8 +490,8 @@ const styles = StyleSheet.create({
     gap: QUOTE_GAP,
   },
   quoteCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     borderWidth: 1,
     borderColor: colors.cardBorder,
     borderRadius: 10,
@@ -436,9 +503,9 @@ const styles = StyleSheet.create({
   quoteIllustration: {
     width: 64,
     height: 92,
-    alignItems: 'center',
-    justifyContent: 'center',
-    overflow: 'hidden',
+    alignItems: "center",
+    justifyContent: "center",
+    overflow: "hidden",
   },
   quoteCharacter: {
     width: 64,
@@ -447,7 +514,7 @@ const styles = StyleSheet.create({
   quoteText: {
     flex: 1,
     fontSize: 18,
-    ...font('semiBold'),
+    ...font("semiBold"),
     color: colors.textPrimary,
     lineHeight: 25,
     letterSpacing: -0.2,
@@ -455,48 +522,48 @@ const styles = StyleSheet.create({
   sessionSection: {
     marginTop: 8,
     paddingHorizontal: 16,
-    alignItems: 'center',
+    alignItems: "center",
   },
   sessionTitle: {
     fontSize: 20,
-    ...font('medium'),
+    ...font("medium"),
     color: colors.textPrimary,
     letterSpacing: -0.26,
     lineHeight: 28,
     paddingLeft: 13,
     marginBottom: 8,
-    alignSelf: 'stretch',
+    alignSelf: "stretch",
   },
   dayCard: {
     width: DAY_CARD_WIDTH,
-    alignSelf: 'center',
-    flexDirection: 'column',
+    alignSelf: "center",
+    flexDirection: "column",
     flexShrink: 0,
     borderRadius: 16,
     borderWidth: 1,
-    borderColor: '#E5E7EB',
-    backgroundColor: '#FFFFFF',
-    overflow: 'hidden',
+    borderColor: "#E5E7EB",
+    backgroundColor: "#FFFFFF",
+    overflow: "hidden",
   },
   dayCardLocked: {
     opacity: 0.92,
   },
   exerciseBannerWrap: {
-    width: '100%',
+    width: "100%",
     height: DAY_CARD_MEDIA_HEIGHT,
     flexShrink: 0,
-    position: 'relative',
-    overflow: 'hidden',
-    backgroundColor: '#F3F4F6',
+    position: "relative",
+    overflow: "hidden",
+    backgroundColor: "#F3F4F6",
   },
   lockOverlay: {
     ...StyleSheet.absoluteFillObject,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: 'rgba(17, 24, 39, 0.45)',
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "rgba(17, 24, 39, 0.45)",
   },
   dayCardBody: {
-    width: '100%',
+    width: "100%",
     paddingHorizontal: 16,
     paddingTop: 12,
     paddingBottom: 16,
@@ -504,71 +571,71 @@ const styles = StyleSheet.create({
   },
   dayLabel: {
     fontSize: 16,
-    ...font('semiBold'),
+    ...font("semiBold"),
     color: colors.textPrimary,
     letterSpacing: -0.26,
     lineHeight: 22,
-    textTransform: 'uppercase',
-    alignSelf: 'stretch',
+    textTransform: "uppercase",
+    alignSelf: "stretch",
   },
   daySubtitle: {
     fontSize: 14,
-    ...font('regular'),
+    ...font("regular"),
     color: colors.textMuted,
     lineHeight: 20,
     letterSpacing: -0.26,
-    alignSelf: 'stretch',
+    alignSelf: "stretch",
   },
   startButton: {
     height: 44,
-    alignSelf: 'stretch',
+    alignSelf: "stretch",
     borderRadius: 8,
     backgroundColor: colors.buttonPrimary,
     borderWidth: 1,
-    borderColor: '#92A9B8',
-    alignItems: 'center',
-    justifyContent: 'center',
+    borderColor: "#92A9B8",
+    alignItems: "center",
+    justifyContent: "center",
     marginTop: 4,
   },
   startButtonText: {
     fontSize: 14,
-    ...font('medium'),
-    color: '#F9FAFB',
+    ...font("medium"),
+    color: "#F9FAFB",
     letterSpacing: 0,
-    textTransform: 'capitalize',
+    textTransform: "capitalize",
   },
   completedButton: {
     height: 44,
-    alignSelf: 'stretch',
+    alignSelf: "stretch",
     borderRadius: 8,
-    backgroundColor: 'rgba(22, 163, 74, 0.08)',
+    backgroundColor: "rgba(22, 163, 74, 0.08)",
     borderWidth: 1,
-    borderColor: '#16A34A',
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
+    borderColor: "#16A34A",
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
     gap: 6,
   },
   completedButtonText: {
     fontSize: 14,
-    ...font('medium'),
-    color: '#16A34A',
+    ...font("medium"),
+    color: "#16A34A",
   },
   lockedButton: {
     height: 44,
-    alignSelf: 'stretch',
+    alignSelf: "stretch",
     borderRadius: 8,
-    backgroundColor: '#F3F4F6',
+    backgroundColor: "#F3F4F6",
     borderWidth: 1,
     borderColor: colors.cardBorder,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
     gap: 6,
   },
   lockedButtonText: {
     fontSize: 14,
-    ...font('medium'),
+    ...font("medium"),
     color: colors.textMuted,
   },
   devPanel: {
@@ -577,19 +644,19 @@ const styles = StyleSheet.create({
     padding: 12,
     borderRadius: 12,
     borderWidth: 1,
-    borderStyle: 'dashed',
-    borderColor: '#C084FC',
-    backgroundColor: 'rgba(192, 132, 252, 0.06)',
+    borderStyle: "dashed",
+    borderColor: "#C084FC",
+    backgroundColor: "rgba(192, 132, 252, 0.06)",
     gap: 8,
   },
   devTitle: {
     fontSize: 11,
-    ...font('semiBold'),
-    color: '#7C3AED',
+    ...font("semiBold"),
+    color: "#7C3AED",
     letterSpacing: 1,
   },
   devRow: {
-    flexDirection: 'row',
+    flexDirection: "row",
     gap: 8,
   },
   devButton: {
@@ -597,21 +664,21 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     paddingHorizontal: 8,
     borderRadius: 8,
-    backgroundColor: '#EDE9FE',
-    alignItems: 'center',
-    justifyContent: 'center',
+    backgroundColor: "#EDE9FE",
+    alignItems: "center",
+    justifyContent: "center",
   },
   devButtonActive: {
-    backgroundColor: '#C4B5FD',
+    backgroundColor: "#C4B5FD",
   },
   devButtonText: {
     fontSize: 11,
-    ...font('medium'),
-    color: '#5B21B6',
-    textAlign: 'center',
+    ...font("medium"),
+    color: "#5B21B6",
+    textAlign: "center",
   },
   fab: {
-    position: 'absolute',
+    position: "absolute",
     right: 9,
     bottom: 88,
     width: 48,
@@ -620,9 +687,9 @@ const styles = StyleSheet.create({
     backgroundColor: colors.tabBarBg,
     borderWidth: 1,
     borderColor: colors.buttonPrimary,
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: '#000000',
+    alignItems: "center",
+    justifyContent: "center",
+    shadowColor: "#000000",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.15,
     shadowRadius: 8,

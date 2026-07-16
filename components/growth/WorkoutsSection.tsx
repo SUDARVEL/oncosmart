@@ -1,15 +1,18 @@
-import { useMemo, useState } from 'react';
-import { useTranslation } from 'react-i18next';
-import { StyleSheet, Text, View } from 'react-native';
+import { useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { StyleSheet, Text, View } from "react-native";
 
-import { getLevelWorkouts, type WorkoutLevel } from '../../lib/getLevelWorkouts';
-import { getWorkoutDetailsForLevel } from '../../lib/getWorkoutDetails';
-import { useAppStore } from '../../store/useAppStore';
-import { colors } from '../../theme/colors';
-import { font } from '../../theme/fonts';
-import { LevelTabSwitch } from './LevelTabSwitch';
-import { WorkoutDetailSlider } from './WorkoutDetailSlider';
-import { WorkoutRowCard } from './WorkoutRowCard';
+import {
+  getLevelWorkouts,
+  type WorkoutLevel,
+} from "../../lib/getLevelWorkouts";
+import { getWorkoutDetailsForLevel } from "../../lib/getWorkoutDetails";
+import { useAppStore } from "../../store/useAppStore";
+import { colors } from "../../theme/colors";
+import { font } from "../../theme/fonts";
+import { LevelTabSwitch } from "./LevelTabSwitch";
+import { WorkoutDetailSlider } from "./WorkoutDetailSlider";
+import { WorkoutRowCard } from "./WorkoutRowCard";
 
 export function WorkoutsSection() {
   const { t } = useTranslation();
@@ -20,14 +23,19 @@ export function WorkoutsSection() {
   const [sliderVisible, setSliderVisible] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(0);
 
-  const workouts = getLevelWorkouts(activeLevel, gender);
+  const workouts = useMemo(
+    () => getLevelWorkouts(activeLevel, gender, avatar),
+    [activeLevel, avatar, gender],
+  );
   const workoutDetails = useMemo(
     () => getWorkoutDetailsForLevel(activeLevel, language, gender, avatar),
     [activeLevel, avatar, gender, language],
   );
 
   const openWorkout = (exerciseId: string) => {
-    const index = workoutDetails.findIndex((workout) => workout.id === exerciseId);
+    const index = workoutDetails.findIndex(
+      (workout) => workout.id === exerciseId,
+    );
     setSelectedIndex(index >= 0 ? index : 0);
     setSliderVisible(true);
   };
@@ -38,7 +46,10 @@ export function WorkoutsSection() {
 
   return (
     <View style={styles.container}>
-      <LevelTabSwitch activeLevel={activeLevel} onLevelChange={setActiveLevel} />
+      <LevelTabSwitch
+        activeLevel={activeLevel}
+        onLevelChange={setActiveLevel}
+      />
 
       {workouts.length > 0 ? (
         <View style={styles.list}>
@@ -53,7 +64,7 @@ export function WorkoutsSection() {
       ) : (
         <View style={styles.empty}>
           <Text style={styles.emptyText}>
-            {t('growth.workouts.emptyLevel', { level: activeLevel })}
+            {t("growth.workouts.emptyLevel", { level: activeLevel })}
           </Text>
         </View>
       )}
@@ -70,8 +81,8 @@ export function WorkoutsSection() {
 
 const styles = StyleSheet.create({
   container: {
-    width: '100%',
-    alignItems: 'center',
+    width: "100%",
+    alignItems: "center",
     gap: 16,
     paddingHorizontal: 16,
   },
@@ -82,14 +93,14 @@ const styles = StyleSheet.create({
   empty: {
     width: 326,
     minHeight: 120,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     paddingVertical: 24,
   },
   emptyText: {
     fontSize: 14,
     color: colors.textMuted,
-    textAlign: 'center',
-    ...font('regular'),
+    textAlign: "center",
+    ...font("regular"),
   },
 });

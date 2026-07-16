@@ -1,10 +1,10 @@
-import { useEffect, useState } from 'react';
-import { SvgUri, SvgXml } from 'react-native-svg';
+import { useEffect, useState } from "react";
+import { SvgUri, SvgXml } from "react-native-svg";
 
 import {
   applyGrowthPlaceholderFit,
   type GrowthPlaceholderFitConfig,
-} from '../../lib/fitGrowthPlaceholderSvg';
+} from "../../lib/fitGrowthPlaceholderSvg";
 
 type GrowthPlaceholderSvgProps = {
   uri: string;
@@ -15,7 +15,7 @@ type GrowthPlaceholderSvgProps = {
 };
 
 /**
- * Renders a Male Workouts placeholder SVG.
+ * Renders a Growth workout placeholder SVG (male or female).
  * When `fit` is set, fetches the SVG and rewrites the pattern transform so the
  * full figure (including legs) sits inside the 66×70 circle.
  */

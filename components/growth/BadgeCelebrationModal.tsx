@@ -1,5 +1,5 @@
-import { useEffect, useRef, useState } from 'react';
-import { useTranslation } from 'react-i18next';
+import { useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   ActivityIndicator,
   Animated,
@@ -7,54 +7,60 @@ import {
   StyleSheet,
   Text,
   View,
-} from 'react-native';
-import { SvgXml } from 'react-native-svg';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+} from "react-native";
+import { SvgXml } from "react-native-svg";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import { getBadgeIconSource } from '../../lib/badgeIcons';
-import type { BadgeKey } from '../../lib/getEarnedBadges';
-import { colors } from '../../theme/colors';
-import { font } from '../../theme/fonts';
-import { PressableScale } from '../PressableScale';
+import { getBadgeIconSource } from "../../lib/badgeIcons";
+import type { BadgeKey } from "../../lib/getEarnedBadges";
+import { colors } from "../../theme/colors";
+import { font } from "../../theme/fonts";
+import { PressableScale } from "../PressableScale";
 
-const BADGE_COPY: Record<BadgeKey, { titleKey: string; subtitleKey: string }> = {
-  startup: {
-    titleKey: 'growth.badgeStartupTitle',
-    subtitleKey: 'growth.badgeStartupSubtitle',
-  },
-  consistent: {
-    titleKey: 'growth.badgeConsistentTitle',
-    subtitleKey: 'growth.badgeConsistentSubtitle',
-  },
-  strength: {
-    titleKey: 'growth.badgeStrengthTitle',
-    subtitleKey: 'growth.badgeStrengthSubtitle',
-  },
-  hero: {
-    titleKey: 'growth.badgeHeroTitle',
-    subtitleKey: 'growth.badgeHeroSubtitle',
-  },
-  unstoppable: {
-    titleKey: 'growth.badgeUnstoppableTitle',
-    subtitleKey: 'growth.badgeUnstoppableSubtitle',
-  },
-};
+const BADGE_COPY: Record<BadgeKey, { titleKey: string; subtitleKey: string }> =
+  {
+    startup: {
+      titleKey: "growth.badgeStartupTitle",
+      subtitleKey: "growth.badgeStartupSubtitle",
+    },
+    consistent: {
+      titleKey: "growth.badgeConsistentTitle",
+      subtitleKey: "growth.badgeConsistentSubtitle",
+    },
+    strength: {
+      titleKey: "growth.badgeStrengthTitle",
+      subtitleKey: "growth.badgeStrengthSubtitle",
+    },
+    hero: {
+      titleKey: "growth.badgeHeroTitle",
+      subtitleKey: "growth.badgeHeroSubtitle",
+    },
+    unstoppable: {
+      titleKey: "growth.badgeUnstoppableTitle",
+      subtitleKey: "growth.badgeUnstoppableSubtitle",
+    },
+  };
 
 const svgCache = new Map<string, string>();
 
 /** Fetch badge SVG and normalize CSS vars so it renders cleanly on native. */
 function sanitizeBadgeSvg(xml: string): string {
   return xml
-    .replace(/style="display:\s*block;?"/gi, '')
+    .replace(/style="display:\s*block;?"/gi, "")
     .replace(/\sfill="var\(--fill-0,\s*([^)]+)\)"/gi, ' fill="$1"')
     .replace(/\sstroke="var\(--stroke-0,\s*([^)]+)\)"/gi, ' stroke="$1"');
 }
 
-function useBadgeSvgXml(uri: string | null): { xml: string | null; loading: boolean } {
+function useBadgeSvgXml(uri: string | null): {
+  xml: string | null;
+  loading: boolean;
+} {
   const [xml, setXml] = useState<string | null>(() =>
     uri && svgCache.has(uri) ? svgCache.get(uri)! : null,
   );
-  const [loading, setLoading] = useState(() => Boolean(uri && !svgCache.has(uri)));
+  const [loading, setLoading] = useState(() =>
+    Boolean(uri && !svgCache.has(uri)),
+  );
 
   useEffect(() => {
     if (!uri) {
@@ -118,7 +124,9 @@ export function BadgeCelebrationModal({
 
   const source = badgeKey ? getBadgeIconSource(badgeKey) : null;
   const uri =
-    source && typeof source === 'object' && 'uri' in source ? source.uri : null;
+    source && typeof source === "object" && "uri" in source
+      ? (source.uri ?? null)
+      : null;
   const { xml, loading } = useBadgeSvgXml(visible ? uri : null);
 
   useEffect(() => {
@@ -148,9 +156,21 @@ export function BadgeCelebrationModal({
   const subtitle = t(copy.subtitleKey);
 
   return (
-    <Modal visible={visible} transparent animationType="fade" onRequestClose={onDismiss}>
-      <View style={[styles.screen, { paddingTop: insets.top + 24, paddingBottom: insets.bottom + 24 }]}>
-        <Animated.View style={[styles.content, { opacity, transform: [{ scale }] }]}>
+    <Modal
+      visible={visible}
+      transparent
+      animationType="fade"
+      onRequestClose={onDismiss}
+    >
+      <View
+        style={[
+          styles.screen,
+          { paddingTop: insets.top + 24, paddingBottom: insets.bottom + 24 },
+        ]}
+      >
+        <Animated.View
+          style={[styles.content, { opacity, transform: [{ scale }] }]}
+        >
           <View style={styles.badgeWrap}>
             <View style={styles.badgeRing} />
             <View style={styles.badgePlate}>
@@ -167,10 +187,10 @@ export function BadgeCelebrationModal({
           </View>
 
           <Text style={styles.headline}>
-            {t('growth.badgeEarnedHeadline', { badge: title })}
+            {t("growth.badgeEarnedHeadline", { badge: title })}
           </Text>
           <Text style={styles.body}>
-            {t('growth.badgeEarnedBody', { detail: subtitle })}
+            {t("growth.badgeEarnedBody", { detail: subtitle })}
           </Text>
         </Animated.View>
 
@@ -178,9 +198,9 @@ export function BadgeCelebrationModal({
           style={styles.button}
           onPress={onDismiss}
           accessibilityRole="button"
-          accessibilityLabel={t('growth.badgeEarnedGotIt')}
+          accessibilityLabel={t("growth.badgeEarnedGotIt")}
         >
-          <Text style={styles.buttonText}>{t('growth.badgeEarnedGotIt')}</Text>
+          <Text style={styles.buttonText}>{t("growth.badgeEarnedGotIt")}</Text>
         </PressableScale>
       </View>
     </Modal>
@@ -190,86 +210,86 @@ export function BadgeCelebrationModal({
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    backgroundColor: "#FFFFFF",
+    alignItems: "center",
+    justifyContent: "space-between",
     paddingHorizontal: 28,
   },
   content: {
     flex: 1,
-    width: '100%',
+    width: "100%",
     maxWidth: 360,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     gap: 16,
   },
   badgeWrap: {
     width: 200,
     height: 200,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     marginBottom: 8,
   },
   badgeRing: {
-    position: 'absolute',
+    position: "absolute",
     width: 200,
     height: 200,
     borderRadius: 100,
-    backgroundColor: '#E8F4FC',
+    backgroundColor: "#E8F4FC",
   },
   badgePlate: {
     width: 164,
     height: 164,
     borderRadius: 82,
-    backgroundColor: '#FFFFFF',
-    alignItems: 'center',
-    justifyContent: 'center',
+    backgroundColor: "#FFFFFF",
+    alignItems: "center",
+    justifyContent: "center",
     borderWidth: 1,
-    borderColor: '#E5E7EB',
+    borderColor: "#E5E7EB",
   },
   badgeFallback: {
     width: 120,
     height: 120,
     borderRadius: 60,
     backgroundColor: colors.buttonPrimary,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
   },
   badgeFallbackText: {
     fontSize: 48,
-    color: '#FFFFFF',
+    color: "#FFFFFF",
   },
   headline: {
     fontSize: 26,
     lineHeight: 32,
-    ...font('semiBold'),
-    color: '#00131F',
-    textAlign: 'center',
+    ...font("semiBold"),
+    color: "#00131F",
+    textAlign: "center",
     letterSpacing: -0.3,
     paddingHorizontal: 8,
   },
   body: {
     fontSize: 15,
     lineHeight: 22,
-    ...font('regular'),
-    color: '#6B7280',
-    textAlign: 'center',
+    ...font("regular"),
+    color: "#6B7280",
+    textAlign: "center",
     paddingHorizontal: 12,
   },
   button: {
-    width: '100%',
+    width: "100%",
     maxWidth: 360,
     height: 52,
     borderRadius: 999,
     backgroundColor: colors.buttonPrimary,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
   },
   buttonText: {
     fontSize: 15,
     letterSpacing: 0.6,
-    ...font('semiBold'),
-    color: '#FFFFFF',
-    textTransform: 'uppercase',
+    ...font("semiBold"),
+    color: "#FFFFFF",
+    textTransform: "uppercase",
   },
 });

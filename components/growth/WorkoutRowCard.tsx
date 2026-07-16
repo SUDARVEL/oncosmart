@@ -1,14 +1,14 @@
-import { CachedMediaImage } from '../CachedMediaImage';
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import { useTranslation } from 'react-i18next';
-import { StyleSheet, Text, View } from 'react-native';
+import { CachedMediaImage } from "../CachedMediaImage";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { StyleSheet, Text, View } from "react-native";
 
-import type { LevelWorkout } from '../../lib/getLevelWorkouts';
-import { getWorkoutGrowthPlaceholderFit } from '../../lib/workoutGrowthPlaceholders';
-import { colors } from '../../theme/colors';
-import { font } from '../../theme/fonts';
-import { PressableScale } from '../PressableScale';
-import { GrowthPlaceholderSvg } from './GrowthPlaceholderSvg';
+import type { LevelWorkout } from "../../lib/getLevelWorkouts";
+import { getWorkoutGrowthPlaceholderFit } from "../../lib/workoutGrowthPlaceholders";
+import { colors } from "../../theme/colors";
+import { font } from "../../theme/fonts";
+import { PressableScale } from "../PressableScale";
+import { GrowthPlaceholderSvg } from "./GrowthPlaceholderSvg";
 
 type WorkoutRowCardProps = {
   workout: LevelWorkout;
@@ -19,9 +19,13 @@ type WorkoutRowCardProps = {
 const PHOTO_WIDTH = 66;
 const PHOTO_HEIGHT = 70;
 
-function getRemoteUri(source: LevelWorkout['photoSource']): string | null {
-  if (!source || typeof source === 'number') return null;
-  if (typeof source === 'object' && 'uri' in source && typeof source.uri === 'string') {
+function getRemoteUri(source: LevelWorkout["photoSource"]): string | null {
+  if (!source || typeof source === "number") return null;
+  if (
+    typeof source === "object" &&
+    "uri" in source &&
+    typeof source.uri === "string"
+  ) {
     return source.uri;
   }
   return null;
@@ -30,12 +34,18 @@ function getRemoteUri(source: LevelWorkout['photoSource']): string | null {
 export function WorkoutRowCard({ workout, onPress }: WorkoutRowCardProps) {
   const { t } = useTranslation();
   const [imageFailed, setImageFailed] = useState(false);
-  const remoteUri = useMemo(() => getRemoteUri(workout.photoSource), [workout.photoSource]);
-  const isSvg = Boolean(remoteUri?.toLowerCase().includes('.svg'));
+  const remoteUri = useMemo(
+    () => getRemoteUri(workout.photoSource),
+    [workout.photoSource],
+  );
+  const isSvg = Boolean(remoteUri?.toLowerCase().includes(".svg"));
   const showPhoto = Boolean(workout.photoSource) && !imageFailed;
   const svgFit = useMemo(
-    () => (isSvg ? getWorkoutGrowthPlaceholderFit(workout.id) : null),
-    [isSvg, workout.id],
+    () =>
+      isSvg
+        ? getWorkoutGrowthPlaceholderFit(workout.id, workout.mediaGender)
+        : null,
+    [isSvg, workout.id, workout.mediaGender],
   );
   const handleImageError = useCallback(() => setImageFailed(true), []);
 
@@ -84,14 +94,14 @@ export function WorkoutRowCard({ workout, onPress }: WorkoutRowCardProps) {
 
 const styles = StyleSheet.create({
   card: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: 16,
     width: 326,
     minHeight: 85,
     paddingHorizontal: 16,
     paddingVertical: 8,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: "#FFFFFF",
     borderWidth: 1,
     borderColor: colors.cardBorder,
     borderRadius: 8,
@@ -100,15 +110,15 @@ const styles = StyleSheet.create({
     width: PHOTO_WIDTH,
     height: PHOTO_HEIGHT,
     borderRadius: 60,
-    overflow: 'hidden',
-    backgroundColor: '#D1D5DB',
-    alignItems: 'center',
-    justifyContent: 'center',
+    overflow: "hidden",
+    backgroundColor: "#D1D5DB",
+    alignItems: "center",
+    justifyContent: "center",
   },
   svgClip: {
     width: PHOTO_WIDTH,
     height: PHOTO_HEIGHT,
-    overflow: 'hidden',
+    overflow: "hidden",
     borderRadius: 60,
   },
   photo: {
@@ -122,15 +132,15 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 16,
     lineHeight: 20,
-    color: '#262526',
-    textTransform: 'uppercase',
-    ...font('medium'),
+    color: "#262526",
+    textTransform: "uppercase",
+    ...font("medium"),
   },
   description: {
     fontSize: 12,
     lineHeight: 20,
     color: colors.textMuted,
     letterSpacing: 0.25,
-    ...font('regular'),
+    ...font("regular"),
   },
 });
