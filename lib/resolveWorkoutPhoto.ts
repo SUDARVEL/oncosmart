@@ -43,6 +43,7 @@ export function resolveWorkoutPhotoSource(
   const landscape = resolveSessionLandscapePhotoSource(
     exerciseId,
     mediaGender === "female" ? "female" : gender,
+    avatar,
   );
   if (landscape) return landscape;
 

@@ -10,17 +10,27 @@ export const FEMALE_PORTRAIT_FOLDER =
   'Female English Compressed-20260712T164558Z-2-001/Female English Compressed';
 
 /**
- * Verified landscape loop filenames (session cards).
- * Only include files confirmed present in storage — missing IDs fall back to photos.
+ * Exact landscape loop filenames (session cards).
+ * Keep storage typos exactly (Excercise, Landsacpe, Chai squat).
  */
 export const FEMALE_LANDSCAPE_VIDEO_FILES: Partial<Record<string, string>> = {
   'diaphragmatic-breathing': 'Diaphragmatic Breathing Female Landscape.mp4',
+  'ankle-pumps': 'Ankle pumps female landscape.mp4',
   'thoracic-expansion': 'Thoracic Expansion Excercise Female Landscape.mp4',
+  'arm-circles': 'Arm circle Female Landscape.mp4',
   'spot-marching': 'Spot Marching Female Landscape.mp4',
+  'shoulder-shrugging': 'Shoulder shrug Female Landscape.mp4',
+  'biceps-curls': 'Biceps curls Female Landscape.mp4',
+  'wall-pushup': 'Wall pushup Female Landscape.mp4',
+  'calf-raise': 'Calf raises Female Landscape.mp4',
+  // Storage filename uses "Chai" (chair squat) for sit-to-stand.
+  'sit-to-stand': 'Chai squat Female Landsacpe.mp4',
   'straight-leg-raise-left': 'SLR Left Female Landscape.mp4',
   'straight-leg-raise-right': 'SLR Right Female Landscape.mp4',
-  'static-quadriceps-right': 'Static Quadriceps Right Female Landscape.mp4',
+  'knee-to-chest-left': 'Knee to chest Left Female Landscape.mp4',
+  'knee-to-chest-right': 'Knee to chest Right Female Landscape.mp4',
   'static-quadriceps-left': 'Static Quadriceps Left Female Landscape.mp4',
+  'static-quadriceps-right': 'Static Quadriceps Right Female Landscape.mp4',
 };
 
 /**

@@ -119,8 +119,8 @@ export function getLevelExercises(
       : getSessionLandscapeVideoUrl(exercise.id, gender, avatar);
     const thumbnail = getDay1Thumbnail(exercise.id);
     const previewPhoto =
-      resolveSessionLandscapePhotoSource(exercise.id, gender) ??
-      resolveSessionCardPhotoSource(exercise.id, gender);
+      resolveSessionLandscapePhotoSource(exercise.id, gender, avatar) ??
+      resolveSessionCardPhotoSource(exercise.id, gender, avatar);
 
     return {
       ...exercise,
