@@ -50,3 +50,5 @@ phone-mockup.html
 # exercise videos are hosted online, not bundled in the repo
 assets/videos/*.mp4
 assets/videos/*.mov
+
+expo-qr.png
