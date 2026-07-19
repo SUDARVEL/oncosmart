@@ -1,21 +1,28 @@
 /**
  * Male Workouts placeholder SVGs embed a landscape PNG in a 66×70 circle using a
- * cover-style pattern transform. For some poses that clips the body.
+ * cover-style pattern transform. Female files use the same pattern but often a
+ * shorter viewBox/rect (66×68), which leaves a white crescent under the floor.
  *
- * We rewrite the pattern <use> matrix to a point between contain (full image,
- * often too small) and cover (fills the circle, often clips legs).
+ * We rewrite the pattern matrix and normalize the frame to the male 66×70 circle.
  */
 
 export type GrowthPlaceholderFitConfig = {
   /**
    * 0 = contain (entire photo visible, smaller figure)
-   * 1 = cover (fills the circle, may clip edges)
-   * >1 = zoom past cover (tighter crop — needed for female room-scale photos)
+   * 1 = cover (fills the circle height like male, may clip sides)
+   * >1 = zoom past cover (tighter crop for room-scale female photos)
    */
   fill: number;
-  /** Extra Y shift in pattern units. Negative moves the subject up into the circle. */
+  /**
+   * Extra Y shift in pattern units after top-aligning.
+   * Negative moves the subject up (show more floor / less ceiling).
+   */
   offsetY?: number;
 };
+
+const FRAME_W = 66;
+const FRAME_H = 70;
+const FRAME_RX = 33;
 
 export function applyGrowthPlaceholderFit(
   svgXml: string,
@@ -31,7 +38,8 @@ export function applyGrowthPlaceholderFit(
     return svgXml;
   }
 
-  // Allow fill > 1 so female landscape room shots can match male circle density.
+  // Male placeholders cover circle height (scale ≈ 1/imageHeight) and top-align
+  // (ty = 0) so the floor meets the bottom of the ring. Match that, then zoom.
   const fill = Math.min(2.5, Math.max(0, fit.fill));
   const contain = Math.min(1 / width, 1 / height);
   const cover = Math.max(1 / width, 1 / height);
@@ -39,24 +47,28 @@ export function applyGrowthPlaceholderFit(
     fill <= 1 ? contain + (cover - contain) * fill : cover * fill;
 
   const dispW = width * scale;
-  const dispH = height * scale;
   const tx = (1 - dispW) / 2;
-  const baseTy = (1 - dispH) / 2;
-  const ty = baseTy + (fit.offsetY ?? 0);
+  // Top-align like male so content always reaches the bottom edge.
+  const ty = fit.offsetY ?? 0;
   const matrix = `matrix(${scale} 0 0 ${scale} ${tx} ${ty})`;
 
   if (!/transform="matrix\([^"]+\)"/.test(svgXml)) return svgXml;
-  let next = svgXml.replace(/transform="matrix\([^"]+\)"/, `transform="${matrix}"`);
+  let next = svgXml.replace(
+    /transform="matrix\([^"]+\)"/,
+    `transform="${matrix}"`,
+  );
 
-  // Male placeholders use viewBox 0 0 66 70. Female files are often 66×68 / 68×67,
-  // which letterboxes inside the Growth row circle — normalize to the male frame.
+  // Normalize root to the male 66×70 circle frame.
   next = next.replace(/<svg\b[^>]*>/, (tag) => {
     let updated = tag
-      .replace(/viewBox="[^"]*"/, 'viewBox="0 0 66 70"')
-      .replace(/\bwidth="[^"]*"/, 'width="66"')
-      .replace(/\bheight="[^"]*"/, 'height="70"');
+      .replace(/viewBox="[^"]*"/, `viewBox="0 0 ${FRAME_W} ${FRAME_H}"`)
+      .replace(/\bwidth="[^"]*"/, `width="${FRAME_W}"`)
+      .replace(/\bheight="[^"]*"/, `height="${FRAME_H}"`);
     if (!/\bpreserveAspectRatio=/.test(updated)) {
-      updated = updated.replace(/<svg\b/, '<svg preserveAspectRatio="xMidYMid slice"');
+      updated = updated.replace(
+        /<svg\b/,
+        '<svg preserveAspectRatio="xMidYMid slice"',
+      );
     } else {
       updated = updated.replace(
         /preserveAspectRatio="[^"]*"/,
@@ -64,6 +76,13 @@ export function applyGrowthPlaceholderFit(
       );
     }
     return updated;
+  });
+
+  // Female SVGs keep rect height 68 after viewBox normalize — that leaves the
+  // white crescent under the floor. Force the rounded rect to the full circle.
+  next = next.replace(/<rect\b[^>]*>/, (tag) => {
+    const fillAttr = tag.match(/fill="[^"]*"/)?.[0] ?? 'fill="url(#pattern0)"';
+    return `<rect width="${FRAME_W}" height="${FRAME_H}" rx="${FRAME_RX}" ${fillAttr}/>`;
   });
 
   return next;
