@@ -12,47 +12,57 @@ type GrowthTabSwitchProps = {
   onTabChange: (tab: GrowthTab) => void;
 };
 
-/** Figma growth tab switch: 322 × 48, radius 41, padding 4 */
+/**
+ * Figma growth tab switch (3125:5035 / 3124:12260): 322 × 48, radius 41, padding 4.
+ * Tabs are content-sized — முன்னேற்றம் pill ≈148, உடற்பயிற்சிகள் pill ≈166 — so the
+ * longer Tamil label sits inside its outlined pill without truncating.
+ */
 const FIGMA_SWITCH_WIDTH = 322;
+const PROGRESS_TAB_FLEX = 148;
+const WORKOUTS_TAB_FLEX = 166;
 
 export function GrowthTabSwitch({ activeTab, onTabChange }: GrowthTabSwitchProps) {
   const { t } = useTranslation();
   const { width: screenWidth } = useWindowDimensions();
   const switchWidth = Math.min(FIGMA_SWITCH_WIDTH, screenWidth - 32);
 
+  const progressActive = activeTab === 'progress';
+  const workoutsActive = activeTab === 'workouts';
+
   return (
     <View style={[styles.container, { width: switchWidth }]}>
       <PressableScale
-        style={[styles.tab, activeTab === 'progress' && styles.tabActive]}
+        style={[
+          styles.tab,
+          { flex: PROGRESS_TAB_FLEX },
+          progressActive ? styles.tabActive : styles.tabInactive,
+        ]}
         pressedScale={0.96}
         onPress={() => onTabChange('progress')}
         accessibilityRole="button"
-        accessibilityState={{ selected: activeTab === 'progress' }}
+        accessibilityState={{ selected: progressActive }}
       >
         <Text
-          style={[
-            styles.tabText,
-            activeTab !== 'progress' && styles.tabTextInactive,
-            activeTab === 'progress' && styles.tabTextActive,
-          ]}
+          style={[styles.progressText, progressActive ? styles.textActive : styles.textInactive]}
           numberOfLines={1}
         >
           {t('growth.tabProgress')}
         </Text>
       </PressableScale>
+
       <PressableScale
-        style={[styles.tab, activeTab === 'workouts' && styles.tabActive]}
+        style={[
+          styles.tab,
+          { flex: WORKOUTS_TAB_FLEX },
+          workoutsActive ? styles.tabActive : styles.tabInactive,
+        ]}
         pressedScale={0.96}
         onPress={() => onTabChange('workouts')}
         accessibilityRole="button"
-        accessibilityState={{ selected: activeTab === 'workouts' }}
+        accessibilityState={{ selected: workoutsActive }}
       >
         <Text
-          style={[
-            styles.tabText,
-            activeTab !== 'workouts' && styles.tabTextInactive,
-            activeTab === 'workouts' && styles.tabTextActive,
-          ]}
+          style={[styles.workoutsText, workoutsActive ? styles.textActive : styles.textInactive]}
           numberOfLines={1}
         >
           {t('growth.tabWorkouts')}
@@ -66,8 +76,6 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
     flexWrap: 'nowrap',
-    justifyContent: 'center',
-    /** Figma export uses flex-start; center vertically so the active pill sits true. */
     alignItems: 'center',
     backgroundColor: '#F9FAFB',
     borderWidth: 1,
@@ -77,32 +85,41 @@ const styles = StyleSheet.create({
     height: 48,
   },
   tab: {
-    flex: 1,
     minWidth: 0,
     height: 40,
     borderRadius: 35,
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: 8,
+    /** Transparent border keeps width stable when the active outline appears. */
+    borderWidth: 1,
+    borderColor: 'transparent',
   },
   tabActive: {
     backgroundColor: 'rgba(224, 244, 255, 0.2)',
-    borderWidth: 1,
     borderColor: colors.buttonPrimary,
   },
-  tabText: {
+  tabInactive: {
+    backgroundColor: 'transparent',
+  },
+  /** Figma: முன்னேற்றம் uses ButtonText (Roboto Medium 14) in both states. */
+  progressText: {
     fontSize: 14,
     lineHeight: 18,
     textAlign: 'center',
     ...font('medium'),
-    color: colors.buttonPrimary,
   },
-  tabTextInactive: {
+  /** Figma: உடற்பயிற்சிகள் uses Body-2 (Roboto Regular 14) in both states. */
+  workoutsText: {
+    fontSize: 14,
+    lineHeight: 18,
+    textAlign: 'center',
     ...font('regular'),
-    color: colors.textMuted,
   },
-  tabTextActive: {
+  textActive: {
     color: colors.buttonPrimary,
-    ...font('medium'),
+  },
+  textInactive: {
+    color: colors.textMuted,
   },
 });
