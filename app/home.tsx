@@ -48,7 +48,6 @@ const DAY_CARD_WIDTH = SCREEN_WIDTH - 32;
 const DAY_CARD_MEDIA_HEIGHT = Math.round(DAY_CARD_WIDTH * (9 / 16));
 const DAY_CARD_PREVIEW_ASPECT = HOME_DAY_CARD_PREVIEW_ASPECT;
 
-const FEMALE_AVATAR = require("../assets/avatars/female-avatar.png");
 const WALKING_CHARACTER = require("../assets/home/walking-character.png");
 
 const QUOTES = ["quote1", "quote2", "quote3"] as const;

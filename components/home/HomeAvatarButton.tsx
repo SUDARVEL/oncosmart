@@ -1,4 +1,4 @@
-import { Image, type ImageSource } from 'expo-image';
+import { Image } from 'expo-image';
 import { StyleSheet, View } from 'react-native';
 import { SvgXml } from 'react-native-svg';
 
@@ -9,32 +9,32 @@ import { colors } from '../../theme/colors';
 /**
  * Onboarding Assets / Ellipse 15.svg — ring around home avatar.
  * Male face crop comes from Male Avatar DP Svg.svg framing.
+ * Female DP matches Supabase: Home page/Female Avatar DP 1.svg
  */
 const ELLIPSE_15_XML = `<svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
 <circle cx="32" cy="32" r="31.5" fill="white" stroke="#005F99"/>
 </svg>`;
 
 const MALE_AVATAR_DP = require('../../assets/avatars/male-avatar-dp.png');
+/** Raster from Home page/Female Avatar DP 1.svg (Supabase). */
+const FEMALE_AVATAR_DP = require('../../assets/avatars/female-avatar-dp.png');
 
 const SIZE = 64;
 const AVATAR_INSET = 1.5;
 
 type Props = {
   avatar: AppAvatar | null;
-  /** Female (or fallback) full avatar image. */
-  femaleSource: ImageSource;
   onPress: () => void;
   accessibilityLabel: string;
 };
 
-/** Home header avatar circle — Male DP Svg framing + Ellipse 15 ring. */
+/** Home header avatar circle — Male/Female DP framing + Ellipse 15 ring. */
 export function HomeAvatarButton({
   avatar,
-  femaleSource,
   onPress,
   accessibilityLabel,
 }: Props) {
-  const source = avatar === 'female' ? femaleSource : MALE_AVATAR_DP;
+  const source = avatar === 'female' ? FEMALE_AVATAR_DP : MALE_AVATAR_DP;
   const contentPosition = avatar === 'female' ? 'top' : 'center';
 
   return (
