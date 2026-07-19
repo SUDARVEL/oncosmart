@@ -234,7 +234,7 @@ export function ExercisePlayerView({
           accessibilityRole="button"
         >
           <Ionicons name={playbackPaused ? 'play' : 'pause'} size={24} color="#FFFFFF" />
-          <Text style={styles.pauseButtonText}>
+          <Text style={styles.pauseButtonText} numberOfLines={1}>
             {playbackPaused ? t('sessionFlow.resume') : t('sessionFlow.pause')}
           </Text>
         </PressableScale>
@@ -244,8 +244,10 @@ export function ExercisePlayerView({
           onPress={handleRestart}
           accessibilityRole="button"
         >
-          <Ionicons name="refresh" size={24} color="#374151" />
-          <Text style={styles.restartButtonText}>{t('sessionFlow.restart')}</Text>
+          <Ionicons name="refresh" size={22} color="#374151" />
+          <Text style={styles.restartButtonText} numberOfLines={1}>
+            {t('sessionFlow.restart')}
+          </Text>
         </PressableScale>
       </View>
     </SafeAreaView>
@@ -364,8 +366,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 8,
-    paddingHorizontal: 15,
+    gap: 9,
+    paddingHorizontal: 16,
     paddingBottom: 12,
     paddingTop: 10,
     backgroundColor: colors.background,
@@ -373,39 +375,51 @@ const styles = StyleSheet.create({
     borderTopColor: '#E5E7EB',
     zIndex: 2,
   },
+  /** Figma primary action ~220×48 */
   pauseButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 4,
-    flex: 1,
-    maxWidth: 248,
+    flexGrow: 1,
+    flexShrink: 1,
+    minWidth: 0,
     height: 48,
     borderRadius: 8,
     backgroundColor: '#005F99',
-    paddingHorizontal: 16,
+    paddingLeft: 12,
+    paddingRight: 16,
     paddingVertical: 8,
   },
   pauseButtonText: {
+    flexShrink: 1,
     fontSize: 14,
+    lineHeight: 18,
     color: '#FFFFFF',
     textTransform: 'capitalize',
     ...font('medium'),
   },
+  /** Figma restart ~132×48 — wide enough for மீண்டும் தொடங்கு on one line */
   restartButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 4,
-    width: 101,
+    flexGrow: 0,
+    flexShrink: 0,
+    minWidth: 132,
     height: 48,
     borderRadius: 8,
     borderWidth: 1,
     borderColor: '#D1D5DB',
-    paddingHorizontal: 10,
+    paddingLeft: 10,
+    paddingRight: 12,
+    paddingVertical: 8,
   },
   restartButtonText: {
-    fontSize: 14,
+    flexShrink: 0,
+    fontSize: 13,
+    lineHeight: 18,
     color: '#374151',
     textTransform: 'capitalize',
     ...font('medium'),
