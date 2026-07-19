@@ -58,6 +58,7 @@ const FEMALE_SLIDER_PHOTO_FILES: Partial<Record<string, string>> = {
   // Double space before "Right" is intentional.
   "knee-to-chest-right": "Knee to chest  Right.png",
   "static-quadriceps-right": "Static Quadriceps Right Englsih 1.png",
+  "hamstring-stretch": "Hamstring Stretch Female English 1.png",
   "quadriceps-stretch-left": "Quadriceps Stretch Left FeMale English 1.png",
   "quadriceps-stretch-right": "Quadriceps Stretch Right FeMale English 1.png",
   "calf-stretch-left": "Calf stretch Female Left English 1.png",
