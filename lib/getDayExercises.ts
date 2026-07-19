@@ -78,18 +78,18 @@ function resolveExplicitExerciseVideo(
   variant: VideoVariant,
   gender: AppGender | null,
   avatar: AppAvatar | null,
+  language: AppLanguage | null,
 ): string | null {
-  if (variant === 'male-en' || variant === 'female-en' || variant === 'female-ta') {
-    const portraitUrl = getExercisePortraitVideoUrl(exercise.id, gender, avatar);
-    if (portraitUrl) return portraitUrl;
-  }
+  // Guided playback always prefers the portrait instructor map (EN / TA by gender).
+  const portraitUrl = getExercisePortraitVideoUrl(exercise.id, gender, avatar, language);
+  if (portraitUrl) return portraitUrl;
 
   const preferred = exercise.videos[variant]?.trim();
   if (preferred) return resolveVideoUrl(preferred);
 
-  // Female Tamil → English female portrait when Tamil files are absent.
-  if (variant === 'female-ta') {
-    const enUrl = getExercisePortraitVideoUrl(exercise.id, 'female', 'female');
+  // Tamil → English portrait fallback when a Tamil file is absent.
+  if (variant === 'female-ta' || variant === 'male-ta') {
+    const enUrl = getExercisePortraitVideoUrl(exercise.id, gender, avatar, 'en');
     if (enUrl) return enUrl;
   }
 
@@ -113,7 +113,13 @@ export function getLevelExercises(
   const variant = getVideoVariant(language, gender, avatar);
 
   const resolved = session.exercises.map((exercise) => {
-    const videoSource = resolveExplicitExerciseVideo(exercise, variant, gender, avatar);
+    const videoSource = resolveExplicitExerciseVideo(
+      exercise,
+      variant,
+      gender,
+      avatar,
+      language,
+    );
     const previewVideo = exercise.id.includes('stretch')
       ? null
       : getSessionLandscapeVideoUrl(exercise.id, gender, avatar);
@@ -160,7 +166,13 @@ export function getSessionExerciseVideoSource(
   if (!exercise) return null;
 
   const variant = getVideoVariant(language, gender, avatar);
-  const explicit = resolveExplicitExerciseVideo(exercise, variant, gender, avatar);
+  const explicit = resolveExplicitExerciseVideo(
+    exercise,
+    variant,
+    gender,
+    avatar,
+    language,
+  );
   const resolved = resolveExercisePlaybackUrl(explicit, exercise.name, variant);
   if (!resolved) return null;
 

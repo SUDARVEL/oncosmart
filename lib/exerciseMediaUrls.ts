@@ -1,4 +1,4 @@
-import type { AppAvatar, AppGender } from '../store/useAppStore';
+import type { AppAvatar, AppGender, AppLanguage } from '../store/useAppStore';
 import {
   EXERCISE_PORTRAIT_VIDEOS,
   PORTRAIT_VIDEO_FOLDER,
@@ -6,7 +6,9 @@ import {
 import {
   getFemaleLandscapeVideoPath,
   getFemalePortraitVideoPath,
+  getFemaleTamilPortraitVideoPath,
 } from './exerciseFemaleVideos';
+import { getMaleTamilPortraitVideoPath } from './exerciseMaleTamilVideos';
 
 const SUPABASE_PUBLIC_BASE =
   'https://soyaeuffzytrjojifvdz.supabase.co/storage/v1/object/public/Oncosmart%20Videos%20and%20Assets';
@@ -62,9 +64,28 @@ export function getExercisePortraitObjectPath(
   exerciseId: string,
   gender: AppGender | null,
   avatar: AppAvatar | null = null,
+  language: AppLanguage | null = null,
 ): string | null {
-  if (isFemaleMediaTrack(gender, avatar)) {
+  const isTamil = language === 'ta';
+  const isFemale = isFemaleMediaTrack(gender, avatar);
+
+  if (isFemale) {
+    if (isTamil) {
+      return (
+        getFemaleTamilPortraitVideoPath(exerciseId) ??
+        getFemalePortraitVideoPath(exerciseId)
+      );
+    }
     return getFemalePortraitVideoPath(exerciseId);
+  }
+
+  if (isTamil) {
+    return (
+      getMaleTamilPortraitVideoPath(exerciseId) ??
+      (EXERCISE_PORTRAIT_VIDEOS[exerciseId]
+        ? `${PORTRAIT_VIDEO_FOLDER}/${EXERCISE_PORTRAIT_VIDEOS[exerciseId]}`
+        : null)
+    );
   }
 
   const file = EXERCISE_PORTRAIT_VIDEOS[exerciseId];
@@ -76,8 +97,9 @@ export function getExercisePortraitVideoUrl(
   exerciseId: string,
   gender: AppGender | null,
   avatar: AppAvatar | null = null,
+  language: AppLanguage | null = null,
 ): string | null {
-  const path = getExercisePortraitObjectPath(exerciseId, gender, avatar);
+  const path = getExercisePortraitObjectPath(exerciseId, gender, avatar, language);
   if (!path) return null;
   // Prefer the known public bucket URL — avoid wrong EXPO_PUBLIC_SUPABASE_VIDEO_BUCKET defaults.
   return publicUrlForObjectPath(path);
@@ -103,8 +125,9 @@ export function resolveExerciseGuidedPortraitUrl(
   exerciseId: string,
   gender: AppGender | null,
   avatar: AppAvatar | null = null,
+  language: AppLanguage | null = null,
 ): string | null {
-  return getExercisePortraitVideoUrl(exerciseId, gender, avatar);
+  return getExercisePortraitVideoUrl(exerciseId, gender, avatar, language);
 }
 
 /** Portrait first only — landscape previews are NEVER guided playback sources. */
@@ -112,7 +135,8 @@ export function resolveExercisePlaybackSources(
   exerciseId: string,
   gender: AppGender | null,
   avatar: AppAvatar | null = null,
+  language: AppLanguage | null = null,
 ): string[] {
-  const portrait = getExercisePortraitVideoUrl(exerciseId, gender, avatar);
+  const portrait = getExercisePortraitVideoUrl(exerciseId, gender, avatar, language);
   return portrait ? [portrait] : [];
 }
