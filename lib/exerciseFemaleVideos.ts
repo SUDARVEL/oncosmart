@@ -95,7 +95,8 @@ export const FEMALE_TAMIL_PORTRAIT_VIDEO_FILES: Partial<Record<string, string>> 
   'quadriceps-stretch-left': 'Quadriceps Stretch Left Female Tamil.mp4',
   'calf-stretch-right': 'Calf Stretch Female Right Tamil.mp4',
   'calf-stretch-left': 'Calf Stretch Female Left Tamil.mp4',
-  'chest-stretch': 'Chest Stretch Female Tamil2.mp4',
+  // Guided chest stretch Tamil uses the dual-panel English female asset (product source).
+  'chest-stretch': 'Chest Stretch Female English2.mp4',
   'triceps-stretch-right': 'Triceps Stretch Female Right Tamil.mp4',
   'triceps-stretch-left': 'Triceps Stretch Female Left Tamil.mp4',
   'neck-stretch-right': 'Neck Stretch Female Right Tamil.mp4',
@@ -117,5 +118,9 @@ export function getFemalePortraitVideoPath(exerciseId: string): string | null {
 export function getFemaleTamilPortraitVideoPath(exerciseId: string): string | null {
   const file = FEMALE_TAMIL_PORTRAIT_VIDEO_FILES[exerciseId];
   if (!file) return null;
+  // Chest stretch Tamil intentionally uses the Female English dual-panel file.
+  if (exerciseId === 'chest-stretch') {
+    return `${FEMALE_PORTRAIT_FOLDER}/${file}`;
+  }
   return `${FEMALE_TAMIL_PORTRAIT_FOLDER}/${file}`;
 }

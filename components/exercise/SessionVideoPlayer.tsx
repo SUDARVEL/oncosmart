@@ -4,14 +4,15 @@ import { StyleSheet, View } from 'react-native';
 
 import { ensureExerciseAudioSession } from '../../lib/ensureExerciseAudioSession';
 import {
-  EXERCISE_VIDEO_CONTENT_FIT,
   EXERCISE_VIDEO_FRAME_BACKGROUND,
   EXERCISE_VIDEO_SOURCE_ASPECT,
+  getGuidedVideoPresentation,
 } from '../../lib/exerciseVideoFrame';
 import { shouldAcceptVideoEnd } from './sessionVideoCompletion';
 
 type Props = {
   source: string;
+  exerciseId?: string;
   isPaused: boolean;
   restartToken: number;
   seekRequest?: { fraction: number; token: number } | null;
@@ -35,6 +36,7 @@ function applyAudiblePlayback(player: {
 
 export function SessionVideoPlayer({
   source,
+  exerciseId = '',
   isPaused,
   restartToken,
   seekRequest = null,
@@ -45,6 +47,8 @@ export function SessionVideoPlayer({
   onPlaybackFailed,
   onEnded,
 }: Props) {
+  const presentation = getGuidedVideoPresentation(exerciseId);
+  const fillFrame = presentation.layout === 'fill-frame';
   const onEndedRef = useRef(onEnded);
   const onProgressRef = useRef(onProgress);
   const onBufferingRef = useRef(onBuffering);
@@ -214,12 +218,12 @@ export function SessionVideoPlayer({
 
   return (
     <View style={styles.frame}>
-      {/* Figma: 349×578 source, bottom-aligned inside 349×444 crop window */}
-      <View style={styles.sourceBox}>
+      {/* Default: 349×578 source bottom-aligned in 349×444. Chest stretch fills frame. */}
+      <View style={fillFrame ? styles.fillBox : styles.sourceBox}>
         <VideoView
           style={styles.video}
           player={player}
-          contentFit={EXERCISE_VIDEO_CONTENT_FIT}
+          contentFit={presentation.contentFit}
           nativeControls={false}
         />
       </View>
@@ -241,6 +245,10 @@ const styles = StyleSheet.create({
     bottom: 0,
     width: '100%',
     aspectRatio: EXERCISE_VIDEO_SOURCE_ASPECT,
+  },
+  fillBox: {
+    width: '100%',
+    height: '100%',
   },
   video: {
     width: '100%',

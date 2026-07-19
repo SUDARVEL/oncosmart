@@ -181,6 +181,7 @@ export function ExercisePlayerView({
             <SessionVideoPlayer
               key={`${exercise.id}-${primarySource}-${restartToken}`}
               source={primarySource}
+              exerciseId={exercise.id}
               isPaused={playbackPaused}
               restartToken={restartToken}
               seekRequest={seekRequest}

@@ -6,6 +6,9 @@
  *
  * The taller source is bottom-aligned inside the crop window so empty headroom
  * is trimmed from the top — arms/feet stay visible without stretching.
+ *
+ * Exception: dual-panel chest stretch fills the same 349×444 frame centered
+ * (no bottom crop) so both stacked views stay visible.
  */
 export const EXERCISE_VIDEO_SOURCE_WIDTH = 349;
 export const EXERCISE_VIDEO_SOURCE_HEIGHT = 578;
@@ -26,6 +29,35 @@ export const EXERCISE_VIDEO_FRAME_BORDER_RADIUS = 16;
 export const EXERCISE_VIDEO_CONTENT_FIT = 'cover' as const;
 /** Anchor media to the bottom of the crop window (Figma cropper). */
 export const EXERCISE_VIDEO_OBJECT_POSITION = 'center bottom' as const;
+
+export type GuidedVideoContentFit = 'contain' | 'cover' | 'fill';
+
+export type GuidedVideoPresentation = {
+  /** Default portrait instructor crop vs full-frame dual-panel (chest stretch). */
+  layout: 'portrait-crop' | 'fill-frame';
+  contentFit: GuidedVideoContentFit;
+  objectPosition: 'center bottom' | 'center';
+};
+
+const DEFAULT_GUIDED_VIDEO_PRESENTATION: GuidedVideoPresentation = {
+  layout: 'portrait-crop',
+  contentFit: EXERCISE_VIDEO_CONTENT_FIT,
+  objectPosition: EXERCISE_VIDEO_OBJECT_POSITION,
+};
+
+/** Chest stretch is a stacked front/back composition — show the full frame. */
+const CHEST_STRETCH_VIDEO_PRESENTATION: GuidedVideoPresentation = {
+  layout: 'fill-frame',
+  contentFit: 'contain',
+  objectPosition: 'center',
+};
+
+export function getGuidedVideoPresentation(exerciseId: string): GuidedVideoPresentation {
+  if (exerciseId === 'chest-stretch') {
+    return CHEST_STRETCH_VIDEO_PRESENTATION;
+  }
+  return DEFAULT_GUIDED_VIDEO_PRESENTATION;
+}
 
 /** Home day-card video — full-bleed 16:9 inside the wide card. */
 export const HOME_DAY_CARD_PREVIEW_WIDTH = 343;

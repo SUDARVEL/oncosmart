@@ -48,6 +48,11 @@ assert(
   /EXERCISE_VIDEO_OBJECT_POSITION\s*=\s*'center bottom'/.test(frame),
   'Crop must be bottom-anchored like Figma',
 );
+assert(
+  frame.includes("exerciseId === 'chest-stretch'") &&
+    frame.includes("layout: 'fill-frame'"),
+  'Chest stretch must use full-frame dual-panel presentation',
+);
 
 const policy = read('lib/videoStoragePolicy.ts');
 assert(
@@ -114,12 +119,18 @@ assert(
   'Web player must use Figma source aspect crop box',
 );
 assert(
-  webPlayer.includes('EXERCISE_VIDEO_OBJECT_POSITION'),
-  'Web player must bottom-anchor object position',
+  webPlayer.includes('getGuidedVideoPresentation') &&
+    webPlayer.includes('presentation.objectPosition'),
+  'Web player must apply guided presentation object position',
 );
 assert(
   webPlayer.includes('sourceBox'),
   'Web player must bottom-align the tall source inside the crop window',
+);
+assert(
+  nativePlayer.includes('getGuidedVideoPresentation') &&
+    nativePlayer.includes('fillBox'),
+  'Native player must support chest-stretch fill-frame layout',
 );
 
 const completion = read('components/exercise/sessionVideoCompletion.ts');

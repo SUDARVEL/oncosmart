@@ -3,16 +3,16 @@ import { StyleSheet, View } from 'react-native';
 
 import { ensureExerciseAudioSession } from '../../lib/ensureExerciseAudioSession';
 import {
-  EXERCISE_VIDEO_CONTENT_FIT,
   EXERCISE_VIDEO_FRAME_BACKGROUND,
   EXERCISE_VIDEO_FRAME_BORDER_RADIUS,
-  EXERCISE_VIDEO_OBJECT_POSITION,
   EXERCISE_VIDEO_SOURCE_ASPECT,
+  getGuidedVideoPresentation,
 } from '../../lib/exerciseVideoFrame';
 import { shouldAcceptVideoEnd } from './sessionVideoCompletion';
 
 type Props = {
   source: string;
+  exerciseId?: string;
   isPaused: boolean;
   restartToken: number;
   seekRequest?: { fraction: number; token: number } | null;
@@ -26,6 +26,7 @@ type Props = {
 
 export function SessionVideoPlayer({
   source,
+  exerciseId = '',
   isPaused,
   restartToken,
   seekRequest = null,
@@ -36,6 +37,8 @@ export function SessionVideoPlayer({
   onPlaybackFailed,
   onEnded,
 }: Props) {
+  const presentation = getGuidedVideoPresentation(exerciseId);
+  const fillFrame = presentation.layout === 'fill-frame';
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const onEndedRef = useRef(onEnded);
   const onProgressRef = useRef(onProgress);
@@ -228,8 +231,8 @@ export function SessionVideoPlayer({
 
   return (
     <View style={styles.wrap}>
-      {/* Figma: 349×578 source, bottom-aligned inside 349×444 crop window */}
-      <View style={styles.sourceBox}>
+      {/* Default: 349×578 source bottom-aligned in 349×444. Chest stretch fills frame. */}
+      <View style={fillFrame ? styles.fillBox : styles.sourceBox}>
         {createElement('video', {
           key: `${source}-${restartToken}`,
           ref: videoRef,
@@ -239,7 +242,11 @@ export function SessionVideoPlayer({
           controls: false,
           muted: false,
           defaultMuted: false,
-          style: styles.video,
+          style: {
+            ...styles.video,
+            objectFit: presentation.contentFit,
+            objectPosition: presentation.objectPosition,
+          },
           onLoadStart: handleWaiting,
           onWaiting: handleWaiting,
           onCanPlay: handleCanPlay,
@@ -270,11 +277,13 @@ const styles = StyleSheet.create({
     width: '100%',
     aspectRatio: EXERCISE_VIDEO_SOURCE_ASPECT,
   },
+  fillBox: {
+    width: '100%',
+    height: '100%',
+  },
   video: {
     width: '100%',
     height: '100%',
-    objectFit: EXERCISE_VIDEO_CONTENT_FIT,
-    objectPosition: EXERCISE_VIDEO_OBJECT_POSITION,
     backgroundColor: EXERCISE_VIDEO_FRAME_BACKGROUND,
   } as object,
 });
