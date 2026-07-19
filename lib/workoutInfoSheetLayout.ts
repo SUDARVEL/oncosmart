@@ -67,6 +67,9 @@ export const WORKOUT_SLIDER_MEDIA_HEIGHT = Math.round(
   FIGMA_MEDIA_HEIGHT * mediaScale,
 );
 
+/** Portrait frame ratio (width / height) enforced via aspectRatio for robustness. */
+export const WORKOUT_SLIDER_MEDIA_ASPECT = FIGMA_MEDIA_WIDTH / FIGMA_MEDIA_HEIGHT;
+
 /** SingleShadow-2: 0 4px 6px rgba(17, 24, 39, 0.20) */
 export const WORKOUT_SHEET_SHADOW = {
   shadowColor: '#111827',
