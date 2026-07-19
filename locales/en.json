@@ -105,7 +105,11 @@
     "readyTitle": "Are you ready to begin today's excercise session?",
     "readySubtitle": "Before we begin, please confirm that you feel ready to continue with today's exercise session",
     "readyNo": "No",
-    "readyYes": "Yes"
+    "readyYes": "Yes",
+    "highPainTitle": "Do you feel a lot of pain?",
+    "highPainSubtitle": "Your pain score is high. You can take rest and do this exercise session later.",
+    "highPainRest": "Take rest",
+    "highPainContinue": "Continue anyway"
   },
   "daySession": {
     "welcomeTitle": "Welcome to Day {{day}} ",
