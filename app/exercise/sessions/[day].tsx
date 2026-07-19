@@ -25,8 +25,9 @@ export default function ExerciseSessionsScreen() {
   const language = useAppStore((state) => state.language);
   const gender = useAppStore((state) => state.gender);
   const avatar = useAppStore((state) => state.avatar);
+  const age = useAppStore((state) => state.age);
   const ageRange = useAppStore((state) => state.ageRange);
-  const maxBpm = getModerateHeartRateUpperLimit(ageRange);
+  const maxBpm = getModerateHeartRateUpperLimit(age, ageRange);
 
   const session = getLevelSession(level);
   const exercises = useMemo(
