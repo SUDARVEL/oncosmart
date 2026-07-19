@@ -6,13 +6,13 @@ export function getWorkoutRepLabel(
   workout: Pick<WorkoutDetail, 'repType' | 'repValue' | 'displayLabel'>,
   t: TFunction,
 ): string {
-  if (workout.repType === 'reps') {
+  if (workout.repType === 'reps' || workout.displayLabel === 'REPS') {
     return t('sessionFlow.repsLabel');
   }
 
-  if (workout.repValue >= 60) {
-    return t('sessionFlow.minsLabel');
+  if (workout.displayLabel === 'SECS' || (workout.repValue > 0 && workout.repValue < 60)) {
+    return t('sessionFlow.secsLabel');
   }
 
-  return t('sessionFlow.secsLabel');
+  return t('sessionFlow.minsLabel');
 }

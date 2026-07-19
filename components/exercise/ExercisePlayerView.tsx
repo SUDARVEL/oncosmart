@@ -1,5 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   ActivityIndicator,
@@ -15,7 +15,6 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import type { Day1SessionExercise } from '../../lib/getDay1Session';
-import { formatExerciseDurationDisplay } from '../../lib/formatExerciseDuration';
 import {
   EXERCISE_VIDEO_FRAME_ASPECT,
   EXERCISE_VIDEO_FRAME_BACKGROUND,
@@ -53,7 +52,6 @@ export function ExercisePlayerView({
   const [videoProgress, setVideoProgress] = useState(0);
   const [isBuffering, setIsBuffering] = useState(true);
   const [playbackFailed, setPlaybackFailed] = useState(false);
-  const [videoDurationSeconds, setVideoDurationSeconds] = useState(0);
   const [seekRequest, setSeekRequest] = useState<{ fraction: number; token: number } | null>(
     null,
   );
@@ -80,16 +78,16 @@ export function ExercisePlayerView({
   const description = t(`sessionFlow.exercises.${exercise.id}.description`);
   const videoProgressPercent = Math.round(Math.min(Math.max(videoProgress, 0), 1) * 100);
 
-  const durationDisplay = useMemo(() => {
-    if (exercise.repType === 'duration' && videoDurationSeconds > 0) {
-      return formatExerciseDurationDisplay(videoDurationSeconds);
-    }
-
-    return {
-      displayValue: exercise.displayValue,
-      displayLabel: exercise.displayLabel,
-    };
-  }, [exercise.displayLabel, exercise.displayValue, exercise.repType, videoDurationSeconds]);
+  // Always show Figma rep/duration values — never substitute video file length.
+  const displayValue = exercise.displayValue;
+  const displayLabel = exercise.displayLabel;
+  const isSecsLabel = displayLabel === 'SECS';
+  const unitLabel =
+    displayLabel === 'MINS'
+      ? t('sessionFlow.minsLabel')
+      : displayLabel === 'SECS'
+        ? t('sessionFlow.secsLabel')
+        : t('sessionFlow.repsLabel');
 
   const markComplete = useCallback(() => {
     if (completedRef.current) return;
@@ -104,7 +102,6 @@ export function ExercisePlayerView({
     setVideoProgress(0);
     setIsBuffering(true);
     setPlaybackFailed(false);
-    setVideoDurationSeconds(0);
     setSeekRequest(null);
     setAudioUnlockToken((value) => value + 1);
   }, [exercise.id, videoSources.join('|')]);
@@ -133,7 +130,6 @@ export function ExercisePlayerView({
     setVideoProgress(0);
     setIsBuffering(true);
     setPlaybackFailed(false);
-    setVideoDurationSeconds(0);
     setSeekRequest(null);
     setRestartToken((value) => value + 1);
   };
@@ -188,7 +184,7 @@ export function ExercisePlayerView({
               audioUnlockToken={audioUnlockToken}
               onProgress={setVideoProgress}
               onBuffering={setIsBuffering}
-              onDuration={setVideoDurationSeconds}
+              onDuration={() => {}}
               onPlaybackFailed={() => setPlaybackFailed(true)}
               onEnded={handleVideoEnded}
             />
@@ -220,20 +216,12 @@ export function ExercisePlayerView({
           {title}
         </Text>
 
-        <View style={styles.repRow}>
-          <Text style={styles.repValue}>{durationDisplay.displayValue}</Text>
-          <Text style={styles.repLabel}>
-            {durationDisplay.displayLabel === 'MINS'
-              ? t('sessionFlow.minsLabel')
-              : durationDisplay.displayLabel === 'SECS'
-                ? t('sessionFlow.secsLabel')
-                : t('sessionFlow.repsLabel')}
-          </Text>
+        <View style={[styles.repRow, isSecsLabel && styles.repColumn]}>
+          <Text style={styles.repValue}>{displayValue}</Text>
+          <Text style={[styles.repLabel, isSecsLabel && styles.repLabelStacked]}>{unitLabel}</Text>
         </View>
 
-        <Text style={[styles.description, { maxWidth: frameWidth }]} numberOfLines={4}>
-          {description}
-        </Text>
+        <Text style={[styles.description, { maxWidth: frameWidth }]}>{description}</Text>
       </ScrollView>
 
       <View style={styles.footer}>
@@ -345,6 +333,13 @@ const styles = StyleSheet.create({
     marginTop: 12,
     minHeight: 52,
   },
+  /** Figma seconds: number on first line, unit (வினாடி / sec) on the next */
+  repColumn: {
+    flexDirection: 'column',
+    alignItems: 'center',
+    gap: 0,
+    minHeight: 72,
+  },
   repValue: {
     fontSize: 56,
     lineHeight: 56,
@@ -357,6 +352,12 @@ const styles = StyleSheet.create({
     color: '#00131F',
     ...displayFontStyle(),
     marginBottom: 4,
+  },
+  repLabelStacked: {
+    fontSize: 28,
+    lineHeight: 32,
+    marginBottom: 0,
+    textAlign: 'center',
   },
   description: {
     marginTop: 12,

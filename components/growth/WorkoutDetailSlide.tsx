@@ -51,9 +51,27 @@ export function WorkoutDetailSlide({ workout, width }: Props) {
           {title}
         </Text>
 
-        <View style={styles.repRow}>
+        <View
+          style={[
+            styles.repRow,
+            workout.displayLabel === 'SECS' ||
+            (workout.repType === 'duration' && workout.repValue < 60)
+              ? styles.repColumn
+              : null,
+          ]}
+        >
           <Text style={styles.repValue}>{workout.displayValue}</Text>
-          <Text style={styles.repLabel}>{repLabel}</Text>
+          <Text
+            style={[
+              styles.repLabel,
+              workout.displayLabel === 'SECS' ||
+              (workout.repType === 'duration' && workout.repValue < 60)
+                ? styles.repLabelStacked
+                : null,
+            ]}
+          >
+            {repLabel}
+          </Text>
         </View>
 
         <Text style={styles.description}>{description}</Text>
@@ -111,6 +129,12 @@ const styles = StyleSheet.create({
     marginTop: 10,
     minHeight: 52,
   },
+  repColumn: {
+    flexDirection: 'column',
+    alignItems: 'center',
+    gap: 0,
+    minHeight: 72,
+  },
   repValue: {
     fontSize: 52,
     lineHeight: 52,
@@ -123,6 +147,12 @@ const styles = StyleSheet.create({
     color: '#00131F',
     marginBottom: 2,
     ...displayFontStyle(),
+  },
+  repLabelStacked: {
+    fontSize: 26,
+    lineHeight: 30,
+    marginBottom: 0,
+    textAlign: 'center',
   },
   description: {
     marginTop: 12,

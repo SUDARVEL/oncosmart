@@ -1,7 +1,7 @@
 import { EXERCISE_PORTRAIT_VIDEOS } from './exercisePortraitVideos';
 
 type SessionRepType = 'reps' | 'duration';
-type SessionDisplayLabel = 'REPS' | 'MINS';
+type SessionDisplayLabel = 'REPS' | 'MINS' | 'SECS';
 
 type RepConfig = {
   repType: SessionRepType;
@@ -132,70 +132,70 @@ export const EXERCISE_REP_CONFIG: Record<string, RepConfig> = {
     repType: 'duration',
     repValue: 30,
     displayValue: '30',
-    displayLabel: 'MINS',
+    displayLabel: 'SECS',
     portraitVideo: pv('hamstring-stretch'),
   },
   'quadriceps-stretch-right': {
     repType: 'duration',
     repValue: 30,
     displayValue: '30',
-    displayLabel: 'MINS',
+    displayLabel: 'SECS',
     portraitVideo: pv('quadriceps-stretch-right'),
   },
   'quadriceps-stretch-left': {
     repType: 'duration',
     repValue: 30,
     displayValue: '30',
-    displayLabel: 'MINS',
+    displayLabel: 'SECS',
     portraitVideo: pv('quadriceps-stretch-left'),
   },
   'calf-stretch-right': {
     repType: 'duration',
     repValue: 30,
     displayValue: '30',
-    displayLabel: 'MINS',
+    displayLabel: 'SECS',
     portraitVideo: pv('calf-stretch-right'),
   },
   'calf-stretch-left': {
     repType: 'duration',
     repValue: 30,
     displayValue: '30',
-    displayLabel: 'MINS',
+    displayLabel: 'SECS',
     portraitVideo: pv('calf-stretch-left'),
   },
   'chest-stretch': {
     repType: 'duration',
     repValue: 30,
     displayValue: '30',
-    displayLabel: 'MINS',
+    displayLabel: 'SECS',
     portraitVideo: pv('chest-stretch'),
   },
   'triceps-stretch-right': {
     repType: 'duration',
     repValue: 30,
     displayValue: '30',
-    displayLabel: 'MINS',
+    displayLabel: 'SECS',
     portraitVideo: pv('triceps-stretch-right'),
   },
   'triceps-stretch-left': {
     repType: 'duration',
     repValue: 30,
     displayValue: '30',
-    displayLabel: 'MINS',
+    displayLabel: 'SECS',
     portraitVideo: pv('triceps-stretch-left'),
   },
   'neck-stretch-right': {
     repType: 'duration',
     repValue: 30,
     displayValue: '30',
-    displayLabel: 'MINS',
+    displayLabel: 'SECS',
     portraitVideo: pv('neck-stretch-right'),
   },
   'neck-stretch-left': {
     repType: 'duration',
     repValue: 30,
     displayValue: '30',
-    displayLabel: 'MINS',
+    displayLabel: 'SECS',
     portraitVideo: pv('neck-stretch-left'),
   },
 };

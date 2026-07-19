@@ -3,7 +3,7 @@ import { getLevelExerciseProgram } from './levelExercisePrograms';
 import { TOTAL_LEVELS } from './programProgress';
 
 export type SessionRepType = 'reps' | 'duration';
-export type SessionDisplayLabel = 'REPS' | 'MINS';
+export type SessionDisplayLabel = 'REPS' | 'MINS' | 'SECS';
 
 export type GuidedSessionExercise = {
   id: string;
