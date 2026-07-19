@@ -22,9 +22,14 @@ const FEMALE_AVATAR_DP = require('../../assets/avatars/female-avatar-dp.png');
 const SIZE = 64;
 const AVATAR_INSET = 1.5;
 
-/** Figma Dev Mode — Female Avatar DP badge background positioning. */
+/**
+ * Figma Dev Mode — Female Avatar DP badge background:
+ *   background-position: 0px -43.063px
+ *   background-size: 100% 176.304%
+ * Use absolute px (not %) so native matches CSS/Figma zoom.
+ */
 const FEMALE_DP_BG_TOP = -43.063;
-const FEMALE_DP_BG_HEIGHT = '176.304%';
+const FEMALE_DP_BG_HEIGHT = SIZE * 1.76304; // 176.304% of 64
 
 type Props = {
   avatar: AppAvatar | null;
@@ -96,12 +101,12 @@ const styles = StyleSheet.create({
   },
   /**
    * Figma: background ... 0px -43.063px / 100% 176.304% no-repeat
-   * Image fills width, scaled taller, shifted up to show head/shoulders.
+   * Explicit px height/offset so Expo native zooms like the SVG/CSS.
    */
   femaleImage: {
     position: 'absolute',
     left: 0,
-    width: '100%',
+    width: SIZE,
     top: FEMALE_DP_BG_TOP,
     height: FEMALE_DP_BG_HEIGHT,
   },
