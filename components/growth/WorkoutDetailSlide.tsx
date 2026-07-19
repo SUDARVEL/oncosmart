@@ -43,8 +43,11 @@ export function WorkoutDetailSlide({ workout, width }: Props) {
             <CachedMediaImage
               source={workout.photoSource!}
               style={styles.media}
-              /** New Female slider PNGs are framed ~349×446 — fill the rounded crop. */
-              contentFit="cover"
+              /**
+               * Figma media frame is 349×446 at the source aspect. Use contain so the
+               * whole character (legs/feet) stays visible — never crop or widen.
+               */
+              contentFit="contain"
               contentPosition="center"
               recyclingKey={workout.id}
               priority="high"

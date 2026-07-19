@@ -58,15 +58,14 @@ export const WORKOUT_SLIDER_TEXT_BLOCK_HEIGHT = Math.round(
 export const WORKOUT_SLIDER_BODY_HEIGHT =
   WORKOUT_SHEET_CONTENT_HEIGHT - WORKOUT_SHEET_DOTS_HEIGHT;
 
-const idealMediaHeight = Math.round(FIGMA_MEDIA_HEIGHT * mediaScale);
-const maxMediaHeight = Math.max(
-  200,
-  WORKOUT_SLIDER_BODY_HEIGHT -
-    WORKOUT_SLIDER_MEDIA_TOP -
-    WORKOUT_SLIDER_TEXT_BLOCK_HEIGHT,
+/**
+ * Keep the exact Figma media aspect (349 × 446). Never clamp shorter — a shorter
+ * frame would crop the character's legs/feet when the photo is drawn. The slide
+ * lives inside a ScrollView, so any overflow scrolls instead of cropping.
+ */
+export const WORKOUT_SLIDER_MEDIA_HEIGHT = Math.round(
+  FIGMA_MEDIA_HEIGHT * mediaScale,
 );
-
-export const WORKOUT_SLIDER_MEDIA_HEIGHT = Math.min(idealMediaHeight, maxMediaHeight);
 
 /** SingleShadow-2: 0 4px 6px rgba(17, 24, 39, 0.20) */
 export const WORKOUT_SHEET_SHADOW = {
