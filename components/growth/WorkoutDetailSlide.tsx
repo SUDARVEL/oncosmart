@@ -11,6 +11,8 @@ import {
   WORKOUT_SLIDER_MEDIA_RADIUS,
   WORKOUT_SLIDER_MEDIA_WIDTH,
 } from '../../lib/workoutInfoSheetLayout';
+import { useAppStore } from '../../store/useAppStore';
+import { resolveWorkoutMediaGender } from '../../lib/workoutGrowthPlaceholders';
 import { displayFontStyle, font } from '../../theme/fonts';
 
 type Props = {
@@ -18,13 +20,21 @@ type Props = {
   width: number;
 };
 
+/** Female PNGs with square edges that need cover + radius to show 16px corners. */
+const FEMALE_COVER_SLIDER_IDS = new Set(['spot-marching', 'hamstring-stretch']);
+
 export function WorkoutDetailSlide({ workout, width }: Props) {
   const { t } = useTranslation();
+  const gender = useAppStore((state) => state.gender);
+  const avatar = useAppStore((state) => state.avatar);
   const [imageFailed, setImageFailed] = useState(false);
   const title = t(`sessionFlow.exercises.${workout.id}.title`);
   const description = t(`sessionFlow.exercises.${workout.id}.description`);
   const showPhoto = Boolean(workout.photoSource) && !imageFailed;
   const repLabel = getWorkoutRepLabel(workout, t);
+  const isFemaleMedia = resolveWorkoutMediaGender(gender, avatar) === 'female';
+  const useCoverFit =
+    isFemaleMedia && FEMALE_COVER_SLIDER_IDS.has(workout.id);
 
   return (
     <View style={[styles.slide, { width }]}>
@@ -42,7 +52,7 @@ export function WorkoutDetailSlide({ workout, width }: Props) {
             <CachedMediaImage
               source={workout.photoSource!}
               style={styles.media}
-              contentFit="contain"
+              contentFit={useCoverFit ? 'cover' : 'contain'}
               contentPosition="center"
               recyclingKey={workout.id}
               priority="high"
@@ -95,11 +105,13 @@ const styles = StyleSheet.create({
   media: {
     width: '100%',
     height: '100%',
+    borderRadius: WORKOUT_SLIDER_MEDIA_RADIUS,
     backgroundColor: 'transparent',
   },
   mediaPlaceholder: {
     width: '100%',
     height: '100%',
+    borderRadius: WORKOUT_SLIDER_MEDIA_RADIUS,
     backgroundColor: '#F3F4F6',
   },
   exerciseTitle: {
