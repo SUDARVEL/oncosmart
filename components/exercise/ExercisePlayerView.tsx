@@ -335,24 +335,24 @@ const styles = StyleSheet.create({
   repRow: {
     flexDirection: 'row',
     flexWrap: 'nowrap',
-    alignItems: 'flex-end',
+    alignItems: 'center',
     justifyContent: 'center',
     gap: 8,
     marginTop: 12,
-    minHeight: 52,
+    minHeight: 60,
   },
   repValue: {
     fontSize: 56,
-    lineHeight: 56,
+    lineHeight: 60,
     color: '#00131F',
     ...displayFontStyle(),
   },
+  /** Unit (முறை / நிமி / வினாடி / REPS): Tamil-capable font so it never clips. */
   repLabel: {
-    fontSize: 32,
-    lineHeight: 36,
+    fontSize: 30,
+    lineHeight: 40,
     color: '#00131F',
-    ...displayFontStyle(),
-    marginBottom: 4,
+    ...font('bold'),
   },
   /** Figma Grey-80 description: 16 / 20 / 0.1, weight 400 */
   description: {

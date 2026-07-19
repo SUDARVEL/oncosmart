@@ -125,26 +125,29 @@ const styles = StyleSheet.create({
   repRow: {
     flexDirection: 'row',
     flexWrap: 'nowrap',
-    alignItems: 'flex-end',
+    alignItems: 'center',
     justifyContent: 'center',
     gap: 8,
     marginTop: 8,
-    minHeight: 64,
+    minHeight: 72,
   },
   /** Figma Antonio Bold 64 / #00131F */
   repValue: {
     fontSize: 64,
-    lineHeight: 64,
+    lineHeight: 72,
     color: '#00131F',
     ...displayFontStyle(),
   },
-  /** Figma Antonio Bold 36 */
+  /**
+   * Unit (முறை / நிமி / வினாடி / REPS): use the Tamil-capable font, not Antonio
+   * (which lacks Tamil glyphs and clips the label). Taller line height keeps
+   * descenders like "றை" fully visible on one line.
+   */
   repLabel: {
-    fontSize: 36,
-    lineHeight: 40,
+    fontSize: 34,
+    lineHeight: 44,
     color: '#00131F',
-    marginBottom: 4,
-    ...displayFontStyle(),
+    ...font('bold'),
   },
   /** Figma Grey-80 description: 16 / 20 / 0.1, weight 400 */
   description: {
