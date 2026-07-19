@@ -12,7 +12,6 @@ import {
   WORKOUT_SLIDER_MEDIA_WIDTH,
   WORKOUT_SLIDER_TEXT_BLOCK_HEIGHT,
 } from '../../lib/workoutInfoSheetLayout';
-import { colors } from '../../theme/colors';
 import { displayFontStyle, font } from '../../theme/fonts';
 
 type Props = {
@@ -51,25 +50,11 @@ export function WorkoutDetailSlide({ workout, width }: Props) {
           {title}
         </Text>
 
-        <View
-          style={[
-            styles.repRow,
-            workout.displayLabel === 'SECS' ||
-            (workout.repType === 'duration' && workout.repValue < 60)
-              ? styles.repColumn
-              : null,
-          ]}
-        >
-          <Text style={styles.repValue}>{workout.displayValue}</Text>
-          <Text
-            style={[
-              styles.repLabel,
-              workout.displayLabel === 'SECS' ||
-              (workout.repType === 'duration' && workout.repValue < 60)
-                ? styles.repLabelStacked
-                : null,
-            ]}
-          >
+        <View style={styles.repRow}>
+          <Text style={styles.repValue} numberOfLines={1}>
+            {workout.displayValue}
+          </Text>
+          <Text style={styles.repLabel} numberOfLines={1}>
             {repLabel}
           </Text>
         </View>
@@ -123,17 +108,12 @@ const styles = StyleSheet.create({
   },
   repRow: {
     flexDirection: 'row',
+    flexWrap: 'nowrap',
     alignItems: 'flex-end',
     justifyContent: 'center',
     gap: 8,
     marginTop: 10,
     minHeight: 52,
-  },
-  repColumn: {
-    flexDirection: 'column',
-    alignItems: 'center',
-    gap: 0,
-    minHeight: 72,
   },
   repValue: {
     fontSize: 52,
@@ -148,17 +128,13 @@ const styles = StyleSheet.create({
     marginBottom: 2,
     ...displayFontStyle(),
   },
-  repLabelStacked: {
-    fontSize: 26,
-    lineHeight: 30,
-    marginBottom: 0,
-    textAlign: 'center',
-  },
+  /** Figma Grey-80 description: 16 / 20 / 0.1, weight 400 */
   description: {
     marginTop: 12,
-    fontSize: 15,
-    lineHeight: 22,
-    color: colors.textMuted,
+    fontSize: 16,
+    lineHeight: 20,
+    letterSpacing: 0.1,
+    color: '#6B7280',
     textAlign: 'center',
     ...font('regular'),
   },

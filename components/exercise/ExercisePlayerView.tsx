@@ -81,7 +81,6 @@ export function ExercisePlayerView({
   // Always show Figma rep/duration values — never substitute video file length.
   const displayValue = exercise.displayValue;
   const displayLabel = exercise.displayLabel;
-  const isSecsLabel = displayLabel === 'SECS';
   const unitLabel =
     displayLabel === 'MINS'
       ? t('sessionFlow.minsLabel')
@@ -216,9 +215,13 @@ export function ExercisePlayerView({
           {title}
         </Text>
 
-        <View style={[styles.repRow, isSecsLabel && styles.repColumn]}>
-          <Text style={styles.repValue}>{displayValue}</Text>
-          <Text style={[styles.repLabel, isSecsLabel && styles.repLabelStacked]}>{unitLabel}</Text>
+        <View style={styles.repRow}>
+          <Text style={styles.repValue} numberOfLines={1}>
+            {displayValue}
+          </Text>
+          <Text style={styles.repLabel} numberOfLines={1}>
+            {unitLabel}
+          </Text>
         </View>
 
         <Text style={[styles.description, { maxWidth: frameWidth }]}>{description}</Text>
@@ -327,18 +330,12 @@ const styles = StyleSheet.create({
   },
   repRow: {
     flexDirection: 'row',
+    flexWrap: 'nowrap',
     alignItems: 'flex-end',
     justifyContent: 'center',
     gap: 8,
     marginTop: 12,
     minHeight: 52,
-  },
-  /** Figma seconds: number on first line, unit (வினாடி / sec) on the next */
-  repColumn: {
-    flexDirection: 'column',
-    alignItems: 'center',
-    gap: 0,
-    minHeight: 72,
   },
   repValue: {
     fontSize: 56,
@@ -353,16 +350,12 @@ const styles = StyleSheet.create({
     ...displayFontStyle(),
     marginBottom: 4,
   },
-  repLabelStacked: {
-    fontSize: 28,
-    lineHeight: 32,
-    marginBottom: 0,
-    textAlign: 'center',
-  },
+  /** Figma Grey-80 description: 16 / 20 / 0.1, weight 400 */
   description: {
     marginTop: 12,
-    fontSize: 15,
+    fontSize: 16,
     lineHeight: 20,
+    letterSpacing: 0.1,
     color: '#6B7280',
     textAlign: 'center',
     ...font('regular'),
