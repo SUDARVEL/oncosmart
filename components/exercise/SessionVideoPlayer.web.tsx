@@ -209,8 +209,7 @@ export function SessionVideoPlayer({
     if (completedRef.current) return;
 
     const duration = durationRef.current > 0 ? durationRef.current : video.duration;
-    // onEnded is the browser's authoritative end signal — trust it for every clip.
-    if (!shouldAcceptVideoEnd(video.currentTime, duration, hasStartedRef.current, true)) {
+    if (!shouldAcceptVideoEnd(video.currentTime, duration, hasStartedRef.current)) {
       return;
     }
 
