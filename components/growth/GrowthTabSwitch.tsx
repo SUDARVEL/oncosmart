@@ -12,10 +12,13 @@ type GrowthTabSwitchProps = {
   onTabChange: (tab: GrowthTab) => void;
 };
 
+/** Figma growth tab switch: 322 × 48, radius 41, padding 4 */
+const FIGMA_SWITCH_WIDTH = 322;
+
 export function GrowthTabSwitch({ activeTab, onTabChange }: GrowthTabSwitchProps) {
   const { t } = useTranslation();
   const { width: screenWidth } = useWindowDimensions();
-  const switchWidth = Math.min(280, Math.max(220, screenWidth - 48));
+  const switchWidth = Math.min(FIGMA_SWITCH_WIDTH, screenWidth - 32);
 
   return (
     <View style={[styles.container, { width: switchWidth }]}>
@@ -27,10 +30,12 @@ export function GrowthTabSwitch({ activeTab, onTabChange }: GrowthTabSwitchProps
         accessibilityState={{ selected: activeTab === 'progress' }}
       >
         <Text
-          style={[styles.tabText, activeTab === 'progress' && styles.tabTextActive]}
+          style={[
+            styles.tabText,
+            activeTab !== 'progress' && styles.tabTextInactive,
+            activeTab === 'progress' && styles.tabTextActive,
+          ]}
           numberOfLines={1}
-          adjustsFontSizeToFit
-          minimumFontScale={0.8}
         >
           {t('growth.tabProgress')}
         </Text>
@@ -45,12 +50,10 @@ export function GrowthTabSwitch({ activeTab, onTabChange }: GrowthTabSwitchProps
         <Text
           style={[
             styles.tabText,
-            styles.tabTextInactive,
+            activeTab !== 'workouts' && styles.tabTextInactive,
             activeTab === 'workouts' && styles.tabTextActive,
           ]}
           numberOfLines={1}
-          adjustsFontSizeToFit
-          minimumFontScale={0.8}
         >
           {t('growth.tabWorkouts')}
         </Text>
@@ -63,13 +66,14 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
     flexWrap: 'nowrap',
+    justifyContent: 'center',
+    /** Figma export uses flex-start; center vertically so the active pill sits true. */
     alignItems: 'center',
     backgroundColor: '#F9FAFB',
     borderWidth: 1,
-    borderColor: colors.cardBorder,
+    borderColor: '#E5E7EB',
     borderRadius: 41,
-    paddingHorizontal: 4,
-    paddingVertical: 4,
+    padding: 4,
     height: 48,
   },
   tab: {
@@ -79,7 +83,7 @@ const styles = StyleSheet.create({
     borderRadius: 35,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingHorizontal: 10,
+    paddingHorizontal: 8,
   },
   tabActive: {
     backgroundColor: 'rgba(224, 244, 255, 0.2)',
@@ -92,12 +96,10 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     ...font('medium'),
     color: colors.buttonPrimary,
-    textTransform: 'capitalize',
   },
   tabTextInactive: {
     ...font('regular'),
     color: colors.textMuted,
-    textTransform: 'none',
   },
   tabTextActive: {
     color: colors.buttonPrimary,
