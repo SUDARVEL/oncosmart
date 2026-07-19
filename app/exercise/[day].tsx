@@ -126,6 +126,7 @@ function GuidedSessionScreen({
       sessionExercise.id,
       gender,
       avatar,
+      language,
     );
     if (portrait && isValidGuidedPlaybackUrl(portrait)) {
       return [portrait];

@@ -78,6 +78,15 @@ assert(
   /resolveExercisePlaybackSources[\s\S]*return portrait \? \[portrait\] : \[\]/.test(media),
   'Guided playback sources must be portrait-only (no landscape fallback)',
 );
+assert(
+  media.includes('getMaleTamilPortraitVideoPath') &&
+    media.includes('getFemaleTamilPortraitVideoPath'),
+  'Portrait resolution must support male/female Tamil maps',
+);
+assert(
+  media.includes("language === 'ta'"),
+  'Portrait resolution must switch on Tamil language',
+);
 
 const day = read('app/exercise/[day].tsx');
 assert(
