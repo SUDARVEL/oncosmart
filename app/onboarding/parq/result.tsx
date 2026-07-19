@@ -44,7 +44,7 @@ export default function ParqResultScreen() {
         </View>
 
         <PrimaryButton
-          label={t('parq.startPlan')}
+          label={cleared ? t('parq.continuePlan') : t('parq.startPlan')}
           onPress={handleStart}
           variant={cleared ? 'primary' : 'muted'}
           style={styles.cta}
