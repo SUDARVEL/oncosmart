@@ -13,28 +13,37 @@ type GrowthTabSwitchProps = {
 };
 
 /**
- * Figma growth tab switch (3125:5035 / 3124:12260): 322 × 48, radius 41, padding 4.
- * Tabs are content-sized — முன்னேற்றம் pill ≈148, உடற்பயிற்சிகள் pill ≈166 — so the
- * longer Tamil label sits inside its outlined pill without truncating.
+ * Figma growth tab switch (3125:5035 / 3124:12265). Each pill has a fixed Figma
+ * width — முன்னேற்றம் 148, உடற்பயிற்சிகள் 166 — so the longer Tamil label always
+ * fits without truncating. Widths scale down together only on very narrow screens.
  */
-const FIGMA_SWITCH_WIDTH = 322;
-const PROGRESS_TAB_FLEX = 148;
-const WORKOUTS_TAB_FLEX = 166;
+const FIGMA_PROGRESS_WIDTH = 148;
+const FIGMA_WORKOUTS_WIDTH = 166;
+const CONTAINER_PADDING = 4;
+const CONTAINER_BORDER = 1;
+const FIGMA_CONTAINER_WIDTH =
+  FIGMA_PROGRESS_WIDTH +
+  FIGMA_WORKOUTS_WIDTH +
+  CONTAINER_PADDING * 2 +
+  CONTAINER_BORDER * 2;
 
 export function GrowthTabSwitch({ activeTab, onTabChange }: GrowthTabSwitchProps) {
   const { t } = useTranslation();
   const { width: screenWidth } = useWindowDimensions();
-  const switchWidth = Math.min(FIGMA_SWITCH_WIDTH, screenWidth - 32);
+
+  const scale = Math.min(1, (screenWidth - 32) / FIGMA_CONTAINER_WIDTH);
+  const progressWidth = Math.round(FIGMA_PROGRESS_WIDTH * scale);
+  const workoutsWidth = Math.round(FIGMA_WORKOUTS_WIDTH * scale);
 
   const progressActive = activeTab === 'progress';
   const workoutsActive = activeTab === 'workouts';
 
   return (
-    <View style={[styles.container, { width: switchWidth }]}>
+    <View style={styles.container}>
       <PressableScale
         style={[
           styles.tab,
-          { flex: PROGRESS_TAB_FLEX },
+          { width: progressWidth },
           progressActive ? styles.tabActive : styles.tabInactive,
         ]}
         pressedScale={0.96}
@@ -53,7 +62,7 @@ export function GrowthTabSwitch({ activeTab, onTabChange }: GrowthTabSwitchProps
       <PressableScale
         style={[
           styles.tab,
-          { flex: WORKOUTS_TAB_FLEX },
+          { width: workoutsWidth },
           workoutsActive ? styles.tabActive : styles.tabInactive,
         ]}
         pressedScale={0.96}
@@ -76,21 +85,22 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
     flexWrap: 'nowrap',
+    alignSelf: 'center',
     alignItems: 'center',
     backgroundColor: '#F9FAFB',
-    borderWidth: 1,
+    borderWidth: CONTAINER_BORDER,
     borderColor: '#E5E7EB',
     borderRadius: 41,
-    padding: 4,
+    padding: CONTAINER_PADDING,
     height: 48,
   },
+  /** Figma pill: h40, radius 35, padding 12×24, justify/align center */
   tab: {
-    minWidth: 0,
     height: 40,
     borderRadius: 35,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingHorizontal: 8,
+    paddingHorizontal: 12,
     /** Transparent border keeps width stable when the active outline appears. */
     borderWidth: 1,
     borderColor: 'transparent',
@@ -102,24 +112,26 @@ const styles = StyleSheet.create({
   tabInactive: {
     backgroundColor: 'transparent',
   },
-  /** Figma: முன்னேற்றம் uses ButtonText (Roboto Medium 14) in both states. */
+  /** முன்னேற்றம் — Roboto Medium 14 */
   progressText: {
     fontSize: 14,
     lineHeight: 18,
     textAlign: 'center',
     ...font('medium'),
   },
-  /** Figma: உடற்பயிற்சிகள் uses Body-2 (Roboto Regular 14) in both states. */
+  /** உடற்பயிற்சிகள் — Roboto Regular 14 */
   workoutsText: {
     fontSize: 14,
     lineHeight: 18,
     textAlign: 'center',
     ...font('regular'),
   },
+  /** Selected → Primary blue */
   textActive: {
     color: colors.buttonPrimary,
   },
+  /** Unselected → black */
   textInactive: {
-    color: colors.textMuted,
+    color: colors.textPrimary,
   },
 });
