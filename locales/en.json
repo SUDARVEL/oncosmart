@@ -18,11 +18,8 @@
     "header": "Age",
     "title": "What is your age ?",
     "subtitle": "This helps us tailor your exercise plan to your specific age and needs",
-    "range18_24": "18 - 24",
-    "range25_34": "25 - 34",
-    "range35_44": "35- 44",
-    "range45_54": "45 - 54",
-    "range55_64": "55 - 64",
+    "label": "Age",
+    "placeholder": "Enter your age",
     "continue": "Continue"
   },
   "gender": {

@@ -12,9 +12,20 @@ const AGE_RANGE_MIDPOINT: Record<AgeRange, number> = {
   '55-64': 60,
 };
 
+function resolveAgeYears(age: number | null | undefined, ageRange: AgeRange | null | undefined): number {
+  if (typeof age === 'number' && Number.isFinite(age) && age > 0) {
+    return Math.round(age);
+  }
+  if (ageRange) return AGE_RANGE_MIDPOINT[ageRange];
+  return 40;
+}
+
 /** Heart-rate ceiling shown in the pulse oximeter popup (60% of max HR). */
-export function getModerateHeartRateUpperLimit(ageRange: AgeRange | null): number {
-  const age = ageRange ? AGE_RANGE_MIDPOINT[ageRange] : 40;
-  const maxHr = 220 - age;
+export function getModerateHeartRateUpperLimit(
+  age: number | null | undefined,
+  ageRange: AgeRange | null | undefined = null,
+): number {
+  const years = resolveAgeYears(age, ageRange);
+  const maxHr = 220 - years;
   return Math.round(maxHr * 0.6);
 }
