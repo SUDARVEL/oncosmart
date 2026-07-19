@@ -1,7 +1,7 @@
 import { CachedMediaImage } from '../CachedMediaImage';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import type { WorkoutDetail } from '../../lib/getWorkoutDetails';
 import { getWorkoutRepLabel } from '../../lib/getWorkoutRepLabel';
@@ -10,7 +10,6 @@ import {
   WORKOUT_SLIDER_MEDIA_HEIGHT,
   WORKOUT_SLIDER_MEDIA_RADIUS,
   WORKOUT_SLIDER_MEDIA_WIDTH,
-  WORKOUT_SLIDER_TEXT_BLOCK_HEIGHT,
 } from '../../lib/workoutInfoSheetLayout';
 import { displayFontStyle, font } from '../../theme/fonts';
 
@@ -29,26 +28,32 @@ export function WorkoutDetailSlide({ workout, width }: Props) {
 
   return (
     <View style={[styles.slide, { width }]}>
-      <View style={styles.mediaWrap}>
-        {showPhoto ? (
-          <CachedMediaImage
-            source={workout.photoSource!}
-            style={styles.media}
-            contentFit="contain"
-            contentPosition="center"
-            recyclingKey={workout.id}
-            priority="high"
-            onError={() => setImageFailed(true)}
-          />
-        ) : (
-          <View style={styles.mediaPlaceholder} />
-        )}
-      </View>
+      <ScrollView
+        key={workout.id}
+        style={styles.scroll}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+        nestedScrollEnabled
+        bounces={false}
+        keyboardShouldPersistTaps="handled"
+      >
+        <View style={styles.mediaWrap}>
+          {showPhoto ? (
+            <CachedMediaImage
+              source={workout.photoSource!}
+              style={styles.media}
+              contentFit="contain"
+              contentPosition="center"
+              recyclingKey={workout.id}
+              priority="high"
+              onError={() => setImageFailed(true)}
+            />
+          ) : (
+            <View style={styles.mediaPlaceholder} />
+          )}
+        </View>
 
-      <View style={styles.textBlock}>
-        <Text style={styles.exerciseTitle} numberOfLines={2}>
-          {title}
-        </Text>
+        <Text style={styles.exerciseTitle}>{title}</Text>
 
         <View style={styles.repRow}>
           <Text style={styles.repValue} numberOfLines={1}>
@@ -60,7 +65,7 @@ export function WorkoutDetailSlide({ workout, width }: Props) {
         </View>
 
         <Text style={styles.description}>{description}</Text>
-      </View>
+      </ScrollView>
     </View>
   );
 }
@@ -68,10 +73,17 @@ export function WorkoutDetailSlide({ workout, width }: Props) {
 const styles = StyleSheet.create({
   slide: {
     height: WORKOUT_SLIDER_BODY_HEIGHT,
+    overflow: 'hidden',
+  },
+  scroll: {
+    flex: 1,
+  },
+  scrollContent: {
     alignItems: 'center',
     paddingHorizontal: 16,
     paddingTop: 8,
-    overflow: 'hidden',
+    /** Keep last lines clear of the sheet chrome while scrolling */
+    paddingBottom: 28,
   },
   mediaWrap: {
     width: WORKOUT_SLIDER_MEDIA_WIDTH,
@@ -90,15 +102,9 @@ const styles = StyleSheet.create({
     height: '100%',
     backgroundColor: '#F3F4F6',
   },
-  textBlock: {
-    height: WORKOUT_SLIDER_TEXT_BLOCK_HEIGHT - 8,
-    width: WORKOUT_SLIDER_MEDIA_WIDTH,
-    alignItems: 'center',
-    justifyContent: 'flex-start',
-    paddingTop: 14,
-    paddingBottom: 20,
-  },
   exerciseTitle: {
+    marginTop: 14,
+    width: WORKOUT_SLIDER_MEDIA_WIDTH,
     fontSize: 22,
     lineHeight: 26,
     color: '#262526',
@@ -131,6 +137,7 @@ const styles = StyleSheet.create({
   /** Figma Grey-80 description: 16 / 20 / 0.1, weight 400 */
   description: {
     marginTop: 12,
+    width: WORKOUT_SLIDER_MEDIA_WIDTH,
     fontSize: 16,
     lineHeight: 20,
     letterSpacing: 0.1,

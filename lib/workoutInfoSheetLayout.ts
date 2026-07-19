@@ -16,8 +16,8 @@ const SHEET_CHROME_HEIGHT = 148; // handle + header + divider + dots + padding
 const AVAILABLE_BODY_HEIGHT = WORKOUT_SHEET_MAX_HEIGHT - SHEET_CHROME_HEIGHT;
 
 /**
- * Title + reps + description + breathing room before dots.
- * Keep this large enough that description never sits on the dots.
+ * Reserved space for title + reps + description preview above dots.
+ * Long Tamil copy scrolls inside each slide (WorkoutDetailSlide ScrollView).
  */
 export const WORKOUT_SLIDER_TEXT_BLOCK_HEIGHT = 236;
 

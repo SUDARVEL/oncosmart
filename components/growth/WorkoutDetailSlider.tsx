@@ -156,6 +156,8 @@ export function WorkoutDetailSlider({
             onViewableItemsChanged={onViewableItemsChanged}
             viewabilityConfig={viewabilityConfig}
             style={styles.pager}
+            /** Allow vertical ScrollView inside each slide for long descriptions */
+            nestedScrollEnabled
             windowSize={3}
             initialNumToRender={2}
             maxToRenderPerBatch={2}
