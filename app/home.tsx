@@ -141,7 +141,6 @@ export default function HomeScreen() {
           </Text>
           <HomeAvatarButton
             avatar={avatar}
-            femaleSource={FEMALE_AVATAR}
             onPress={handleAvatarPress}
             accessibilityLabel={t("home.changeAvatar")}
           />
