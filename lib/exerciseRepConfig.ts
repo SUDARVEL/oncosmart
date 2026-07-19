@@ -5,6 +5,7 @@ type SessionDisplayLabel = 'REPS' | 'MINS' | 'SECS';
 
 type RepConfig = {
   repType: SessionRepType;
+  /** Prescription in seconds (duration) or count (reps). Used for timers — never video file length. */
   repValue: number;
   displayValue: string;
   displayLabel: SessionDisplayLabel;
@@ -15,6 +16,15 @@ function pv(exerciseId: string): string {
   return EXERCISE_PORTRAIT_VIDEOS[exerciseId] ?? '';
 }
 
+/**
+ * Figma prescription values from:
+ * - Female English Flow Prototype `2914:24316` (slider stack)
+ * - Male Tamil High Fidelity `2271:3276` (slider stack)
+ *
+ * Both languages/genders share the same numbers:
+ *   10 REPS / முறை · 20 REPS (ankle) · 02 MINS / நிமி (spot marching) · 30sec / வினாடி (stretches)
+ * REST between exercises is 20 sec (Timing component in the same files).
+ */
 export const EXERCISE_REP_CONFIG: Record<string, RepConfig> = {
   'diaphragmatic-breathing': {
     repType: 'reps',
@@ -199,3 +209,16 @@ export const EXERCISE_REP_CONFIG: Record<string, RepConfig> = {
     portraitVideo: pv('neck-stretch-left'),
   },
 };
+
+/** Session-list badge text derived from the Figma prescription (not video length). */
+export function getFigmaRepBadge(exerciseId: string): string | null {
+  const config = EXERCISE_REP_CONFIG[exerciseId];
+  if (!config) return null;
+  if (config.displayLabel === 'REPS') return `x${config.displayValue}`;
+  if (config.displayLabel === 'MINS') {
+    const mins = Number.parseInt(config.displayValue, 10);
+    return Number.isFinite(mins) ? `${mins}:00` : `${config.displayValue}:00`;
+  }
+  const secs = String(config.repValue).padStart(2, '0');
+  return `00:${secs}`;
+}

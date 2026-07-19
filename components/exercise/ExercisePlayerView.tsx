@@ -50,6 +50,8 @@ export function ExercisePlayerView({
   const [isPaused, setIsPaused] = useState(() => Platform.OS === 'web');
   const [restartToken, setRestartToken] = useState(0);
   const [videoProgress, setVideoProgress] = useState(0);
+  /** Elapsed hold time for Figma duration prescriptions (never video file length). */
+  const [elapsedSeconds, setElapsedSeconds] = useState(0);
   const [isBuffering, setIsBuffering] = useState(true);
   const [playbackFailed, setPlaybackFailed] = useState(false);
   const [seekRequest, setSeekRequest] = useState<{ fraction: number; token: number } | null>(
@@ -59,6 +61,7 @@ export function ExercisePlayerView({
   const [progressTrackWidth, setProgressTrackWidth] = useState(0);
   const completedRef = useRef(false);
   const seekTokenRef = useRef(0);
+  const elapsedRef = useRef(0);
 
   const unlockAudio = useCallback(() => {
     setAudioUnlockToken((value) => value + 1);
@@ -76,11 +79,12 @@ export function ExercisePlayerView({
 
   const title = t(`sessionFlow.exercises.${exercise.id}.title`);
   const description = t(`sessionFlow.exercises.${exercise.id}.description`);
-  const videoProgressPercent = Math.round(Math.min(Math.max(videoProgress, 0), 1) * 100);
 
   // Always show Figma rep/duration values — never substitute video file length.
   const displayValue = exercise.displayValue;
   const displayLabel = exercise.displayLabel;
+  const isDurationExercise = exercise.repType === 'duration';
+  const figmaDurationSeconds = exercise.repValue;
   const unitLabel =
     displayLabel === 'MINS'
       ? t('sessionFlow.minsLabel')
@@ -99,15 +103,58 @@ export function ExercisePlayerView({
     setIsPaused(Platform.OS === 'web');
     setRestartToken(0);
     setVideoProgress(0);
+    setElapsedSeconds(0);
+    elapsedRef.current = 0;
     setIsBuffering(true);
     setPlaybackFailed(false);
     setSeekRequest(null);
     setAudioUnlockToken((value) => value + 1);
   }, [exercise.id, videoSources.join('|')]);
 
+  /**
+   * Duration exercises (spot marching / stretches) complete on the Figma
+   * prescription clock — 120s / 30s — not when the MP4 file ends.
+   */
+  useEffect(() => {
+    if (!isDurationExercise || playbackPaused || completedRef.current) return;
+    if (figmaDurationSeconds <= 0) return;
+
+    const startedAt = Date.now() - elapsedRef.current * 1000;
+    const tick = setInterval(() => {
+      const next = (Date.now() - startedAt) / 1000;
+      elapsedRef.current = next;
+      setElapsedSeconds(next);
+      if (next >= figmaDurationSeconds) {
+        clearInterval(tick);
+        markComplete();
+      }
+    }, 100);
+
+    return () => clearInterval(tick);
+  }, [
+    isDurationExercise,
+    playbackPaused,
+    figmaDurationSeconds,
+    markComplete,
+    restartToken,
+    exercise.id,
+  ]);
+
   const handleVideoEnded = useCallback(() => {
+    if (isDurationExercise) {
+      // Loop the clip until the Figma hold time finishes.
+      if (!completedRef.current) {
+        setRestartToken((value) => value + 1);
+      }
+      return;
+    }
     markComplete();
-  }, [markComplete]);
+  }, [isDurationExercise, markComplete]);
+
+  const progressFraction = isDurationExercise
+    ? Math.min(Math.max(elapsedSeconds / Math.max(figmaDurationSeconds, 1), 0), 1)
+    : videoProgress;
+  const videoProgressPercent = Math.round(Math.min(Math.max(progressFraction, 0), 1) * 100);
 
   const handlePauseToggle = () => {
     if (overlayPaused) return;
@@ -127,6 +174,8 @@ export function ExercisePlayerView({
     completedRef.current = false;
     setIsPaused(false);
     setVideoProgress(0);
+    setElapsedSeconds(0);
+    elapsedRef.current = 0;
     setIsBuffering(true);
     setPlaybackFailed(false);
     setSeekRequest(null);
@@ -141,6 +190,15 @@ export function ExercisePlayerView({
     if (progressTrackWidth <= 0 || overlayPaused) return;
     unlockAudio();
     const fraction = Math.min(Math.max(locationX / progressTrackWidth, 0), 1);
+    if (isDurationExercise) {
+      const next = fraction * figmaDurationSeconds;
+      elapsedRef.current = next;
+      setElapsedSeconds(next);
+      if (next >= figmaDurationSeconds) {
+        markComplete();
+      }
+      return;
+    }
     seekTokenRef.current += 1;
     setSeekRequest({ fraction, token: seekTokenRef.current });
     setVideoProgress(fraction);

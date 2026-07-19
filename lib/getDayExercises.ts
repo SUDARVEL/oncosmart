@@ -3,6 +3,7 @@ import type { ImageSource } from 'expo-image';
 import { getDay1Thumbnail } from '../components/exercise/day1Thumbnails';
 import dayExercisesData from '../data/day-exercises.json';
 import type { AppAvatar, AppGender, AppLanguage } from '../store/useAppStore';
+import { getFigmaRepBadge } from './exerciseRepConfig';
 import { getLevelExerciseProgram } from './levelExercisePrograms';
 import { getVideoVariant, type VideoVariant } from './getExerciseVideo';
 import {
@@ -62,7 +63,12 @@ export function getLevelSession(level: number): LevelSession | null {
   if (!program) return null;
 
   const exercises = program.exerciseIds
-    .map((id) => catalog[id])
+    .map((id) => {
+      const entry = catalog[id];
+      if (!entry) return null;
+      const figmaBadge = getFigmaRepBadge(id);
+      return figmaBadge ? { ...entry, repLabel: figmaBadge } : entry;
+    })
     .filter((entry): entry is CatalogEntry => Boolean(entry));
 
   return { level, exercises };
