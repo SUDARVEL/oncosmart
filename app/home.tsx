@@ -16,13 +16,12 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { BottomTabBar } from "../components/BottomTabBar";
-import { CachedMediaImage } from "../components/CachedMediaImage";
 import { ExerciseVideoBanner } from "../components/ExerciseVideoBanner";
 import { HomeAvatarButton } from "../components/home/HomeAvatarButton";
 import { ProgressLogo } from "../components/home/ProgressLogo";
 import { PressableScale } from "../components/PressableScale";
 import { openWhatsAppSupport } from "../lib/openWhatsAppSupport";
-import { CARD_FEMALE_IMAGE_URL } from "../lib/homePageCardImage";
+import { QUOTE_CHARACTER_FEMALE } from "../lib/homePageCardImage";
 import { getHomePagePlaceholderVideo } from "../lib/placeholderVideo";
 import { HOME_DAY_CARD_PREVIEW_ASPECT } from "../lib/exerciseVideoFrame";
 import {
@@ -172,20 +171,11 @@ export default function HomeScreen() {
               style={[styles.quoteCard, { width: QUOTE_CARD_WIDTH }]}
             >
               <View style={styles.quoteIllustration}>
-                {isFemaleUser ? (
-                  <CachedMediaImage
-                    source={{ uri: CARD_FEMALE_IMAGE_URL }}
-                    style={styles.quoteCharacter}
-                    contentFit="contain"
-                    recyclingKey="quote-character-female"
-                  />
-                ) : (
-                  <Image
-                    source={WALKING_CHARACTER}
-                    style={styles.quoteCharacter}
-                    contentFit="contain"
-                  />
-                )}
+                <Image
+                  source={isFemaleUser ? QUOTE_CHARACTER_FEMALE : WALKING_CHARACTER}
+                  style={styles.quoteCharacter}
+                  contentFit="contain"
+                />
               </View>
               <Text style={styles.quoteText}>{t(`home.${key}`)}</Text>
             </View>
