@@ -19,10 +19,12 @@ export default function LanguageScreen() {
   const [selected, setSelected] = useState<AppLanguage | null>(savedLanguage);
 
   useEffect(() => {
-    if (selected) {
+    if (selected && i18n.language !== selected) {
       void i18n.changeLanguage(selected);
     }
-  }, [selected, i18n]);
+    // Only react to the chosen language; i18n identity changes each switch.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selected]);
 
   const handleContinue = () => {
     if (!selected) return;
