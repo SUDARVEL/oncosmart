@@ -46,7 +46,7 @@ const FEMALE_SLIDER_PHOTO_FILES: Partial<Record<string, string>> = {
   "ankle-pumps": "Ankle pumps English Female 1.png",
   "thoracic-expansion": "Thoracic expansion exercise Female English 1.png",
   "arm-circles": "Arm circles Female English 1.png",
-  "spot-marching": "Spot marching female.png",
+  "spot-marching": "Spot marching female (1).png",
   "shoulder-shrugging": "Shoulders shrugging Female English 1.png",
   "biceps-curls": "Biceps curls Female English 4.png",
   "wall-pushup": "Wall Pushup Female English 1.png",
@@ -58,7 +58,7 @@ const FEMALE_SLIDER_PHOTO_FILES: Partial<Record<string, string>> = {
   // Double space before "Right" is intentional.
   "knee-to-chest-right": "Knee to chest  Right.png",
   "static-quadriceps-right": "Static Quadriceps Right Englsih 1.png",
-  "hamstring-stretch": "Hamstring Stretch Female English 1.png",
+  "hamstring-stretch": "Hamstring stretch.png",
   "quadriceps-stretch-left": "Quadriceps Stretch Left FeMale English 1.png",
   "quadriceps-stretch-right": "Quadriceps Stretch Right FeMale English 1.png",
   "calf-stretch-left": "Calf stretch Female Left English 1.png",

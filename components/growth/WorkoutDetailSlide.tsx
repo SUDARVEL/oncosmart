@@ -43,7 +43,8 @@ export function WorkoutDetailSlide({ workout, width }: Props) {
             <CachedMediaImage
               source={workout.photoSource!}
               style={styles.media}
-              contentFit="contain"
+              /** New Female slider PNGs are framed ~349×446 — fill the rounded crop. */
+              contentFit="cover"
               contentPosition="center"
               recyclingKey={workout.id}
               priority="high"
