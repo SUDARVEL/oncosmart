@@ -195,7 +195,8 @@ export function SessionVideoPlayer({
       const duration = durationRef.current > 0 ? durationRef.current : player.duration;
       const currentTime = player.currentTime;
 
-      if (!shouldAcceptVideoEnd(currentTime, duration, hasStartedRef.current)) {
+      // playToEnd is the platform's authoritative end signal — trust it for every clip.
+      if (!shouldAcceptVideoEnd(currentTime, duration, hasStartedRef.current, true)) {
         return;
       }
 
