@@ -72,7 +72,7 @@ const FEMALE_WORKOUT_PLACEHOLDER_FILES: Partial<Record<string, string>> = {
 
 /**
  * Per-exercise crop: keep the pose readable in the circle without clipping the body.
- * fill 0 = full photo (small), 1 = fill circle (may cut). Values are tuned per pose.
+ * fill 0 = full photo (small), 1 = cover (fills the circle, may clip edges).
  */
 const MALE_WORKOUT_PLACEHOLDER_FIT: Partial<
   Record<string, GrowthPlaceholderFitConfig>
@@ -83,36 +83,42 @@ const MALE_WORKOUT_PLACEHOLDER_FIT: Partial<
   "straight-leg-raise-right": { fill: 0.32, offsetY: -0.08 },
 };
 
-/** Female landscape / full-body SVGs — keep figure neat inside the 66×70 circle. */
+/**
+ * Female landscape SVGs are room-scale photos, not pre-cropped like male 66×70 assets.
+ * Use cover+zoom with top-align (offsetY near 0) so the floor meets the circle bottom
+ * exactly like the male placeholders / Figma reference.
+ */
+const FEMALE_COVER_FIT: GrowthPlaceholderFitConfig = { fill: 1.25, offsetY: 0 };
+
 const FEMALE_WORKOUT_PLACEHOLDER_FIT: Partial<
   Record<string, GrowthPlaceholderFitConfig>
 > = {
-  "diaphragmatic-breathing": { fill: 0.9, offsetY: -0.02 },
-  "ankle-pumps": { fill: 0.88, offsetY: -0.02 },
-  "thoracic-expansion": { fill: 0.9, offsetY: -0.05 },
-  "arm-circles": { fill: 0.88, offsetY: -0.02 },
-  "spot-marching": { fill: 0.88, offsetY: -0.02 },
-  "shoulder-shrugging": { fill: 0.88, offsetY: -0.02 },
-  "biceps-curls": { fill: 0.88, offsetY: -0.02 },
-  "wall-pushup": { fill: 0.88, offsetY: -0.02 },
-  "calf-raise": { fill: 0.78, offsetY: -0.04 },
-  "sit-to-stand": { fill: 0.9, offsetY: -0.05 },
-  "straight-leg-raise-left": { fill: 0.55, offsetY: -0.06 },
-  "straight-leg-raise-right": { fill: 0.55, offsetY: -0.06 },
-  "knee-to-chest-left": { fill: 0.7, offsetY: -0.04 },
-  "knee-to-chest-right": { fill: 0.7, offsetY: -0.04 },
-  "static-quadriceps-left": { fill: 0.75, offsetY: -0.04 },
-  "static-quadriceps-right": { fill: 0.75, offsetY: -0.04 },
-  "hamstring-stretch": { fill: 0.7, offsetY: -0.04 },
-  "quadriceps-stretch-left": { fill: 0.72, offsetY: -0.04 },
-  "quadriceps-stretch-right": { fill: 0.72, offsetY: -0.04 },
-  "calf-stretch-left": { fill: 0.72, offsetY: -0.04 },
-  "calf-stretch-right": { fill: 0.72, offsetY: -0.04 },
-  "chest-stretch": { fill: 0.78, offsetY: -0.03 },
-  "triceps-stretch-left": { fill: 0.72, offsetY: -0.04 },
-  "triceps-stretch-right": { fill: 0.72, offsetY: -0.04 },
-  "neck-stretch-left": { fill: 0.75, offsetY: -0.03 },
-  "neck-stretch-right": { fill: 0.75, offsetY: -0.03 },
+  "diaphragmatic-breathing": { fill: 1.3, offsetY: 0 },
+  "ankle-pumps": { fill: 1.28, offsetY: 0 },
+  "thoracic-expansion": { fill: 1.3, offsetY: 0 },
+  "arm-circles": { fill: 1.28, offsetY: 0 },
+  "spot-marching": { fill: 1.28, offsetY: 0 },
+  "shoulder-shrugging": { fill: 1.28, offsetY: 0 },
+  "biceps-curls": { fill: 1.28, offsetY: 0 },
+  "wall-pushup": { fill: 1.25, offsetY: 0 },
+  "calf-raise": { fill: 1.25, offsetY: 0 },
+  "sit-to-stand": { fill: 1.28, offsetY: 0 },
+  "straight-leg-raise-left": { fill: 1.1, offsetY: 0 },
+  "straight-leg-raise-right": { fill: 1.1, offsetY: 0 },
+  "knee-to-chest-left": { fill: 1.15, offsetY: 0 },
+  "knee-to-chest-right": { fill: 1.15, offsetY: 0 },
+  "static-quadriceps-left": { fill: 1.2, offsetY: 0 },
+  "static-quadriceps-right": { fill: 1.2, offsetY: 0 },
+  "hamstring-stretch": { fill: 1.18, offsetY: 0 },
+  "quadriceps-stretch-left": { fill: 1.2, offsetY: 0 },
+  "quadriceps-stretch-right": { fill: 1.2, offsetY: 0 },
+  "calf-stretch-left": { fill: 1.2, offsetY: 0 },
+  "calf-stretch-right": { fill: 1.2, offsetY: 0 },
+  "chest-stretch": { fill: 1.25, offsetY: 0 },
+  "triceps-stretch-left": { fill: 1.2, offsetY: 0 },
+  "triceps-stretch-right": { fill: 1.2, offsetY: 0 },
+  "neck-stretch-left": { fill: 1.25, offsetY: 0 },
+  "neck-stretch-right": { fill: 1.25, offsetY: 0 },
 };
 
 /** Prefer avatar for media gender so Growth matches the selected character. */
@@ -129,7 +135,8 @@ export function getWorkoutGrowthPlaceholderFit(
   mediaGender: "male" | "female" = "male",
 ): GrowthPlaceholderFitConfig | null {
   if (mediaGender === "female") {
-    return FEMALE_WORKOUT_PLACEHOLDER_FIT[exerciseId] ?? null;
+    // Always rewrite female SVGs — native files leave letterbox gaps in the 66×70 circle.
+    return FEMALE_WORKOUT_PLACEHOLDER_FIT[exerciseId] ?? FEMALE_COVER_FIT;
   }
   return MALE_WORKOUT_PLACEHOLDER_FIT[exerciseId] ?? null;
 }
