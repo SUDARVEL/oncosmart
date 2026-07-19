@@ -24,6 +24,7 @@ import {
   LEVEL_COMPLETION_BADGE,
 } from '../../lib/getEarnedBadges';
 import { resolveExerciseGuidedPortraitUrl } from '../../lib/exerciseMediaUrls';
+import { scheduleNextExerciseNotification } from '../../lib/nextExerciseNotification';
 import {
   isValidGuidedPlaybackUrl,
   sanitizePublicVideoUrl,
@@ -173,8 +174,15 @@ function GuidedSessionScreen({
       afterState.enqueueBadgeCelebrations(newlyEarned);
     }
 
+    const completedAt = afterState.dayCompletedAt[sessionKey];
+    void scheduleNextExerciseNotification({
+      level,
+      dayInLevel,
+      completedAt,
+    });
+
     router.replace(`/exercise/complete?level=${level}&day=${dayInLevel}`);
-  }, [dayInLevel, level, router]);
+  }, [dayInLevel, level, router, sessionKey]);
 
   const handleExerciseComplete = useCallback(() => {
     if (exerciseFinishedRef.current) return;

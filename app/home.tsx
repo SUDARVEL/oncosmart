@@ -22,6 +22,7 @@ import { ProgressLogo } from "../components/home/ProgressLogo";
 import { PressableScale } from "../components/PressableScale";
 import { openWhatsAppSupport } from "../lib/openWhatsAppSupport";
 import { QUOTE_CHARACTER_FEMALE } from "../lib/homePageCardImage";
+import { syncNextExerciseNotification } from "../lib/nextExerciseNotification";
 import { getHomePagePlaceholderVideo } from "../lib/placeholderVideo";
 import { HOME_DAY_CARD_PREVIEW_ASPECT } from "../lib/exerciseVideoFrame";
 import {
@@ -105,6 +106,11 @@ export default function HomeScreen() {
     const interval = setInterval(() => setNow(Date.now()), 1000);
     return () => clearInterval(interval);
   }, [hasActiveCountdown]);
+
+  // Keep the local “next exercise ready” reminder aligned with device unlock time.
+  useEffect(() => {
+    void syncNextExerciseNotification(dayCompletedAt);
+  }, [dayCompletedAt]);
 
   const handleQuoteScroll = (
     event: NativeSyntheticEvent<NativeScrollEvent>,

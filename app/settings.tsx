@@ -10,6 +10,7 @@ import { ScreenHeader } from '../components/ScreenHeader';
 import { LanguageBottomSheet } from '../components/settings/LanguageBottomSheet';
 import { ProfileBottomSheet } from '../components/settings/ProfileBottomSheet';
 import { SettingsRow } from '../components/settings/SettingsRow';
+import { cancelNextExerciseNotification } from '../lib/nextExerciseNotification';
 import { openWhatsAppSupport } from '../lib/openWhatsAppSupport';
 import { AppLanguage, useAppStore } from '../store/useAppStore';
 import { colors } from '../theme/colors';
@@ -47,6 +48,7 @@ export default function SettingsScreen() {
   };
 
   const handleLogout = () => {
+    void cancelNextExerciseNotification();
     resetApp();
     router.replace('/onboarding');
   };

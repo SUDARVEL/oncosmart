@@ -412,5 +412,9 @@
     "helpSupportDescription": "Message us on WhatsApp",
     "logout": "Logout",
     "logoutDescription": "Description"
+  },
+  "notifications": {
+    "nextExerciseTitle": "Your exercise is ready",
+    "nextExerciseBody": "Level {{level}}, Day {{day}} is unlocked. Open ONCOSMART to start."
   }
 }

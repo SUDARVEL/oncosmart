@@ -356,5 +356,9 @@
     "helpSupportDescription": "WhatsApp-ல் எங்களை தொடர்பு கொள்ளுங்கள்",
     "logout": "வெளியேறு",
     "logoutDescription": "விளக்கம்"
+  },
+  "notifications": {
+    "nextExerciseTitle": "உங்கள் பயிற்சி தயார்",
+    "nextExerciseBody": "நிலை {{level}}, நாள் {{day}} திறக்கப்பட்டது. தொடங்க ONCOSMART-ஐத் திறக்கவும்."
   }
 }
