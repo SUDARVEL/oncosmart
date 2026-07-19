@@ -9,6 +9,7 @@ import {
   WORKOUT_SLIDER_BODY_HEIGHT,
   WORKOUT_SLIDER_MEDIA_HEIGHT,
   WORKOUT_SLIDER_MEDIA_RADIUS,
+  WORKOUT_SLIDER_MEDIA_TOP,
   WORKOUT_SLIDER_MEDIA_WIDTH,
 } from '../../lib/workoutInfoSheetLayout';
 import { displayFontStyle, font } from '../../theme/fonts';
@@ -78,12 +79,12 @@ const styles = StyleSheet.create({
   scroll: {
     flex: 1,
   },
+  /** Figma content inset ~20.5; media top 10.5 */
   scrollContent: {
     alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingTop: 8,
-    /** Keep last lines clear of the sheet chrome while scrolling */
-    paddingBottom: 28,
+    paddingHorizontal: 20.5,
+    paddingTop: WORKOUT_SLIDER_MEDIA_TOP,
+    paddingBottom: 16,
   },
   mediaWrap: {
     width: WORKOUT_SLIDER_MEDIA_WIDTH,
@@ -105,11 +106,12 @@ const styles = StyleSheet.create({
     borderRadius: WORKOUT_SLIDER_MEDIA_RADIUS,
     backgroundColor: '#F3F4F6',
   },
+  /** Figma: 24 semiBold, #262526 */
   exerciseTitle: {
     marginTop: 14,
     width: WORKOUT_SLIDER_MEDIA_WIDTH,
-    fontSize: 22,
-    lineHeight: 26,
+    fontSize: 24,
+    lineHeight: 28,
     color: '#262526',
     textAlign: 'center',
     textTransform: 'uppercase',
@@ -121,20 +123,22 @@ const styles = StyleSheet.create({
     alignItems: 'flex-end',
     justifyContent: 'center',
     gap: 8,
-    marginTop: 10,
-    minHeight: 52,
+    marginTop: 8,
+    minHeight: 64,
   },
+  /** Figma Antonio Bold 64 / #00131F */
   repValue: {
-    fontSize: 52,
-    lineHeight: 52,
+    fontSize: 64,
+    lineHeight: 64,
     color: '#00131F',
     ...displayFontStyle(),
   },
+  /** Figma Antonio Bold 36 */
   repLabel: {
-    fontSize: 30,
-    lineHeight: 34,
+    fontSize: 36,
+    lineHeight: 40,
     color: '#00131F',
-    marginBottom: 2,
+    marginBottom: 4,
     ...displayFontStyle(),
   },
   /** Figma Grey-80 description: 16 / 20 / 0.1, weight 400 */
