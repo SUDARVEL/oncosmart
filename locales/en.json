@@ -34,13 +34,13 @@
   "treatment": {
     "header": "Treatment Details",
     "cancerTypeLabel": "Cancer Type",
-    "cancerTypePlaceholder": "eg : breast cancer",
-    "treatmentLabel": "Treatment Undergoing",
+    "cancerTypePlaceholder": "e.g. breast cancer",
+    "treatmentLabel": "Ongoing Treatment",
     "chemotherapy": "Chemotherapy",
     "radiation": "Radiation Therapy",
     "both": "Both",
     "none": "None",
-    "surgeryLabel": "Whether you underwent surgery ?",
+    "surgeryLabel": "Have you undergone surgery?",
     "yes": "Yes",
     "no": "No",
     "continue": "Continue"
