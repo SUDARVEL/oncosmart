@@ -1,18 +1,17 @@
 import { CachedMediaImage } from '../CachedMediaImage';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import type { WorkoutDetail } from '../../lib/getWorkoutDetails';
 import { getWorkoutRepLabel } from '../../lib/getWorkoutRepLabel';
 import {
   WORKOUT_SLIDER_BODY_HEIGHT,
-  WORKOUT_SLIDER_MEDIA_HEIGHT,
+  WORKOUT_SLIDER_MEDIA_ASPECT,
   WORKOUT_SLIDER_MEDIA_RADIUS,
+  WORKOUT_SLIDER_MEDIA_TOP,
   WORKOUT_SLIDER_MEDIA_WIDTH,
-  WORKOUT_SLIDER_TEXT_BLOCK_HEIGHT,
 } from '../../lib/workoutInfoSheetLayout';
-import { colors } from '../../theme/colors';
 import { displayFontStyle, font } from '../../theme/fonts';
 
 type Props = {
@@ -30,34 +29,48 @@ export function WorkoutDetailSlide({ workout, width }: Props) {
 
   return (
     <View style={[styles.slide, { width }]}>
-      <View style={styles.mediaWrap}>
-        {showPhoto ? (
-          <CachedMediaImage
-            source={workout.photoSource!}
-            style={styles.media}
-            contentFit="contain"
-            contentPosition="center"
-            recyclingKey={workout.id}
-            priority="high"
-            onError={() => setImageFailed(true)}
-          />
-        ) : (
-          <View style={styles.mediaPlaceholder} />
-        )}
-      </View>
+      <ScrollView
+        key={workout.id}
+        style={styles.scroll}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+        nestedScrollEnabled
+        bounces={false}
+        keyboardShouldPersistTaps="handled"
+      >
+        <View style={styles.mediaWrap}>
+          {showPhoto ? (
+            <CachedMediaImage
+              source={workout.photoSource!}
+              style={styles.media}
+              /**
+               * Figma media frame is 349×446 at the source aspect. Use contain so the
+               * whole character (legs/feet) stays visible — never crop or widen.
+               */
+              contentFit="contain"
+              contentPosition="center"
+              recyclingKey={workout.id}
+              priority="high"
+              onError={() => setImageFailed(true)}
+            />
+          ) : (
+            <View style={styles.mediaPlaceholder} />
+          )}
+        </View>
 
-      <View style={styles.textBlock}>
-        <Text style={styles.exerciseTitle} numberOfLines={2}>
-          {title}
-        </Text>
+        <Text style={styles.exerciseTitle}>{title}</Text>
 
         <View style={styles.repRow}>
-          <Text style={styles.repValue}>{workout.displayValue}</Text>
-          <Text style={styles.repLabel}>{repLabel}</Text>
+          <Text style={styles.repValue} numberOfLines={1}>
+            {workout.displayValue}
+          </Text>
+          <Text style={styles.repLabel} numberOfLines={1}>
+            {repLabel}
+          </Text>
         </View>
 
         <Text style={styles.description}>{description}</Text>
-      </View>
+      </ScrollView>
     </View>
   );
 }
@@ -65,14 +78,22 @@ export function WorkoutDetailSlide({ workout, width }: Props) {
 const styles = StyleSheet.create({
   slide: {
     height: WORKOUT_SLIDER_BODY_HEIGHT,
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingTop: 8,
     overflow: 'hidden',
   },
+  scroll: {
+    flex: 1,
+  },
+  /** Figma content inset ~20.5; media top 10.5 */
+  scrollContent: {
+    alignItems: 'center',
+    paddingHorizontal: 20.5,
+    paddingTop: WORKOUT_SLIDER_MEDIA_TOP,
+    paddingBottom: 16,
+  },
+  /** Fixed Figma 349-wide, 349:446 portrait aspect — width never increased. */
   mediaWrap: {
     width: WORKOUT_SLIDER_MEDIA_WIDTH,
-    height: WORKOUT_SLIDER_MEDIA_HEIGHT,
+    aspectRatio: WORKOUT_SLIDER_MEDIA_ASPECT,
     borderRadius: WORKOUT_SLIDER_MEDIA_RADIUS,
     overflow: 'hidden',
     backgroundColor: 'transparent',
@@ -80,24 +101,22 @@ const styles = StyleSheet.create({
   media: {
     width: '100%',
     height: '100%',
+    borderRadius: WORKOUT_SLIDER_MEDIA_RADIUS,
+    overflow: 'hidden',
     backgroundColor: 'transparent',
   },
   mediaPlaceholder: {
     width: '100%',
     height: '100%',
+    borderRadius: WORKOUT_SLIDER_MEDIA_RADIUS,
     backgroundColor: '#F3F4F6',
   },
-  textBlock: {
-    height: WORKOUT_SLIDER_TEXT_BLOCK_HEIGHT - 8,
-    width: WORKOUT_SLIDER_MEDIA_WIDTH,
-    alignItems: 'center',
-    justifyContent: 'flex-start',
-    paddingTop: 14,
-    paddingBottom: 20,
-  },
+  /** Figma: 24 semiBold, #262526 */
   exerciseTitle: {
-    fontSize: 22,
-    lineHeight: 26,
+    marginTop: 14,
+    width: WORKOUT_SLIDER_MEDIA_WIDTH,
+    fontSize: 24,
+    lineHeight: 28,
     color: '#262526',
     textAlign: 'center',
     textTransform: 'uppercase',
@@ -105,30 +124,39 @@ const styles = StyleSheet.create({
   },
   repRow: {
     flexDirection: 'row',
-    alignItems: 'flex-end',
+    flexWrap: 'nowrap',
+    alignItems: 'center',
     justifyContent: 'center',
     gap: 8,
-    marginTop: 10,
-    minHeight: 52,
+    marginTop: 8,
+    minHeight: 72,
   },
+  /** Figma Antonio Bold 64 / #00131F */
   repValue: {
-    fontSize: 52,
-    lineHeight: 52,
+    fontSize: 64,
+    lineHeight: 72,
     color: '#00131F',
     ...displayFontStyle(),
   },
+  /**
+   * Unit (முறை / நிமி / வினாடி / REPS): use the Tamil-capable font, not Antonio
+   * (which lacks Tamil glyphs and clips the label). Taller line height keeps
+   * descenders like "றை" fully visible on one line.
+   */
   repLabel: {
-    fontSize: 30,
-    lineHeight: 34,
+    fontSize: 34,
+    lineHeight: 44,
     color: '#00131F',
-    marginBottom: 2,
-    ...displayFontStyle(),
+    ...font('bold'),
   },
+  /** Figma Grey-80 description: 16 / 20 / 0.1, weight 400 */
   description: {
     marginTop: 12,
-    fontSize: 15,
-    lineHeight: 22,
-    color: colors.textMuted,
+    width: WORKOUT_SLIDER_MEDIA_WIDTH,
+    fontSize: 16,
+    lineHeight: 20,
+    letterSpacing: 0.1,
+    color: '#6B7280',
     textAlign: 'center',
     ...font('regular'),
   },

@@ -17,7 +17,10 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import type { WorkoutDetail } from '../../lib/getWorkoutDetails';
 import {
+  WORKOUT_SHEET_DOTS_HEIGHT,
+  WORKOUT_SHEET_HEADER_HEIGHT,
   WORKOUT_SHEET_MAX_HEIGHT,
+  WORKOUT_SHEET_SHADOW,
   WORKOUT_SHEET_TOP_RADIUS,
   WORKOUT_SLIDER_BODY_HEIGHT,
 } from '../../lib/workoutInfoSheetLayout';
@@ -99,6 +102,8 @@ export function WorkoutDetailSlider({
 
   if (workouts.length === 0) return null;
 
+  const bottomPad = Math.max(insets.bottom, 0);
+
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
       <View style={styles.root}>
@@ -110,69 +115,74 @@ export function WorkoutDetailSlider({
           accessibilityLabel="Dismiss"
         />
 
+        {/* Shadow wrapper — overflow visible so SingleShadow-2 is not clipped */}
         <View
           style={[
-            styles.sheet,
+            styles.sheetShadow,
             {
-              maxHeight: WORKOUT_SHEET_MAX_HEIGHT,
-              paddingBottom: Math.max(insets.bottom, 12),
+              height: WORKOUT_SHEET_MAX_HEIGHT + bottomPad,
+              paddingBottom: bottomPad,
             },
           ]}
         >
-          <View style={styles.handleHitArea}>
-            <View style={styles.dragHandle} />
-          </View>
+          <View style={styles.sheet}>
+            <View style={styles.handleHitArea} pointerEvents="none">
+              <View style={styles.dragHandle} />
+            </View>
 
-          <View style={styles.header}>
-            <Text style={styles.headerTitle}>{t('growth.workouts.exerciseInfoTitle')}</Text>
-            <Pressable
-              onPress={onClose}
-              style={styles.closeButton}
-              accessibilityRole="button"
-              accessibilityLabel="Close"
-            >
-              <Ionicons name="close" size={22} color="#374151" />
-            </Pressable>
-          </View>
+            <View style={styles.header}>
+              <Text style={styles.headerTitle}>{t('growth.workouts.exerciseInfoTitle')}</Text>
+              <Pressable
+                onPress={onClose}
+                style={styles.closeButton}
+                accessibilityRole="button"
+                accessibilityLabel="Close"
+              >
+                <Ionicons name="close" size={24} color="#374151" />
+              </Pressable>
+            </View>
 
-          <View style={styles.divider} />
+            <View style={styles.divider} />
 
-          <FlatList
-            ref={listRef}
-            data={workouts}
-            keyExtractor={keyExtractor}
-            renderItem={renderItem}
-            horizontal
-            pagingEnabled
-            showsHorizontalScrollIndicator={false}
-            bounces={false}
-            decelerationRate="fast"
-            snapToInterval={SCREEN_WIDTH}
-            snapToAlignment="start"
-            disableIntervalMomentum
-            getItemLayout={getItemLayout}
-            initialScrollIndex={Math.min(initialIndex, workouts.length - 1)}
-            onMomentumScrollEnd={handleScrollEnd}
-            onViewableItemsChanged={onViewableItemsChanged}
-            viewabilityConfig={viewabilityConfig}
-            style={styles.pager}
-            windowSize={3}
-            initialNumToRender={2}
-            maxToRenderPerBatch={2}
-            onScrollToIndexFailed={({ index }) => {
-              requestAnimationFrame(() => {
-                listRef.current?.scrollToIndex({ index, animated: false });
-              });
-            }}
-          />
+            <FlatList
+              ref={listRef}
+              data={workouts}
+              keyExtractor={keyExtractor}
+              renderItem={renderItem}
+              horizontal
+              pagingEnabled
+              showsHorizontalScrollIndicator={false}
+              bounces={false}
+              decelerationRate="fast"
+              snapToInterval={SCREEN_WIDTH}
+              snapToAlignment="start"
+              disableIntervalMomentum
+              getItemLayout={getItemLayout}
+              initialScrollIndex={Math.min(initialIndex, workouts.length - 1)}
+              onMomentumScrollEnd={handleScrollEnd}
+              onViewableItemsChanged={onViewableItemsChanged}
+              viewabilityConfig={viewabilityConfig}
+              style={styles.pager}
+              /** Allow vertical ScrollView inside each slide for long descriptions */
+              nestedScrollEnabled
+              windowSize={3}
+              initialNumToRender={2}
+              maxToRenderPerBatch={2}
+              onScrollToIndexFailed={({ index }) => {
+                requestAnimationFrame(() => {
+                  listRef.current?.scrollToIndex({ index, animated: false });
+                });
+              }}
+            />
 
-          <View style={styles.dotsRow}>
-            {workouts.map((workout, index) => (
-              <View
-                key={workout.id}
-                style={[styles.dot, activeIndex === index && styles.dotActive]}
-              />
-            ))}
+            <View style={styles.dotsRow}>
+              {workouts.map((workout, index) => (
+                <View
+                  key={workout.id}
+                  style={[styles.dot, activeIndex === index && styles.dotActive]}
+                />
+              ))}
+            </View>
           </View>
         </View>
       </View>
@@ -189,46 +199,52 @@ const styles = StyleSheet.create({
     ...StyleSheet.absoluteFillObject,
     backgroundColor: 'rgba(0, 0, 0, 0.45)',
   },
+  sheetShadow: {
+    width: '100%',
+    ...WORKOUT_SHEET_SHADOW,
+  },
   sheet: {
+    flex: 1,
     width: '100%',
     backgroundColor: '#FFFFFF',
     borderTopLeftRadius: WORKOUT_SHEET_TOP_RADIUS,
     borderTopRightRadius: WORKOUT_SHEET_TOP_RADIUS,
     overflow: 'hidden',
-    shadowColor: '#000000',
-    shadowOffset: { width: 0, height: -8 },
-    shadowOpacity: 0.18,
-    shadowRadius: 16,
-    elevation: 24,
   },
+  /** Figma handle: 40×4 at top 8, #D1D5DB, radius 16 — overlays header band */
   handleHitArea: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    zIndex: 2,
     alignItems: 'center',
-    paddingTop: 10,
-    paddingBottom: 6,
+    paddingTop: 8,
   },
   dragHandle: {
-    width: 48,
-    height: 5,
-    borderRadius: 3,
+    width: 40,
+    height: 4,
+    borderRadius: 16,
     backgroundColor: '#D1D5DB',
   },
   header: {
+    height: WORKOUT_SHEET_HEADER_HEIGHT,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 16,
-    paddingBottom: 12,
   },
+  /** Figma Subtitle-1: 16 medium, #374151 */
   headerTitle: {
     flex: 1,
-    fontSize: 18,
-    lineHeight: 24,
+    fontSize: 16,
+    lineHeight: 20,
     color: '#374151',
     ...font('medium'),
   },
   closeButton: {
-    width: 32,
-    height: 32,
+    width: 24,
+    height: 24,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -241,15 +257,13 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   dotsRow: {
+    height: WORKOUT_SHEET_DOTS_HEIGHT,
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'center',
     alignItems: 'center',
     gap: 8,
     paddingHorizontal: 16,
-    paddingTop: 14,
-    paddingBottom: 8,
-    minHeight: 40,
     backgroundColor: '#FFFFFF',
     zIndex: 2,
   },

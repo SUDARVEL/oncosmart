@@ -60,6 +60,8 @@ export default function UsernameScreen() {
           <View style={styles.content}>
             <View style={styles.brandBlock}>
               <OncosmartLogo width={82} />
+              <Text style={styles.welcome}>{t('username.welcome')}</Text>
+              <Text style={styles.tagline}>{t('username.tagline')}</Text>
             </View>
 
             <View style={styles.form}>
@@ -113,6 +115,23 @@ const styles = StyleSheet.create({
   },
   brandBlock: {
     alignItems: 'center',
+    gap: 8,
+  },
+  welcome: {
+    fontSize: 18,
+    lineHeight: 22,
+    textAlign: 'center',
+    ...font('semiBold'),
+    color: '#262526',
+    letterSpacing: 0.1,
+  },
+  tagline: {
+    fontSize: 13,
+    lineHeight: 18,
+    textAlign: 'center',
+    ...font('semiBold'),
+    color: '#262526',
+    letterSpacing: 0.1,
   },
   form: {
     gap: 10,

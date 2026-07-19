@@ -3,6 +3,9 @@ export const PAIN_MAX = 10;
 /** Pain scores above this value trigger the ready-to-begin confirmation. */
 export const HIGH_PAIN_THRESHOLD = 7;
 
+/** Selecting this pain score or higher (8, 9, 10) suggests taking rest. */
+export const HIGH_PAIN_REST_THRESHOLD = 8;
+
 export type PainTheme = {
   borderColor: string;
   scoreColor: string;

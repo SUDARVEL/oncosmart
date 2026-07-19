@@ -4,6 +4,12 @@ import {
   Antonio_700Bold,
 } from '@expo-google-fonts/antonio';
 import {
+  NotoSansTamil_400Regular,
+  NotoSansTamil_500Medium,
+  NotoSansTamil_600SemiBold,
+  NotoSansTamil_700Bold,
+} from '@expo-google-fonts/noto-sans-tamil';
+import {
   Roboto_400Regular,
   Roboto_500Medium,
   Roboto_600SemiBold,
@@ -36,6 +42,10 @@ export default function RootLayout() {
     Roboto_500Medium,
     Roboto_600SemiBold,
     Roboto_700Bold,
+    NotoSansTamil_400Regular,
+    NotoSansTamil_500Medium,
+    NotoSansTamil_600SemiBold,
+    NotoSansTamil_700Bold,
     Antonio_700Bold,
   });
   const [fontTimedOut, setFontTimedOut] = useState(false);

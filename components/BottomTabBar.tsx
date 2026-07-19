@@ -17,7 +17,11 @@ type BottomTabBarProps = {
   };
 };
 
-const TABS: { key: TabKey; icon: keyof typeof Ionicons.glyphMap; activeIcon: keyof typeof Ionicons.glyphMap }[] = [
+const TABS: {
+  key: TabKey;
+  icon: keyof typeof Ionicons.glyphMap;
+  activeIcon: keyof typeof Ionicons.glyphMap;
+}[] = [
   { key: 'home', icon: 'home-outline', activeIcon: 'home' },
   { key: 'growth', icon: 'stats-chart-outline', activeIcon: 'stats-chart' },
   { key: 'settings', icon: 'settings-outline', activeIcon: 'settings' },
@@ -44,7 +48,9 @@ export function BottomTabBar({ activeTab, onTabPress, labels }: BottomTabBarProp
                 color={isActive ? colors.tabActive : colors.tabInactive}
               />
             </View>
-            <Text style={[styles.label, isActive && styles.labelActive]}>{labels[tab.key]}</Text>
+            <Text style={[styles.label, isActive && styles.labelActive]} numberOfLines={2}>
+              {labels[tab.key]}
+            </Text>
           </PressableScale>
         );
       })}
@@ -55,20 +61,27 @@ export function BottomTabBar({ activeTab, onTabPress, labels }: BottomTabBarProp
 const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
+    alignItems: 'stretch',
     height: 80,
     backgroundColor: colors.tabBarBg,
     borderTopWidth: 1,
     borderTopColor: colors.cardBorder,
-    paddingTop: 8,
-    paddingBottom: 16,
+    overflow: 'hidden',
   },
+  /** Figma nav item: column, gap 4, padding 6 0 22, align-self stretch */
   tab: {
     flex: 1,
+    alignSelf: 'stretch',
+    flexDirection: 'column',
     alignItems: 'center',
     gap: 4,
+    paddingTop: 6,
+    paddingBottom: 22,
+    paddingHorizontal: 4,
   },
+  /** Figma icon container 56×32, radius 16 */
   iconWrap: {
-    width: 40,
+    width: 56,
     height: 32,
     alignItems: 'center',
     justifyContent: 'center',
@@ -77,13 +90,17 @@ const styles = StyleSheet.create({
   iconWrapActive: {
     backgroundColor: colors.tabIconActiveBg,
   },
+  /** M3/label/medium — 12 / 16 / 0.5, weight 500, Primary #005F99 when active */
   label: {
+    alignSelf: 'stretch',
     fontSize: 12,
-    ...font('medium'),
+    lineHeight: 16,
+    letterSpacing: 0.5,
+    textAlign: 'center',
     color: colors.tabInactive,
+    ...font('medium'),
   },
   labelActive: {
     color: colors.tabActive,
-    ...font('semiBold'),
   },
 });

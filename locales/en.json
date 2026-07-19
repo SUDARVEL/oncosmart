@@ -34,13 +34,13 @@
   "treatment": {
     "header": "Treatment Details",
     "cancerTypeLabel": "Cancer Type",
-    "cancerTypePlaceholder": "eg : breast cancer",
-    "treatmentLabel": "Treatment Undergoing",
+    "cancerTypePlaceholder": "e.g. breast cancer",
+    "treatmentLabel": "Ongoing Treatment",
     "chemotherapy": "Chemotherapy",
     "radiation": "Radiation Therapy",
     "both": "Both",
     "none": "None",
-    "surgeryLabel": "Whether you underwent surgery ?",
+    "surgeryLabel": "Have you undergone surgery?",
     "yes": "Yes",
     "no": "No",
     "continue": "Continue"
@@ -68,6 +68,7 @@
     "congratsSubtitle": "You are ready to safely start your personalized exercise plan in OncoSmart.",
     "consultTitle": "Thank for your response",
     "consultSubtitle": "For your safety, please consult your doctor before starting this exercise plan",
+    "continuePlan": "Continue plan",
     "startPlan": "Start my plan"
   },
   "home": {
@@ -104,7 +105,11 @@
     "readyTitle": "Are you ready to begin today's excercise session?",
     "readySubtitle": "Before we begin, please confirm that you feel ready to continue with today's exercise session",
     "readyNo": "No",
-    "readyYes": "Yes"
+    "readyYes": "Yes",
+    "highPainTitle": "Do you feel a lot of pain?",
+    "highPainSubtitle": "Your pain score is high. You can take rest and do this exercise session later.",
+    "highPainRest": "Take rest",
+    "highPainContinue": "Continue anyway"
   },
   "daySession": {
     "welcomeTitle": "Welcome to Day {{day}} ",
@@ -134,7 +139,7 @@
     "restart": "Restart",
     "repsLabel": "REPS",
     "minsLabel": "MINS",
-    "secsLabel": "SEC",
+    "secsLabel": "sec",
     "videoUnavailable": "Video not available yet. Please upload exercise videos to Supabase.",
     "restTitle": "REST",
     "restSubtitle": "Take a short break before the next exercise.",
@@ -261,6 +266,12 @@
     "pauseProgress": "Pause Progress",
     "resumeProgress": "Resume Progress",
     "progressPaused": "Progress Paused",
+    "pauseReasonTitle": "Reason for pausing your progress ?",
+    "pauseReasonSubtitle": "Tell us what you are feeling , we will adjust your plan to support you better.",
+    "pauseReasonTired": "Feeling tired",
+    "pauseReasonPain": "Having pain",
+    "pauseReasonTreatment": "Recently underwent treatment",
+    "pauseReasonUnwell": "Not feeling well",
     "streakStart": "Start your",
     "streakHighlight": " excercise streaks",
     "streakEnd": " !",

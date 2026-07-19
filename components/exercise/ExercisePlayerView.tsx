@@ -1,5 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   ActivityIndicator,
@@ -15,7 +15,6 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import type { Day1SessionExercise } from '../../lib/getDay1Session';
-import { formatExerciseDurationDisplay } from '../../lib/formatExerciseDuration';
 import {
   EXERCISE_VIDEO_FRAME_ASPECT,
   EXERCISE_VIDEO_FRAME_BACKGROUND,
@@ -53,7 +52,6 @@ export function ExercisePlayerView({
   const [videoProgress, setVideoProgress] = useState(0);
   const [isBuffering, setIsBuffering] = useState(true);
   const [playbackFailed, setPlaybackFailed] = useState(false);
-  const [videoDurationSeconds, setVideoDurationSeconds] = useState(0);
   const [seekRequest, setSeekRequest] = useState<{ fraction: number; token: number } | null>(
     null,
   );
@@ -78,18 +76,17 @@ export function ExercisePlayerView({
 
   const title = t(`sessionFlow.exercises.${exercise.id}.title`);
   const description = t(`sessionFlow.exercises.${exercise.id}.description`);
-  const videoProgressPercent = Math.round(Math.min(Math.max(videoProgress, 0), 1) * 100);
 
-  const durationDisplay = useMemo(() => {
-    if (exercise.repType === 'duration' && videoDurationSeconds > 0) {
-      return formatExerciseDurationDisplay(videoDurationSeconds);
-    }
-
-    return {
-      displayValue: exercise.displayValue,
-      displayLabel: exercise.displayLabel,
-    };
-  }, [exercise.displayLabel, exercise.displayValue, exercise.repType, videoDurationSeconds]);
+  // Figma rep/duration values are static patient info only.
+  // Playback always runs the full video at its own length — never cut to this number.
+  const displayValue = exercise.displayValue;
+  const displayLabel = exercise.displayLabel;
+  const unitLabel =
+    displayLabel === 'MINS'
+      ? t('sessionFlow.minsLabel')
+      : displayLabel === 'SECS'
+        ? t('sessionFlow.secsLabel')
+        : t('sessionFlow.repsLabel');
 
   const markComplete = useCallback(() => {
     if (completedRef.current) return;
@@ -104,7 +101,6 @@ export function ExercisePlayerView({
     setVideoProgress(0);
     setIsBuffering(true);
     setPlaybackFailed(false);
-    setVideoDurationSeconds(0);
     setSeekRequest(null);
     setAudioUnlockToken((value) => value + 1);
   }, [exercise.id, videoSources.join('|')]);
@@ -112,6 +108,8 @@ export function ExercisePlayerView({
   const handleVideoEnded = useCallback(() => {
     markComplete();
   }, [markComplete]);
+
+  const videoProgressPercent = Math.round(Math.min(Math.max(videoProgress, 0), 1) * 100);
 
   const handlePauseToggle = () => {
     if (overlayPaused) return;
@@ -133,7 +131,6 @@ export function ExercisePlayerView({
     setVideoProgress(0);
     setIsBuffering(true);
     setPlaybackFailed(false);
-    setVideoDurationSeconds(0);
     setSeekRequest(null);
     setRestartToken((value) => value + 1);
   };
@@ -188,7 +185,7 @@ export function ExercisePlayerView({
               audioUnlockToken={audioUnlockToken}
               onProgress={setVideoProgress}
               onBuffering={setIsBuffering}
-              onDuration={setVideoDurationSeconds}
+              onDuration={() => {}}
               onPlaybackFailed={() => setPlaybackFailed(true)}
               onEnded={handleVideoEnded}
             />
@@ -221,19 +218,15 @@ export function ExercisePlayerView({
         </Text>
 
         <View style={styles.repRow}>
-          <Text style={styles.repValue}>{durationDisplay.displayValue}</Text>
-          <Text style={styles.repLabel}>
-            {durationDisplay.displayLabel === 'MINS'
-              ? t('sessionFlow.minsLabel')
-              : durationDisplay.displayLabel === 'SECS'
-                ? t('sessionFlow.secsLabel')
-                : t('sessionFlow.repsLabel')}
+          <Text style={styles.repValue} numberOfLines={1}>
+            {displayValue}
+          </Text>
+          <Text style={styles.repLabel} numberOfLines={1}>
+            {unitLabel}
           </Text>
         </View>
 
-        <Text style={[styles.description, { maxWidth: frameWidth }]} numberOfLines={4}>
-          {description}
-        </Text>
+        <Text style={[styles.description, { maxWidth: frameWidth }]}>{description}</Text>
       </ScrollView>
 
       <View style={styles.footer}>
@@ -243,7 +236,7 @@ export function ExercisePlayerView({
           accessibilityRole="button"
         >
           <Ionicons name={playbackPaused ? 'play' : 'pause'} size={24} color="#FFFFFF" />
-          <Text style={styles.pauseButtonText}>
+          <Text style={styles.pauseButtonText} numberOfLines={1}>
             {playbackPaused ? t('sessionFlow.resume') : t('sessionFlow.pause')}
           </Text>
         </PressableScale>
@@ -253,8 +246,10 @@ export function ExercisePlayerView({
           onPress={handleRestart}
           accessibilityRole="button"
         >
-          <Ionicons name="refresh" size={24} color="#374151" />
-          <Text style={styles.restartButtonText}>{t('sessionFlow.restart')}</Text>
+          <Ionicons name="refresh" size={22} color="#374151" />
+          <Text style={styles.restartButtonText} numberOfLines={1}>
+            {t('sessionFlow.restart')}
+          </Text>
         </PressableScale>
       </View>
     </SafeAreaView>
@@ -339,29 +334,32 @@ const styles = StyleSheet.create({
   },
   repRow: {
     flexDirection: 'row',
-    alignItems: 'flex-end',
+    flexWrap: 'nowrap',
+    alignItems: 'center',
     justifyContent: 'center',
     gap: 8,
     marginTop: 12,
-    minHeight: 52,
+    minHeight: 60,
   },
   repValue: {
     fontSize: 56,
-    lineHeight: 56,
+    lineHeight: 60,
     color: '#00131F',
     ...displayFontStyle(),
   },
+  /** Unit (முறை / நிமி / வினாடி / REPS): Tamil-capable font so it never clips. */
   repLabel: {
-    fontSize: 32,
-    lineHeight: 36,
+    fontSize: 30,
+    lineHeight: 40,
     color: '#00131F',
-    ...displayFontStyle(),
-    marginBottom: 4,
+    ...font('bold'),
   },
+  /** Figma Grey-80 description: 16 / 20 / 0.1, weight 400 */
   description: {
     marginTop: 12,
-    fontSize: 15,
+    fontSize: 16,
     lineHeight: 20,
+    letterSpacing: 0.1,
     color: '#6B7280',
     textAlign: 'center',
     ...font('regular'),
@@ -370,8 +368,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 8,
-    paddingHorizontal: 15,
+    gap: 9,
+    paddingHorizontal: 16,
     paddingBottom: 12,
     paddingTop: 10,
     backgroundColor: colors.background,
@@ -379,39 +377,51 @@ const styles = StyleSheet.create({
     borderTopColor: '#E5E7EB',
     zIndex: 2,
   },
+  /** Figma primary action ~220×48 */
   pauseButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 4,
-    flex: 1,
-    maxWidth: 248,
+    flexGrow: 1,
+    flexShrink: 1,
+    minWidth: 0,
     height: 48,
     borderRadius: 8,
     backgroundColor: '#005F99',
-    paddingHorizontal: 16,
+    paddingLeft: 12,
+    paddingRight: 16,
     paddingVertical: 8,
   },
   pauseButtonText: {
+    flexShrink: 1,
     fontSize: 14,
+    lineHeight: 18,
     color: '#FFFFFF',
     textTransform: 'capitalize',
     ...font('medium'),
   },
+  /** Figma restart ~132×48 — wide enough for மீண்டும் தொடங்கு on one line */
   restartButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 4,
-    width: 101,
+    flexGrow: 0,
+    flexShrink: 0,
+    minWidth: 132,
     height: 48,
     borderRadius: 8,
     borderWidth: 1,
     borderColor: '#D1D5DB',
-    paddingHorizontal: 10,
+    paddingLeft: 10,
+    paddingRight: 12,
+    paddingVertical: 8,
   },
   restartButtonText: {
-    fontSize: 14,
+    flexShrink: 0,
+    fontSize: 13,
+    lineHeight: 18,
     color: '#374151',
     textTransform: 'capitalize',
     ...font('medium'),

@@ -19,9 +19,13 @@ import { TreatmentType, useAppStore } from '../../store/useAppStore';
 import { colors } from '../../theme/colors';
 import { font } from '../../theme/fonts';
 
-const TREATMENT_OPTIONS: { id: TreatmentType; labelKey: string }[] = [
+/** Figma Treatment Details — first row hugs content; second row splits evenly. */
+const TREATMENT_ROW_PRIMARY: { id: TreatmentType; labelKey: string }[] = [
   { id: 'chemotherapy', labelKey: 'treatment.chemotherapy' },
   { id: 'radiation', labelKey: 'treatment.radiation' },
+];
+
+const TREATMENT_ROW_SECONDARY: { id: TreatmentType; labelKey: string }[] = [
   { id: 'both', labelKey: 'treatment.both' },
   { id: 'none', labelKey: 'treatment.none' },
 ];
@@ -30,25 +34,34 @@ type ChoiceChipProps = {
   label: string;
   selected: boolean;
   onPress: () => void;
-  flex?: boolean;
+  /** Shorter surgery yes/no chips (Figma ~36–40). */
+  compact?: boolean;
 };
 
-function ChoiceChip({ label, selected, onPress, flex = true }: ChoiceChipProps) {
+function ChoiceChip({ label, selected, onPress, compact = false }: ChoiceChipProps) {
   return (
     <Pressable
       onPress={onPress}
-      style={[styles.chip, flex && styles.chipFlex, selected && styles.chipSelected]}
+      style={[
+        styles.chip,
+        styles.chipFlex,
+        compact && styles.chipCompact,
+        selected && styles.chipSelected,
+      ]}
       accessibilityRole="button"
       accessibilityState={{ selected }}
     >
-      <Text style={[styles.chipText, selected && styles.chipTextSelected]} numberOfLines={2}>
+      <Text
+        style={[styles.chipText, selected && styles.chipTextSelected]}
+        numberOfLines={2}
+      >
         {label}
       </Text>
     </Pressable>
   );
 }
 
-/** Figma Treatment Details — after gender, before avatar. */
+/** Figma Treatment Details (2914:13055) — after gender, before avatar. */
 export default function TreatmentScreen() {
   const { t } = useTranslation();
   const router = useRouter();
@@ -89,57 +102,71 @@ export default function TreatmentScreen() {
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
-          <View style={styles.section}>
-            <Text style={styles.label}>{t('treatment.cancerTypeLabel')}</Text>
-            <TextInput
-              value={cancerType}
-              onChangeText={setCancerTypeLocal}
-              placeholder={t('treatment.cancerTypePlaceholder')}
-              placeholderTextColor={colors.textPlaceholder}
-              style={styles.input}
-              autoCapitalize="sentences"
-              autoCorrect
-              returnKeyType="done"
-              accessibilityLabel={t('treatment.cancerTypeLabel')}
+          <View style={styles.form}>
+            <View style={styles.section}>
+              <Text style={styles.label}>{t('treatment.cancerTypeLabel')}</Text>
+              <TextInput
+                value={cancerType}
+                onChangeText={setCancerTypeLocal}
+                placeholder={t('treatment.cancerTypePlaceholder')}
+                placeholderTextColor={colors.textPlaceholder}
+                style={styles.input}
+                autoCapitalize="sentences"
+                autoCorrect
+                returnKeyType="done"
+                accessibilityLabel={t('treatment.cancerTypeLabel')}
+              />
+            </View>
+
+            <View style={styles.section}>
+              <Text style={styles.label}>{t('treatment.treatmentLabel')}</Text>
+              <View style={styles.chipRow}>
+                {TREATMENT_ROW_PRIMARY.map((option) => (
+                  <ChoiceChip
+                    key={option.id}
+                    label={t(option.labelKey)}
+                    selected={treatment === option.id}
+                    onPress={() => setTreatmentLocal(option.id)}
+                  />
+                ))}
+              </View>
+              <View style={styles.chipRow}>
+                {TREATMENT_ROW_SECONDARY.map((option) => (
+                  <ChoiceChip
+                    key={option.id}
+                    label={t(option.labelKey)}
+                    selected={treatment === option.id}
+                    onPress={() => setTreatmentLocal(option.id)}
+                  />
+                ))}
+              </View>
+            </View>
+
+            <View style={styles.section}>
+              <Text style={styles.label}>{t('treatment.surgeryLabel')}</Text>
+              <View style={styles.chipRow}>
+                <ChoiceChip
+                  label={t('treatment.yes')}
+                  selected={surgery === true}
+                  onPress={() => setSurgeryLocal(true)}
+                  compact
+                />
+                <ChoiceChip
+                  label={t('treatment.no')}
+                  selected={surgery === false}
+                  onPress={() => setSurgeryLocal(false)}
+                  compact
+                />
+              </View>
+            </View>
+
+            <PrimaryButton
+              label={t('treatment.continue')}
+              onPress={handleContinue}
+              disabled={!canContinue}
+              style={styles.continueButton}
             />
           </View>
-
-          <View style={styles.section}>
-            <Text style={styles.label}>{t('treatment.treatmentLabel')}</Text>
-            <View style={styles.grid}>
-              {TREATMENT_OPTIONS.map((option) => (
-                <ChoiceChip
-                  key={option.id}
-                  label={t(option.labelKey)}
-                  selected={treatment === option.id}
-                  onPress={() => setTreatmentLocal(option.id)}
-                />
-              ))}
-            </View>
-          </View>
-
-          <View style={styles.section}>
-            <Text style={styles.label}>{t('treatment.surgeryLabel')}</Text>
-            <View style={styles.row}>
-              <ChoiceChip
-                label={t('treatment.yes')}
-                selected={surgery === true}
-                onPress={() => setSurgeryLocal(true)}
-              />
-              <ChoiceChip
-                label={t('treatment.no')}
-                selected={surgery === false}
-                onPress={() => setSurgeryLocal(false)}
-              />
-            </View>
-          </View>
-
-          <PrimaryButton
-            label={t('treatment.continue')}
-            onPress={handleContinue}
-            disabled={!canContinue}
-            style={styles.continueButton}
-          />
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
@@ -156,55 +183,61 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     flexGrow: 1,
+    justifyContent: 'center',
     paddingHorizontal: 24,
     paddingTop: 12,
     paddingBottom: 28,
+  },
+  form: {
+    width: '100%',
+    maxWidth: 320,
+    alignSelf: 'center',
     gap: 28,
-    justifyContent: 'center',
   },
   section: {
-    gap: 12,
+    gap: 10,
   },
   label: {
-    fontSize: 16,
+    fontSize: 15,
     lineHeight: 22,
     ...font('medium'),
-    color: colors.textSecondary,
+    color: '#00131F',
+    letterSpacing: 0.1,
   },
   input: {
-    minHeight: 56,
+    minHeight: 48,
     borderWidth: 1,
-    borderColor: colors.inputBorder,
-    borderRadius: 10,
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    fontSize: 17,
-    lineHeight: 24,
+    borderColor: '#E6E0E9',
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 12,
+    fontSize: 16,
+    lineHeight: 22,
     color: colors.textPrimary,
     backgroundColor: colors.background,
     ...font('regular'),
   },
-  grid: {
+  chipRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: 12,
   },
-  row: {
-    flexDirection: 'row',
-    gap: 12,
-  },
   chip: {
-    minHeight: 56,
-    borderRadius: 10,
-    backgroundColor: colors.optionBg,
+    minHeight: 48,
+    borderRadius: 8,
+    backgroundColor: '#F1F3F5',
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: 12,
-    paddingVertical: 14,
+    paddingVertical: 12,
+  },
+  chipCompact: {
+    minHeight: 44,
+    paddingVertical: 10,
   },
   chipFlex: {
     flexGrow: 1,
-    flexBasis: '47%',
+    flexBasis: 0,
   },
   chipSelected: {
     backgroundColor: colors.optionBgSelected,
@@ -212,18 +245,18 @@ const styles = StyleSheet.create({
     borderColor: colors.optionBorderSelected,
   },
   chipText: {
-    fontSize: 16,
-    lineHeight: 22,
+    fontSize: 15,
+    lineHeight: 20,
     textAlign: 'center',
-    ...font('regular'),
-    color: colors.textPrimary,
+    ...font('medium'),
+    color: colors.textMuted,
+    letterSpacing: 0.1,
   },
   chipTextSelected: {
     ...font('semiBold'),
     color: colors.optionTextSelected,
   },
   continueButton: {
-    marginTop: 8,
-    height: 52,
+    marginTop: 4,
   },
 });

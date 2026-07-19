@@ -1,5 +1,9 @@
 import type { SessionDisplayLabel } from './getDay1Session';
 
+/**
+ * @deprecated Do not use with video file length. On-screen timers must come from
+ * `EXERCISE_REP_CONFIG` / Figma (2914:24316, 2271:3276), never from media duration.
+ */
 export function formatExerciseDurationDisplay(seconds: number): {
   displayValue: string;
   displayLabel: SessionDisplayLabel | 'SECS';

@@ -12,45 +12,67 @@ type GrowthTabSwitchProps = {
   onTabChange: (tab: GrowthTab) => void;
 };
 
+/**
+ * Figma growth tab switch (3125:5035 / 3124:12265). Each pill has a fixed Figma
+ * width — முன்னேற்றம் 148, உடற்பயிற்சிகள் 166 — so the longer Tamil label always
+ * fits without truncating. Widths scale down together only on very narrow screens.
+ */
+const FIGMA_PROGRESS_WIDTH = 148;
+const FIGMA_WORKOUTS_WIDTH = 166;
+const CONTAINER_PADDING = 4;
+const CONTAINER_BORDER = 1;
+const FIGMA_CONTAINER_WIDTH =
+  FIGMA_PROGRESS_WIDTH +
+  FIGMA_WORKOUTS_WIDTH +
+  CONTAINER_PADDING * 2 +
+  CONTAINER_BORDER * 2;
+
 export function GrowthTabSwitch({ activeTab, onTabChange }: GrowthTabSwitchProps) {
   const { t } = useTranslation();
   const { width: screenWidth } = useWindowDimensions();
-  const switchWidth = Math.min(280, Math.max(220, screenWidth - 48));
+
+  const scale = Math.min(1, (screenWidth - 32) / FIGMA_CONTAINER_WIDTH);
+  const progressWidth = Math.round(FIGMA_PROGRESS_WIDTH * scale);
+  const workoutsWidth = Math.round(FIGMA_WORKOUTS_WIDTH * scale);
+
+  const progressActive = activeTab === 'progress';
+  const workoutsActive = activeTab === 'workouts';
 
   return (
-    <View style={[styles.container, { width: switchWidth }]}>
+    <View style={styles.container}>
       <PressableScale
-        style={[styles.tab, activeTab === 'progress' && styles.tabActive]}
+        style={[
+          styles.tab,
+          { width: progressWidth },
+          progressActive ? styles.tabActive : styles.tabInactive,
+        ]}
         pressedScale={0.96}
         onPress={() => onTabChange('progress')}
         accessibilityRole="button"
-        accessibilityState={{ selected: activeTab === 'progress' }}
+        accessibilityState={{ selected: progressActive }}
       >
         <Text
-          style={[styles.tabText, activeTab === 'progress' && styles.tabTextActive]}
+          style={[styles.progressText, progressActive ? styles.textActive : styles.textInactive]}
           numberOfLines={1}
-          adjustsFontSizeToFit
-          minimumFontScale={0.8}
         >
           {t('growth.tabProgress')}
         </Text>
       </PressableScale>
+
       <PressableScale
-        style={[styles.tab, activeTab === 'workouts' && styles.tabActive]}
+        style={[
+          styles.tab,
+          { width: workoutsWidth },
+          workoutsActive ? styles.tabActive : styles.tabInactive,
+        ]}
         pressedScale={0.96}
         onPress={() => onTabChange('workouts')}
         accessibilityRole="button"
-        accessibilityState={{ selected: activeTab === 'workouts' }}
+        accessibilityState={{ selected: workoutsActive }}
       >
         <Text
-          style={[
-            styles.tabText,
-            styles.tabTextInactive,
-            activeTab === 'workouts' && styles.tabTextActive,
-          ]}
+          style={[styles.workoutsText, workoutsActive ? styles.textActive : styles.textInactive]}
           numberOfLines={1}
-          adjustsFontSizeToFit
-          minimumFontScale={0.8}
         >
           {t('growth.tabWorkouts')}
         </Text>
@@ -63,44 +85,53 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
     flexWrap: 'nowrap',
+    alignSelf: 'center',
     alignItems: 'center',
     backgroundColor: '#F9FAFB',
-    borderWidth: 1,
-    borderColor: colors.cardBorder,
+    borderWidth: CONTAINER_BORDER,
+    borderColor: '#E5E7EB',
     borderRadius: 41,
-    paddingHorizontal: 4,
-    paddingVertical: 4,
+    padding: CONTAINER_PADDING,
     height: 48,
   },
+  /** Figma pill: h40, radius 35, padding 12×24, justify/align center */
   tab: {
-    flex: 1,
-    minWidth: 0,
     height: 40,
     borderRadius: 35,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingHorizontal: 10,
+    paddingHorizontal: 12,
+    /** Transparent border keeps width stable when the active outline appears. */
+    borderWidth: 1,
+    borderColor: 'transparent',
   },
   tabActive: {
     backgroundColor: 'rgba(224, 244, 255, 0.2)',
-    borderWidth: 1,
     borderColor: colors.buttonPrimary,
   },
-  tabText: {
+  tabInactive: {
+    backgroundColor: 'transparent',
+  },
+  /** முன்னேற்றம் — Roboto Medium 14 */
+  progressText: {
     fontSize: 14,
     lineHeight: 18,
     textAlign: 'center',
     ...font('medium'),
-    color: colors.buttonPrimary,
-    textTransform: 'capitalize',
   },
-  tabTextInactive: {
+  /** உடற்பயிற்சிகள் — Roboto Regular 14 */
+  workoutsText: {
+    fontSize: 14,
+    lineHeight: 18,
+    textAlign: 'center',
     ...font('regular'),
-    color: colors.textMuted,
-    textTransform: 'none',
   },
-  tabTextActive: {
+  /** Selected → Primary blue */
+  textActive: {
     color: colors.buttonPrimary,
-    ...font('medium'),
+  },
+  /** Unselected → black */
+  textInactive: {
+    color: colors.textPrimary,
   },
 });

@@ -15,6 +15,7 @@ import { GrowthTabSwitch, type GrowthTab } from '../components/growth/GrowthTabS
 import { WorkoutsSection } from '../components/growth/WorkoutsSection';
 import { LevelsCard } from '../components/growth/LevelsCard';
 import { PainProgressCard } from '../components/growth/PainProgressCard';
+import { PauseReasonModal, type PauseReason } from '../components/growth/PauseReasonModal';
 import { StreakCard } from '../components/growth/StreakCard';
 import { BottomTabBar } from '../components/BottomTabBar';
 import { ScreenHeader } from '../components/ScreenHeader';
@@ -30,9 +31,15 @@ export default function GrowthScreen() {
   const { t } = useTranslation();
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<GrowthTab>('progress');
+  const [showPauseReason, setShowPauseReason] = useState(false);
 
   const progressPaused = useAppStore((state) => state.progressPaused);
   const setProgressPaused = useAppStore((state) => state.setProgressPaused);
+
+  const handlePauseReasonSelect = (_reason: PauseReason) => {
+    setShowPauseReason(false);
+    setProgressPaused(true);
+  };
   const levelsCompleted = useAppStore((state) => state.levelsCompleted);
   const avatar = useAppStore((state) => state.avatar);
   const painScores = useAppStore((state) => state.painScores);
@@ -85,7 +92,7 @@ export default function GrowthScreen() {
               total={LEVELS_TOTAL}
               paused={progressPaused}
               avatar={avatar}
-              onPause={() => setProgressPaused(true)}
+              onPause={() => setShowPauseReason(true)}
               onResume={() => setProgressPaused(false)}
             />
             <StreakCard paused={progressPaused} completedDays={completedDaysInWeek} />
@@ -118,6 +125,12 @@ export default function GrowthScreen() {
           growth: t('home.tabGrowth'),
           settings: t('home.tabSettings'),
         }}
+      />
+
+      <PauseReasonModal
+        visible={showPauseReason}
+        onClose={() => setShowPauseReason(false)}
+        onSelect={handlePauseReasonSelect}
       />
     </SafeAreaView>
   );

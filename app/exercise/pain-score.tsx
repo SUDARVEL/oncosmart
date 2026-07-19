@@ -5,9 +5,10 @@ import { useTranslation } from 'react-i18next';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { HighPainRestModal } from '../../components/pain/HighPainRestModal';
 import { PainScorePanel } from '../../components/pain/PainScorePanel';
 import { ReadyToBeginModal } from '../../components/pain/ReadyToBeginModal';
-import { HIGH_PAIN_THRESHOLD } from '../../lib/painScore';
+import { HIGH_PAIN_REST_THRESHOLD, HIGH_PAIN_THRESHOLD } from '../../lib/painScore';
 import { useAppStore } from '../../store/useAppStore';
 import { colors } from '../../theme/colors';
 import { font } from '../../theme/fonts';
@@ -21,6 +22,19 @@ export default function PainScoreScreen() {
   const setPainScore = useAppStore((state) => state.setPainScore);
   const [score, setScore] = useState(0);
   const [showReadyModal, setShowReadyModal] = useState(false);
+  const [showRestModal, setShowRestModal] = useState(false);
+  // Avoid re-popping while the patient stays in the high range after dismissing.
+  const [restPromptDismissed, setRestPromptDismissed] = useState(false);
+
+  const handleScoreChange = (next: number) => {
+    setScore(next);
+    if (Math.round(next) >= HIGH_PAIN_REST_THRESHOLD) {
+      if (!restPromptDismissed) setShowRestModal(true);
+    } else {
+      setShowRestModal(false);
+      setRestPromptDismissed(false);
+    }
+  };
 
   const handleClose = () => {
     router.back();
@@ -57,10 +71,22 @@ export default function PainScoreScreen() {
         <View style={styles.divider} />
         <PainScorePanel
           score={score}
-          onScoreChange={setScore}
+          onScoreChange={handleScoreChange}
           onContinue={handleContinue}
         />
       </SafeAreaView>
+
+      <HighPainRestModal
+        visible={showRestModal}
+        onRest={() => {
+          setShowRestModal(false);
+          handleClose();
+        }}
+        onContinue={() => {
+          setShowRestModal(false);
+          setRestPromptDismissed(true);
+        }}
+      />
 
       <ReadyToBeginModal
         visible={showReadyModal}
