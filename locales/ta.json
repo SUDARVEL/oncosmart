@@ -347,7 +347,9 @@
   "settings": {
     "title": "அமைப்புகள்",
     "myProfile": "என் சுயவிவரம்",
-    "myProfileDescription": "விளக்கம்",
+    "myProfileDescription": "உங்கள் பயனர்பெயரைத் திருத்தவும்",
+    "myProfileSheetDescription": "உங்கள் சுயவிவரத்தில் காட்டப்படும் பெயரை மாற்றவும்",
+    "saveProfile": "சேமி",
     "language": "மொழி",
     "languageDescription": "ஆப் மொழியையும் பயிற்சி வீடியோ மொழியையும் மாற்றவும்",
     "helpSupport": "உதவி & ஆதரவு",

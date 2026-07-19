@@ -8,6 +8,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { BottomTabBar } from '../components/BottomTabBar';
 import { ScreenHeader } from '../components/ScreenHeader';
 import { LanguageBottomSheet } from '../components/settings/LanguageBottomSheet';
+import { ProfileBottomSheet } from '../components/settings/ProfileBottomSheet';
 import { SettingsRow } from '../components/settings/SettingsRow';
 import { openWhatsAppSupport } from '../lib/openWhatsAppSupport';
 import { AppLanguage, useAppStore } from '../store/useAppStore';
@@ -18,21 +19,26 @@ export default function SettingsScreen() {
   const router = useRouter();
   const language = useAppStore((state) => state.language);
   const setLanguage = useAppStore((state) => state.setLanguage);
+  const username = useAppStore((state) => state.username);
+  const setUsername = useAppStore((state) => state.setUsername);
   const resetApp = useAppStore((state) => state.resetApp);
   const [languageSheetOpen, setLanguageSheetOpen] = useState(false);
+  const [profileSheetOpen, setProfileSheetOpen] = useState(false);
 
   const selectedLanguage: AppLanguage = language === 'ta' ? 'ta' : 'en';
   const languageLabel =
     selectedLanguage === 'ta' ? t('language.tamil') : t('language.english');
-
-  const handleMyProfile = () => {
-    router.push('/onboarding/username?from=settings');
-  };
+  const profileLabel = username.trim() || t('settings.myProfileDescription');
 
   const handleLanguageSelect = (next: AppLanguage) => {
     setLanguage(next);
     void i18n.changeLanguage(next);
     setLanguageSheetOpen(false);
+  };
+
+  const handleProfileSave = (nextUsername: string) => {
+    setUsername(nextUsername);
+    setProfileSheetOpen(false);
   };
 
   const handleTabPress = (tab: 'home' | 'growth' | 'settings') => {
@@ -61,9 +67,9 @@ export default function SettingsScreen() {
       >
         <SettingsRow
           title={t('settings.myProfile')}
-          description={t('settings.myProfileDescription')}
+          description={profileLabel}
           showChevron
-          onPress={handleMyProfile}
+          onPress={() => setProfileSheetOpen(true)}
         />
         <SettingsRow
           title={t('settings.language')}
@@ -83,6 +89,13 @@ export default function SettingsScreen() {
           onPress={handleLogout}
         />
       </ScrollView>
+
+      <ProfileBottomSheet
+        visible={profileSheetOpen}
+        username={username}
+        onClose={() => setProfileSheetOpen(false)}
+        onSave={handleProfileSave}
+      />
 
       <LanguageBottomSheet
         visible={languageSheetOpen}

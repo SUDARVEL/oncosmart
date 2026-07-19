@@ -403,7 +403,9 @@
   "settings": {
     "title": "Settings",
     "myProfile": "My Profile",
-    "myProfileDescription": "Description",
+    "myProfileDescription": "Edit your username",
+    "myProfileSheetDescription": "Update the name shown in your profile",
+    "saveProfile": "Save",
     "language": "Language",
     "languageDescription": "Change the app language and exercise video language",
     "helpSupport": "Help & Support",
