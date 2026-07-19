@@ -30,10 +30,24 @@ export function HighPainRestModal({ visible, onRest, onContinue }: Props) {
 
           <View style={styles.actions}>
             <Pressable style={styles.continueButton} onPress={onContinue} accessibilityRole="button">
-              <Text style={styles.continueText}>{t('pain.highPainContinue')}</Text>
+              <Text
+                style={styles.continueText}
+                numberOfLines={1}
+                adjustsFontSizeToFit
+                minimumFontScale={0.8}
+              >
+                {t('pain.highPainContinue')}
+              </Text>
             </Pressable>
             <Pressable style={styles.restButton} onPress={onRest} accessibilityRole="button">
-              <Text style={styles.restText}>{t('pain.highPainRest')}</Text>
+              <Text
+                style={styles.restText}
+                numberOfLines={1}
+                adjustsFontSizeToFit
+                minimumFontScale={0.8}
+              >
+                {t('pain.highPainRest')}
+              </Text>
             </Pressable>
           </View>
         </View>
@@ -97,8 +111,9 @@ const styles = StyleSheet.create({
     borderColor: colors.buttonPrimary,
     borderRadius: 8,
     paddingVertical: 10,
-    paddingHorizontal: 18,
+    paddingHorizontal: 12,
     alignItems: 'center',
+    justifyContent: 'center',
     shadowColor: '#0A0D18',
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.05,
@@ -109,6 +124,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     lineHeight: 24,
     color: '#FFFFFF',
+    textAlign: 'center',
     ...font('semiBold'),
   },
   continueButton: {
@@ -118,8 +134,9 @@ const styles = StyleSheet.create({
     borderColor: '#D5D7DA',
     borderRadius: 8,
     paddingVertical: 10,
-    paddingHorizontal: 18,
+    paddingHorizontal: 12,
     alignItems: 'center',
+    justifyContent: 'center',
     shadowColor: '#0A0D18',
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.05,
@@ -130,6 +147,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     lineHeight: 24,
     color: '#414651',
+    textAlign: 'center',
     ...font('semiBold'),
   },
 });
