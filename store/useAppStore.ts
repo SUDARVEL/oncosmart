@@ -8,12 +8,16 @@ import type { BadgeKey } from '../lib/getEarnedBadges';
 export type AppLanguage = 'en' | 'ta';
 export type AppGender = 'male' | 'female' | 'prefer_not_to_say';
 export type AppAvatar = 'male' | 'female';
+/** @deprecated Prefer numeric `age`. Kept for reading older persisted profiles. */
 export type AgeRange = '18-24' | '25-34' | '35-44' | '45-54' | '55-64';
 export type TreatmentType = 'chemotherapy' | 'radiation' | 'both' | 'none';
 
 type AppState = {
   language: AppLanguage | null;
   username: string;
+  /** Whole-number age entered on onboarding (preferred). */
+  age: number | null;
+  /** Legacy age band; still read for older installs until they re-enter age. */
   ageRange: AgeRange | null;
   gender: AppGender | null;
   cancerType: string;
@@ -33,6 +37,7 @@ type AppState = {
   pendingBadgeCelebrations: BadgeKey[];
   setLanguage: (language: AppLanguage) => void;
   setUsername: (username: string) => void;
+  setAge: (age: number) => void;
   setAgeRange: (ageRange: AgeRange) => void;
   setGender: (gender: AppGender) => void;
   setCancerType: (cancerType: string) => void;
@@ -63,6 +68,7 @@ export const useAppStore = create<AppState>()(
     (set) => ({
       language: null,
       username: '',
+      age: null,
       ageRange: null,
       gender: null,
       cancerType: '',
@@ -79,6 +85,7 @@ export const useAppStore = create<AppState>()(
       pendingBadgeCelebrations: [],
       setLanguage: (language) => set({ language }),
       setUsername: (username) => set({ username }),
+      setAge: (age) => set({ age, ageRange: null }),
       setAgeRange: (ageRange) => set({ ageRange }),
       setGender: (gender) => set({ gender }),
       setCancerType: (cancerType) => set({ cancerType }),
@@ -152,6 +159,7 @@ export const useAppStore = create<AppState>()(
         set({
           language: null,
           username: '',
+          age: null,
           ageRange: null,
           gender: null,
           cancerType: '',
@@ -174,6 +182,7 @@ export const useAppStore = create<AppState>()(
       partialize: (state) => ({
         language: state.language,
         username: state.username,
+        age: state.age,
         ageRange: state.ageRange,
         gender: state.gender,
         cancerType: state.cancerType,
