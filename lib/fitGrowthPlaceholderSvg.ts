@@ -10,7 +10,7 @@ export type GrowthPlaceholderFitConfig = {
   /**
    * 0 = contain (entire photo visible, smaller figure)
    * 1 = cover (fills the circle, may clip edges)
-   * Use values in between so the pose stays clear without hiding the body.
+   * >1 = zoom past cover (tighter crop — needed for female room-scale photos)
    */
   fill: number;
   /** Extra Y shift in pattern units. Negative moves the subject up into the circle. */
@@ -31,15 +31,19 @@ export function applyGrowthPlaceholderFit(
     return svgXml;
   }
 
-  const fill = Math.min(1, Math.max(0, fit.fill));
+  // Allow fill > 1 so female landscape room shots can match male circle density.
+  const fill = Math.min(2.5, Math.max(0, fit.fill));
   const contain = Math.min(1 / width, 1 / height);
   const cover = Math.max(1 / width, 1 / height);
-  const scale = contain + (cover - contain) * fill;
+  const scale =
+    fill <= 1 ? contain + (cover - contain) * fill : cover * fill;
 
   const dispW = width * scale;
   const dispH = height * scale;
   const tx = (1 - dispW) / 2;
-  const ty = (1 - dispH) / 2 + (fit.offsetY ?? 0);
+  // Prefer top-biased crop when zoomed (like male placeholders), then apply offsetY.
+  const baseTy = dispH <= 1 ? (1 - dispH) / 2 : (1 - dispH) / 2;
+  const ty = baseTy + (fit.offsetY ?? 0);
   const matrix = `matrix(${scale} 0 0 ${scale} ${tx} ${ty})`;
 
   if (!/transform="matrix\([^"]+\)"/.test(svgXml)) return svgXml;

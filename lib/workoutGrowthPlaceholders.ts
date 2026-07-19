@@ -84,41 +84,40 @@ const MALE_WORKOUT_PLACEHOLDER_FIT: Partial<
 };
 
 /**
- * Female landscape SVGs are not pre-cropped like male 66×70 assets.
- * Default to cover (fill: 1) so the scene reaches the circle edges like male.
- * Only dial fill down for poses that otherwise crop important body parts.
+ * Female landscape SVGs are room-scale photos, not pre-cropped like male 66×70 assets.
+ * Zoom past cover (~1.35) so the figure fills the circle with no floor letterbox gap.
  */
-const FEMALE_COVER_FIT: GrowthPlaceholderFitConfig = { fill: 1, offsetY: 0 };
+const FEMALE_COVER_FIT: GrowthPlaceholderFitConfig = { fill: 1.35, offsetY: -0.04 };
 
 const FEMALE_WORKOUT_PLACEHOLDER_FIT: Partial<
   Record<string, GrowthPlaceholderFitConfig>
 > = {
-  "diaphragmatic-breathing": FEMALE_COVER_FIT,
-  "ankle-pumps": FEMALE_COVER_FIT,
-  "thoracic-expansion": FEMALE_COVER_FIT,
-  "arm-circles": FEMALE_COVER_FIT,
-  "spot-marching": FEMALE_COVER_FIT,
-  "shoulder-shrugging": FEMALE_COVER_FIT,
-  "biceps-curls": FEMALE_COVER_FIT,
-  "wall-pushup": FEMALE_COVER_FIT,
-  "calf-raise": FEMALE_COVER_FIT,
-  "sit-to-stand": FEMALE_COVER_FIT,
-  "straight-leg-raise-left": { fill: 0.72, offsetY: -0.02 },
-  "straight-leg-raise-right": { fill: 0.72, offsetY: -0.02 },
-  "knee-to-chest-left": { fill: 0.85, offsetY: 0 },
-  "knee-to-chest-right": { fill: 0.85, offsetY: 0 },
-  "static-quadriceps-left": FEMALE_COVER_FIT,
-  "static-quadriceps-right": FEMALE_COVER_FIT,
-  "hamstring-stretch": { fill: 0.9, offsetY: 0 },
-  "quadriceps-stretch-left": FEMALE_COVER_FIT,
-  "quadriceps-stretch-right": FEMALE_COVER_FIT,
-  "calf-stretch-left": FEMALE_COVER_FIT,
-  "calf-stretch-right": FEMALE_COVER_FIT,
-  "chest-stretch": FEMALE_COVER_FIT,
-  "triceps-stretch-left": FEMALE_COVER_FIT,
-  "triceps-stretch-right": FEMALE_COVER_FIT,
-  "neck-stretch-left": FEMALE_COVER_FIT,
-  "neck-stretch-right": FEMALE_COVER_FIT,
+  "diaphragmatic-breathing": { fill: 1.4, offsetY: -0.02 },
+  "ankle-pumps": { fill: 1.35, offsetY: -0.02 },
+  "thoracic-expansion": { fill: 1.4, offsetY: -0.04 },
+  "arm-circles": { fill: 1.35, offsetY: -0.03 },
+  "spot-marching": { fill: 1.35, offsetY: -0.03 },
+  "shoulder-shrugging": { fill: 1.35, offsetY: -0.03 },
+  "biceps-curls": { fill: 1.35, offsetY: -0.03 },
+  "wall-pushup": { fill: 1.3, offsetY: -0.02 },
+  "calf-raise": { fill: 1.3, offsetY: -0.03 },
+  "sit-to-stand": { fill: 1.35, offsetY: -0.04 },
+  "straight-leg-raise-left": { fill: 1.05, offsetY: -0.02 },
+  "straight-leg-raise-right": { fill: 1.05, offsetY: -0.02 },
+  "knee-to-chest-left": { fill: 1.15, offsetY: -0.02 },
+  "knee-to-chest-right": { fill: 1.15, offsetY: -0.02 },
+  "static-quadriceps-left": { fill: 1.25, offsetY: -0.02 },
+  "static-quadriceps-right": { fill: 1.25, offsetY: -0.02 },
+  "hamstring-stretch": { fill: 1.2, offsetY: -0.02 },
+  "quadriceps-stretch-left": { fill: 1.25, offsetY: -0.02 },
+  "quadriceps-stretch-right": { fill: 1.25, offsetY: -0.02 },
+  "calf-stretch-left": { fill: 1.25, offsetY: -0.02 },
+  "calf-stretch-right": { fill: 1.25, offsetY: -0.02 },
+  "chest-stretch": { fill: 1.3, offsetY: -0.02 },
+  "triceps-stretch-left": { fill: 1.25, offsetY: -0.02 },
+  "triceps-stretch-right": { fill: 1.25, offsetY: -0.02 },
+  "neck-stretch-left": { fill: 1.3, offsetY: -0.02 },
+  "neck-stretch-right": { fill: 1.3, offsetY: -0.02 },
 };
 
 /** Prefer avatar for media gender so Growth matches the selected character. */
