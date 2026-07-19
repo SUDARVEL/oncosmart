@@ -41,11 +41,30 @@ export function applyGrowthPlaceholderFit(
   const dispW = width * scale;
   const dispH = height * scale;
   const tx = (1 - dispW) / 2;
-  // Prefer top-biased crop when zoomed (like male placeholders), then apply offsetY.
-  const baseTy = dispH <= 1 ? (1 - dispH) / 2 : (1 - dispH) / 2;
+  const baseTy = (1 - dispH) / 2;
   const ty = baseTy + (fit.offsetY ?? 0);
   const matrix = `matrix(${scale} 0 0 ${scale} ${tx} ${ty})`;
 
   if (!/transform="matrix\([^"]+\)"/.test(svgXml)) return svgXml;
-  return svgXml.replace(/transform="matrix\([^"]+\)"/, `transform="${matrix}"`);
+  let next = svgXml.replace(/transform="matrix\([^"]+\)"/, `transform="${matrix}"`);
+
+  // Male placeholders use viewBox 0 0 66 70. Female files are often 66×68 / 68×67,
+  // which letterboxes inside the Growth row circle — normalize to the male frame.
+  next = next.replace(/<svg\b[^>]*>/, (tag) => {
+    let updated = tag
+      .replace(/viewBox="[^"]*"/, 'viewBox="0 0 66 70"')
+      .replace(/\bwidth="[^"]*"/, 'width="66"')
+      .replace(/\bheight="[^"]*"/, 'height="70"');
+    if (!/\bpreserveAspectRatio=/.test(updated)) {
+      updated = updated.replace(/<svg\b/, '<svg preserveAspectRatio="xMidYMid slice"');
+    } else {
+      updated = updated.replace(
+        /preserveAspectRatio="[^"]*"/,
+        'preserveAspectRatio="xMidYMid slice"',
+      );
+    }
+    return updated;
+  });
+
+  return next;
 }
