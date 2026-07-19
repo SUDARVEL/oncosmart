@@ -4,6 +4,7 @@
   "main": "expo-router/entry",
   "dependencies": {
     "@expo-google-fonts/antonio": "^0.4.2",
+    "@expo-google-fonts/noto-sans-tamil": "^0.4.3",
     "@expo-google-fonts/roboto": "^0.4.3",
     "@expo/vector-icons": "^15.0.3",
     "@ide/backoff": "^1.0.0",
