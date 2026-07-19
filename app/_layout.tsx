@@ -14,12 +14,14 @@ import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, Platform, StyleSheet, View } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { isSupabaseConfigured } from '../lib/env';
 import { ensureExerciseAudioSession } from '../lib/ensureExerciseAudioSession';
 import { checkSupabaseConnection } from '../lib/supabase';
+import { useAppStore } from '../store/useAppStore';
 import { colors } from '../theme/colors';
 
 SplashScreen.preventAutoHideAsync();
@@ -27,6 +29,8 @@ SplashScreen.preventAutoHideAsync();
 const FONT_LOAD_TIMEOUT_MS = Platform.OS === 'web' ? 2000 : 8000;
 
 export default function RootLayout() {
+  const { i18n } = useTranslation();
+  const language = useAppStore((state) => state.language);
   const [fontsLoaded, fontError] = useFonts({
     Roboto_400Regular,
     Roboto_500Medium,
@@ -54,6 +58,13 @@ export default function RootLayout() {
       console.warn('[Fonts] Failed to load custom fonts, using system fallbacks.', fontError);
     }
   }, [fontError]);
+
+  // Keep UI strings + guided video language in sync with the persisted preference.
+  useEffect(() => {
+    if (!language) return;
+    if (i18n.language === language) return;
+    void i18n.changeLanguage(language);
+  }, [i18n, language]);
 
   useEffect(() => {
     if (!__DEV__) return;

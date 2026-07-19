@@ -404,6 +404,8 @@
     "title": "Settings",
     "myProfile": "My Profile",
     "myProfileDescription": "Description",
+    "language": "Language",
+    "languageDescription": "Change the app language and exercise video language",
     "helpSupport": "Help & Support",
     "helpSupportDescription": "Message us on WhatsApp",
     "logout": "Logout",
