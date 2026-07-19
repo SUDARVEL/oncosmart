@@ -35,7 +35,6 @@ export function HomeAvatarButton({
   accessibilityLabel,
 }: Props) {
   const source = avatar === 'female' ? FEMALE_AVATAR_DP : MALE_AVATAR_DP;
-  const contentPosition = avatar === 'female' ? 'top' : 'center';
 
   return (
     <PressableScale
@@ -51,7 +50,7 @@ export function HomeAvatarButton({
           source={source}
           style={styles.avatarImage}
           contentFit="cover"
-          contentPosition={contentPosition}
+          contentPosition="center"
           cachePolicy="memory-disk"
         />
       </View>

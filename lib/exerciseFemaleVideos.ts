@@ -64,7 +64,7 @@ export const FEMALE_PORTRAIT_VIDEO_FILES: Partial<Record<string, string>> = {
   'calf-stretch-left': 'Calf Stretch Female Left English.mp4',
   'chest-stretch': 'Chest Stretch Female English2.mp4',
   'triceps-stretch-right': 'Triceps Stretch Female Right English.mp4',
-  'triceps-stretch-left': 'Triceps Stretch Female Left Englsih.mp4',
+  'triceps-stretch-left': 'Triceps Stretch Left Female English compressed.mp4',
   'neck-stretch-right': 'Neck Stretch Female Right English.mp4',
   'neck-stretch-left': 'Neck Stretch Female Left English.mp4',
 };
