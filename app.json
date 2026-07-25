@@ -43,7 +43,8 @@
           "color": "#005F99",
           "defaultChannel": "exercise-reminders"
         }
-      ]
+      ],
+      "expo-asset"
     ],
     "extra": {
       "router": {},
