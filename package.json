@@ -37,6 +37,7 @@
   },
   "devDependencies": {
     "@types/react": "~19.1.10",
+    "eas-cli": "^21.2.0",
     "playwright": "^1.49.1",
     "qrcode": "^1.5.4",
     "typescript": "~5.9.2"
@@ -46,7 +47,10 @@
     "android": "expo start --android",
     "ios": "expo start --ios",
     "web": "expo start --web",
-    "check:videos": "node scripts/check-guided-video-invariants.cjs"
+    "check:videos": "node scripts/check-guided-video-invariants.cjs",
+    "build:android:preview": "eas build --platform android --profile preview",
+    "build:ios:preview": "eas build --platform ios --profile preview",
+    "build:android:prod": "eas build --platform android --profile production"
   },
   "private": true
 }
