@@ -1,4 +1,16 @@
 {
+  "login": {
+    "welcome": "ONCOSMART-க்கு வருக",
+    "tagline": "நலம் பெற்று சுதந்திரமாக வாழுங்கள்",
+    "usernameLabel": "பயனர்பெயர்",
+    "usernamePlaceholder": "எ.கா. test01",
+    "passwordLabel": "கடவுச்சொல்",
+    "passwordPlaceholder": "உங்கள் கடவுச்சொல்லை உள்ளிடவும்",
+    "signIn": "உள்நுழையவும்",
+    "signingIn": "உள்நுழைகிறது…",
+    "error": "தவறான பயனர்பெயர் அல்லது கடவுச்சொல். மீண்டும் முயற்சிக்கவும்.",
+    "logout": "வெளியேறு"
+  },
   "language": {
     "header": "மொழி",
     "title": "உங்கள் மொழியைத் தேர்ந்தெடுக்கவும்",

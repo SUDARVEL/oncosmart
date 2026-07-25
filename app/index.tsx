@@ -5,6 +5,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { OncosmartLogo } from '../components/OncosmartLogo';
 import { SplashFooter } from '../components/SplashFooter';
+import { getCurrentSession } from '../lib/auth';
 import { colors } from '../theme/colors';
 
 const SPLASH_DURATION_MS = 3000;
@@ -12,17 +13,25 @@ const SPLASH_DURATION_MS = 3000;
 export default function SplashScreen() {
   const router = useRouter();
 
-  const goToOnboarding = useCallback(() => {
-    router.replace('/onboarding');
+  // Signed-in users continue into the app; everyone else must log in first.
+  const proceed = useCallback(async () => {
+    const session = await getCurrentSession();
+    router.replace(session ? '/onboarding' : '/login');
   }, [router]);
 
   useEffect(() => {
-    const timer = setTimeout(goToOnboarding, SPLASH_DURATION_MS);
+    const timer = setTimeout(() => {
+      void proceed();
+    }, SPLASH_DURATION_MS);
     return () => clearTimeout(timer);
-  }, [goToOnboarding]);
+  }, [proceed]);
 
   return (
-    <Pressable style={styles.pressable} onPress={goToOnboarding} accessibilityRole="button">
+    <Pressable
+      style={styles.pressable}
+      onPress={() => void proceed()}
+      accessibilityRole="button"
+    >
       <SafeAreaView style={styles.screen}>
         <View style={styles.centerContent}>
           <OncosmartLogo width={82} />

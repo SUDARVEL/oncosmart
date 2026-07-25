@@ -1,4 +1,16 @@
 {
+  "login": {
+    "welcome": "Welcome to Oncosmart",
+    "tagline": "Move strong and live free!",
+    "usernameLabel": "Username",
+    "usernamePlaceholder": "e.g. test01",
+    "passwordLabel": "Password",
+    "passwordPlaceholder": "Enter your password",
+    "signIn": "Sign In",
+    "signingIn": "Signing in…",
+    "error": "Invalid username or password. Please try again.",
+    "logout": "Log out"
+  },
   "language": {
     "header": "Language",
     "title": "Select your language",
