@@ -11,12 +11,11 @@ import {
 import { colors } from '../theme/colors';
 import { font } from '../theme/fonts';
 
-/** Fixed picker card size — never depends on selection state. */
+/** Fixed picker card size — identical in every selection state. */
 export const AVATAR_PICKER_CARD_WIDTH = 156;
-export const AVATAR_PICKER_IMAGE_HEIGHT = 360;
+export const AVATAR_PICKER_IMAGE_HEIGHT = 340;
 
 type AvatarCardProps = {
-  /** Stable native key so Android never recycles this Image into the sibling. */
   imageKey: string;
   image: ImageSourcePropType;
   label: string;
@@ -25,10 +24,9 @@ type AvatarCardProps = {
 };
 
 /**
- * Avatar picker card:
- * - Image slot size never changes on selection (no shrink)
- * - Selection = border ring + check only (no wash / opacity overlay)
- * - Pressable never dims the card
+ * Figma avatar option states:
+ * - none / selected: image always fully visible at the same size
+ * - selected: navy border + check badge only (no wash, no shrink, no hide)
  */
 export function AvatarCard({
   imageKey,
@@ -38,15 +36,11 @@ export function AvatarCard({
   onPress,
 }: AvatarCardProps) {
   return (
-    <Pressable
-      onPress={onPress}
-      // Force full opacity while pressed — Android otherwise dims the card.
-      style={({ pressed }) => [styles.card, { opacity: 1 }, pressed ? null : null]}
-      android_ripple={{ color: 'transparent' }}
-      accessibilityRole="button"
-      accessibilityState={{ selected }}
-      accessibilityLabel={label}
+    <View
+      style={[styles.card, selected && styles.cardSelected]}
+      collapsable={false}
     >
+      {/* Image is NEVER gated on selection — always mounted, fixed size. */}
       <View style={styles.imageSlot} collapsable={false}>
         <Image
           key={imageKey}
@@ -61,18 +55,22 @@ export function AvatarCard({
 
       <Text style={[styles.label, selected && styles.labelSelected]}>{label}</Text>
 
-      {/* Border + check only — never a fill wash over the avatar */}
-      <View
-        pointerEvents="none"
-        style={[styles.selectionRing, selected && styles.selectionRingOn]}
-        collapsable={false}
+      {/* Full-card tap target — does not wrap the Image in opacity styles. */}
+      <Pressable
+        onPress={onPress}
+        style={styles.hitTarget}
+        android_ripple={{ color: 'transparent' }}
+        accessibilityRole="button"
+        accessibilityState={{ selected }}
+        accessibilityLabel={label}
       />
+
       {selected ? (
         <View style={styles.checkBadge} pointerEvents="none">
           <Ionicons name="checkmark-circle" size={22} color={colors.buttonPrimary} />
         </View>
       ) : null}
-    </Pressable>
+    </View>
   );
 }
 
@@ -85,16 +83,19 @@ const styles = StyleSheet.create({
     paddingTop: 10,
     paddingBottom: 12,
     paddingHorizontal: 6,
-    // Reserve border space always so selecting cannot shrink the image slot.
+    // Border width reserved always — selecting only changes color.
     borderWidth: 2,
     borderColor: 'transparent',
     overflow: 'hidden',
+  },
+  cardSelected: {
+    borderColor: colors.optionBorderSelected,
   },
   imageSlot: {
     width: AVATAR_PICKER_CARD_WIDTH - 16,
     height: AVATAR_PICKER_IMAGE_HEIGHT,
     borderRadius: 8,
-    backgroundColor: '#EEF2F6',
+    backgroundColor: colors.optionBg,
     overflow: 'hidden',
   },
   image: {
@@ -110,15 +111,8 @@ const styles = StyleSheet.create({
   labelSelected: {
     color: colors.optionTextSelected,
   },
-  selectionRing: {
+  hitTarget: {
     ...StyleSheet.absoluteFillObject,
-    borderRadius: 12,
-    borderWidth: 2,
-    borderColor: 'transparent',
-    backgroundColor: 'transparent',
-  },
-  selectionRingOn: {
-    borderColor: colors.optionBorderSelected,
   },
   checkBadge: {
     position: 'absolute',

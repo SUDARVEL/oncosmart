@@ -1,6 +1,6 @@
 import { Asset } from 'expo-asset';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -13,13 +13,12 @@ import { colors } from '../../theme/colors';
 import { font } from '../../theme/fonts';
 
 /**
- * Opaque JPEG picker assets (no alpha). Large transparent PNGs were blanking
- * the unselected sibling Image on some Android GPUs when selection changed.
+ * Opaque JPEG picker assets. Both cards stay mounted in every state
+ * (none / male / female) so Android never blanks a sibling image.
  */
 const MALE_PICKER = require('../../assets/avatars/male-avatar-picker.jpg');
 const FEMALE_PICKER = require('../../assets/avatars/female-avatar-picker.jpg');
 
-// Warm both bitmaps as soon as this module loads — before first paint.
 Asset.fromModule(MALE_PICKER).downloadAsync().catch(() => undefined);
 Asset.fromModule(FEMALE_PICKER).downloadAsync().catch(() => undefined);
 
@@ -29,15 +28,9 @@ export default function AvatarScreen() {
   const { from } = useLocalSearchParams<{ from?: string }>();
   const isFromHome = from === 'home';
   const savedAvatar = useAppStore((state) => state.avatar);
-  const gender = useAppStore((state) => state.gender);
   const setAvatar = useAppStore((state) => state.setAvatar);
+  // Start from saved avatar only — allows the Figma "none selected" state.
   const [selected, setSelected] = useState<AppAvatar | null>(savedAvatar);
-
-  useEffect(() => {
-    if (selected || !gender) return;
-    if (gender === 'male') setSelected('male');
-    if (gender === 'female') setSelected('female');
-  }, [gender, selected]);
 
   const handleContinue = () => {
     if (!selected) return;
@@ -73,10 +66,6 @@ export default function AvatarScreen() {
           <Text style={styles.subtitle}>{t('avatar.subtitle')}</Text>
         </View>
 
-        {/*
-          Both cards always mounted. Selection only toggles overlay props —
-          image sources and slots never remount or resize.
-        */}
         <View style={styles.cardsRow} collapsable={false}>
           <AvatarCard
             imageKey="picker-male"
@@ -118,7 +107,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingTop: 8,
     paddingBottom: 28,
-    gap: 16,
+    gap: 20,
+    justifyContent: 'space-between',
   },
   intro: {
     gap: 8,
@@ -140,7 +130,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'flex-start',
     gap: 12,
-    minHeight: 420,
   },
   button: {
     marginTop: 8,
