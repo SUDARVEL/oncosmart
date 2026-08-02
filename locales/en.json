@@ -459,5 +459,26 @@
   "notifications": {
     "nextExerciseTitle": "Your exercise is ready",
     "nextExerciseBody": "Level {{level}}, Day {{day}} is unlocked. Open ONCOSMART to start."
+  },
+  "admin": {
+    "title": "Patient Progress",
+    "subtitle": "Pull down to refresh. Tap a patient to see completed sessions.",
+    "summary": "{{total}} accounts · {{onboarded}} onboarded · {{active}} with progress",
+    "logout": "Logout",
+    "empty": "No patient accounts found.",
+    "sessionsProgress": "{{done}} / {{total}} sessions completed",
+    "currentSession": "Current: Level {{level}}, Day {{day}}",
+    "programComplete": "Program complete",
+    "onboarded": "Onboarded",
+    "notOnboarded": "Not onboarded",
+    "paused": "Paused",
+    "levelsDone": "{{count}} levels done",
+    "email": "Email",
+    "age": "Age",
+    "cancerType": "Cancer type",
+    "lastUpdated": "Last updated",
+    "completedSessions": "Completed sessions",
+    "noSessionsYet": "No exercise sessions completed yet.",
+    "sessionItem": "Level {{level}}, Day {{day}}"
   }
 }

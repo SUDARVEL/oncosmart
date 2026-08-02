@@ -15,6 +15,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { OncosmartLogo } from '../components/OncosmartLogo';
 import { PrimaryButton } from '../components/PrimaryButton';
 import { getCurrentSession, signInWithUsername } from '../lib/auth';
+import { isAdminSession } from '../lib/isAdmin';
 import { resolvePostAuthRoute } from '../lib/resolvePostAuthRoute';
 import { syncNextExerciseNotification } from '../lib/nextExerciseNotification';
 import { loadCloudProfileIntoStore } from '../lib/userCloudSync';
@@ -47,11 +48,16 @@ export default function LoginScreen() {
     }
 
     const session = await getCurrentSession();
+    if (isAdminSession(session)) {
+      router.replace('/admin');
+      setSubmitting(false);
+      return;
+    }
     if (session?.user?.id) {
       await loadCloudProfileIntoStore(session.user.id);
       void syncNextExerciseNotification(useAppStore.getState().dayCompletedAt);
     }
-    router.replace(resolvePostAuthRoute());
+    router.replace(resolvePostAuthRoute(session));
   };
 
   return (

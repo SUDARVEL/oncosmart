@@ -40,10 +40,19 @@ create table if not exists exercise_completions (
 alter table patients enable row level security;
 alter table exercise_completions enable row level security;
 
--- Patients: own rows only
--- create policy patients_select_own on patients for select using (auth.uid() = user_id);
--- create policy patients_insert_own on patients for insert with check (auth.uid() = user_id);
--- create policy patients_update_own on patients for update using (auth.uid() = user_id) with check (auth.uid() = user_id);
+-- Patients: own rows only (+ admin select-all via is_admin())
+-- Completions: via owning patient (+ admin select-all)
+-- Admin RPC: public.admin_list_patient_progress() (security definer, admin JWT only)
 
--- Completions: via owning patient
--- create policy completions_* ... (see live project policies)
+create or replace function public.is_admin()
+returns boolean
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select coalesce(
+    (auth.jwt() -> 'app_metadata' ->> 'role') = 'admin',
+    false
+  );
+$$;

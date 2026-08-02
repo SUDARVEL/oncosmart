@@ -6,6 +6,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { OncosmartLogo } from '../components/OncosmartLogo';
 import { SplashFooter } from '../components/SplashFooter';
 import { getCurrentSession } from '../lib/auth';
+import { isAdminSession } from '../lib/isAdmin';
 import { resolvePostAuthRoute } from '../lib/resolvePostAuthRoute';
 import { syncNextExerciseNotification } from '../lib/nextExerciseNotification';
 import { loadCloudProfileIntoStore } from '../lib/userCloudSync';
@@ -39,10 +40,15 @@ export default function SplashScreen() {
       return;
     }
 
+    if (isAdminSession(session)) {
+      router.replace('/admin');
+      return;
+    }
+
     await loadCloudProfileIntoStore(session.user.id);
     const completions = useAppStore.getState().dayCompletedAt;
     void syncNextExerciseNotification(completions);
-    router.replace(resolvePostAuthRoute());
+    router.replace(resolvePostAuthRoute(session));
   }, [router]);
 
   useEffect(() => {

@@ -460,6 +460,27 @@
     "nextExerciseTitle": "உங்கள் பயிற்சி தயார்",
     "nextExerciseBody": "நிலை {{level}}, நாள் {{day}} திறக்கப்பட்டது. தொடங்க ONCOSMART-ஐத் திறக்கவும்."
   },
+  "admin": {
+    "title": "நோயாளி முன்னேற்றம்",
+    "subtitle": "புதுப்பிக்க கீழே இழுக்கவும். முடித்த பயிற்சிகளைக் காண நோயாளியைத் தட்டவும்.",
+    "summary": "{{total}} கணக்குகள் · {{onboarded}} அறிமுகம் முடிந்தது · {{active}} முன்னேற்றம் உள்ளது",
+    "logout": "வெளியேறு",
+    "empty": "நோயாளி கணக்குகள் இல்லை.",
+    "sessionsProgress": "{{done}} / {{total}} அமர்வுகள் முடிந்தன",
+    "currentSession": "தற்போது: நிலை {{level}}, நாள் {{day}}",
+    "programComplete": "திட்டம் முடிந்தது",
+    "onboarded": "அறிமுகம் முடிந்தது",
+    "notOnboarded": "அறிமுகம் இல்லை",
+    "paused": "இடைநிறுத்தம்",
+    "levelsDone": "{{count}} நிலைகள் முடிந்தன",
+    "email": "மின்னஞ்சல்",
+    "age": "வயது",
+    "cancerType": "புற்றுநோய் வகை",
+    "lastUpdated": "கடைசியாக புதுப்பிக்கப்பட்டது",
+    "completedSessions": "முடித்த அமர்வுகள்",
+    "noSessionsYet": "இன்னும் பயிற்சி அமர்வுகள் முடிக்கப்படவில்லை.",
+    "sessionItem": "நிலை {{level}}, நாள் {{day}}"
+  },
 
   "chat": {
     "placeholder": "உங்கள் செய்தியை எழுதவும்...",
