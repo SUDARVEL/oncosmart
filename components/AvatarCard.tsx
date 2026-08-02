@@ -1,47 +1,58 @@
 import { Ionicons } from '@expo/vector-icons';
-import { Image, type ImageSourcePropType, Pressable, StyleSheet, View } from 'react-native';
+import { Image } from 'expo-image';
+import { type ImageSourcePropType, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { colors } from '../theme/colors';
-
-/** Figma avatar display size inside each choose-avatar card. */
-export const AVATAR_DISPLAY_WIDTH = 143;
-export const AVATAR_DISPLAY_HEIGHT = 363;
+import { font } from '../theme/fonts';
 
 type AvatarCardProps = {
   image: ImageSourcePropType;
-  /** Stable id so male/female never share a recycled image slot. */
+  /** Stable id so male/female never share a recycled native image slot. */
   imageKey: 'male' | 'female';
+  label: string;
   selected: boolean;
   onPress: () => void;
+  /** Optional fallback if the primary full-body asset fails to decode. */
+  fallbackImage?: ImageSourcePropType;
 };
 
-export function AvatarCard({ image, imageKey, selected, onPress }: AvatarCardProps) {
+/**
+ * Avatar picker card — fixed size (no flex crush), unique recyclingKey,
+ * and a text label so selection stays clear even if media is slow.
+ */
+export function AvatarCard({
+  image,
+  imageKey,
+  label,
+  selected,
+  onPress,
+  fallbackImage,
+}: AvatarCardProps) {
   return (
     <Pressable
       onPress={onPress}
       style={[styles.card, selected && styles.cardSelected]}
       accessibilityRole="button"
       accessibilityState={{ selected }}
-      accessibilityLabel={`${imageKey} avatar`}
+      accessibilityLabel={label}
     >
       <View style={styles.imageFrame}>
-        {/*
-          RN Image + unique key + fadeDuration 0 avoids blank male/female cards
-          seen with image recycling on some Android devices.
-        */}
         <Image
-          key={`avatar-${imageKey}`}
           source={image}
-          defaultSource={typeof image === 'number' ? image : undefined}
+          placeholder={fallbackImage}
+          recyclingKey={`oncosmart-avatar-${imageKey}`}
           style={styles.image}
-          resizeMode="contain"
-          fadeDuration={0}
-          accessibilityIgnoresInvertColors
+          contentFit="contain"
+          contentPosition="center"
+          cachePolicy="memory-disk"
+          transition={0}
+          allowDownscaling
         />
       </View>
+      <Text style={[styles.label, selected && styles.labelSelected]}>{label}</Text>
       {selected ? (
         <View style={styles.checkBadge}>
-          <Ionicons name="checkmark-circle" size={20} color={colors.buttonPrimary} />
+          <Ionicons name="checkmark-circle" size={22} color={colors.buttonPrimary} />
         </View>
       ) : null}
     </Pressable>
@@ -50,34 +61,43 @@ export function AvatarCard({ image, imageKey, selected, onPress }: AvatarCardPro
 
 const styles = StyleSheet.create({
   card: {
-    width: '100%',
-    flexGrow: 1,
-    flexShrink: 1,
-    flexBasis: 0,
-    minHeight: 360,
-    maxHeight: 410,
-    borderRadius: 8,
+    flex: 1,
+    borderRadius: 12,
     backgroundColor: colors.optionBg,
     overflow: 'hidden',
     alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 12,
+    justifyContent: 'flex-start',
+    paddingTop: 16,
+    paddingBottom: 12,
+    paddingHorizontal: 8,
+    minHeight: 340,
   },
   cardSelected: {
     backgroundColor: colors.optionBgSelected,
-    borderWidth: 1,
+    borderWidth: 2,
     borderColor: colors.optionBorderSelected,
   },
   imageFrame: {
-    width: AVATAR_DISPLAY_WIDTH,
-    height: AVATAR_DISPLAY_HEIGHT,
+    width: '100%',
+    height: 280,
     alignItems: 'center',
     justifyContent: 'center',
+    backgroundColor: '#F8FAFC',
+    borderRadius: 8,
     overflow: 'hidden',
   },
   image: {
-    width: AVATAR_DISPLAY_WIDTH,
-    height: AVATAR_DISPLAY_HEIGHT,
+    width: '100%',
+    height: '100%',
+  },
+  label: {
+    marginTop: 10,
+    fontSize: 14,
+    ...font('semiBold'),
+    color: colors.textSecondary,
+  },
+  labelSelected: {
+    color: colors.optionTextSelected,
   },
   checkBadge: {
     position: 'absolute',

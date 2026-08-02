@@ -1,7 +1,7 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { AvatarCard } from '../../components/AvatarCard';
@@ -11,8 +11,11 @@ import { AppAvatar, useAppStore } from '../../store/useAppStore';
 import { colors } from '../../theme/colors';
 import { font } from '../../theme/fonts';
 
+// Full-body pickers + square DPs as decode fallback (Home uses DPs successfully).
 const MALE_AVATAR = require('../../assets/avatars/male-avatar.png');
 const FEMALE_AVATAR = require('../../assets/avatars/female-avatar.png');
+const MALE_AVATAR_DP = require('../../assets/avatars/male-avatar-dp.png');
+const FEMALE_AVATAR_DP = require('../../assets/avatars/female-avatar-dp.png');
 
 export default function AvatarScreen() {
   const { t } = useTranslation();
@@ -49,10 +52,16 @@ export default function AvatarScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.screen}>
+    <SafeAreaView style={styles.screen} edges={['top', 'bottom']}>
       <ScreenHeader title="" showBack onBack={handleBack} />
 
-      <View style={styles.content}>
+      <ScrollView
+        style={styles.scroll}
+        contentContainerStyle={styles.content}
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
+        bounces={false}
+      >
         <View style={styles.intro}>
           <Text style={styles.title}>{t('avatar.title')}</Text>
           <Text style={styles.subtitle}>{t('avatar.subtitle')}</Text>
@@ -61,13 +70,17 @@ export default function AvatarScreen() {
         <View style={styles.cardsRow}>
           <AvatarCard
             image={MALE_AVATAR}
+            fallbackImage={MALE_AVATAR_DP}
             imageKey="male"
+            label={t('gender.male')}
             selected={selected === 'male'}
             onPress={() => setSelected('male')}
           />
           <AvatarCard
             image={FEMALE_AVATAR}
+            fallbackImage={FEMALE_AVATAR_DP}
             imageKey="female"
+            label={t('gender.female')}
             selected={selected === 'female'}
             onPress={() => setSelected('female')}
           />
@@ -77,8 +90,9 @@ export default function AvatarScreen() {
           label={t('avatar.saveContinue')}
           onPress={handleContinue}
           disabled={!selected}
+          style={styles.button}
         />
-      </View>
+      </ScrollView>
     </SafeAreaView>
   );
 }
@@ -88,17 +102,21 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.background,
   },
-  content: {
+  scroll: {
     flex: 1,
+  },
+  content: {
+    flexGrow: 1,
     paddingHorizontal: 20,
-    paddingTop: 55,
-    gap: 24,
+    paddingTop: 12,
+    paddingBottom: 28,
+    gap: 20,
   },
   intro: {
     gap: 8,
   },
   title: {
-    fontSize: 14,
+    fontSize: 16,
     ...font('semiBold'),
     color: colors.textPrimary,
     letterSpacing: 0.1,
@@ -112,9 +130,9 @@ const styles = StyleSheet.create({
   cardsRow: {
     flexDirection: 'row',
     alignItems: 'stretch',
-    gap: 16,
-    flex: 1,
-    maxHeight: 410,
-    minHeight: 360,
+    gap: 12,
+  },
+  button: {
+    marginTop: 'auto',
   },
 });
