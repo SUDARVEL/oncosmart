@@ -47,6 +47,25 @@ function asParqAnswers(value: unknown): (boolean | null)[] {
   return next;
 }
 
+export function computeOnboardingComplete(state: {
+  language: AppLanguage | null;
+  username: string;
+  gender: AppGender | null;
+  avatar: AppAvatar | null;
+  age: number | null;
+  ageRange: AgeRange | null;
+  parqCleared: boolean | null;
+}): boolean {
+  return Boolean(
+    state.language &&
+      state.username.trim() &&
+      state.gender &&
+      state.avatar &&
+      (state.age != null || state.ageRange) &&
+      state.parqCleared !== null,
+  );
+}
+
 /** Ensure a patients row exists for the signed-in auth user. */
 export async function ensurePatientRow(userId: string, displayName = ''): Promise<string | null> {
   const supabase = getSupabase();
@@ -66,10 +85,13 @@ export async function ensurePatientRow(userId: string, displayName = ''): Promis
 
   const { data: inserted, error: insertError } = await supabase
     .from('patients')
-    .insert({
-      user_id: userId,
-      name: displayName,
-    })
+    .upsert(
+      {
+        user_id: userId,
+        name: displayName,
+      },
+      { onConflict: 'user_id', ignoreDuplicates: false },
+    )
     .select('id')
     .single();
 
@@ -85,7 +107,14 @@ export async function loadCloudProfileIntoStore(userId: string): Promise<boolean
   const supabase = getSupabase();
   if (!supabase) return false;
 
-  await ensurePatientRow(userId);
+  // Always bind local sync to this auth user, even before the first successful save.
+  useAppStore.getState().setActiveAuthUserId(userId);
+
+  const patientId = await ensurePatientRow(userId);
+  if (!patientId) {
+    console.warn('[CloudSync] load aborted — could not ensure patient row');
+    return false;
+  }
 
   const { data, error } = await supabase
     .from('patients')
@@ -101,7 +130,16 @@ export async function loadCloudProfileIntoStore(userId: string): Promise<boolean
   }
   if (!data) return false;
 
+  const onboardingComplete = Boolean(data.onboarding_complete);
   const dayCompletedAt = asRecordNumber(data.day_completed_at);
+
+  // Fresh rows default parq_cleared=false in DB; only treat it as answered once onboarded.
+  const parqCleared = onboardingComplete
+    ? typeof data.parq_cleared === 'boolean'
+      ? data.parq_cleared
+      : false
+    : null;
+
   useAppStore.getState().hydrateFromCloud({
     activeAuthUserId: userId,
     username: data.name ?? '',
@@ -115,7 +153,7 @@ export async function loadCloudProfileIntoStore(userId: string): Promise<boolean
     underwentSurgery:
       typeof data.underwent_surgery === 'boolean' ? data.underwent_surgery : null,
     parqAnswers: asParqAnswers(data.parq_answers),
-    parqCleared: typeof data.parq_cleared === 'boolean' ? data.parq_cleared : null,
+    parqCleared,
     progressPaused: Boolean(data.progress_paused),
     painScores: asRecordNumber(data.pain_scores),
     dayCompletedAt,
@@ -137,14 +175,7 @@ export async function saveCloudProfileFromStore(userId: string): Promise<boolean
   if (!patientId) return false;
 
   const state = useAppStore.getState();
-  const onboardingComplete = Boolean(
-    state.language &&
-      state.username.trim() &&
-      state.gender &&
-      state.avatar &&
-      (state.age != null || state.ageRange) &&
-      state.parqCleared !== null,
-  );
+  const onboardingComplete = computeOnboardingComplete(state);
 
   const { error } = await supabase
     .from('patients')
@@ -165,6 +196,7 @@ export async function saveCloudProfileFromStore(userId: string): Promise<boolean
       day_completed_at: state.dayCompletedAt,
       levels_completed: state.levelsCompleted,
       onboarding_complete: onboardingComplete,
+      updated_at: new Date().toISOString(),
     })
     .eq('id', patientId);
 

@@ -29,6 +29,7 @@ export default function LoginScreen() {
   const router = useRouter();
   const resetApp = useAppStore((state) => state.resetApp);
   const setLanguage = useAppStore((state) => state.setLanguage);
+  const setActiveAuthUserId = useAppStore((state) => state.setActiveAuthUserId);
   const language = useAppStore((state) => state.language);
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -80,6 +81,8 @@ export default function LoginScreen() {
       return;
     }
     if (session?.user?.id) {
+      // Bind sync immediately so onboarding fields start uploading right away.
+      setActiveAuthUserId(session.user.id);
       await loadCloudProfileIntoStore(session.user.id);
       // Keep the language chosen before login for this device session.
       if (keptLanguage) setLanguage(keptLanguage);

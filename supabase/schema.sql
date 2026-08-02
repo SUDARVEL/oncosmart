@@ -40,6 +40,10 @@ create table if not exists exercise_completions (
 alter table patients enable row level security;
 alter table exercise_completions enable row level security;
 
+grant usage on schema public to authenticated;
+grant select, insert, update on table public.patients to authenticated;
+grant select, insert, update on table public.exercise_completions to authenticated;
+
 -- Patients: own rows only (+ admin select-all via is_admin())
 -- Completions: via owning patient (+ admin select-all)
 -- Admin RPC: public.admin_list_patient_progress() (security definer, admin JWT only)

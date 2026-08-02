@@ -9,8 +9,13 @@ import { useAppStore } from '../store/useAppStore';
  */
 const DATA_VERSION_KEY = 'oncosmart-data-version';
 /** Bump forces a one-time local wipe so this APK starts Language → Login cleanly. */
-const DATA_VERSION = '6-language-login';
-const ZUSTAND_PERSIST_KEYS = ['oncofitness-app', 'oncofitness-app-v5', 'oncofitness-app-v6'];
+const DATA_VERSION = '7-cloud-sync-fix';
+const ZUSTAND_PERSIST_KEYS = [
+  'oncofitness-app',
+  'oncofitness-app-v5',
+  'oncofitness-app-v6',
+  'oncofitness-app-v7',
+];
 
 let bootstrapPromise: Promise<void> | null = null;
 

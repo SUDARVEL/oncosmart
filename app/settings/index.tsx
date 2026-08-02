@@ -14,6 +14,7 @@ import { signOut } from '../../lib/auth';
 import { cancelNextExerciseNotification } from '../../lib/nextExerciseNotification';
 import { openWhatsAppSupport } from '../../lib/openWhatsAppSupport';
 import { setPreferredLanguage } from '../../lib/preferredLanguage';
+import { saveCloudProfileFromStore } from '../../lib/userCloudSync';
 import { AppLanguage, useAppStore } from '../../store/useAppStore';
 import { colors } from '../../theme/colors';
 
@@ -51,14 +52,20 @@ export default function SettingsScreen() {
   };
 
   const handleLogout = () => {
-    // Sign out clears the Auth session only. Cloud patient data stays for next login.
-    const keptLanguage = useAppStore.getState().language;
-    void cancelNextExerciseNotification();
-    void signOut();
-    resetApp();
-    if (keptLanguage) useAppStore.getState().setLanguage(keptLanguage);
-    // Back through Language → Login for the next account.
-    router.replace('/language');
+    // Flush latest progress, then sign out locally. Cloud rows stay for next login.
+    const state = useAppStore.getState();
+    const keptLanguage = state.language;
+    const userId = state.activeAuthUserId;
+    void (async () => {
+      if (userId) {
+        await saveCloudProfileFromStore(userId);
+      }
+      await cancelNextExerciseNotification();
+      await signOut();
+      resetApp();
+      if (keptLanguage) useAppStore.getState().setLanguage(keptLanguage);
+      router.replace('/language');
+    })();
   };
 
   return (
