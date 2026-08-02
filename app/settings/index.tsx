@@ -104,7 +104,6 @@ export default function SettingsScreen() {
       <ScreenHeader
         title={t('settings.title')}
         showBack
-        largeTitle
         onBack={handleBack}
       />
 
@@ -233,12 +232,10 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   scrollContent: {
-    paddingTop: 8,
-    paddingBottom: 120,
-    // RN ScrollView defaults to alignItems:'flex-start' which shrinks rows.
+    paddingTop: 0,
+    paddingBottom: 100,
     alignItems: 'stretch',
     width: '100%',
-    flexGrow: 1,
   },
   menuAnchor: {
     width: '100%',
@@ -246,11 +243,11 @@ const styles = StyleSheet.create({
   },
   fab: {
     position: 'absolute',
-    right: 20,
-    bottom: 100,
-    width: 48,
-    height: 48,
-    borderRadius: 24,
+    right: 16,
+    bottom: 96,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     backgroundColor: '#E0F4FF',
     alignItems: 'center',
     justifyContent: 'center',

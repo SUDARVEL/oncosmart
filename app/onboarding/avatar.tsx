@@ -123,12 +123,12 @@ const styles = StyleSheet.create({
   content: {
     flexGrow: 1,
     paddingHorizontal: 16,
-    paddingTop: 8,
-    paddingBottom: 24,
-    gap: 16,
+    paddingTop: 4,
+    paddingBottom: 20,
+    gap: 12,
   },
   intro: {
-    gap: 8,
+    gap: 6,
   },
   title: {
     fontSize: 16,
@@ -145,13 +145,10 @@ const styles = StyleSheet.create({
   cardsRow: {
     flexDirection: 'row',
     justifyContent: 'center',
-    alignItems: 'stretch',
+    alignItems: 'flex-start',
     gap: 12,
-    flexGrow: 1,
-    // Give cards a tall shared height so avatars fill responsively.
-    minHeight: 420,
   },
   button: {
-    marginTop: 12,
+    marginTop: 16,
   },
 });
