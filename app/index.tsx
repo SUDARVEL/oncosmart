@@ -6,6 +6,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { OncosmartLogo } from '../components/OncosmartLogo';
 import { SplashFooter } from '../components/SplashFooter';
 import { getCurrentSession } from '../lib/auth';
+import { bootstrapAppData } from '../lib/bootstrapAppData';
 import { isAdminSession } from '../lib/isAdmin';
 import { resolvePostAuthRoute } from '../lib/resolvePostAuthRoute';
 import { syncNextExerciseNotification } from '../lib/nextExerciseNotification';
@@ -31,16 +32,21 @@ async function waitForStoreHydration(timeoutMs = 2500): Promise<void> {
 export default function SplashScreen() {
   const router = useRouter();
 
-  // Keep session: signed-in + onboarded → home; signed-in incomplete → onboarding; else login.
+  // Auth-first: no session → Login (never reuse a leftover local name).
+  // Signed-in + onboarded → home; signed-in incomplete → onboarding; admin → admin.
   const proceed = useCallback(async () => {
+    await bootstrapAppData();
     await waitForStoreHydration();
+
     const session = await getCurrentSession();
     if (!session?.user?.id) {
+      useAppStore.getState().resetApp();
       router.replace('/login');
       return;
     }
 
     if (isAdminSession(session)) {
+      useAppStore.getState().resetApp();
       router.replace('/admin');
       return;
     }

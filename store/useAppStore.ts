@@ -207,7 +207,8 @@ export const useAppStore = create<AppState>()(
         }),
     }),
     {
-      name: 'oncofitness-app',
+      // Bumped so older APK local profiles (saved name/progress) are not reused.
+      name: 'oncofitness-app-v5',
       storage: createJSONStorage(() => AsyncStorage),
       partialize: (state) => ({
         language: state.language,
