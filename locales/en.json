@@ -212,59 +212,59 @@
       },
       "knee-to-chest-right": {
         "title": "Knee to Chest (Right)",
-        "description": "Improves hip mobility and reduces stiffness."
+        "description": "Improves hip mobility and reduces stiffness. Lie on your back with the left leg straight. Using your hands, bring your right knee toward your chest, then slowly return to the starting position."
       },
       "knee-to-chest-left": {
         "title": "Knee to Chest (Left)",
-        "description": "Improves hip mobility and reduces stiffness."
+        "description": "Improves hip mobility and reduces stiffness. Lie on your back with the right leg straight. Using your hands, bring your left knee toward your chest, then slowly return to the starting position."
       },
       "static-quadriceps-right": {
         "title": "Static Quadriceps (Right)",
-        "description": "Strengthens thigh muscles and improves knee control."
+        "description": "Strengthens thigh muscles and improves knee control. Sit with your legs stretched forward. Slowly press your right knee toward the floor, hold briefly, then relax."
       },
       "static-quadriceps-left": {
         "title": "Static Quadriceps (Left)",
-        "description": "Strengthens thigh muscles and improves knee control."
+        "description": "Strengthens thigh muscles and improves knee control. Sit with your legs stretched forward. Slowly press your left knee toward the floor, hold briefly, then relax."
       },
       "hamstring-stretch": {
         "title": "Hamstring Stretch",
-        "description": "Improves flexibility of the back thigh muscles."
+        "description": "Improves flexibility of the back thigh muscles. Sit with your legs stretched forward and slowly bend forward, trying to reach your toes. You should feel a stretch at the back of the thigh. Hold this position."
       },
       "quadriceps-stretch-right": {
         "title": "Quadriceps Stretch (Right)",
-        "description": "Improves flexibility of the front thigh muscles."
+        "description": "Improves flexibility of the front thigh muscles. Stand holding a chair for support. Using your right hand, bend your right knee and lift the heel toward your hip. You should feel a stretch at the front of the thigh. Hold this position."
       },
       "quadriceps-stretch-left": {
         "title": "Quadriceps Stretch (Left)",
-        "description": "Improves flexibility of the front thigh muscles."
+        "description": "Improves flexibility of the front thigh muscles. Stand holding a chair for support. Using your left hand, bend your left knee and lift the heel toward your hip. You should feel a stretch at the front of the thigh. Hold this position."
       },
       "calf-stretch-right": {
         "title": "Calf Stretch (Right)",
-        "description": "Improves flexibility of the lower leg muscles."
+        "description": "Improves flexibility of the lower leg muscles. Stand facing a wall and place your hands on the wall for support. Step the right leg back with the knee straight and lean forward slowly. You should feel a stretch in the right calf. Hold this position."
       },
       "calf-stretch-left": {
         "title": "Calf Stretch (Left)",
-        "description": "Improves flexibility of the lower leg muscles."
+        "description": "Improves flexibility of the lower leg muscles. Stand facing a wall and place your hands on the wall for support. Step the left leg back with the knee straight and lean forward slowly. You should feel a stretch in the left calf. Hold this position."
       },
       "chest-stretch": {
         "title": "Pectoralis Stretch",
-        "description": "Improves flexibility of chest muscles and improves posture."
+        "description": "Improves flexibility of chest muscles and improves posture. Stand in a doorway with your hands at shoulder height on the frame. Lean forward slowly. You should feel a stretch across the chest. Hold this position."
       },
       "triceps-stretch-right": {
         "title": "Triceps Stretch (Right)",
-        "description": "Improves flexibility of the back arm muscles."
+        "description": "Improves flexibility of the back arm muscles. Stand upright, raise your right arm overhead, and bend the elbow. Use your left hand to gently pull the right elbow. You should feel a stretch at the back of the right arm. Hold this position."
       },
       "triceps-stretch-left": {
         "title": "Triceps Stretch (Left)",
-        "description": "Improves flexibility of the back arm muscles."
+        "description": "Improves flexibility of the back arm muscles. Stand upright, raise your left arm overhead, and bend the elbow. Use your right hand to gently pull the left elbow. You should feel a stretch at the back of the left arm. Hold this position."
       },
       "neck-stretch-right": {
         "title": "Neck Stretch (Right)",
-        "description": "Relieves neck stiffness and improves flexibility."
+        "description": "Relieves neck stiffness and improves flexibility. Stand upright and slowly tilt your head toward the left shoulder. Place your left hand on top of your head and gently press. You should feel a stretch on the right side of the neck. Hold this position."
       },
       "neck-stretch-left": {
         "title": "Neck Stretch (Left)",
-        "description": "Relieves neck stiffness and improves flexibility."
+        "description": "Relieves neck stiffness and improves flexibility. Stand upright and slowly tilt your head toward the right shoulder. Place your right hand on top of your head and gently press. You should feel a stretch on the left side of the neck. Hold this position."
       }
     }
   },
