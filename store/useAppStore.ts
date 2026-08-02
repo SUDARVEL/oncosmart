@@ -130,15 +130,19 @@ export const useAppStore = create<AppState>()(
       setProgressPaused: (paused) => set({ progressPaused: paused }),
       setLevelsCompleted: (count) => set({ levelsCompleted: count }),
       setActiveAuthUserId: (userId) => set({ activeAuthUserId: userId }),
-      setCoachTourSeen: (seen) => set({ coachTourSeen: seen }),
-      setCoachTourStep: (step) => set({ coachTourStep: step }),
+      setCoachTourSeen: (seen) => set({ coachTourSeen: Boolean(seen) }),
+      setCoachTourStep: (step) =>
+        set({
+          coachTourStep:
+            step == null || !Number.isFinite(step) ? null : Math.max(0, Math.floor(step)),
+        }),
       restartCoachTour: () => set({ coachTourSeen: false, coachTourStep: 0 }),
       hydrateFromCloud: (payload) =>
         set((state) => ({
           ...state,
           ...payload,
           // Never overwrite local tour completion from cloud profile blobs.
-          coachTourSeen: state.coachTourSeen,
+          coachTourSeen: state.coachTourSeen === true,
           parqAnswers: payload.parqAnswers
             ? [...payload.parqAnswers]
             : state.parqAnswers,

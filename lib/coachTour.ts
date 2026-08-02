@@ -13,7 +13,8 @@ export type CoachTourStep = {
   screen: CoachTourScreen;
   /** Preferred caret direction relative to the tooltip card. */
   preferPlacement: 'below' | 'above';
-  icon: 'person-circle-outline' | 'trophy-outline' | 'fitness-outline' | 'stats-chart-outline' | 'pulse-outline' | 'barbell-outline';
+  /** Stick to widely-available Ionicons names (avoid missing-glyph crashes). */
+  icon: 'person-outline' | 'ribbon-outline' | 'play-circle-outline' | 'stats-chart-outline' | 'trending-up-outline' | 'list-outline';
   titleKey: string;
   bodyKey: string;
   /** When entering this step on Growth, force the progress/workouts pill. */
@@ -25,7 +26,7 @@ export const COACH_TOUR_STEPS: CoachTourStep[] = [
     id: 'home.avatar',
     screen: 'home',
     preferPlacement: 'below',
-    icon: 'person-circle-outline',
+    icon: 'person-outline',
     titleKey: 'coach.avatarTitle',
     bodyKey: 'coach.avatarBody',
   },
@@ -33,7 +34,7 @@ export const COACH_TOUR_STEPS: CoachTourStep[] = [
     id: 'home.progress',
     screen: 'home',
     preferPlacement: 'below',
-    icon: 'trophy-outline',
+    icon: 'ribbon-outline',
     titleKey: 'coach.homeProgressTitle',
     bodyKey: 'coach.homeProgressBody',
   },
@@ -41,7 +42,7 @@ export const COACH_TOUR_STEPS: CoachTourStep[] = [
     id: 'home.session',
     screen: 'home',
     preferPlacement: 'above',
-    icon: 'fitness-outline',
+    icon: 'play-circle-outline',
     titleKey: 'coach.sessionTitle',
     bodyKey: 'coach.sessionBody',
   },
@@ -57,7 +58,7 @@ export const COACH_TOUR_STEPS: CoachTourStep[] = [
     id: 'growth.progress',
     screen: 'growth',
     preferPlacement: 'below',
-    icon: 'pulse-outline',
+    icon: 'trending-up-outline',
     titleKey: 'coach.progressTitle',
     bodyKey: 'coach.progressBody',
     growthTab: 'progress',
@@ -66,7 +67,7 @@ export const COACH_TOUR_STEPS: CoachTourStep[] = [
     id: 'growth.workouts',
     screen: 'growth',
     preferPlacement: 'below',
-    icon: 'barbell-outline',
+    icon: 'list-outline',
     titleKey: 'coach.workoutsTitle',
     bodyKey: 'coach.workoutsBody',
     growthTab: 'workouts',
