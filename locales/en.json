@@ -515,6 +515,8 @@
     "progressBody": "Track levels, streaks, pain scores, and badges as you complete sessions.",
     "workoutsTitle": "What is Workouts?",
     "workoutsBody": "Browse every exercise in your current level and review what you have done.",
+    "workoutCardTitle": "Exercise details",
+    "workoutCardBody": "Tap any exercise card to open its full description, tips, and how to do the move.",
     "next": "Next",
     "done": "Done",
     "skip": "Skip",

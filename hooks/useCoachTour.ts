@@ -24,8 +24,7 @@ function waitForHydration(): Promise<void> {
 
 /**
  * Crash-safe coach tour driver.
- * Targets live in a ref (never setState from ref callbacks).
- * Overlay is in-screen (not Modal) so measureInWindow aligns.
+ * Measures targets relative to a host view so the highlight lines up.
  */
 export function useCoachTour(screen: CoachTourScreen) {
   const coachTourSeen = useAppStore((s) => s.coachTourSeen === true);
@@ -37,6 +36,7 @@ export function useCoachTour(screen: CoachTourScreen) {
   const [rect, setRect] = useState<CoachTargetRect | null>(null);
   const [measureTick, setMeasureTick] = useState(0);
   const targetsRef = useRef<TargetMap>({});
+  const hostRef = useRef<View | null>(null);
 
   useEffect(() => {
     let alive = true;
@@ -46,6 +46,10 @@ export function useCoachTour(screen: CoachTourScreen) {
     return () => {
       alive = false;
     };
+  }, []);
+
+  const registerHost = useCallback((node: View | null) => {
+    hostRef.current = node;
   }, []);
 
   const registerTarget = useCallback((id: CoachTourStepId, node: View | null) => {
@@ -82,7 +86,6 @@ export function useCoachTour(screen: CoachTourScreen) {
       setRect(null);
       return;
     }
-    // Delay a tick so Growth tab switches / navigation can finish layout.
     const handle = InteractionManager.runAfterInteractions(() => {
       setMeasureTick((n) => n + 1);
     });
@@ -96,11 +99,13 @@ export function useCoachTour(screen: CoachTourScreen) {
     const measure = () => {
       try {
         const node = targetsRef.current[step.id];
+        const host = hostRef.current;
         if (!node || typeof node.measureInWindow !== 'function') {
           if (!cancelled) setRect(null);
           return;
         }
-        node.measureInWindow((x, y, width, height) => {
+
+        const apply = (x: number, y: number, width: number, height: number) => {
           if (cancelled) return;
           if (
             !Number.isFinite(x) ||
@@ -114,16 +119,27 @@ export function useCoachTour(screen: CoachTourScreen) {
             return;
           }
           setRect({ x, y, width, height });
-        });
+        };
+
+        // Convert window coords → host-local coords so the highlight aligns.
+        if (host && typeof host.measureInWindow === 'function') {
+          host.measureInWindow((hx, hy) => {
+            node.measureInWindow((x, y, width, height) => {
+              apply(x - hx, y - hy, width, height);
+            });
+          });
+          return;
+        }
+
+        node.measureInWindow(apply);
       } catch {
         if (!cancelled) setRect(null);
       }
     };
 
-    // Multiple passes — pills/tabs often settle after the first paint.
-    const t1 = setTimeout(measure, 60);
-    const t2 = setTimeout(measure, 220);
-    const t3 = setTimeout(measure, 480);
+    const t1 = setTimeout(measure, 80);
+    const t2 = setTimeout(measure, 260);
+    const t3 = setTimeout(measure, 520);
     return () => {
       cancelled = true;
       clearTimeout(t1);
@@ -153,6 +169,7 @@ export function useCoachTour(screen: CoachTourScreen) {
     stepIndex: coachTourStep ?? 0,
     stepCount: COACH_TOUR_STEPS.length,
     rect,
+    registerHost,
     registerTarget,
     next,
     skip: finish,

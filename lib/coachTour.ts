@@ -5,6 +5,7 @@ export type CoachTourStepId =
   | 'home.growthTab'
   | 'growth.progress'
   | 'growth.workouts'
+  | 'growth.workoutCard'
   | 'home.settingsTab'
   | 'settings.menu';
 
@@ -17,7 +18,6 @@ export type CoachTourStep = {
   screen: CoachTourScreen;
   preferPlacement: 'below' | 'above';
   spotlight: CoachSpotlightShape;
-  /** Extra padding around the measured target (px). */
   pad: number;
   icon:
     | 'person-outline'
@@ -26,6 +26,7 @@ export type CoachTourStep = {
     | 'stats-chart-outline'
     | 'trending-up-outline'
     | 'list-outline'
+    | 'document-text-outline'
     | 'settings-outline';
   titleKey: string;
   bodyKey: string;
@@ -93,6 +94,17 @@ export const COACH_TOUR_STEPS: CoachTourStep[] = [
     icon: 'list-outline',
     titleKey: 'coach.workoutsTitle',
     bodyKey: 'coach.workoutsBody',
+    growthTab: 'workouts',
+  },
+  {
+    id: 'growth.workoutCard',
+    screen: 'growth',
+    preferPlacement: 'below',
+    spotlight: 'rounded',
+    pad: 6,
+    icon: 'document-text-outline',
+    titleKey: 'coach.workoutCardTitle',
+    bodyKey: 'coach.workoutCardBody',
     growthTab: 'workouts',
   },
   {

@@ -21,8 +21,7 @@ type AvatarCardProps = {
 };
 
 /**
- * Fixed-size avatar card: figure fills the image area, label sits directly under it.
- * Avoids ScrollView flex quirks that left empty space under the label.
+ * Fixed-size avatar card: figure fills the full card height; label overlays the bottom.
  */
 export function AvatarCard({
   imageKey,
@@ -33,10 +32,7 @@ export function AvatarCard({
 }: AvatarCardProps) {
   const { width: screenWidth, height: screenHeight } = useWindowDimensions();
   const cardWidth = Math.floor((screenWidth - 32 - 12) / 2);
-  // Tall enough to feel full, short enough that figure + label fill the card.
   const cardHeight = Math.min(520, Math.max(400, Math.round(screenHeight * 0.55)));
-  const labelBlock = 40;
-  const imageHeight = cardHeight - 12 - labelBlock - 10;
 
   return (
     <View
@@ -47,22 +43,19 @@ export function AvatarCard({
       ]}
       collapsable={false}
     >
-      <View
-        collapsable={false}
-        style={[styles.imageSlot, { width: cardWidth - 12, height: imageHeight }]}
-      >
-        <Image
-          key={imageKey}
-          source={image}
-          defaultSource={typeof image === 'number' ? image : undefined}
-          style={{ width: cardWidth - 12, height: imageHeight }}
-          resizeMode="cover"
-          resizeMethod="resize"
-          fadeDuration={0}
-        />
-      </View>
+      <Image
+        key={imageKey}
+        source={image}
+        defaultSource={typeof image === 'number' ? image : undefined}
+        style={StyleSheet.absoluteFillObject}
+        resizeMode="cover"
+        resizeMethod="resize"
+        fadeDuration={0}
+      />
 
-      <Text style={[styles.label, selected && styles.labelSelected]}>{label}</Text>
+      <View style={styles.labelBar} pointerEvents="none">
+        <Text style={[styles.label, selected && styles.labelSelected]}>{label}</Text>
+      </View>
 
       <Pressable
         onPress={onPress}
@@ -86,10 +79,6 @@ const styles = StyleSheet.create({
   card: {
     borderRadius: 14,
     backgroundColor: colors.optionBg,
-    alignItems: 'center',
-    justifyContent: 'flex-start',
-    paddingTop: 8,
-    paddingHorizontal: 4,
     borderWidth: 2,
     borderColor: 'transparent',
     overflow: 'hidden',
@@ -98,21 +87,25 @@ const styles = StyleSheet.create({
     borderColor: colors.optionBorderSelected,
     backgroundColor: colors.optionBgSelected,
   },
-  imageSlot: {
-    borderRadius: 10,
-    overflow: 'hidden',
-    backgroundColor: colors.optionBg,
+  labelBar: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 0,
+    paddingTop: 28,
+    paddingBottom: 10,
+    paddingHorizontal: 8,
+    backgroundColor: 'rgba(255, 255, 255, 0.88)',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   label: {
-    height: 36,
-    marginTop: 6,
     fontSize: 16,
-    lineHeight: 28,
+    lineHeight: 22,
     ...font('semiBold'),
     color: colors.textSecondary,
     includeFontPadding: true,
     textAlign: 'center',
-    textAlignVertical: 'center',
   },
   labelSelected: {
     color: colors.optionTextSelected,

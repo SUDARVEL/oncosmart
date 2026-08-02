@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { StyleSheet, Text, View } from "react-native";
+import { StyleSheet, Text, View, type View as RNView } from "react-native";
 
 import { useExercisePauseGuard } from "../../hooks/useExercisePauseGuard";
 import {
@@ -17,7 +17,11 @@ import { ResumeProgressModal } from "./ResumeProgressModal";
 import { WorkoutDetailSlider } from "./WorkoutDetailSlider";
 import { WorkoutRowCard } from "./WorkoutRowCard";
 
-export function WorkoutsSection() {
+type WorkoutsSectionProps = {
+  firstCardAnchorRef?: (node: RNView | null) => void;
+};
+
+export function WorkoutsSection({ firstCardAnchorRef }: WorkoutsSectionProps = {}) {
   const { t } = useTranslation();
   const language = useAppStore((state) => state.language);
   const gender = useAppStore((state) => state.gender);
@@ -65,11 +69,12 @@ export function WorkoutsSection() {
 
       {workouts.length > 0 ? (
         <View style={styles.list}>
-          {workouts.map((workout) => (
+          {workouts.map((workout, index) => (
             <WorkoutRowCard
               key={workout.id}
               workout={workout}
               onPress={() => openWorkout(workout.id)}
+              coachAnchorRef={index === 0 ? firstCardAnchorRef : undefined}
             />
           ))}
         </View>

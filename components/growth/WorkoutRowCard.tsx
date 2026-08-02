@@ -1,7 +1,7 @@
 import { CachedMediaImage } from "../CachedMediaImage";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { StyleSheet, Text, View } from "react-native";
+import { StyleSheet, Text, View, type View as RNView } from "react-native";
 
 import type { LevelWorkout } from "../../lib/getLevelWorkouts";
 import { getWorkoutGrowthPlaceholderFit } from "../../lib/workoutGrowthPlaceholders";
@@ -13,6 +13,8 @@ import { GrowthPlaceholderSvg } from "./GrowthPlaceholderSvg";
 type WorkoutRowCardProps = {
   workout: LevelWorkout;
   onPress: () => void;
+  /** Optional coach-tour measure target (first row). */
+  coachAnchorRef?: (node: RNView | null) => void;
 };
 
 /** Figma Growth row thumbnail — matches Male Workouts placeholder SVGs. */
@@ -31,7 +33,11 @@ function getRemoteUri(source: LevelWorkout["photoSource"]): string | null {
   return null;
 }
 
-export function WorkoutRowCard({ workout, onPress }: WorkoutRowCardProps) {
+export function WorkoutRowCard({
+  workout,
+  onPress,
+  coachAnchorRef,
+}: WorkoutRowCardProps) {
   const { t } = useTranslation();
   const [imageFailed, setImageFailed] = useState(false);
   const remoteUri = useMemo(
@@ -54,6 +60,7 @@ export function WorkoutRowCard({ workout, onPress }: WorkoutRowCardProps) {
   }, [workout.id, workout.photoSource]);
 
   return (
+    <View ref={coachAnchorRef} collapsable={false}>
     <PressableScale
       style={styles.card}
       pressedScale={0.985}
@@ -89,6 +96,7 @@ export function WorkoutRowCard({ workout, onPress }: WorkoutRowCardProps) {
         <Text style={styles.description}>{t(workout.descriptionKey)}</Text>
       </View>
     </PressableScale>
+    </View>
   );
 }
 

@@ -1,24 +1,23 @@
-import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
-  Pressable,
   ScrollView,
   StyleSheet,
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { BottomTabBar } from '../components/BottomTabBar';
+import { ChatFab } from '../components/ChatFab';
 import { CoachMarkOverlay } from '../components/coach/CoachMarkOverlay';
 import { BadgesSection } from '../components/growth/BadgesSection';
 import { GrowthTabSwitch, type GrowthTab } from '../components/growth/GrowthTabSwitch';
-import { WorkoutsSection } from '../components/growth/WorkoutsSection';
 import { LevelsCard } from '../components/growth/LevelsCard';
 import { PainProgressCard } from '../components/growth/PainProgressCard';
 import { PauseReasonModal, type PauseReason } from '../components/growth/PauseReasonModal';
 import { StreakCard } from '../components/growth/StreakCard';
-import { BottomTabBar } from '../components/BottomTabBar';
+import { WorkoutsSection } from '../components/growth/WorkoutsSection';
 import { ScreenHeader } from '../components/ScreenHeader';
 import { useAndroidBack } from '../hooks/useAndroidBack';
 import { useCoachTour } from '../hooks/useCoachTour';
@@ -28,7 +27,6 @@ import {
   cancelNextExerciseNotification,
   syncNextExerciseNotification,
 } from '../lib/nextExerciseNotification';
-import { openWhatsAppSupport } from '../lib/openWhatsAppSupport';
 import { DAYS_PER_LEVEL, getActiveLevel, sessionKey } from '../lib/programProgress';
 import { useAppStore } from '../store/useAppStore';
 import { colors } from '../theme/colors';
@@ -46,6 +44,7 @@ export default function GrowthScreen() {
     stepIndex: coachStepIndex,
     stepCount: coachStepCount,
     rect: coachRect,
+    registerHost,
     registerTarget,
     next: coachNext,
     skip: coachSkip,
@@ -113,7 +112,11 @@ export default function GrowthScreen() {
   );
 
   return (
-    <View style={styles.screen}>
+    <View
+      style={styles.screen}
+      ref={(node) => registerHost(node)}
+      collapsable={false}
+    >
     <SafeAreaView style={styles.screen} edges={['top']}>
       <ScreenHeader
         title={t('growth.title')}
@@ -154,18 +157,13 @@ export default function GrowthScreen() {
             <BadgesSection />
           </View>
         ) : (
-          <WorkoutsSection />
+          <WorkoutsSection
+            firstCardAnchorRef={(node) => registerTarget('growth.workoutCard', node)}
+          />
         )}
       </ScrollView>
 
-      <Pressable
-        style={styles.fab}
-        accessibilityRole="button"
-        accessibilityLabel="Chat"
-        onPress={openWhatsAppSupport}
-      >
-        <Ionicons name="chatbubble" size={24} color={colors.buttonPrimary} />
-      </Pressable>
+      <ChatFab bottom={88} />
 
       <BottomTabBar
         activeTab="growth"
@@ -197,7 +195,7 @@ export default function GrowthScreen() {
           spotlight={coachStep.spotlight}
           pad={coachStep.pad}
           onNext={() => {
-            if (coachStep.id === 'growth.workouts') {
+            if (coachStep.id === 'growth.workoutCard') {
               coachNext();
               router.replace('/home');
               return;
@@ -233,23 +231,5 @@ const styles = StyleSheet.create({
     gap: 16,
     alignItems: 'center',
     width: '100%',
-  },
-  fab: {
-    position: 'absolute',
-    right: 9,
-    bottom: 88,
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: colors.tabBarBg,
-    borderWidth: 1,
-    borderColor: colors.buttonPrimary,
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: '#000000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 8,
-    elevation: 6,
   },
 });

@@ -28,7 +28,7 @@ type Props = {
   icon: keyof typeof Ionicons.glyphMap;
   stepIndex: number;
   stepCount: number;
-  /** Optional — used only to place the card near the feature (no outline drawn). */
+  /** Host-relative target rect for highlight + card placement. */
   target: CoachTargetRect | null;
   preferPlacement: 'below' | 'above';
   spotlight?: CoachSpotlightShape;
@@ -40,9 +40,18 @@ type Props = {
 const CARD_MAX_WIDTH = 320;
 const CARD_MARGIN = 20;
 
+function spotlightRadius(
+  shape: CoachSpotlightShape | undefined,
+  width: number,
+  height: number,
+): number {
+  if (shape === 'circle') return Math.max(width, height) / 2;
+  if (shape === 'pill') return Math.min(width, height) / 2;
+  return 12;
+}
+
 /**
- * Clean coach tooltip only — no spotlight outline.
- * Outline was misaligned on device; tooltip alone is clearer and crash-safe.
+ * In-screen coach tooltip with a host-relative highlight ring.
  */
 export function CoachMarkOverlay({
   visible,
@@ -53,6 +62,8 @@ export function CoachMarkOverlay({
   stepCount,
   target,
   preferPlacement,
+  spotlight = 'rounded',
+  pad = 6,
   onNext,
   onSkip,
 }: Props) {
@@ -73,7 +84,22 @@ export function CoachMarkOverlay({
   let showCaret = false;
   let caretLeft = cardWidth / 2 - 8;
 
-  if (target && target.width > 0 && target.height > 0) {
+  const hasTarget = Boolean(target && target.width > 0 && target.height > 0);
+  const highlight = hasTarget && target
+    ? {
+        left: Math.max(0, target.x - pad),
+        top: Math.max(0, target.y - pad),
+        width: target.width + pad * 2,
+        height: target.height + pad * 2,
+        borderRadius: spotlightRadius(
+          spotlight,
+          target.width + pad * 2,
+          target.height + pad * 2,
+        ),
+      }
+    : null;
+
+  if (hasTarget && target) {
     const targetBottom = target.y + target.height;
     const targetTop = target.y;
     const spaceBelow = screenH - targetBottom - insets.bottom;
@@ -81,7 +107,7 @@ export function CoachMarkOverlay({
 
     if (preferPlacement === 'below' && spaceBelow > estimatedCardH + 24) {
       placeBelow = true;
-      cardTop = Math.min(targetBottom + 16, screenH - insets.bottom - estimatedCardH);
+      cardTop = Math.min(targetBottom + pad + 18, screenH - insets.bottom - estimatedCardH);
       showCaret = true;
     } else if (preferPlacement === 'above' && spaceAbove > estimatedCardH + 24) {
       placeBelow = false;
@@ -89,7 +115,7 @@ export function CoachMarkOverlay({
       showCaret = true;
     } else if (spaceBelow >= spaceAbove && spaceBelow > 160) {
       placeBelow = true;
-      cardTop = Math.min(targetBottom + 16, screenH - insets.bottom - estimatedCardH);
+      cardTop = Math.min(targetBottom + pad + 18, screenH - insets.bottom - estimatedCardH);
       showCaret = true;
     } else if (spaceAbove > 160) {
       placeBelow = false;
@@ -111,6 +137,22 @@ export function CoachMarkOverlay({
   return (
     <View style={styles.root} pointerEvents="box-none">
       <View style={styles.scrim} pointerEvents="auto" />
+
+      {highlight ? (
+        <View
+          pointerEvents="none"
+          style={[
+            styles.highlight,
+            {
+              left: highlight.left,
+              top: highlight.top,
+              width: highlight.width,
+              height: highlight.height,
+              borderRadius: highlight.borderRadius,
+            },
+          ]}
+        />
+      ) : null}
 
       <View
         style={[styles.cardWrap, { top: cardTop, left: cardLeft, width: cardWidth }]}
@@ -176,6 +218,12 @@ const styles = StyleSheet.create({
   scrim: {
     ...StyleSheet.absoluteFillObject,
     backgroundColor: 'rgba(17, 24, 39, 0.55)',
+  },
+  highlight: {
+    position: 'absolute',
+    borderWidth: 2.5,
+    borderColor: '#FFFFFF',
+    backgroundColor: 'rgba(255, 255, 255, 0.08)',
   },
   cardWrap: {
     position: 'absolute',

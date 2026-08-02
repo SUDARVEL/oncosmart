@@ -1,12 +1,12 @@
-import { Ionicons } from '@expo/vector-icons';
 import Constants from 'expo-constants';
 import { useRouter } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { BottomTabBar } from '../../components/BottomTabBar';
+import { ChatFab } from '../../components/ChatFab';
 import { CoachMarkOverlay } from '../../components/coach/CoachMarkOverlay';
 import { ScreenHeader } from '../../components/ScreenHeader';
 import { LanguageBottomSheet } from '../../components/settings/LanguageBottomSheet';
@@ -40,6 +40,7 @@ export default function SettingsScreen() {
     stepIndex: coachStepIndex,
     stepCount: coachStepCount,
     rect: coachRect,
+    registerHost,
     registerTarget,
     next: coachNext,
     skip: coachSkip,
@@ -99,7 +100,11 @@ export default function SettingsScreen() {
   };
 
   return (
-    <View style={styles.screen}>
+    <View
+      style={styles.screen}
+      ref={(node) => registerHost(node)}
+      collapsable={false}
+    >
     <SafeAreaView style={styles.screen} edges={['top']}>
       <ScreenHeader
         title={t('settings.title')}
@@ -182,14 +187,7 @@ export default function SettingsScreen() {
         onSelect={handleLanguageSelect}
       />
 
-      <Pressable
-        style={styles.fab}
-        accessibilityRole="button"
-        accessibilityLabel="Chat"
-        onPress={openWhatsAppSupport}
-      >
-        <Ionicons name="chatbubble" size={24} color={colors.buttonPrimary} />
-      </Pressable>
+      <ChatFab bottom={96} />
 
       <BottomTabBar
         activeTab="settings"
@@ -240,17 +238,5 @@ const styles = StyleSheet.create({
   menuAnchor: {
     width: '100%',
     alignSelf: 'stretch',
-  },
-  fab: {
-    position: 'absolute',
-    right: 16,
-    bottom: 96,
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: '#E0F4FF',
-    alignItems: 'center',
-    justifyContent: 'center',
-    elevation: 3,
   },
 });

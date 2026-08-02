@@ -16,6 +16,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { BottomTabBar } from "../components/BottomTabBar";
+import { ChatFab } from "../components/ChatFab";
 import { CoachMarkOverlay } from "../components/coach/CoachMarkOverlay";
 import { ExerciseVideoBanner } from "../components/ExerciseVideoBanner";
 import { ResumeProgressModal } from "../components/growth/ResumeProgressModal";
@@ -26,7 +27,6 @@ import { useAndroidBack } from "../hooks/useAndroidBack";
 import { useCoachTour } from "../hooks/useCoachTour";
 import { useExercisePauseGuard } from "../hooks/useExercisePauseGuard";
 import { exitApp } from "../lib/navBack";
-import { openWhatsAppSupport } from "../lib/openWhatsAppSupport";
 import { QUOTE_CHARACTER_FEMALE } from "../lib/homePageCardImage";
 import {
   ensureNotificationPermissions,
@@ -99,6 +99,7 @@ export default function HomeScreen() {
     stepIndex: coachStepIndex,
     stepCount: coachStepCount,
     rect: coachRect,
+    registerHost,
     registerTarget,
     next: coachNext,
     skip: coachSkip,
@@ -192,7 +193,11 @@ export default function HomeScreen() {
   };
 
   return (
-    <View style={styles.screen}>
+    <View
+      style={styles.screen}
+      ref={(node) => registerHost(node)}
+      collapsable={false}
+    >
     <SafeAreaView style={styles.screen} edges={["top"]}>
       <ScrollView
         style={styles.scroll}
@@ -287,15 +292,7 @@ export default function HomeScreen() {
         {__DEV__ ? <DevPanel /> : null}
       </ScrollView>
 
-      <PressableScale
-        style={styles.fab}
-        accessibilityRole="button"
-        accessibilityLabel="Chat"
-        onPress={openWhatsAppSupport}
-        pressedScale={0.92}
-      >
-        <Ionicons name="chatbubble" size={24} color={colors.buttonPrimary} />
-      </PressableScale>
+      <ChatFab bottom={88} />
 
       <BottomTabBar
         activeTab="home"
@@ -781,23 +778,5 @@ const styles = StyleSheet.create({
     ...font("medium"),
     color: "#5B21B6",
     textAlign: "center",
-  },
-  fab: {
-    position: "absolute",
-    right: 9,
-    bottom: 88,
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: colors.tabBarBg,
-    borderWidth: 1,
-    borderColor: colors.buttonPrimary,
-    alignItems: "center",
-    justifyContent: "center",
-    shadowColor: "#000000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 8,
-    elevation: 6,
   },
 });
