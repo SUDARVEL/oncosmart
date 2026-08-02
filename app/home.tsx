@@ -16,11 +16,13 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { BottomTabBar } from "../components/BottomTabBar";
+import { CoachMarkOverlay } from "../components/coach/CoachMarkOverlay";
 import { ExerciseVideoBanner } from "../components/ExerciseVideoBanner";
 import { ResumeProgressModal } from "../components/growth/ResumeProgressModal";
 import { HomeAvatarButton } from "../components/home/HomeAvatarButton";
 import { ProgressLogo } from "../components/home/ProgressLogo";
 import { PressableScale } from "../components/PressableScale";
+import { useCoachTour } from "../hooks/useCoachTour";
 import { useExercisePauseGuard } from "../hooks/useExercisePauseGuard";
 import { openWhatsAppSupport } from "../lib/openWhatsAppSupport";
 import { QUOTE_CHARACTER_FEMALE } from "../lib/homePageCardImage";
@@ -89,6 +91,16 @@ export default function HomeScreen() {
   const [activeQuote, setActiveQuote] = useState(0);
   const [now, setNow] = useState(() => Date.now());
   const scrollRef = useRef<ScrollView>(null);
+  const {
+    active: coachActive,
+    step: coachStep,
+    stepIndex: coachStepIndex,
+    stepCount: coachStepCount,
+    rect: coachRect,
+    registerTarget,
+    next: coachNext,
+    skip: coachSkip,
+  } = useCoachTour("home");
 
   const completedCount = getCompletedSessionCount(dayCompletedAt);
   const activeLevel = getActiveLevel(dayCompletedAt);
@@ -155,6 +167,15 @@ export default function HomeScreen() {
     });
   };
 
+  const handleCoachNext = () => {
+    if (coachStep?.id === "home.growthTab") {
+      coachNext();
+      router.push("/growth");
+      return;
+    }
+    coachNext();
+  };
+
   return (
     <SafeAreaView style={styles.screen} edges={["top"]}>
       <ScrollView
@@ -166,14 +187,23 @@ export default function HomeScreen() {
           <Text style={styles.welcome}>
             {t("home.welcome", { name: username || "Guest" })}
           </Text>
-          <HomeAvatarButton
-            avatar={avatar}
-            onPress={handleAvatarPress}
-            accessibilityLabel={t("home.changeAvatar")}
-          />
+          <View
+            ref={(node) => registerTarget("home.avatar", node)}
+            collapsable={false}
+          >
+            <HomeAvatarButton
+              avatar={avatar}
+              onPress={handleAvatarPress}
+              accessibilityLabel={t("home.changeAvatar")}
+            />
+          </View>
         </View>
 
-        <View style={styles.progressSection}>
+        <View
+          ref={(node) => registerTarget("home.progress", node)}
+          collapsable={false}
+          style={styles.progressSection}
+        >
           <ProgressLogo width={79} height={80} />
           <Text style={styles.daysCompleted}>
             {t("home.daysCompleted", {
@@ -222,7 +252,11 @@ export default function HomeScreen() {
           ))}
         </View>
 
-        <View style={styles.sessionSection}>
+        <View
+          ref={(node) => registerTarget("home.session", node)}
+          collapsable={false}
+          style={styles.sessionSection}
+        >
           <Text style={styles.sessionTitle}>{t("home.sessionTitle")}</Text>
 
           <DayCard
@@ -255,6 +289,9 @@ export default function HomeScreen() {
           growth: t("home.tabGrowth"),
           settings: t("home.tabSettings"),
         }}
+        tabAnchorRefs={{
+          growth: (node) => registerTarget("home.growthTab", node),
+        }}
       />
 
       <ResumeProgressModal
@@ -267,6 +304,21 @@ export default function HomeScreen() {
           router.push("/growth");
         }}
       />
+
+      {coachActive && coachStep ? (
+        <CoachMarkOverlay
+          visible
+          title={t(coachStep.titleKey)}
+          body={t(coachStep.bodyKey)}
+          icon={coachStep.icon}
+          stepIndex={coachStepIndex}
+          stepCount={coachStepCount}
+          target={coachRect}
+          preferPlacement={coachStep.preferPlacement}
+          onNext={handleCoachNext}
+          onSkip={coachSkip}
+        />
+      ) : null}
     </SafeAreaView>
   );
 }

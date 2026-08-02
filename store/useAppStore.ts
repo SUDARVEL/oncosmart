@@ -29,6 +29,8 @@ export type AppStateSnapshot = {
   levelsCompleted: number;
   dayCompletedAt: Record<string, number>;
   activeAuthUserId: string | null;
+  /** True after the patient finishes or skips the first-run coach tour. */
+  coachTourSeen: boolean;
 };
 
 type CloudHydrateInput = Partial<AppStateSnapshot>;
@@ -38,6 +40,11 @@ type AppState = AppStateSnapshot & {
   devUnlockOverride: boolean;
   /** Ephemeral queue of badge celebrations to show after a session. */
   pendingBadgeCelebrations: BadgeKey[];
+  /**
+   * Active coach-tour step index, or null when the tour is idle.
+   * Ephemeral (not persisted) so a cold start doesn't reopen mid-tour.
+   */
+  coachTourStep: number | null;
   setLanguage: (language: AppLanguage) => void;
   setUsername: (username: string) => void;
   setAge: (age: number) => void;
@@ -53,6 +60,10 @@ type AppState = AppStateSnapshot & {
   setProgressPaused: (paused: boolean) => void;
   setLevelsCompleted: (count: number) => void;
   setActiveAuthUserId: (userId: string | null) => void;
+  setCoachTourSeen: (seen: boolean) => void;
+  setCoachTourStep: (step: number | null) => void;
+  /** Restart the product tour from step 0 (Settings → Replay tips). */
+  restartCoachTour: () => void;
   /** Replace local profile/progress with cloud data for the signed-in user. */
   hydrateFromCloud: (payload: CloudHydrateInput) => void;
   /** Record a session completion (level + day within level). */
@@ -89,6 +100,8 @@ export const useAppStore = create<AppState>()(
       levelsCompleted: 0,
       dayCompletedAt: {},
       activeAuthUserId: null,
+      coachTourSeen: false,
+      coachTourStep: null,
       devUnlockOverride: false,
       pendingBadgeCelebrations: [],
       setLanguage: (language) => set({ language }),
@@ -117,10 +130,15 @@ export const useAppStore = create<AppState>()(
       setProgressPaused: (paused) => set({ progressPaused: paused }),
       setLevelsCompleted: (count) => set({ levelsCompleted: count }),
       setActiveAuthUserId: (userId) => set({ activeAuthUserId: userId }),
+      setCoachTourSeen: (seen) => set({ coachTourSeen: seen }),
+      setCoachTourStep: (step) => set({ coachTourStep: step }),
+      restartCoachTour: () => set({ coachTourSeen: false, coachTourStep: 0 }),
       hydrateFromCloud: (payload) =>
         set((state) => ({
           ...state,
           ...payload,
+          // Never overwrite local tour completion from cloud profile blobs.
+          coachTourSeen: state.coachTourSeen,
           parqAnswers: payload.parqAnswers
             ? [...payload.parqAnswers]
             : state.parqAnswers,
@@ -202,6 +220,8 @@ export const useAppStore = create<AppState>()(
           levelsCompleted: 0,
           dayCompletedAt: {},
           activeAuthUserId: null,
+          coachTourSeen: false,
+          coachTourStep: null,
           devUnlockOverride: false,
           pendingBadgeCelebrations: [],
         }),
@@ -229,6 +249,7 @@ export const useAppStore = create<AppState>()(
         levelsCompleted: state.levelsCompleted,
         dayCompletedAt: state.dayCompletedAt,
         activeAuthUserId: state.activeAuthUserId,
+        coachTourSeen: state.coachTourSeen,
         devUnlockOverride: state.devUnlockOverride,
       }),
     },

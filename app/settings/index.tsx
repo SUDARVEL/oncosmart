@@ -26,6 +26,7 @@ export default function SettingsScreen() {
   const username = useAppStore((state) => state.username);
   const setUsername = useAppStore((state) => state.setUsername);
   const resetApp = useAppStore((state) => state.resetApp);
+  const restartCoachTour = useAppStore((state) => state.restartCoachTour);
   const [languageSheetOpen, setLanguageSheetOpen] = useState(false);
   const [profileSheetOpen, setProfileSheetOpen] = useState(false);
 
@@ -105,6 +106,15 @@ export default function SettingsScreen() {
           description={t('settings.helpSupportDescription')}
           showChevron
           onPress={openWhatsAppSupport}
+        />
+        <SettingsRow
+          title={t('settings.replayTips')}
+          description={t('settings.replayTipsDescription')}
+          showChevron
+          onPress={() => {
+            restartCoachTour();
+            router.replace('/home');
+          }}
         />
         <SettingsRow
           title={t('settings.logout')}

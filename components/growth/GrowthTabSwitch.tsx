@@ -1,3 +1,4 @@
+import type { Ref } from 'react';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 
@@ -10,6 +11,8 @@ export type GrowthTab = 'progress' | 'workouts';
 type GrowthTabSwitchProps = {
   activeTab: GrowthTab;
   onTabChange: (tab: GrowthTab) => void;
+  progressAnchorRef?: Ref<View>;
+  workoutsAnchorRef?: Ref<View>;
 };
 
 /**
@@ -27,7 +30,12 @@ const FIGMA_CONTAINER_WIDTH =
   CONTAINER_PADDING * 2 +
   CONTAINER_BORDER * 2;
 
-export function GrowthTabSwitch({ activeTab, onTabChange }: GrowthTabSwitchProps) {
+export function GrowthTabSwitch({
+  activeTab,
+  onTabChange,
+  progressAnchorRef,
+  workoutsAnchorRef,
+}: GrowthTabSwitchProps) {
   const { t } = useTranslation();
   const { width: screenWidth } = useWindowDimensions();
 
@@ -40,43 +48,47 @@ export function GrowthTabSwitch({ activeTab, onTabChange }: GrowthTabSwitchProps
 
   return (
     <View style={styles.container}>
-      <PressableScale
-        style={[
-          styles.tab,
-          { width: progressWidth },
-          progressActive ? styles.tabActive : styles.tabInactive,
-        ]}
-        pressedScale={0.96}
-        onPress={() => onTabChange('progress')}
-        accessibilityRole="button"
-        accessibilityState={{ selected: progressActive }}
-      >
-        <Text
-          style={[styles.progressText, progressActive ? styles.textActive : styles.textInactive]}
-          numberOfLines={1}
+      <View ref={progressAnchorRef} collapsable={false}>
+        <PressableScale
+          style={[
+            styles.tab,
+            { width: progressWidth },
+            progressActive ? styles.tabActive : styles.tabInactive,
+          ]}
+          pressedScale={0.96}
+          onPress={() => onTabChange('progress')}
+          accessibilityRole="button"
+          accessibilityState={{ selected: progressActive }}
         >
-          {t('growth.tabProgress')}
-        </Text>
-      </PressableScale>
+          <Text
+            style={[styles.progressText, progressActive ? styles.textActive : styles.textInactive]}
+            numberOfLines={1}
+          >
+            {t('growth.tabProgress')}
+          </Text>
+        </PressableScale>
+      </View>
 
-      <PressableScale
-        style={[
-          styles.tab,
-          { width: workoutsWidth },
-          workoutsActive ? styles.tabActive : styles.tabInactive,
-        ]}
-        pressedScale={0.96}
-        onPress={() => onTabChange('workouts')}
-        accessibilityRole="button"
-        accessibilityState={{ selected: workoutsActive }}
-      >
-        <Text
-          style={[styles.workoutsText, workoutsActive ? styles.textActive : styles.textInactive]}
-          numberOfLines={1}
+      <View ref={workoutsAnchorRef} collapsable={false}>
+        <PressableScale
+          style={[
+            styles.tab,
+            { width: workoutsWidth },
+            workoutsActive ? styles.tabActive : styles.tabInactive,
+          ]}
+          pressedScale={0.96}
+          onPress={() => onTabChange('workouts')}
+          accessibilityRole="button"
+          accessibilityState={{ selected: workoutsActive }}
         >
-          {t('growth.tabWorkouts')}
-        </Text>
-      </PressableScale>
+          <Text
+            style={[styles.workoutsText, workoutsActive ? styles.textActive : styles.textInactive]}
+            numberOfLines={1}
+          >
+            {t('growth.tabWorkouts')}
+          </Text>
+        </PressableScale>
+      </View>
     </View>
   );
 }

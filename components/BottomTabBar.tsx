@@ -1,4 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
+import type { Ref } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
 import { PressableScale } from './PressableScale';
@@ -15,6 +16,8 @@ type BottomTabBarProps = {
     growth: string;
     settings: string;
   };
+  /** Optional native anchors for coach-mark measurement. */
+  tabAnchorRefs?: Partial<Record<TabKey, Ref<View>>>;
 };
 
 const TABS: {
@@ -27,7 +30,12 @@ const TABS: {
   { key: 'settings', icon: 'settings-outline', activeIcon: 'settings' },
 ];
 
-export function BottomTabBar({ activeTab, onTabPress, labels }: BottomTabBarProps) {
+export function BottomTabBar({
+  activeTab,
+  onTabPress,
+  labels,
+  tabAnchorRefs,
+}: BottomTabBarProps) {
   return (
     <View style={styles.container}>
       {TABS.map((tab) => {
@@ -41,20 +49,26 @@ export function BottomTabBar({ activeTab, onTabPress, labels }: BottomTabBarProp
             accessibilityRole="button"
             accessibilityState={{ selected: isActive }}
           >
-            <View style={[styles.iconWrap, isActive && styles.iconWrapActive]}>
-              <Ionicons
-                name={isActive ? tab.activeIcon : tab.icon}
-                size={24}
-                color={isActive ? colors.tabActive : colors.tabInactive}
-              />
-            </View>
-            <Text
-              style={[styles.label, isActive && styles.labelActive]}
-              numberOfLines={2}
-              allowFontScaling
+            <View
+              ref={tabAnchorRefs?.[tab.key]}
+              collapsable={false}
+              style={styles.anchor}
             >
-              {labels[tab.key]}
-            </Text>
+              <View style={[styles.iconWrap, isActive && styles.iconWrapActive]}>
+                <Ionicons
+                  name={isActive ? tab.activeIcon : tab.icon}
+                  size={24}
+                  color={isActive ? colors.tabActive : colors.tabInactive}
+                />
+              </View>
+              <Text
+                style={[styles.label, isActive && styles.labelActive]}
+                numberOfLines={2}
+                allowFontScaling
+              >
+                {labels[tab.key]}
+              </Text>
+            </View>
           </PressableScale>
         );
       })}
@@ -70,7 +84,6 @@ const styles = StyleSheet.create({
     backgroundColor: colors.tabBarBg,
     borderTopWidth: 1,
     borderTopColor: colors.cardBorder,
-    // Do not clip Tamil descenders / second label lines.
     overflow: 'visible',
   },
   tab: {
@@ -78,10 +91,14 @@ const styles = StyleSheet.create({
     alignSelf: 'stretch',
     flexDirection: 'column',
     alignItems: 'center',
-    gap: 4,
     paddingTop: 8,
     paddingBottom: 12,
     paddingHorizontal: 2,
+  },
+  anchor: {
+    alignItems: 'center',
+    gap: 4,
+    alignSelf: 'stretch',
   },
   iconWrap: {
     width: 56,
@@ -96,7 +113,6 @@ const styles = StyleSheet.create({
   label: {
     alignSelf: 'stretch',
     fontSize: 12,
-    // Tall enough for Tamil; letterSpacing 0 so marks aren't crushed.
     lineHeight: 18,
     letterSpacing: 0,
     textAlign: 'center',

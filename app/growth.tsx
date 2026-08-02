@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Pressable,
@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { CoachMarkOverlay } from '../components/coach/CoachMarkOverlay';
 import { BadgesSection } from '../components/growth/BadgesSection';
 import { GrowthTabSwitch, type GrowthTab } from '../components/growth/GrowthTabSwitch';
 import { WorkoutsSection } from '../components/growth/WorkoutsSection';
@@ -19,6 +20,7 @@ import { PauseReasonModal, type PauseReason } from '../components/growth/PauseRe
 import { StreakCard } from '../components/growth/StreakCard';
 import { BottomTabBar } from '../components/BottomTabBar';
 import { ScreenHeader } from '../components/ScreenHeader';
+import { useCoachTour } from '../hooks/useCoachTour';
 import { getDisplayPainScore } from '../lib/getDisplayPainScore';
 import {
   cancelNextExerciseNotification,
@@ -36,9 +38,26 @@ export default function GrowthScreen() {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<GrowthTab>('progress');
   const [showPauseReason, setShowPauseReason] = useState(false);
+  const {
+    active: coachActive,
+    step: coachStep,
+    stepIndex: coachStepIndex,
+    stepCount: coachStepCount,
+    rect: coachRect,
+    registerTarget,
+    next: coachNext,
+    skip: coachSkip,
+  } = useCoachTour('growth');
 
   const progressPaused = useAppStore((state) => state.progressPaused);
   const setProgressPaused = useAppStore((state) => state.setProgressPaused);
+
+  // Keep the Growth pills in sync with the active coach step.
+  useEffect(() => {
+    if (coachStep?.growthTab) {
+      setActiveTab(coachStep.growthTab);
+    }
+  }, [coachStep?.growthTab]);
 
   const levelsCompleted = useAppStore((state) => state.levelsCompleted);
   const avatar = useAppStore((state) => state.avatar);
@@ -94,7 +113,12 @@ export default function GrowthScreen() {
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.tabSwitcherWrap}>
-          <GrowthTabSwitch activeTab={activeTab} onTabChange={setActiveTab} />
+          <GrowthTabSwitch
+            activeTab={activeTab}
+            onTabChange={setActiveTab}
+            progressAnchorRef={(node) => registerTarget('growth.progress', node)}
+            workoutsAnchorRef={(node) => registerTarget('growth.workouts', node)}
+          />
         </View>
 
         {activeTab === 'progress' ? (
@@ -144,6 +168,21 @@ export default function GrowthScreen() {
         onClose={() => setShowPauseReason(false)}
         onSelect={handlePauseReasonSelect}
       />
+
+      {coachActive && coachStep ? (
+        <CoachMarkOverlay
+          visible
+          title={t(coachStep.titleKey)}
+          body={t(coachStep.bodyKey)}
+          icon={coachStep.icon}
+          stepIndex={coachStepIndex}
+          stepCount={coachStepCount}
+          target={coachRect}
+          preferPlacement={coachStep.preferPlacement}
+          onNext={coachNext}
+          onSkip={coachSkip}
+        />
+      ) : null}
     </SafeAreaView>
   );
 }

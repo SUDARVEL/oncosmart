@@ -439,7 +439,9 @@
     "helpSupport": "Help & Support",
     "helpSupportDescription": "Message us on WhatsApp",
     "logout": "Logout",
-    "logoutDescription": "Sign out of this device"
+    "logoutDescription": "Sign out of this device",
+    "replayTips": "App tips",
+    "replayTipsDescription": "Replay the guided tour of Home and Growth"
   },
   "changePassword": {
     "title": "Change Password",
@@ -495,5 +497,23 @@
     "statNeverLogin": "Never login",
     "statPasswordChanged": "Pwd changed",
     "statPaused": "Paused"
+  },
+  "coach": {
+    "avatarTitle": "Choose your avatar",
+    "avatarBody": "Tap your photo anytime to pick or change the avatar that represents you.",
+    "homeProgressTitle": "Your progress",
+    "homeProgressBody": "This shows how many exercise days you have completed out of 28.",
+    "sessionTitle": "Today's exercise",
+    "sessionBody": "Start today's session here when it is unlocked. Complete it to move forward.",
+    "growthTabTitle": "Your Growth",
+    "growthTabBody": "Open Growth to see streaks, pain trends, badges, and your workout list.",
+    "progressTitle": "What is Progress?",
+    "progressBody": "Track levels, streaks, pain scores, and badges as you complete sessions.",
+    "workoutsTitle": "What is Workouts?",
+    "workoutsBody": "Browse every exercise in your current level and review what you have done.",
+    "next": "Next",
+    "done": "Done",
+    "skip": "Skip",
+    "stepOf": "{{current}}/{{total}}"
   }
 }
