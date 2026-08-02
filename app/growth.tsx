@@ -27,14 +27,15 @@ import {
   cancelNextExerciseNotification,
   syncNextExerciseNotification,
 } from '../lib/nextExerciseNotification';
-import { DAYS_PER_LEVEL, getActiveLevel, sessionKey } from '../lib/programProgress';
+import { DAYS_PER_LEVEL, getActiveLevel } from '../lib/programProgress';
+import { getCurrentWeekdayStreak } from '../lib/weekdayStreak';
 import { useAppStore } from '../store/useAppStore';
 import { colors } from '../theme/colors';
 
 const LEVELS_TOTAL = 4;
 
 export default function GrowthScreen() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<GrowthTab>('progress');
   const [showPauseReason, setShowPauseReason] = useState(false);
@@ -78,11 +79,10 @@ export default function GrowthScreen() {
     void syncNextExerciseNotification(dayCompletedAt);
   };
 
-  // Streak card shows 5 weekdays; map them to Day 1..5 of the active level.
-  const completedDaysInWeek = Array.from({ length: 5 }, (_, i) => i + 1).reduce(
-    (count, dayInLevel) => (dayCompletedAt[sessionKey(activeLevel, dayInLevel)] ? count + 1 : count),
-    0,
-  );
+  // Streak circles follow the phone calendar: complete on Monday → Monday fills.
+  const weekdayStreak = getCurrentWeekdayStreak(dayCompletedAt, {
+    locale: i18n.language || 'en',
+  });
 
   // Pain chart shows 7 bars; map them to Day 1..7 of the active level.
   const painScoresByDay = Array.from({ length: DAYS_PER_LEVEL }, (_, i) => {
@@ -148,7 +148,11 @@ export default function GrowthScreen() {
               onPause={() => setShowPauseReason(true)}
               onResume={handleResumeProgress}
             />
-            <StreakCard paused={progressPaused} completedDays={completedDaysInWeek} />
+            <StreakCard
+              paused={progressPaused}
+              completedByWeekday={weekdayStreak.completed}
+              weekdayLabels={weekdayStreak.labels}
+            />
             <PainProgressCard
               paused={progressPaused}
               scoresByDay={painScoresByDay}

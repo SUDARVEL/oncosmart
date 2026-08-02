@@ -1,32 +1,45 @@
 import { LinearGradient } from 'expo-linear-gradient';
+import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, Text, View } from 'react-native';
 
+import { getWeekdayLabels } from '../../lib/weekdayStreak';
 import { colors } from '../../theme/colors';
 import { font } from '../../theme/fonts';
 
-const WEEKDAYS = ['MON', 'TUE', 'WED', 'THU', 'FRI'] as const;
-
 type StreakCardProps = {
   paused?: boolean;
-  /** Number of weekday circles filled (0–5). */
-  completedDays?: number;
+  /**
+   * Per weekday (Mon–Fri) completion for the current local week.
+   * Index 0 = Monday … 4 = Friday.
+   */
+  completedByWeekday?: boolean[];
+  /** Optional override labels; defaults to phone-locale short weekdays. */
+  weekdayLabels?: string[];
 };
 
-export function StreakCard({ paused = false, completedDays = 0 }: StreakCardProps) {
-  const { t } = useTranslation();
+export function StreakCard({
+  paused = false,
+  completedByWeekday = [false, false, false, false, false],
+  weekdayLabels,
+}: StreakCardProps) {
+  const { t, i18n } = useTranslation();
+  const labels = useMemo(
+    () => weekdayLabels ?? getWeekdayLabels(i18n.language || 'en'),
+    [weekdayLabels, i18n.language],
+  );
 
   return (
     <View style={styles.card}>
       <View style={styles.daysRow}>
-        {WEEKDAYS.map((day, index) => {
-          const isFilled = index < completedDays;
+        {labels.map((day, index) => {
+          const isFilled = completedByWeekday[index] === true;
           const isActive = isFilled && !paused;
           const isGreyedActive = isFilled && paused;
 
           return (
             <View
-              key={day}
+              key={`${day}-${index}`}
               style={[
                 styles.dayCircle,
                 !isActive && !isGreyedActive && styles.dayCircleInactive,
