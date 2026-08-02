@@ -478,8 +478,9 @@ const styles = StyleSheet.create({
     fontSize: 21,
     ...font("semiBold"),
     color: colors.textPrimary,
-    letterSpacing: -0.26,
-    lineHeight: 28,
+    letterSpacing: 0,
+    lineHeight: 32,
+    includeFontPadding: true,
   },
   progressSection: {
     marginTop: 16,
@@ -492,8 +493,10 @@ const styles = StyleSheet.create({
     ...font("semiBold"),
     color: colors.progressText,
     textAlign: "center",
-    letterSpacing: -0.23,
-    lineHeight: 20,
+    letterSpacing: 0,
+    // Must be taller than fontSize or Tamil glyphs clip.
+    lineHeight: 30,
+    includeFontPadding: true,
   },
   dots: {
     flexDirection: "row",
@@ -544,8 +547,9 @@ const styles = StyleSheet.create({
     fontSize: 18,
     ...font("semiBold"),
     color: colors.textPrimary,
-    lineHeight: 25,
-    letterSpacing: -0.2,
+    lineHeight: 28,
+    letterSpacing: 0,
+    includeFontPadding: true,
   },
   sessionSection: {
     marginTop: 8,

@@ -7,18 +7,18 @@ import {
   ScrollView,
   StyleSheet,
   Text,
-  TextInput,
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { AppTextInput } from '../../components/AppTextInput';
 import { PrimaryButton } from '../../components/PrimaryButton';
 import { ScreenHeader } from '../../components/ScreenHeader';
 import { changePassword } from '../../lib/auth';
 import { markPasswordChanged } from '../../lib/userCloudSync';
 import { useAppStore } from '../../store/useAppStore';
 import { colors } from '../../theme/colors';
-import { font } from '../../theme/fonts';
+import { uiText } from '../../theme/typography';
 
 export default function ChangePasswordScreen() {
   const { t } = useTranslation();
@@ -94,53 +94,47 @@ export default function ChangePasswordScreen() {
           <Text style={styles.subtitle}>{t('changePassword.subtitle')}</Text>
 
           <Text style={styles.label}>{t('changePassword.currentLabel')}</Text>
-          <TextInput
+          <AppTextInput
             value={currentPassword}
             onChangeText={(v) => {
               setCurrentPassword(v);
               setError(null);
               setSuccess(false);
             }}
-            style={styles.input}
             secureTextEntry
             autoCapitalize="none"
             autoCorrect={false}
             placeholder={t('changePassword.currentPlaceholder')}
-            placeholderTextColor={colors.textPlaceholder}
           />
 
           <Text style={[styles.label, styles.labelGap]}>{t('changePassword.newLabel')}</Text>
-          <TextInput
+          <AppTextInput
             value={newPassword}
             onChangeText={(v) => {
               setNewPassword(v);
               setError(null);
               setSuccess(false);
             }}
-            style={styles.input}
             secureTextEntry
             autoCapitalize="none"
             autoCorrect={false}
             placeholder={t('changePassword.newPlaceholder')}
-            placeholderTextColor={colors.textPlaceholder}
           />
 
           <Text style={[styles.label, styles.labelGap]}>
             {t('changePassword.confirmLabel')}
           </Text>
-          <TextInput
+          <AppTextInput
             value={confirmPassword}
             onChangeText={(v) => {
               setConfirmPassword(v);
               setError(null);
               setSuccess(false);
             }}
-            style={styles.input}
             secureTextEntry
             autoCapitalize="none"
             autoCorrect={false}
             placeholder={t('changePassword.confirmPlaceholder')}
-            placeholderTextColor={colors.textPlaceholder}
             onSubmitEditing={() => void handleSubmit()}
           />
 
@@ -171,45 +165,29 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingTop: 12,
     paddingBottom: 40,
-    gap: 8,
+    gap: 10,
   },
   subtitle: {
-    fontSize: 14,
-    lineHeight: 20,
+    ...uiText(14, 'regular'),
     color: colors.textSecondary,
     marginBottom: 12,
-    ...font('regular'),
   },
   label: {
-    fontSize: 14,
+    ...uiText(14, 'semiBold'),
     color: colors.textPrimary,
-    ...font('semiBold'),
   },
   labelGap: {
     marginTop: 10,
   },
-  input: {
-    height: 48,
-    borderWidth: 1,
-    borderColor: colors.inputBorder,
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    fontSize: 16,
-    ...font('regular'),
-    color: colors.textPrimary,
-    backgroundColor: colors.background,
-  },
   error: {
     marginTop: 8,
-    fontSize: 13,
+    ...uiText(13, 'regular'),
     color: '#DC2626',
-    ...font('regular'),
   },
   success: {
     marginTop: 8,
-    fontSize: 13,
+    ...uiText(13, 'regular'),
     color: '#16A34A',
-    ...font('regular'),
   },
   button: {
     marginTop: 16,

@@ -92,11 +92,13 @@ const styles = StyleSheet.create({
     borderColor: '#E5E7EB',
     borderRadius: 41,
     padding: CONTAINER_PADDING,
-    height: 48,
+    minHeight: 52,
+    height: 52,
   },
-  /** Figma pill: h40, radius 35, padding 12×24, justify/align center */
+  /** Figma pill: taller than 40 so Tamil labels are not clipped */
   tab: {
-    height: 40,
+    minHeight: 44,
+    height: 44,
     borderRadius: 35,
     alignItems: 'center',
     justifyContent: 'center',
@@ -112,19 +114,21 @@ const styles = StyleSheet.create({
   tabInactive: {
     backgroundColor: 'transparent',
   },
-  /** முன்னேற்றம் — Roboto Medium 14 */
+  /** முன்னேற்றம் — taller line box so Tamil is not clipped */
   progressText: {
     fontSize: 14,
-    lineHeight: 18,
+    lineHeight: 22,
     textAlign: 'center',
     ...font('medium'),
+    includeFontPadding: true,
   },
-  /** உடற்பயிற்சிகள் — Roboto Regular 14 */
+  /** உடற்பயிற்சிகள் */
   workoutsText: {
     fontSize: 14,
-    lineHeight: 18,
+    lineHeight: 22,
     textAlign: 'center',
     ...font('regular'),
+    includeFontPadding: true,
   },
   /** Selected → Primary blue */
   textActive: {

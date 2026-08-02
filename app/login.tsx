@@ -8,11 +8,11 @@ import {
   ScrollView,
   StyleSheet,
   Text,
-  TextInput,
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { AppTextInput } from '../components/AppTextInput';
 import { OncosmartLogo } from '../components/OncosmartLogo';
 import { PrimaryButton } from '../components/PrimaryButton';
 import { getCurrentSession, signInWithUsername } from '../lib/auth';
@@ -24,6 +24,7 @@ import { loadCloudProfileIntoStore } from '../lib/userCloudSync';
 import { useAppStore } from '../store/useAppStore';
 import { colors } from '../theme/colors';
 import { font } from '../theme/fonts';
+import { uiText } from '../theme/typography';
 
 export default function LoginScreen() {
   const { t, i18n } = useTranslation();
@@ -125,30 +126,26 @@ export default function LoginScreen() {
 
             <View style={styles.form}>
               <Text style={styles.label}>{t('login.usernameLabel')}</Text>
-              <TextInput
+              <AppTextInput
                 value={username}
                 onChangeText={(v) => {
                   setUsername(v);
                   if (error) setError(null);
                 }}
                 placeholder={t('login.usernamePlaceholder')}
-                placeholderTextColor={colors.textPlaceholder}
-                style={styles.input}
                 autoCapitalize="none"
                 autoCorrect={false}
                 returnKeyType="next"
               />
 
               <Text style={[styles.label, styles.labelSpacing]}>{t('login.passwordLabel')}</Text>
-              <TextInput
+              <AppTextInput
                 value={password}
                 onChangeText={(v) => {
                   setPassword(v);
                   if (error) setError(null);
                 }}
                 placeholder={t('login.passwordPlaceholder')}
-                placeholderTextColor={colors.textPlaceholder}
-                style={styles.input}
                 autoCapitalize="none"
                 autoCorrect={false}
                 secureTextEntry
@@ -225,30 +222,15 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   label: {
-    fontSize: 14,
-    ...font('semiBold'),
+    ...uiText(14, 'semiBold'),
     color: colors.textPrimary,
   },
   labelSpacing: {
     marginTop: 6,
   },
-  input: {
-    height: 48,
-    borderWidth: 1,
-    borderColor: colors.inputBorder,
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    fontSize: 16,
-    lineHeight: 20,
-    ...font('regular'),
-    color: colors.textPrimary,
-    backgroundColor: colors.background,
-  },
   errorText: {
-    fontSize: 13,
-    lineHeight: 18,
+    ...uiText(13, 'regular'),
     color: '#DC2626',
-    ...font('regular'),
   },
   forgotWrap: {
     alignSelf: 'flex-end',

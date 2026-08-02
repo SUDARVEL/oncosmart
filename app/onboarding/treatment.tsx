@@ -8,16 +8,17 @@ import {
   ScrollView,
   StyleSheet,
   Text,
-  TextInput,
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { AppTextInput } from '../../components/AppTextInput';
 import { PrimaryButton } from '../../components/PrimaryButton';
 import { ScreenHeader } from '../../components/ScreenHeader';
 import { TreatmentType, useAppStore } from '../../store/useAppStore';
 import { colors } from '../../theme/colors';
 import { font } from '../../theme/fonts';
+import { uiText } from '../../theme/typography';
 
 /** Figma Treatment Details — first row hugs content; second row splits evenly. */
 const TREATMENT_ROW_PRIMARY: { id: TreatmentType; labelKey: string }[] = [
@@ -105,12 +106,10 @@ export default function TreatmentScreen() {
           <View style={styles.form}>
             <View style={styles.section}>
               <Text style={styles.label}>{t('treatment.cancerTypeLabel')}</Text>
-              <TextInput
+              <AppTextInput
                 value={cancerType}
                 onChangeText={setCancerTypeLocal}
                 placeholder={t('treatment.cancerTypePlaceholder')}
-                placeholderTextColor={colors.textPlaceholder}
-                style={styles.input}
                 autoCapitalize="sentences"
                 autoCorrect
                 returnKeyType="done"
@@ -198,24 +197,9 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   label: {
-    fontSize: 15,
-    lineHeight: 22,
-    ...font('medium'),
+    ...uiText(15, 'medium'),
     color: '#00131F',
-    letterSpacing: 0.1,
-  },
-  input: {
-    minHeight: 48,
-    borderWidth: 1,
-    borderColor: '#E6E0E9',
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    paddingVertical: 12,
-    fontSize: 16,
-    lineHeight: 22,
-    color: colors.textPrimary,
-    backgroundColor: colors.background,
-    ...font('regular'),
+    letterSpacing: 0,
   },
   chipRow: {
     flexDirection: 'row',
@@ -245,12 +229,10 @@ const styles = StyleSheet.create({
     borderColor: colors.optionBorderSelected,
   },
   chipText: {
-    fontSize: 15,
-    lineHeight: 20,
+    ...uiText(15, 'medium'),
     textAlign: 'center',
-    ...font('medium'),
     color: colors.textMuted,
-    letterSpacing: 0.1,
+    letterSpacing: 0,
   },
   chipTextSelected: {
     ...font('semiBold'),
