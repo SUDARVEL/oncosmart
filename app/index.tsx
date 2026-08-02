@@ -6,17 +6,43 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { OncosmartLogo } from '../components/OncosmartLogo';
 import { SplashFooter } from '../components/SplashFooter';
 import { getCurrentSession } from '../lib/auth';
+import { resolvePostAuthRoute } from '../lib/resolvePostAuthRoute';
+import { syncNextExerciseNotification } from '../lib/nextExerciseNotification';
+import { loadCloudProfileIntoStore } from '../lib/userCloudSync';
+import { useAppStore } from '../store/useAppStore';
 import { colors } from '../theme/colors';
 
 const SPLASH_DURATION_MS = 3000;
 
+async function waitForStoreHydration(timeoutMs = 2500): Promise<void> {
+  const persistApi = useAppStore.persist;
+  if (persistApi.hasHydrated()) return;
+  await Promise.race([
+    new Promise<void>((resolve) => {
+      persistApi.onFinishHydration(() => resolve());
+    }),
+    new Promise<void>((resolve) => {
+      setTimeout(resolve, timeoutMs);
+    }),
+  ]);
+}
+
 export default function SplashScreen() {
   const router = useRouter();
 
-  // Signed-in users continue into the app; everyone else must log in first.
+  // Keep session: signed-in + onboarded → home; signed-in incomplete → onboarding; else login.
   const proceed = useCallback(async () => {
+    await waitForStoreHydration();
     const session = await getCurrentSession();
-    router.replace(session ? '/onboarding' : '/login');
+    if (!session?.user?.id) {
+      router.replace('/login');
+      return;
+    }
+
+    await loadCloudProfileIntoStore(session.user.id);
+    const completions = useAppStore.getState().dayCompletedAt;
+    void syncNextExerciseNotification(completions);
+    router.replace(resolvePostAuthRoute());
   }, [router]);
 
   useEffect(() => {

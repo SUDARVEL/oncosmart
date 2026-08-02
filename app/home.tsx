@@ -24,7 +24,10 @@ import { PressableScale } from "../components/PressableScale";
 import { useExercisePauseGuard } from "../hooks/useExercisePauseGuard";
 import { openWhatsAppSupport } from "../lib/openWhatsAppSupport";
 import { QUOTE_CHARACTER_FEMALE } from "../lib/homePageCardImage";
-import { syncNextExerciseNotification } from "../lib/nextExerciseNotification";
+import {
+  ensureNotificationPermissions,
+  syncNextExerciseNotification,
+} from "../lib/nextExerciseNotification";
 import { getHomePagePlaceholderVideo } from "../lib/placeholderVideo";
 import { HOME_DAY_CARD_PREVIEW_ASPECT } from "../lib/exerciseVideoFrame";
 import {
@@ -80,6 +83,7 @@ export default function HomeScreen() {
   const gender = useAppStore((state) => state.gender);
   const isFemaleUser = avatar === "female" || (!avatar && gender === "female");
   const dayCompletedAt = useAppStore((state) => state.dayCompletedAt);
+  const progressPaused = useAppStore((state) => state.progressPaused);
   const devUnlockOverride = useAppStore((state) => state.devUnlockOverride);
 
   const [activeQuote, setActiveQuote] = useState(0);
@@ -110,8 +114,14 @@ export default function HomeScreen() {
 
   // Keep the local “next exercise ready” reminder aligned with device unlock time.
   useEffect(() => {
-    void syncNextExerciseNotification(dayCompletedAt);
-  }, [dayCompletedAt]);
+    void (async () => {
+      // Ask once on Home so the next-day unlock reminder can fire when the app is closed.
+      await ensureNotificationPermissions();
+      if (!progressPaused) {
+        await syncNextExerciseNotification(dayCompletedAt);
+      }
+    })();
+  }, [dayCompletedAt, progressPaused]);
 
   const handleQuoteScroll = (
     event: NativeSyntheticEvent<NativeScrollEvent>,

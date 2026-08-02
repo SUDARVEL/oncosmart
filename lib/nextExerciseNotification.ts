@@ -100,24 +100,33 @@ export async function scheduleNextExerciseNotification(params: {
     day: next.dayInLevel,
   });
 
-  await Notifications.scheduleNotificationAsync({
-    identifier: NEXT_EXERCISE_NOTIFICATION_ID,
-    content: {
-      title,
-      body,
-      sound: true,
-      data: {
-        type: 'next-exercise-ready',
-        level: next.level,
-        dayInLevel: next.dayInLevel,
+  try {
+    await Notifications.scheduleNotificationAsync({
+      identifier: NEXT_EXERCISE_NOTIFICATION_ID,
+      content: {
+        title,
+        body,
+        sound: true,
+        ...(Platform.OS === 'android'
+          ? { channelId: EXERCISE_REMINDER_CHANNEL_ID }
+          : {}),
+        data: {
+          type: 'next-exercise-ready',
+          level: next.level,
+          dayInLevel: next.dayInLevel,
+        },
       },
-    },
-    trigger: {
-      type: Notifications.SchedulableTriggerInputTypes.DATE,
-      date: new Date(unlockAt),
-      channelId: EXERCISE_REMINDER_CHANNEL_ID,
-    },
-  });
+      trigger: {
+        type: Notifications.SchedulableTriggerInputTypes.DATE,
+        date: new Date(unlockAt),
+        ...(Platform.OS === 'android'
+          ? { channelId: EXERCISE_REMINDER_CHANNEL_ID }
+          : {}),
+      },
+    });
+  } catch (error) {
+    console.warn('[Notifications] Failed to schedule next-exercise reminder', error);
+  }
 }
 
 /** Re-schedule from persisted completions (app open / permission granted later). */

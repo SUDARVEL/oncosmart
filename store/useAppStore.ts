@@ -12,12 +12,10 @@ export type AppAvatar = 'male' | 'female';
 export type AgeRange = '18-24' | '25-34' | '35-44' | '45-54' | '55-64';
 export type TreatmentType = 'chemotherapy' | 'radiation' | 'both' | 'none';
 
-type AppState = {
+export type AppStateSnapshot = {
   language: AppLanguage | null;
   username: string;
-  /** Whole-number age entered on onboarding (preferred). */
   age: number | null;
-  /** Legacy age band; still read for older installs until they re-enter age. */
   ageRange: AgeRange | null;
   gender: AppGender | null;
   cancerType: string;
@@ -29,8 +27,13 @@ type AppState = {
   painScores: Record<string, number>;
   progressPaused: boolean;
   levelsCompleted: number;
-  /** Epoch ms when each day's guided session was completed, keyed by day number. */
   dayCompletedAt: Record<string, number>;
+  activeAuthUserId: string | null;
+};
+
+type CloudHydrateInput = Partial<AppStateSnapshot>;
+
+type AppState = AppStateSnapshot & {
   /** Dev-only flag that bypasses the 24h unlock delay between days. */
   devUnlockOverride: boolean;
   /** Ephemeral queue of badge celebrations to show after a session. */
@@ -49,6 +52,9 @@ type AppState = {
   setPainScore: (level: number, dayInLevel: number, score: number) => void;
   setProgressPaused: (paused: boolean) => void;
   setLevelsCompleted: (count: number) => void;
+  setActiveAuthUserId: (userId: string | null) => void;
+  /** Replace local profile/progress with cloud data for the signed-in user. */
+  hydrateFromCloud: (payload: CloudHydrateInput) => void;
   /** Record a session completion (level + day within level). */
   markSessionCompleted: (level: number, dayInLevel: number, when?: number) => void;
   /** @deprecated Use markSessionCompleted */
@@ -58,6 +64,7 @@ type AppState = {
   dismissBadgeCelebration: () => void;
   /** Dev-only: wipe day progress without touching onboarding profile. */
   devResetProgress: () => void;
+  /** Clear local session cache (logout). Cloud rows stay for next login. */
   resetApp: () => void;
 };
 
@@ -81,6 +88,7 @@ export const useAppStore = create<AppState>()(
       progressPaused: false,
       levelsCompleted: 0,
       dayCompletedAt: {},
+      activeAuthUserId: null,
       devUnlockOverride: false,
       pendingBadgeCelebrations: [],
       setLanguage: (language) => set({ language }),
@@ -108,6 +116,21 @@ export const useAppStore = create<AppState>()(
         }),
       setProgressPaused: (paused) => set({ progressPaused: paused }),
       setLevelsCompleted: (count) => set({ levelsCompleted: count }),
+      setActiveAuthUserId: (userId) => set({ activeAuthUserId: userId }),
+      hydrateFromCloud: (payload) =>
+        set((state) => ({
+          ...state,
+          ...payload,
+          parqAnswers: payload.parqAnswers
+            ? [...payload.parqAnswers]
+            : state.parqAnswers,
+          painScores: payload.painScores
+            ? { ...payload.painScores }
+            : state.painScores,
+          dayCompletedAt: payload.dayCompletedAt
+            ? { ...payload.dayCompletedAt }
+            : state.dayCompletedAt,
+        })),
       markSessionCompleted: (level, dayInLevel, when) =>
         set((state) => {
           // Pause Progress freezes program advancement for every avatar/gender.
@@ -178,6 +201,7 @@ export const useAppStore = create<AppState>()(
           progressPaused: false,
           levelsCompleted: 0,
           dayCompletedAt: {},
+          activeAuthUserId: null,
           devUnlockOverride: false,
           pendingBadgeCelebrations: [],
         }),
@@ -201,6 +225,7 @@ export const useAppStore = create<AppState>()(
         progressPaused: state.progressPaused,
         levelsCompleted: state.levelsCompleted,
         dayCompletedAt: state.dayCompletedAt,
+        activeAuthUserId: state.activeAuthUserId,
         devUnlockOverride: state.devUnlockOverride,
       }),
     },

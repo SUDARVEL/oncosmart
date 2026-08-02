@@ -5,16 +5,16 @@ import { useTranslation } from 'react-i18next';
 import { Pressable, ScrollView, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { BottomTabBar } from '../components/BottomTabBar';
-import { ScreenHeader } from '../components/ScreenHeader';
-import { LanguageBottomSheet } from '../components/settings/LanguageBottomSheet';
-import { ProfileBottomSheet } from '../components/settings/ProfileBottomSheet';
-import { SettingsRow } from '../components/settings/SettingsRow';
-import { signOut } from '../lib/auth';
-import { cancelNextExerciseNotification } from '../lib/nextExerciseNotification';
-import { openWhatsAppSupport } from '../lib/openWhatsAppSupport';
-import { AppLanguage, useAppStore } from '../store/useAppStore';
-import { colors } from '../theme/colors';
+import { BottomTabBar } from '../../components/BottomTabBar';
+import { ScreenHeader } from '../../components/ScreenHeader';
+import { LanguageBottomSheet } from '../../components/settings/LanguageBottomSheet';
+import { ProfileBottomSheet } from '../../components/settings/ProfileBottomSheet';
+import { SettingsRow } from '../../components/settings/SettingsRow';
+import { signOut } from '../../lib/auth';
+import { cancelNextExerciseNotification } from '../../lib/nextExerciseNotification';
+import { openWhatsAppSupport } from '../../lib/openWhatsAppSupport';
+import { AppLanguage, useAppStore } from '../../store/useAppStore';
+import { colors } from '../../theme/colors';
 
 export default function SettingsScreen() {
   const { t, i18n } = useTranslation();
@@ -49,6 +49,7 @@ export default function SettingsScreen() {
   };
 
   const handleLogout = () => {
+    // Sign out clears the Auth session only. Cloud patient data stays for next login.
     void cancelNextExerciseNotification();
     void signOut();
     resetApp();
@@ -80,6 +81,12 @@ export default function SettingsScreen() {
           description={languageLabel}
           showChevron
           onPress={() => setLanguageSheetOpen(true)}
+        />
+        <SettingsRow
+          title={t('settings.changePassword')}
+          description={t('settings.changePasswordDescription')}
+          showChevron
+          onPress={() => router.push('/settings/change-password')}
         />
         <SettingsRow
           title={t('settings.helpSupport')}

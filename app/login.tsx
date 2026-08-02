@@ -14,13 +14,18 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { OncosmartLogo } from '../components/OncosmartLogo';
 import { PrimaryButton } from '../components/PrimaryButton';
-import { signInWithUsername } from '../lib/auth';
+import { getCurrentSession, signInWithUsername } from '../lib/auth';
+import { resolvePostAuthRoute } from '../lib/resolvePostAuthRoute';
+import { syncNextExerciseNotification } from '../lib/nextExerciseNotification';
+import { loadCloudProfileIntoStore } from '../lib/userCloudSync';
+import { useAppStore } from '../store/useAppStore';
 import { colors } from '../theme/colors';
 import { font } from '../theme/fonts';
 
 export default function LoginScreen() {
   const { t } = useTranslation();
   const router = useRouter();
+  const resetApp = useAppStore((state) => state.resetApp);
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [submitting, setSubmitting] = useState(false);
@@ -32,13 +37,21 @@ export default function LoginScreen() {
     if (!canSubmit) return;
     setSubmitting(true);
     setError(null);
+    // Clear previous local account cache before loading this user's cloud data.
+    resetApp();
     const result = await signInWithUsername(username, password);
-    if (result.ok) {
-      router.replace('/onboarding');
+    if (!result.ok) {
+      setError(t('login.error'));
+      setSubmitting(false);
       return;
     }
-    setError(t('login.error'));
-    setSubmitting(false);
+
+    const session = await getCurrentSession();
+    if (session?.user?.id) {
+      await loadCloudProfileIntoStore(session.user.id);
+      void syncNextExerciseNotification(useAppStore.getState().dayCompletedAt);
+    }
+    router.replace(resolvePostAuthRoute());
   };
 
   return (
