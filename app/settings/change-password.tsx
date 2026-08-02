@@ -1,5 +1,5 @@
 import { useRouter } from 'expo-router';
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   KeyboardAvoidingView,
@@ -14,7 +14,9 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { AppTextInput } from '../../components/AppTextInput';
 import { PrimaryButton } from '../../components/PrimaryButton';
 import { ScreenHeader } from '../../components/ScreenHeader';
+import { useAndroidBack } from '../../hooks/useAndroidBack';
 import { changePassword } from '../../lib/auth';
+import { goBackOr } from '../../lib/navBack';
 import { markPasswordChanged } from '../../lib/userCloudSync';
 import { useAppStore } from '../../store/useAppStore';
 import { colors } from '../../theme/colors';
@@ -74,12 +76,23 @@ export default function ChangePasswordScreen() {
     setConfirmPassword('');
   };
 
+  const handleBack = useCallback(() => {
+    goBackOr(() => router.replace('/settings'));
+  }, [router]);
+
+  useAndroidBack(
+    useCallback(() => {
+      handleBack();
+      return true;
+    }, [handleBack]),
+  );
+
   return (
     <SafeAreaView style={styles.screen} edges={['top', 'bottom']}>
       <ScreenHeader
         title={t('changePassword.title')}
         showBack
-        onBack={() => router.back()}
+        onBack={handleBack}
       />
 
       <KeyboardAvoidingView

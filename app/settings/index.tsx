@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import Constants from 'expo-constants';
 import { useRouter } from 'expo-router';
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -12,8 +12,10 @@ import { ScreenHeader } from '../../components/ScreenHeader';
 import { LanguageBottomSheet } from '../../components/settings/LanguageBottomSheet';
 import { ProfileBottomSheet } from '../../components/settings/ProfileBottomSheet';
 import { SettingsRow } from '../../components/settings/SettingsRow';
+import { useAndroidBack } from '../../hooks/useAndroidBack';
 import { useCoachTour } from '../../hooks/useCoachTour';
 import { signOut } from '../../lib/auth';
+import { goBackOr } from '../../lib/navBack';
 import { cancelNextExerciseNotification } from '../../lib/nextExerciseNotification';
 import { openWhatsAppSupport } from '../../lib/openWhatsAppSupport';
 import { setPreferredLanguage } from '../../lib/preferredLanguage';
@@ -66,8 +68,19 @@ export default function SettingsScreen() {
 
   const handleTabPress = (tab: 'home' | 'growth' | 'settings') => {
     if (tab === 'home') router.replace('/home');
-    if (tab === 'growth') router.replace('/growth');
+    if (tab === 'growth') router.push('/growth');
   };
+
+  const handleBack = useCallback(() => {
+    goBackOr(() => router.replace('/home'));
+  }, [router]);
+
+  useAndroidBack(
+    useCallback(() => {
+      handleBack();
+      return true;
+    }, [handleBack]),
+  );
 
   const handleLogout = () => {
     const state = useAppStore.getState();
@@ -92,7 +105,7 @@ export default function SettingsScreen() {
         title={t('settings.title')}
         showBack
         largeTitle
-        onBack={() => router.replace('/home')}
+        onBack={handleBack}
       />
 
       <ScrollView
@@ -115,7 +128,7 @@ export default function SettingsScreen() {
             title={t('settings.changeAvatar')}
             description={t('settings.changeAvatarDescription')}
             showChevron
-            onPress={() => router.push('/onboarding/avatar?from=home')}
+            onPress={() => router.push('/onboarding/avatar?from=settings')}
           />
           <SettingsRow
             title={t('settings.language')}

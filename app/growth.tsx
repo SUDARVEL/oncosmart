@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Pressable,
@@ -20,8 +20,10 @@ import { PauseReasonModal, type PauseReason } from '../components/growth/PauseRe
 import { StreakCard } from '../components/growth/StreakCard';
 import { BottomTabBar } from '../components/BottomTabBar';
 import { ScreenHeader } from '../components/ScreenHeader';
+import { useAndroidBack } from '../hooks/useAndroidBack';
 import { useCoachTour } from '../hooks/useCoachTour';
 import { getDisplayPainScore } from '../lib/getDisplayPainScore';
+import { goBackOr } from '../lib/navBack';
 import {
   cancelNextExerciseNotification,
   syncNextExerciseNotification,
@@ -96,8 +98,19 @@ export default function GrowthScreen() {
 
   const handleTabPress = (tab: 'home' | 'growth' | 'settings') => {
     if (tab === 'home') router.replace('/home');
-    if (tab === 'settings') router.replace('/settings');
+    if (tab === 'settings') router.push('/settings');
   };
+
+  const handleBack = useCallback(() => {
+    goBackOr(() => router.replace('/home'));
+  }, [router]);
+
+  useAndroidBack(
+    useCallback(() => {
+      handleBack();
+      return true;
+    }, [handleBack]),
+  );
 
   return (
     <View style={styles.screen}>
@@ -105,7 +118,7 @@ export default function GrowthScreen() {
       <ScreenHeader
         title={t('growth.title')}
         showBack
-        onBack={() => router.replace('/home')}
+        onBack={handleBack}
       />
 
       <ScrollView

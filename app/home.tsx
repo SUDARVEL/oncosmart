@@ -1,7 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   Dimensions,
@@ -22,8 +22,10 @@ import { ResumeProgressModal } from "../components/growth/ResumeProgressModal";
 import { HomeAvatarButton } from "../components/home/HomeAvatarButton";
 import { ProgressLogo } from "../components/home/ProgressLogo";
 import { PressableScale } from "../components/PressableScale";
+import { useAndroidBack } from "../hooks/useAndroidBack";
 import { useCoachTour } from "../hooks/useCoachTour";
 import { useExercisePauseGuard } from "../hooks/useExercisePauseGuard";
+import { exitApp } from "../lib/navBack";
 import { openWhatsAppSupport } from "../lib/openWhatsAppSupport";
 import { QUOTE_CHARACTER_FEMALE } from "../lib/homePageCardImage";
 import {
@@ -147,6 +149,14 @@ export default function HomeScreen() {
     if (tab === "growth") router.push("/growth");
     if (tab === "settings") router.push("/settings");
   };
+
+  // Home is the app root — system back exits (Android), like other apps.
+  useAndroidBack(
+    useCallback(() => {
+      exitApp();
+      return true;
+    }, []),
+  );
 
   const handleAvatarPress = () => {
     router.push("/onboarding/avatar?from=home");
