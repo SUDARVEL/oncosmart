@@ -173,10 +173,16 @@ export default function HomeScreen() {
       router.push("/growth");
       return;
     }
+    if (coachStep?.id === "home.settingsTab") {
+      coachNext();
+      router.push("/settings");
+      return;
+    }
     coachNext();
   };
 
   return (
+    <View style={styles.screen}>
     <SafeAreaView style={styles.screen} edges={["top"]}>
       <ScrollView
         style={styles.scroll}
@@ -291,6 +297,7 @@ export default function HomeScreen() {
         }}
         tabAnchorRefs={{
           growth: (node) => registerTarget("home.growthTab", node),
+          settings: (node) => registerTarget("home.settingsTab", node),
         }}
       />
 
@@ -305,6 +312,8 @@ export default function HomeScreen() {
         }}
       />
 
+    </SafeAreaView>
+      {/* Outside SafeArea so measureInWindow coords match the spotlight. */}
       {coachActive && coachStep ? (
         <CoachMarkOverlay
           visible
@@ -315,11 +324,13 @@ export default function HomeScreen() {
           stepCount={coachStepCount}
           target={coachRect}
           preferPlacement={coachStep.preferPlacement}
+          spotlight={coachStep.spotlight}
+          pad={coachStep.pad}
           onNext={handleCoachNext}
           onSkip={coachSkip}
         />
       ) : null}
-    </SafeAreaView>
+    </View>
   );
 }
 

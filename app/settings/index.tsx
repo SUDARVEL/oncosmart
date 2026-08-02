@@ -1,15 +1,18 @@
 import { Ionicons } from '@expo/vector-icons';
+import Constants from 'expo-constants';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Pressable, ScrollView, StyleSheet } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { BottomTabBar } from '../../components/BottomTabBar';
+import { CoachMarkOverlay } from '../../components/coach/CoachMarkOverlay';
 import { ScreenHeader } from '../../components/ScreenHeader';
 import { LanguageBottomSheet } from '../../components/settings/LanguageBottomSheet';
 import { ProfileBottomSheet } from '../../components/settings/ProfileBottomSheet';
 import { SettingsRow } from '../../components/settings/SettingsRow';
+import { useCoachTour } from '../../hooks/useCoachTour';
 import { signOut } from '../../lib/auth';
 import { cancelNextExerciseNotification } from '../../lib/nextExerciseNotification';
 import { openWhatsAppSupport } from '../../lib/openWhatsAppSupport';
@@ -29,11 +32,25 @@ export default function SettingsScreen() {
   const restartCoachTour = useAppStore((state) => state.restartCoachTour);
   const [languageSheetOpen, setLanguageSheetOpen] = useState(false);
   const [profileSheetOpen, setProfileSheetOpen] = useState(false);
+  const {
+    active: coachActive,
+    step: coachStep,
+    stepIndex: coachStepIndex,
+    stepCount: coachStepCount,
+    rect: coachRect,
+    registerTarget,
+    next: coachNext,
+    skip: coachSkip,
+  } = useCoachTour('settings');
 
   const selectedLanguage: AppLanguage = language === 'ta' ? 'ta' : 'en';
   const languageLabel =
     selectedLanguage === 'ta' ? t('language.tamil') : t('language.english');
   const profileLabel = username.trim() || t('settings.myProfileDescription');
+  const appVersion =
+    Constants.expoConfig?.version ??
+    Constants.nativeAppVersion ??
+    '1.0.0';
 
   const handleLanguageSelect = (next: AppLanguage) => {
     setLanguage(next);
@@ -53,7 +70,6 @@ export default function SettingsScreen() {
   };
 
   const handleLogout = () => {
-    // Flush latest progress, then sign out locally. Cloud rows stay for next login.
     const state = useAppStore.getState();
     const keptLanguage = state.language;
     const userId = state.activeAuthUserId;
@@ -70,6 +86,7 @@ export default function SettingsScreen() {
   };
 
   return (
+    <View style={styles.screen}>
     <SafeAreaView style={styles.screen} edges={['top']}>
       <ScreenHeader
         title={t('settings.title')}
@@ -83,44 +100,60 @@ export default function SettingsScreen() {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        <SettingsRow
-          title={t('settings.myProfile')}
-          description={profileLabel}
-          showChevron
-          onPress={() => setProfileSheetOpen(true)}
-        />
-        <SettingsRow
-          title={t('settings.language')}
-          description={languageLabel}
-          showChevron
-          onPress={() => setLanguageSheetOpen(true)}
-        />
-        <SettingsRow
-          title={t('settings.changePassword')}
-          description={t('settings.changePasswordDescription')}
-          showChevron
-          onPress={() => router.push('/settings/change-password')}
-        />
-        <SettingsRow
-          title={t('settings.helpSupport')}
-          description={t('settings.helpSupportDescription')}
-          showChevron
-          onPress={openWhatsAppSupport}
-        />
-        <SettingsRow
-          title={t('settings.replayTips')}
-          description={t('settings.replayTipsDescription')}
-          showChevron
-          onPress={() => {
-            restartCoachTour();
-            router.replace('/home');
-          }}
-        />
-        <SettingsRow
-          title={t('settings.logout')}
-          description={t('settings.logoutDescription')}
-          onPress={handleLogout}
-        />
+        <View
+          ref={(node) => registerTarget('settings.menu', node)}
+          collapsable={false}
+          style={styles.menuAnchor}
+        >
+          <SettingsRow
+            title={t('settings.myProfile')}
+            description={profileLabel}
+            showChevron
+            onPress={() => setProfileSheetOpen(true)}
+          />
+          <SettingsRow
+            title={t('settings.changeAvatar')}
+            description={t('settings.changeAvatarDescription')}
+            showChevron
+            onPress={() => router.push('/onboarding/avatar?from=home')}
+          />
+          <SettingsRow
+            title={t('settings.language')}
+            description={languageLabel}
+            showChevron
+            onPress={() => setLanguageSheetOpen(true)}
+          />
+          <SettingsRow
+            title={t('settings.changePassword')}
+            description={t('settings.changePasswordDescription')}
+            showChevron
+            onPress={() => router.push('/settings/change-password')}
+          />
+          <SettingsRow
+            title={t('settings.helpSupport')}
+            description={t('settings.helpSupportDescription')}
+            showChevron
+            onPress={openWhatsAppSupport}
+          />
+          <SettingsRow
+            title={t('settings.replayTips')}
+            description={t('settings.replayTipsDescription')}
+            showChevron
+            onPress={() => {
+              restartCoachTour();
+              router.replace('/home');
+            }}
+          />
+          <SettingsRow
+            title={t('settings.about')}
+            description={t('settings.aboutDescription', { version: appVersion })}
+          />
+          <SettingsRow
+            title={t('settings.logout')}
+            description={t('settings.logoutDescription')}
+            onPress={handleLogout}
+          />
+        </View>
       </ScrollView>
 
       <ProfileBottomSheet
@@ -155,7 +188,25 @@ export default function SettingsScreen() {
           settings: t('home.tabSettings'),
         }}
       />
+
     </SafeAreaView>
+      {coachActive && coachStep ? (
+        <CoachMarkOverlay
+          visible
+          title={t(coachStep.titleKey)}
+          body={t(coachStep.bodyKey)}
+          icon={coachStep.icon}
+          stepIndex={coachStepIndex}
+          stepCount={coachStepCount}
+          target={coachRect}
+          preferPlacement={coachStep.preferPlacement}
+          spotlight={coachStep.spotlight}
+          pad={coachStep.pad}
+          onNext={coachNext}
+          onSkip={coachSkip}
+        />
+      ) : null}
+    </View>
   );
 }
 
@@ -168,27 +219,21 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
-    paddingHorizontal: 16,
-    paddingTop: 16,
     paddingBottom: 120,
-    gap: 8,
+  },
+  menuAnchor: {
+    paddingTop: 4,
   },
   fab: {
     position: 'absolute',
-    right: 9,
-    bottom: 88,
+    right: 20,
+    bottom: 100,
     width: 48,
     height: 48,
     borderRadius: 24,
-    backgroundColor: colors.tabBarBg,
-    borderWidth: 1,
-    borderColor: colors.buttonPrimary,
+    backgroundColor: colors.buttonPrimary,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#000000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 8,
-    elevation: 6,
+    elevation: 4,
   },
 });

@@ -100,6 +100,7 @@ export default function GrowthScreen() {
   };
 
   return (
+    <View style={styles.screen}>
     <SafeAreaView style={styles.screen} edges={['top']}>
       <ScreenHeader
         title={t('growth.title')}
@@ -169,6 +170,7 @@ export default function GrowthScreen() {
         onSelect={handlePauseReasonSelect}
       />
 
+    </SafeAreaView>
       {coachActive && coachStep ? (
         <CoachMarkOverlay
           visible
@@ -179,11 +181,20 @@ export default function GrowthScreen() {
           stepCount={coachStepCount}
           target={coachRect}
           preferPlacement={coachStep.preferPlacement}
-          onNext={coachNext}
+          spotlight={coachStep.spotlight}
+          pad={coachStep.pad}
+          onNext={() => {
+            if (coachStep.id === 'growth.workouts') {
+              coachNext();
+              router.replace('/home');
+              return;
+            }
+            coachNext();
+          }}
           onSkip={coachSkip}
         />
       ) : null}
-    </SafeAreaView>
+    </View>
   );
 }
 

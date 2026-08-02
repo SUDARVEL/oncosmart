@@ -441,7 +441,11 @@
     "logout": "வெளியேறு",
     "logoutDescription": "இந்த சாதனத்திலிருந்து வெளியேறவும்",
     "replayTips": "ஆப் வழிகாட்டி",
-    "replayTipsDescription": "முகப்பு மற்றும் முன்னேற்ற வழிகாட்டியை மீண்டும் பார்க்க"
+    "replayTipsDescription": "முகப்பு மற்றும் முன்னேற்ற வழிகாட்டியை மீண்டும் பார்க்க",
+    "changeAvatar": "அவதாரத்தை மாற்று",
+    "changeAvatarDescription": "ஆண் அல்லது பெண் அவதாரத்தை தேர்வு செய்யுங்கள்",
+    "about": "ONCOSMART பற்றி",
+    "aboutDescription": "பதிப்பு {{version}}"
   },
   "changePassword": {
     "title": "கடவுச்சொல் மாற்று",
@@ -532,6 +536,10 @@
     "next": "அடுத்து",
     "done": "முடிந்தது",
     "skip": "தவிர்",
-    "stepOf": "{{current}}/{{total}}"
+    "stepOf": "{{current}}/{{total}}",
+    "settingsTabTitle": "அமைப்புகள்",
+    "settingsTabBody": "சுயவிவரம், மொழி, கடவுச்சொல் மற்றும் உதவியை இங்கே மாற்றலாம்.",
+    "settingsMenuTitle": "உங்கள் அமைப்புகள்",
+    "settingsMenuBody": "அவதாரம், சுயவிவரம், மொழி, கடவுச்சொல், வழிகாட்டி மற்றும் உதவியை இங்கே மாற்றலாம்."
   }
 }

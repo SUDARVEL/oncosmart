@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { type View } from 'react-native';
+import { InteractionManager, type View } from 'react-native';
 
 import type { CoachTargetRect } from '../components/coach/CoachMarkOverlay';
 import {
@@ -23,11 +23,9 @@ function waitForHydration(): Promise<void> {
 }
 
 /**
- * Measures registered target views and drives coach-tour step visibility
- * for a given screen (home or growth).
- *
- * Target nodes are stored in a ref (not React state) so ref callbacks never
- * call setState during render — that pattern was crashing Home on open.
+ * Crash-safe coach tour driver.
+ * Targets live in a ref (never setState from ref callbacks).
+ * Overlay is in-screen (not Modal) so measureInWindow aligns.
  */
 export function useCoachTour(screen: CoachTourScreen) {
   const coachTourSeen = useAppStore((s) => s.coachTourSeen === true);
@@ -51,7 +49,6 @@ export function useCoachTour(screen: CoachTourScreen) {
   }, []);
 
   const registerTarget = useCallback((id: CoachTourStepId, node: View | null) => {
-    // Ref-only — never setState here (avoids render-phase update crash).
     targetsRef.current[id] = node;
   }, []);
 
@@ -65,7 +62,6 @@ export function useCoachTour(screen: CoachTourScreen) {
 
   const active = Boolean(step && step.screen === screen);
 
-  // Auto-start once after first successful onboarding (local avatar + PAR-Q).
   useEffect(() => {
     if (!hydrated || coachTourSeen || coachTourStep != null) return;
     if (screen !== 'home') return;
@@ -81,13 +77,16 @@ export function useCoachTour(screen: CoachTourScreen) {
     return () => clearTimeout(timer);
   }, [hydrated, coachTourSeen, coachTourStep, screen, setCoachTourStep]);
 
-  // Re-measure when the active step changes.
   useEffect(() => {
     if (!active || !step) {
       setRect(null);
       return;
     }
-    setMeasureTick((n) => n + 1);
+    // Delay a tick so Growth tab switches / navigation can finish layout.
+    const handle = InteractionManager.runAfterInteractions(() => {
+      setMeasureTick((n) => n + 1);
+    });
+    return () => handle.cancel();
   }, [active, step?.id]);
 
   useEffect(() => {
@@ -121,12 +120,15 @@ export function useCoachTour(screen: CoachTourScreen) {
       }
     };
 
-    const t1 = setTimeout(measure, 80);
-    const t2 = setTimeout(measure, 320);
+    // Multiple passes — pills/tabs often settle after the first paint.
+    const t1 = setTimeout(measure, 60);
+    const t2 = setTimeout(measure, 220);
+    const t3 = setTimeout(measure, 480);
     return () => {
       cancelled = true;
       clearTimeout(t1);
       clearTimeout(t2);
+      clearTimeout(t3);
     };
   }, [active, step, measureTick]);
 

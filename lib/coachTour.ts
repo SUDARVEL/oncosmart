@@ -4,20 +4,31 @@ export type CoachTourStepId =
   | 'home.session'
   | 'home.growthTab'
   | 'growth.progress'
-  | 'growth.workouts';
+  | 'growth.workouts'
+  | 'home.settingsTab'
+  | 'settings.menu';
 
-export type CoachTourScreen = 'home' | 'growth';
+export type CoachTourScreen = 'home' | 'growth' | 'settings';
+
+export type CoachSpotlightShape = 'circle' | 'pill' | 'rounded';
 
 export type CoachTourStep = {
   id: CoachTourStepId;
   screen: CoachTourScreen;
-  /** Preferred caret direction relative to the tooltip card. */
   preferPlacement: 'below' | 'above';
-  /** Stick to widely-available Ionicons names (avoid missing-glyph crashes). */
-  icon: 'person-outline' | 'ribbon-outline' | 'play-circle-outline' | 'stats-chart-outline' | 'trending-up-outline' | 'list-outline';
+  spotlight: CoachSpotlightShape;
+  /** Extra padding around the measured target (px). */
+  pad: number;
+  icon:
+    | 'person-outline'
+    | 'ribbon-outline'
+    | 'play-circle-outline'
+    | 'stats-chart-outline'
+    | 'trending-up-outline'
+    | 'list-outline'
+    | 'settings-outline';
   titleKey: string;
   bodyKey: string;
-  /** When entering this step on Growth, force the progress/workouts pill. */
   growthTab?: 'progress' | 'workouts';
 };
 
@@ -26,6 +37,8 @@ export const COACH_TOUR_STEPS: CoachTourStep[] = [
     id: 'home.avatar',
     screen: 'home',
     preferPlacement: 'below',
+    spotlight: 'circle',
+    pad: 4,
     icon: 'person-outline',
     titleKey: 'coach.avatarTitle',
     bodyKey: 'coach.avatarBody',
@@ -34,6 +47,8 @@ export const COACH_TOUR_STEPS: CoachTourStep[] = [
     id: 'home.progress',
     screen: 'home',
     preferPlacement: 'below',
+    spotlight: 'rounded',
+    pad: 6,
     icon: 'ribbon-outline',
     titleKey: 'coach.homeProgressTitle',
     bodyKey: 'coach.homeProgressBody',
@@ -42,6 +57,8 @@ export const COACH_TOUR_STEPS: CoachTourStep[] = [
     id: 'home.session',
     screen: 'home',
     preferPlacement: 'above',
+    spotlight: 'rounded',
+    pad: 6,
     icon: 'play-circle-outline',
     titleKey: 'coach.sessionTitle',
     bodyKey: 'coach.sessionBody',
@@ -50,6 +67,8 @@ export const COACH_TOUR_STEPS: CoachTourStep[] = [
     id: 'home.growthTab',
     screen: 'home',
     preferPlacement: 'above',
+    spotlight: 'pill',
+    pad: 4,
     icon: 'stats-chart-outline',
     titleKey: 'coach.growthTabTitle',
     bodyKey: 'coach.growthTabBody',
@@ -58,6 +77,8 @@ export const COACH_TOUR_STEPS: CoachTourStep[] = [
     id: 'growth.progress',
     screen: 'growth',
     preferPlacement: 'below',
+    spotlight: 'pill',
+    pad: 4,
     icon: 'trending-up-outline',
     titleKey: 'coach.progressTitle',
     bodyKey: 'coach.progressBody',
@@ -67,10 +88,32 @@ export const COACH_TOUR_STEPS: CoachTourStep[] = [
     id: 'growth.workouts',
     screen: 'growth',
     preferPlacement: 'below',
+    spotlight: 'pill',
+    pad: 4,
     icon: 'list-outline',
     titleKey: 'coach.workoutsTitle',
     bodyKey: 'coach.workoutsBody',
     growthTab: 'workouts',
+  },
+  {
+    id: 'home.settingsTab',
+    screen: 'home',
+    preferPlacement: 'above',
+    spotlight: 'pill',
+    pad: 4,
+    icon: 'settings-outline',
+    titleKey: 'coach.settingsTabTitle',
+    bodyKey: 'coach.settingsTabBody',
+  },
+  {
+    id: 'settings.menu',
+    screen: 'settings',
+    preferPlacement: 'below',
+    spotlight: 'rounded',
+    pad: 8,
+    icon: 'settings-outline',
+    titleKey: 'coach.settingsMenuTitle',
+    bodyKey: 'coach.settingsMenuBody',
   },
 ];
 

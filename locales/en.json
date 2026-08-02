@@ -441,7 +441,11 @@
     "logout": "Logout",
     "logoutDescription": "Sign out of this device",
     "replayTips": "App tips",
-    "replayTipsDescription": "Replay the guided tour of Home and Growth"
+    "replayTipsDescription": "Replay the guided tour of Home and Growth",
+    "changeAvatar": "Change avatar",
+    "changeAvatarDescription": "Pick a new male or female avatar",
+    "about": "About ONCOSMART",
+    "aboutDescription": "Version {{version}}"
   },
   "changePassword": {
     "title": "Change Password",
@@ -514,6 +518,10 @@
     "next": "Next",
     "done": "Done",
     "skip": "Skip",
-    "stepOf": "{{current}}/{{total}}"
+    "stepOf": "{{current}}/{{total}}",
+    "settingsTabTitle": "Settings",
+    "settingsTabBody": "Open Settings to update your profile, language, password, and get help.",
+    "settingsMenuTitle": "Your Settings",
+    "settingsMenuBody": "Change avatar, edit profile, switch language, update password, replay tips, or contact support here."
   }
 }
