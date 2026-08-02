@@ -25,10 +25,10 @@ type AvatarCardProps = {
 };
 
 /**
- * Avatar picker card engineered against Android blank/swap bugs:
- * - Image lives in a fixed-size slot that never changes on selection
- * - Selection is an absolute overlay ring (no borderWidth layout shift)
- * - Opaque JPEG sources + resizeMethod="resize" keep both bitmaps alive
+ * Avatar picker card:
+ * - Image slot size never changes on selection (no shrink)
+ * - Selection = border ring + check only (no wash / opacity overlay)
+ * - Pressable never dims the card
  */
 export function AvatarCard({
   imageKey,
@@ -40,7 +40,9 @@ export function AvatarCard({
   return (
     <Pressable
       onPress={onPress}
-      style={styles.card}
+      // Force full opacity while pressed — Android otherwise dims the card.
+      style={({ pressed }) => [styles.card, { opacity: 1 }, pressed ? null : null]}
+      android_ripple={{ color: 'transparent' }}
       accessibilityRole="button"
       accessibilityState={{ selected }}
       accessibilityLabel={label}
@@ -59,18 +61,17 @@ export function AvatarCard({
 
       <Text style={[styles.label, selected && styles.labelSelected]}>{label}</Text>
 
-      {/* Overlay only — never mutates the Image slot size/border */}
+      {/* Border + check only — never a fill wash over the avatar */}
       <View
         pointerEvents="none"
-        style={[styles.selectionOverlay, selected && styles.selectionOverlayOn]}
+        style={[styles.selectionRing, selected && styles.selectionRingOn]}
         collapsable={false}
-      >
-        {selected ? (
-          <View style={styles.checkBadge}>
-            <Ionicons name="checkmark-circle" size={22} color={colors.buttonPrimary} />
-          </View>
-        ) : null}
-      </View>
+      />
+      {selected ? (
+        <View style={styles.checkBadge} pointerEvents="none">
+          <Ionicons name="checkmark-circle" size={22} color={colors.buttonPrimary} />
+        </View>
+      ) : null}
     </Pressable>
   );
 }
@@ -84,17 +85,20 @@ const styles = StyleSheet.create({
     paddingTop: 10,
     paddingBottom: 12,
     paddingHorizontal: 6,
-    overflow: 'visible',
+    // Reserve border space always so selecting cannot shrink the image slot.
+    borderWidth: 2,
+    borderColor: 'transparent',
+    overflow: 'hidden',
   },
   imageSlot: {
-    width: AVATAR_PICKER_CARD_WIDTH - 12,
+    width: AVATAR_PICKER_CARD_WIDTH - 16,
     height: AVATAR_PICKER_IMAGE_HEIGHT,
     borderRadius: 8,
     backgroundColor: '#EEF2F6',
     overflow: 'hidden',
   },
   image: {
-    width: AVATAR_PICKER_CARD_WIDTH - 12,
+    width: AVATAR_PICKER_CARD_WIDTH - 16,
     height: AVATAR_PICKER_IMAGE_HEIGHT,
   },
   label: {
@@ -106,16 +110,15 @@ const styles = StyleSheet.create({
   labelSelected: {
     color: colors.optionTextSelected,
   },
-  selectionOverlay: {
+  selectionRing: {
     ...StyleSheet.absoluteFillObject,
     borderRadius: 12,
     borderWidth: 2,
     borderColor: 'transparent',
     backgroundColor: 'transparent',
   },
-  selectionOverlayOn: {
+  selectionRingOn: {
     borderColor: colors.optionBorderSelected,
-    backgroundColor: 'rgba(232, 244, 252, 0.22)',
   },
   checkBadge: {
     position: 'absolute',
