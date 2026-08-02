@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import {
   KeyboardAvoidingView,
   Platform,
+  Pressable,
   ScrollView,
   StyleSheet,
   Text,
@@ -17,7 +18,7 @@ import { PrimaryButton } from '../components/PrimaryButton';
 import { getCurrentSession, signInWithUsername } from '../lib/auth';
 import { isAdminSession } from '../lib/isAdmin';
 import { getPreferredLanguage } from '../lib/preferredLanguage';
-import { resolvePostAuthRoute } from '../lib/resolvePostAuthRoute';
+import { openWhatsAppForgotPassword } from '../lib/openWhatsAppSupport';
 import { syncNextExerciseNotification } from '../lib/nextExerciseNotification';
 import { loadCloudProfileIntoStore } from '../lib/userCloudSync';
 import { useAppStore } from '../store/useAppStore';
@@ -81,15 +82,23 @@ export default function LoginScreen() {
       return;
     }
     if (session?.user?.id) {
-      // Bind sync immediately so onboarding fields start uploading right away.
+      // Bind sync immediately so onboarding/progress start uploading right away.
       setActiveAuthUserId(session.user.id);
-      await loadCloudProfileIntoStore(session.user.id);
+      const cloud = await loadCloudProfileIntoStore(session.user.id);
       // Keep the language chosen before login for this device session.
       if (keptLanguage) setLanguage(keptLanguage);
       void syncNextExerciseNotification(useAppStore.getState().dayCompletedAt);
+
+      // Trust cloud onboarding_complete so returning users always skip onboarding.
+      if (cloud.onboardingComplete) {
+        router.replace('/home');
+      } else {
+        router.replace('/onboarding');
+      }
+      setSubmitting(false);
+      return;
     }
-    // New users → onboarding (username…). Returning onboarded users → Home.
-    router.replace(resolvePostAuthRoute(session));
+    router.replace('/onboarding');
     setSubmitting(false);
   };
 
@@ -148,6 +157,14 @@ export default function LoginScreen() {
               />
 
               {error ? <Text style={styles.errorText}>{error}</Text> : null}
+
+              <Pressable
+                onPress={() => void openWhatsAppForgotPassword(username)}
+                accessibilityRole="link"
+                style={styles.forgotWrap}
+              >
+                <Text style={styles.forgotText}>{t('login.forgotPassword')}</Text>
+              </Pressable>
 
               <PrimaryButton
                 label={submitting ? t('login.signingIn') : t('login.signIn')}
@@ -232,6 +249,15 @@ const styles = StyleSheet.create({
     lineHeight: 18,
     color: '#DC2626',
     ...font('regular'),
+  },
+  forgotWrap: {
+    alignSelf: 'flex-end',
+    paddingVertical: 4,
+  },
+  forgotText: {
+    fontSize: 13,
+    ...font('medium'),
+    color: colors.buttonPrimary,
   },
   button: {
     height: 48,

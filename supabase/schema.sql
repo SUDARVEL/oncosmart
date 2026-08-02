@@ -20,6 +20,7 @@ create table if not exists patients (
   day_completed_at jsonb not null default '{}'::jsonb,
   levels_completed integer not null default 0,
   onboarding_complete boolean not null default false,
+  password_changed_at timestamptz,
   created_at timestamptz default now(),
   updated_at timestamptz not null default now()
 );

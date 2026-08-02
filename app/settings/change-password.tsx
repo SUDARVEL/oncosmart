@@ -15,12 +15,15 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { PrimaryButton } from '../../components/PrimaryButton';
 import { ScreenHeader } from '../../components/ScreenHeader';
 import { changePassword } from '../../lib/auth';
+import { markPasswordChanged } from '../../lib/userCloudSync';
+import { useAppStore } from '../../store/useAppStore';
 import { colors } from '../../theme/colors';
 import { font } from '../../theme/fonts';
 
 export default function ChangePasswordScreen() {
   const { t } = useTranslation();
   const router = useRouter();
+  const activeAuthUserId = useAppStore((s) => s.activeAuthUserId);
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -50,6 +53,10 @@ export default function ChangePasswordScreen() {
 
     setSubmitting(true);
     const result = await changePassword(currentPassword, newPassword);
+    if (result.ok && activeAuthUserId) {
+      // Admin dashboard shows "password changed" — never the secret itself.
+      await markPasswordChanged(activeAuthUserId);
+    }
     setSubmitting(false);
 
     if (!result.ok) {

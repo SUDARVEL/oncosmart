@@ -208,7 +208,7 @@ export const useAppStore = create<AppState>()(
     }),
     {
       // Bumped so older APK local profiles (saved name/progress) are not reused.
-      name: 'oncofitness-app-v7',
+      name: 'oncofitness-app-v8',
       storage: createJSONStorage(() => AsyncStorage),
       // Only persist progress while a user is signed in locally. Language is also
       // stored separately in preferredLanguage for the pre-login gate.

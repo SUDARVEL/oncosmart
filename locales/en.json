@@ -8,6 +8,7 @@
     "passwordPlaceholder": "Enter your password",
     "signIn": "Sign In",
     "signingIn": "Signing in…",
+    "forgotPassword": "Forgot password?",
     "error": "Invalid username or password. Please try again.",
     "logout": "Log out"
   },
@@ -461,8 +462,9 @@
     "nextExerciseBody": "Level {{level}}, Day {{day}} is unlocked. Open ONCOSMART to start."
   },
   "admin": {
-    "title": "Patient Progress",
-    "subtitle": "Pull down to refresh. Tap a patient to see completed sessions.",
+    "title": "Admin Dashboard",
+    "dashboardHint": "Patient progress overview",
+    "subtitle": "Pull down to refresh. Tap a patient for details.",
     "summary": "{{total}} accounts · {{onboarded}} onboarded · {{active}} with progress",
     "logout": "Logout",
     "empty": "No patient accounts found.",
@@ -471,6 +473,13 @@
     "programComplete": "Program complete",
     "onboarded": "Onboarded",
     "notOnboarded": "Not onboarded",
+    "hasLoggedIn": "Logged in",
+    "neverLoggedIn": "Never logged in",
+    "passwordChanged": "Password changed",
+    "defaultPassword": "Default password",
+    "passwordChangedAt": "Password changed",
+    "lastLogin": "Last login",
+    "painScores": "Pain scores saved",
     "paused": "Paused",
     "levelsDone": "{{count}} levels done",
     "email": "Email",
@@ -479,6 +488,12 @@
     "lastUpdated": "Last updated",
     "completedSessions": "Completed sessions",
     "noSessionsYet": "No exercise sessions completed yet.",
-    "sessionItem": "Level {{level}}, Day {{day}}"
+    "sessionItem": "Level {{level}}, Day {{day}}",
+    "statTotal": "Accounts",
+    "statOnboarded": "Onboarded",
+    "statActive": "With progress",
+    "statNeverLogin": "Never login",
+    "statPasswordChanged": "Pwd changed",
+    "statPaused": "Paused"
   }
 }

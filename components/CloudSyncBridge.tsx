@@ -5,12 +5,12 @@ import { isAdminSession } from '../lib/isAdmin';
 import { syncNextExerciseNotification } from '../lib/nextExerciseNotification';
 import {
   loadCloudProfileIntoStore,
+  persistSessionProgress,
   saveCloudProfileFromStore,
-  upsertSessionCompletion,
 } from '../lib/userCloudSync';
 import { useAppStore } from '../store/useAppStore';
 
-const SAVE_DEBOUNCE_MS = 900;
+const SAVE_DEBOUNCE_MS = 700;
 
 /**
  * Keeps the signed-in user's local store and Supabase patient row in sync.
@@ -37,13 +37,12 @@ export function CloudSyncBridge() {
   const dayCompletedAt = useAppStore((s) => s.dayCompletedAt);
   const levelsCompleted = useAppStore((s) => s.levelsCompleted);
 
-  // Load cloud profile whenever auth session is present / changes.
   useEffect(() => {
     let cancelled = false;
 
     const hydrate = async (userId: string) => {
-      const ok = await loadCloudProfileIntoStore(userId);
-      if (cancelled || !ok) return;
+      const result = await loadCloudProfileIntoStore(userId);
+      if (cancelled || !result.ok) return;
       const completions = useAppStore.getState().dayCompletedAt;
       void syncNextExerciseNotification(completions);
     };
@@ -64,7 +63,7 @@ export function CloudSyncBridge() {
     };
   }, []);
 
-  // Debounced save of profile + progress JSON.
+  // Debounced save of profile + progress + pain scores.
   useEffect(() => {
     if (!activeAuthUserId) return;
 
@@ -95,7 +94,7 @@ export function CloudSyncBridge() {
     levelsCompleted,
   ]);
 
-  // Mirror new session completions into exercise_completions rows.
+  // Immediately persist new session completions + full snapshot.
   useEffect(() => {
     if (!activeAuthUserId) return;
     const json = JSON.stringify(dayCompletedAt);
@@ -112,7 +111,7 @@ export function CloudSyncBridge() {
       const level = Number(match[1]);
       const dayInLevel = Number(match[2]);
       const painScore = painScores[`${level}:${dayInLevel}`];
-      void upsertSessionCompletion({
+      void persistSessionProgress({
         userId: activeAuthUserId,
         level,
         dayInLevel,

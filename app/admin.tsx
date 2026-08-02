@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect, useRouter } from 'expo-router';
-import { useCallback, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   ActivityIndicator,
@@ -16,6 +16,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { ScreenHeader } from '../components/ScreenHeader';
 import {
   TOTAL_SESSIONS,
+  buildAdminDashboardStats,
   fetchAdminPatientProgress,
   sortedCompletedSessions,
   type AdminPatientProgress,
@@ -38,6 +39,44 @@ function formatWhen(ms: number | null | undefined, locale: string): string {
   } catch {
     return '—';
   }
+}
+
+function StatChip({ label, value }: { label: string; value: number }) {
+  return (
+    <View style={styles.statChip}>
+      <Text style={styles.statValue}>{value}</Text>
+      <Text style={styles.statLabel}>{label}</Text>
+    </View>
+  );
+}
+
+function SessionBarChart({
+  buckets,
+}: {
+  buckets: { label: string; count: number }[];
+}) {
+  const max = Math.max(1, ...buckets.map((b) => b.count));
+  return (
+    <View style={styles.chartCard}>
+      <Text style={styles.chartTitle}>Sessions completed</Text>
+      <View style={styles.chartRows}>
+        {buckets.map((bucket) => (
+          <View key={bucket.label} style={styles.chartRow}>
+            <Text style={styles.chartLabel}>{bucket.label}</Text>
+            <View style={styles.chartTrack}>
+              <View
+                style={[
+                  styles.chartFill,
+                  { width: `${Math.round((bucket.count / max) * 100)}%` },
+                ]}
+              />
+            </View>
+            <Text style={styles.chartCount}>{bucket.count}</Text>
+          </View>
+        ))}
+      </View>
+    </View>
+  );
 }
 
 function PatientCard({
@@ -84,13 +123,24 @@ function PatientCard({
 
       <View style={styles.badgeRow}>
         <View
-          style={[
-            styles.badge,
-            patient.onboardingComplete ? styles.badgeOk : styles.badgeMuted,
-          ]}
+          style={[styles.badge, patient.onboardingComplete ? styles.badgeOk : styles.badgeMuted]}
         >
           <Text style={styles.badgeText}>
             {patient.onboardingComplete ? t('admin.onboarded') : t('admin.notOnboarded')}
+          </Text>
+        </View>
+        <View
+          style={[styles.badge, patient.lastSignInAt ? styles.badgeOk : styles.badgeWarn]}
+        >
+          <Text style={styles.badgeText}>
+            {patient.lastSignInAt ? t('admin.hasLoggedIn') : t('admin.neverLoggedIn')}
+          </Text>
+        </View>
+        <View
+          style={[styles.badge, patient.passwordChanged ? styles.badgeOk : styles.badgeMuted]}
+        >
+          <Text style={styles.badgeText}>
+            {patient.passwordChanged ? t('admin.passwordChanged') : t('admin.defaultPassword')}
           </Text>
         </View>
         {patient.progressPaused ? (
@@ -98,11 +148,6 @@ function PatientCard({
             <Text style={styles.badgeText}>{t('admin.paused')}</Text>
           </View>
         ) : null}
-        <View style={[styles.badge, styles.badgeMuted]}>
-          <Text style={styles.badgeText}>
-            {t('admin.levelsDone', { count: patient.levelsCompleted })}
-          </Text>
-        </View>
       </View>
 
       {expanded ? (
@@ -110,22 +155,31 @@ function PatientCard({
           <Text style={styles.detailLine}>
             {t('admin.email')}: {patient.accountEmail}
           </Text>
+          <Text style={styles.detailLine}>
+            {t('admin.lastLogin')}:{' '}
+            {formatWhen(
+              patient.lastSignInAt ? Date.parse(patient.lastSignInAt) : null,
+              i18n.language,
+            )}
+          </Text>
+          <Text style={styles.detailLine}>
+            {t('admin.passwordChangedAt')}:{' '}
+            {patient.passwordChanged
+              ? formatWhen(
+                  patient.passwordChangedAt
+                    ? Date.parse(patient.passwordChangedAt)
+                    : null,
+                  i18n.language,
+                )
+              : t('admin.defaultPassword')}
+          </Text>
           {patient.age != null ? (
             <Text style={styles.detailLine}>
               {t('admin.age')}: {patient.age}
             </Text>
           ) : null}
-          {patient.cancerType ? (
-            <Text style={styles.detailLine}>
-              {t('admin.cancerType')}: {patient.cancerType}
-            </Text>
-          ) : null}
           <Text style={styles.detailLine}>
-            {t('admin.lastUpdated')}:{' '}
-            {formatWhen(
-              patient.updatedAt ? Date.parse(patient.updatedAt) : null,
-              i18n.language,
-            )}
+            {t('admin.painScores')}: {Object.keys(patient.painScores).length}
           </Text>
 
           <Text style={styles.completedTitle}>{t('admin.completedSessions')}</Text>
@@ -159,19 +213,15 @@ export default function AdminScreen() {
   const [patients, setPatients] = useState<AdminPatientProgress[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [expandedId, setExpandedId] = useState<string | null>(null);
+
+  const stats = useMemo(() => buildAdminDashboardStats(patients), [patients]);
 
   const load = useCallback(async (mode: 'initial' | 'refresh' = 'initial') => {
     if (mode === 'initial') setLoading(true);
     if (mode === 'refresh') setRefreshing(true);
-    setError(null);
     const rows = await fetchAdminPatientProgress();
     setPatients(rows);
-    if (rows.length === 0) {
-      // Empty can mean no data yet, or RPC/auth failed — show a soft hint either way.
-      setError(null);
-    }
     setLoading(false);
     setRefreshing(false);
   }, []);
@@ -190,21 +240,12 @@ export default function AdminScreen() {
     router.replace('/language');
   };
 
-  const withProgress = patients.filter((p) => p.sessionsCompleted > 0).length;
-  const onboarded = patients.filter((p) => p.onboardingComplete).length;
-
   return (
     <SafeAreaView style={styles.screen} edges={['top', 'bottom']}>
       <ScreenHeader title={t('admin.title')} />
 
       <View style={styles.summaryBar}>
-        <Text style={styles.summaryText}>
-          {t('admin.summary', {
-            total: patients.length,
-            onboarded,
-            active: withProgress,
-          })}
-        </Text>
+        <Text style={styles.summaryText}>{t('admin.dashboardHint')}</Text>
         <Pressable onPress={handleLogout} accessibilityRole="button" style={styles.logoutBtn}>
           <Text style={styles.logoutText}>{t('admin.logout')}</Text>
         </Pressable>
@@ -227,8 +268,18 @@ export default function AdminScreen() {
           }
           showsVerticalScrollIndicator={false}
         >
+          <View style={styles.statGrid}>
+            <StatChip label={t('admin.statTotal')} value={stats.total} />
+            <StatChip label={t('admin.statOnboarded')} value={stats.onboarded} />
+            <StatChip label={t('admin.statActive')} value={stats.withProgress} />
+            <StatChip label={t('admin.statNeverLogin')} value={stats.neverLoggedIn} />
+            <StatChip label={t('admin.statPasswordChanged')} value={stats.passwordChanged} />
+            <StatChip label={t('admin.statPaused')} value={stats.paused} />
+          </View>
+
+          <SessionBarChart buckets={stats.sessionBuckets} />
+
           <Text style={styles.subtitle}>{t('admin.subtitle')}</Text>
-          {error ? <Text style={styles.errorText}>{error}</Text> : null}
           {patients.length === 0 ? (
             <Text style={styles.emptyList}>{t('admin.empty')}</Text>
           ) : (
@@ -289,7 +340,7 @@ const styles = StyleSheet.create({
     ...font('regular'),
     fontSize: 14,
     color: colors.textMuted,
-    marginBottom: 4,
+    marginTop: 4,
   },
   centered: {
     flex: 1,
@@ -303,10 +354,76 @@ const styles = StyleSheet.create({
     marginTop: 24,
     textAlign: 'center',
   },
-  errorText: {
+  statGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  statChip: {
+    width: '31%',
+    minWidth: 100,
+    flexGrow: 1,
+    backgroundColor: colors.optionBg,
+    borderRadius: 10,
+    paddingVertical: 10,
+    paddingHorizontal: 10,
+  },
+  statValue: {
+    ...font('bold'),
+    fontSize: 20,
+    color: colors.navy,
+  },
+  statLabel: {
     ...font('regular'),
-    fontSize: 14,
-    color: '#B42318',
+    fontSize: 11,
+    color: colors.textMuted,
+    marginTop: 2,
+  },
+  chartCard: {
+    borderWidth: 1,
+    borderColor: colors.cardBorder,
+    borderRadius: 12,
+    padding: 14,
+    gap: 10,
+    backgroundColor: colors.homeCardBg,
+  },
+  chartTitle: {
+    ...font('semiBold'),
+    fontSize: 15,
+    color: colors.textPrimary,
+  },
+  chartRows: {
+    gap: 8,
+  },
+  chartRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  chartLabel: {
+    width: 48,
+    ...font('medium'),
+    fontSize: 12,
+    color: colors.textSecondary,
+  },
+  chartTrack: {
+    flex: 1,
+    height: 10,
+    borderRadius: 6,
+    backgroundColor: colors.optionBg,
+    overflow: 'hidden',
+  },
+  chartFill: {
+    height: '100%',
+    backgroundColor: colors.buttonPrimary,
+    borderRadius: 6,
+  },
+  chartCount: {
+    width: 28,
+    textAlign: 'right',
+    ...font('semiBold'),
+    fontSize: 12,
+    color: colors.textPrimary,
   },
   card: {
     borderWidth: 1,

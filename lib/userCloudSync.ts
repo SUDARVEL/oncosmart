@@ -9,25 +9,9 @@ import type {
 } from '../store/useAppStore';
 import { useAppStore } from '../store/useAppStore';
 
-export type CloudPatientRow = {
-  id: string;
-  user_id: string;
-  name: string;
-  language: AppLanguage | null;
-  gender: AppGender | null;
-  avatar: AppAvatar | null;
-  age: number | null;
-  age_range: AgeRange | null;
-  cancer_type: string | null;
-  treatment_undergoing: TreatmentType | null;
-  underwent_surgery: boolean | null;
-  parq_answers: (boolean | null)[] | null;
-  parq_cleared: boolean | null;
-  progress_paused: boolean | null;
-  pain_scores: Record<string, number> | null;
-  day_completed_at: Record<string, number> | null;
-  levels_completed: number | null;
-  onboarding_complete: boolean | null;
+export type CloudLoadResult = {
+  ok: boolean;
+  onboardingComplete: boolean;
 };
 
 function asRecordNumber(value: unknown): Record<string, number> {
@@ -103,17 +87,16 @@ export async function ensurePatientRow(userId: string, displayName = ''): Promis
 }
 
 /** Pull this auth user's cloud profile into the local Zustand store. */
-export async function loadCloudProfileIntoStore(userId: string): Promise<boolean> {
+export async function loadCloudProfileIntoStore(userId: string): Promise<CloudLoadResult> {
   const supabase = getSupabase();
-  if (!supabase) return false;
+  if (!supabase) return { ok: false, onboardingComplete: false };
 
-  // Always bind local sync to this auth user, even before the first successful save.
   useAppStore.getState().setActiveAuthUserId(userId);
 
   const patientId = await ensurePatientRow(userId);
   if (!patientId) {
     console.warn('[CloudSync] load aborted — could not ensure patient row');
-    return false;
+    return { ok: false, onboardingComplete: false };
   }
 
   const { data, error } = await supabase
@@ -126,24 +109,25 @@ export async function loadCloudProfileIntoStore(userId: string): Promise<boolean
 
   if (error) {
     console.warn('[CloudSync] load failed', error.message);
-    return false;
+    return { ok: false, onboardingComplete: false };
   }
-  if (!data) return false;
+  if (!data) return { ok: false, onboardingComplete: false };
 
   const onboardingComplete = Boolean(data.onboarding_complete);
   const dayCompletedAt = asRecordNumber(data.day_completed_at);
+  const keptLanguage = useAppStore.getState().language;
 
-  // Fresh rows default parq_cleared=false in DB; only treat it as answered once onboarded.
+  // Fresh rows default parq_cleared=false; only treat as answered once onboarded.
   const parqCleared = onboardingComplete
     ? typeof data.parq_cleared === 'boolean'
       ? data.parq_cleared
-      : false
+      : true
     : null;
 
   useAppStore.getState().hydrateFromCloud({
     activeAuthUserId: userId,
-    username: data.name ?? '',
-    language: (data.language as AppLanguage | null) ?? null,
+    username: (data.name ?? '').trim(),
+    language: (data.language as AppLanguage | null) ?? keptLanguage ?? null,
     gender: (data.gender as AppGender | null) ?? null,
     avatar: (data.avatar as AppAvatar | null) ?? null,
     age: typeof data.age === 'number' ? data.age : null,
@@ -163,7 +147,7 @@ export async function loadCloudProfileIntoStore(userId: string): Promise<boolean
         : getCompletedLevelsCount(dayCompletedAt),
   });
 
-  return true;
+  return { ok: true, onboardingComplete };
 }
 
 /** Push current local store profile/progress to Supabase for this auth user. */
@@ -205,6 +189,39 @@ export async function saveCloudProfileFromStore(userId: string): Promise<boolean
     return false;
   }
   return true;
+}
+
+/** Mark that this patient changed their password (admin sees status only). */
+export async function markPasswordChanged(userId: string): Promise<void> {
+  const supabase = getSupabase();
+  if (!supabase) return;
+  const patientId = await ensurePatientRow(userId);
+  if (!patientId) return;
+  const { error } = await supabase
+    .from('patients')
+    .update({
+      password_changed_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    })
+    .eq('id', patientId);
+  if (error) {
+    console.warn('[CloudSync] password_changed_at save failed', error.message);
+  }
+}
+
+/**
+ * Persist one completed session + full progress snapshot.
+ * Call after every day completion so logout never loses progress.
+ */
+export async function persistSessionProgress(params: {
+  userId: string;
+  level: number;
+  dayInLevel: number;
+  completedAt: number;
+  painScore?: number;
+}): Promise<void> {
+  await upsertSessionCompletion(params);
+  await saveCloudProfileFromStore(params.userId);
 }
 
 /** Upsert one completed session row (best-effort; patients JSON is source of truth). */

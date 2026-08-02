@@ -76,10 +76,14 @@ export default function SplashScreen() {
       return;
     }
 
-    await loadCloudProfileIntoStore(session.user.id);
+    const cloud = await loadCloudProfileIntoStore(session.user.id);
     const completions = useAppStore.getState().dayCompletedAt;
     void syncNextExerciseNotification(completions);
-    router.replace(resolvePostAuthRoute(session));
+    if (cloud.onboardingComplete) {
+      router.replace('/home');
+    } else {
+      router.replace(resolvePostAuthRoute(session));
+    }
   }, [i18n, router]);
 
   useEffect(() => {

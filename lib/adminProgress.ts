@@ -26,8 +26,21 @@ export type AdminPatientProgress = {
   sessionsCompleted: number;
   activeLevel: number;
   activeDayInLevel: number | null;
+  passwordChanged: boolean;
+  passwordChangedAt: string | null;
+  lastSignInAt: string | null;
   updatedAt: string | null;
   createdAt: string | null;
+};
+
+export type AdminDashboardStats = {
+  total: number;
+  onboarded: number;
+  withProgress: number;
+  neverLoggedIn: number;
+  passwordChanged: number;
+  paused: number;
+  sessionBuckets: { label: string; count: number }[];
 };
 
 function asRecordNumber(value: unknown): Record<string, number> {
@@ -64,6 +77,9 @@ type RpcRow = {
   day_completed_at: Record<string, number> | null;
   pain_scores: Record<string, number> | null;
   sessions_completed: number | null;
+  password_changed: boolean | null;
+  password_changed_at: string | null;
+  last_sign_in_at: string | null;
   updated_at: string | null;
   created_at: string | null;
 };
@@ -105,10 +121,40 @@ export async function fetchAdminPatientProgress(): Promise<AdminPatientProgress[
       sessionsCompleted,
       activeLevel,
       activeDayInLevel: sessionsCompleted >= TOTAL_SESSIONS ? null : nextOpenDay(dayCompletedAt),
+      passwordChanged: Boolean(row.password_changed),
+      passwordChangedAt: row.password_changed_at,
+      lastSignInAt: row.last_sign_in_at,
       updatedAt: row.updated_at,
       createdAt: row.created_at,
     };
   });
+}
+
+export function buildAdminDashboardStats(
+  patients: AdminPatientProgress[],
+): AdminDashboardStats {
+  const buckets = [
+    { label: '0', min: 0, max: 0 },
+    { label: '1–7', min: 1, max: 7 },
+    { label: '8–14', min: 8, max: 14 },
+    { label: '15–21', min: 15, max: 21 },
+    { label: '22–28', min: 22, max: 28 },
+  ];
+
+  return {
+    total: patients.length,
+    onboarded: patients.filter((p) => p.onboardingComplete).length,
+    withProgress: patients.filter((p) => p.sessionsCompleted > 0).length,
+    neverLoggedIn: patients.filter((p) => !p.lastSignInAt).length,
+    passwordChanged: patients.filter((p) => p.passwordChanged).length,
+    paused: patients.filter((p) => p.progressPaused).length,
+    sessionBuckets: buckets.map((b) => ({
+      label: b.label,
+      count: patients.filter(
+        (p) => p.sessionsCompleted >= b.min && p.sessionsCompleted <= b.max,
+      ).length,
+    })),
+  };
 }
 
 export function sortedCompletedSessions(
