@@ -21,8 +21,7 @@ type AvatarCardProps = {
 };
 
 /**
- * Larger avatar picker cards that fill more of the available height.
- * Selection = navy border + check only (no wash / no border spur artifacts).
+ * Avatar picker card — image fills the card body; label stays anchored under it.
  */
 export function AvatarCard({
   imageKey,
@@ -31,33 +30,20 @@ export function AvatarCard({
   selected,
   onPress,
 }: AvatarCardProps) {
-  const { width: screenWidth, height: screenHeight } = useWindowDimensions();
-  // Two cards + gap 12 + screen padding 32
-  const cardWidth = Math.min(180, Math.max(156, (screenWidth - 32 - 12) / 2));
-  // Use more vertical space so less empty white below/above.
-  const imageHeight = Math.min(440, Math.max(360, Math.round(screenHeight * 0.48)));
+  const { width: screenWidth } = useWindowDimensions();
+  const cardWidth = Math.min(178, Math.max(158, (screenWidth - 32 - 12) / 2));
 
   return (
     <View
-      style={[
-        styles.card,
-        { width: cardWidth },
-        selected && styles.cardSelected,
-      ]}
+      style={[styles.card, { width: cardWidth }, selected && styles.cardSelected]}
       collapsable={false}
     >
-      <View
-        collapsable={false}
-        style={[
-          styles.imageSlot,
-          { width: cardWidth - 16, height: imageHeight },
-        ]}
-      >
+      <View style={styles.imageSlot} collapsable={false}>
         <Image
           key={imageKey}
           source={image}
           defaultSource={typeof image === 'number' ? image : undefined}
-          style={{ width: cardWidth - 16, height: imageHeight }}
+          style={styles.image}
           resizeMode="contain"
           resizeMethod="resize"
           fadeDuration={0}
@@ -86,16 +72,16 @@ export function AvatarCard({
 
 const styles = StyleSheet.create({
   card: {
+    flex: 1,
+    alignSelf: 'stretch',
     borderRadius: 14,
     backgroundColor: colors.optionBg,
     alignItems: 'center',
-    paddingTop: 12,
-    paddingBottom: 14,
+    paddingTop: 10,
+    paddingBottom: 12,
     paddingHorizontal: 6,
-    // Always reserve border so selecting never changes layout size.
     borderWidth: 2,
     borderColor: 'transparent',
-    // Clip any border/paint artifacts that used to "extend" past the card.
     overflow: 'hidden',
   },
   cardSelected: {
@@ -103,17 +89,26 @@ const styles = StyleSheet.create({
     backgroundColor: colors.optionBgSelected,
   },
   imageSlot: {
+    flex: 1,
+    alignSelf: 'stretch',
+    width: '100%',
     borderRadius: 10,
-    backgroundColor: colors.optionBg,
+    backgroundColor: 'transparent',
     overflow: 'hidden',
+    minHeight: 280,
+  },
+  image: {
+    width: '100%',
+    height: '100%',
   },
   label: {
-    marginTop: 12,
+    marginTop: 10,
     fontSize: 16,
     lineHeight: 24,
     ...font('semiBold'),
     color: colors.textSecondary,
     includeFontPadding: true,
+    textAlign: 'center',
   },
   labelSelected: {
     color: colors.optionTextSelected,

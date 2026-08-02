@@ -230,13 +230,19 @@ const styles = StyleSheet.create({
   },
   scroll: {
     flex: 1,
+    width: '100%',
   },
   scrollContent: {
     paddingTop: 8,
     paddingBottom: 120,
+    // RN ScrollView defaults to alignItems:'flex-start' which shrinks rows.
+    alignItems: 'stretch',
+    width: '100%',
+    flexGrow: 1,
   },
   menuAnchor: {
-    paddingTop: 0,
+    width: '100%',
+    alignSelf: 'stretch',
   },
   fab: {
     position: 'absolute',

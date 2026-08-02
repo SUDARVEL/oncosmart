@@ -148,6 +148,8 @@ const styles = StyleSheet.create({
     alignItems: 'stretch',
     gap: 12,
     flexGrow: 1,
+    // Give cards a tall shared height so avatars fill responsively.
+    minHeight: 420,
   },
   button: {
     marginTop: 12,
