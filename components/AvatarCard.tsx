@@ -1,6 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
-import { Image, type ImageSource } from 'expo-image';
-import { Pressable, StyleSheet, View } from 'react-native';
+import { Image, type ImageSourcePropType, StyleSheet, Pressable, View } from 'react-native';
 
 import { colors } from '../theme/colors';
 
@@ -9,12 +8,14 @@ export const AVATAR_DISPLAY_WIDTH = 143;
 export const AVATAR_DISPLAY_HEIGHT = 363;
 
 type AvatarCardProps = {
-  image: ImageSource;
+  image: ImageSourcePropType;
+  /** Stable id so male/female never share a recycled image slot. */
+  imageKey: 'male' | 'female';
   selected: boolean;
   onPress: () => void;
 };
 
-export function AvatarCard({ image, selected, onPress }: AvatarCardProps) {
+export function AvatarCard({ image, imageKey, selected, onPress }: AvatarCardProps) {
   return (
     <Pressable
       onPress={onPress}
@@ -23,13 +24,16 @@ export function AvatarCard({ image, selected, onPress }: AvatarCardProps) {
       accessibilityState={{ selected }}
     >
       <View style={styles.imageFrame}>
+        {/*
+          Use RN Image (not expo-image) for bundled avatar PNGs so both cards
+          always decode independently — expo-image recycling could blank one side.
+        */}
         <Image
+          key={imageKey}
           source={image}
           style={styles.image}
-          contentFit="contain"
-          contentPosition="center"
-          cachePolicy="memory-disk"
-          recyclingKey={typeof image === 'number' ? `avatar-${image}` : undefined}
+          resizeMode="contain"
+          accessibilityIgnoresInvertColors
         />
       </View>
       {selected ? (

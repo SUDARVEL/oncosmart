@@ -62,6 +62,8 @@ export function resolveWorkoutPhotoSource(
 
 /**
  * Workout info slider — Male Slider Photos / Female slider from Supabase when available.
+ * Never fall back to Growth list circle SVGs (those are 66×70 ovals and look like a
+ * grey dome in the portrait Exercise Info sheet).
  */
 export function resolveWorkoutSliderPhotoSource(
   exerciseId: string,
@@ -69,11 +71,27 @@ export function resolveWorkoutSliderPhotoSource(
   avatar: AppAvatar | null = null,
 ): ImageSource | null {
   const mediaGender = resolveWorkoutMediaGender(gender, avatar);
-  const sliderUrl = getWorkoutSliderPhotoUrl(
-    exerciseId,
-    mediaGender === "female" ? "female" : gender,
-  );
+  const sliderGender: AppGender | null =
+    mediaGender === "female" ? "female" : gender;
+  const sliderUrl = getWorkoutSliderPhotoUrl(exerciseId, sliderGender);
   if (sliderUrl) return { uri: sliderUrl };
 
-  return resolveWorkoutPhotoSource(exerciseId, gender, avatar);
+  const landscape = resolveSessionLandscapePhotoSource(
+    exerciseId,
+    sliderGender,
+    avatar,
+  );
+  if (landscape) return landscape;
+
+  const photoFile = getPhotoFile(exerciseId);
+  const remoteUrl = getWorkoutPhotoUrl(photoFile, mediaGender);
+  if (remoteUrl) return { uri: remoteUrl };
+
+  // Avoid showing male bundled art when the user is on a female avatar.
+  if (mediaGender === "female") return null;
+
+  const day1Photo = getDay1Thumbnail(exerciseId);
+  if (day1Photo) return day1Photo;
+
+  return getWorkoutLocalPhoto(exerciseId);
 }

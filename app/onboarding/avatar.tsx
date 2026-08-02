@@ -61,11 +61,13 @@ export default function AvatarScreen() {
         <View style={styles.cardsRow}>
           <AvatarCard
             image={MALE_AVATAR}
+            imageKey="male"
             selected={selected === 'male'}
             onPress={() => setSelected('male')}
           />
           <AvatarCard
             image={FEMALE_AVATAR}
+            imageKey="female"
             selected={selected === 'female'}
             onPress={() => setSelected('female')}
           />
