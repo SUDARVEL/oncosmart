@@ -20,6 +20,10 @@ import { StreakCard } from '../components/growth/StreakCard';
 import { BottomTabBar } from '../components/BottomTabBar';
 import { ScreenHeader } from '../components/ScreenHeader';
 import { getDisplayPainScore } from '../lib/getDisplayPainScore';
+import {
+  cancelNextExerciseNotification,
+  syncNextExerciseNotification,
+} from '../lib/nextExerciseNotification';
 import { openWhatsAppSupport } from '../lib/openWhatsAppSupport';
 import { DAYS_PER_LEVEL, getActiveLevel, sessionKey } from '../lib/programProgress';
 import { useAppStore } from '../store/useAppStore';
@@ -36,15 +40,23 @@ export default function GrowthScreen() {
   const progressPaused = useAppStore((state) => state.progressPaused);
   const setProgressPaused = useAppStore((state) => state.setProgressPaused);
 
-  const handlePauseReasonSelect = (_reason: PauseReason) => {
-    setShowPauseReason(false);
-    setProgressPaused(true);
-  };
   const levelsCompleted = useAppStore((state) => state.levelsCompleted);
   const avatar = useAppStore((state) => state.avatar);
   const painScores = useAppStore((state) => state.painScores);
   const dayCompletedAt = useAppStore((state) => state.dayCompletedAt);
   const activeLevel = getActiveLevel(dayCompletedAt);
+
+  const handlePauseReasonSelect = (_reason: PauseReason) => {
+    setShowPauseReason(false);
+    setProgressPaused(true);
+    // Pausing stops exercise reminders until the patient resumes.
+    void cancelNextExerciseNotification();
+  };
+
+  const handleResumeProgress = () => {
+    setProgressPaused(false);
+    void syncNextExerciseNotification(dayCompletedAt);
+  };
 
   // Streak card shows 5 weekdays; map them to Day 1..5 of the active level.
   const completedDaysInWeek = Array.from({ length: 5 }, (_, i) => i + 1).reduce(
@@ -93,7 +105,7 @@ export default function GrowthScreen() {
               paused={progressPaused}
               avatar={avatar}
               onPause={() => setShowPauseReason(true)}
-              onResume={() => setProgressPaused(false)}
+              onResume={handleResumeProgress}
             />
             <StreakCard paused={progressPaused} completedDays={completedDaysInWeek} />
             <PainProgressCard

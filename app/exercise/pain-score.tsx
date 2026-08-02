@@ -1,13 +1,16 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { ResumeProgressModal } from '../../components/growth/ResumeProgressModal';
 import { HighPainRestModal } from '../../components/pain/HighPainRestModal';
 import { PainScorePanel } from '../../components/pain/PainScorePanel';
 import { ReadyToBeginModal } from '../../components/pain/ReadyToBeginModal';
+import { useExercisePauseGuard } from '../../hooks/useExercisePauseGuard';
+import { syncNextExerciseNotification } from '../../lib/nextExerciseNotification';
 import { HIGH_PAIN_REST_THRESHOLD, HIGH_PAIN_THRESHOLD } from '../../lib/painScore';
 import { useAppStore } from '../../store/useAppStore';
 import { colors } from '../../theme/colors';
@@ -20,11 +23,26 @@ export default function PainScoreScreen() {
   const dayInLevel = Number(day) || 1;
   const level = Number(levelParam) || 1;
   const setPainScore = useAppStore((state) => state.setPainScore);
+  const setProgressPaused = useAppStore((state) => state.setProgressPaused);
+  const dayCompletedAt = useAppStore((state) => state.dayCompletedAt);
   const [score, setScore] = useState(0);
   const [showReadyModal, setShowReadyModal] = useState(false);
   const [showRestModal, setShowRestModal] = useState(false);
   // Avoid re-popping while the patient stays in the high range after dismissing.
   const [restPromptDismissed, setRestPromptDismissed] = useState(false);
+  const {
+    progressPaused,
+    showResumeModal,
+    dismissResumeModal,
+    runIfProgressActive,
+  } = useExercisePauseGuard();
+
+  useEffect(() => {
+    if (progressPaused) {
+      // Landed here while paused (deep link / stale nav) — block the flow.
+      runIfProgressActive(() => undefined);
+    }
+  }, [progressPaused, runIfProgressActive]);
 
   const handleScoreChange = (next: number) => {
     setScore(next);
@@ -41,16 +59,20 @@ export default function PainScoreScreen() {
   };
 
   const goToDaySession = () => {
-    setPainScore(level, dayInLevel, Math.round(score));
-    router.replace(`/exercise/sessions/${dayInLevel}?level=${level}`);
+    runIfProgressActive(() => {
+      setPainScore(level, dayInLevel, Math.round(score));
+      router.replace(`/exercise/sessions/${dayInLevel}?level=${level}`);
+    });
   };
 
   const handleContinue = () => {
-    if (Math.round(score) > HIGH_PAIN_THRESHOLD) {
-      setShowReadyModal(true);
-      return;
-    }
-    goToDaySession();
+    runIfProgressActive(() => {
+      if (Math.round(score) > HIGH_PAIN_THRESHOLD) {
+        setShowReadyModal(true);
+        return;
+      }
+      goToDaySession();
+    });
   };
 
   return (
@@ -94,6 +116,20 @@ export default function PainScoreScreen() {
         onYes={() => {
           setShowReadyModal(false);
           goToDaySession();
+        }}
+      />
+
+      <ResumeProgressModal
+        visible={showResumeModal}
+        onClose={() => {
+          dismissResumeModal();
+          router.replace('/home');
+        }}
+        onResume={() => {
+          setProgressPaused(false);
+          dismissResumeModal();
+          void syncNextExerciseNotification(dayCompletedAt);
+          router.replace('/growth');
         }}
       />
     </View>

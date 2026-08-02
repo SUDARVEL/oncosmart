@@ -2,15 +2,18 @@ import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { StyleSheet, Text, View } from "react-native";
 
+import { useExercisePauseGuard } from "../../hooks/useExercisePauseGuard";
 import {
   getLevelWorkouts,
   type WorkoutLevel,
 } from "../../lib/getLevelWorkouts";
 import { getWorkoutDetailsForLevel } from "../../lib/getWorkoutDetails";
+import { syncNextExerciseNotification } from "../../lib/nextExerciseNotification";
 import { useAppStore } from "../../store/useAppStore";
 import { colors } from "../../theme/colors";
 import { font } from "../../theme/fonts";
 import { LevelTabSwitch } from "./LevelTabSwitch";
+import { ResumeProgressModal } from "./ResumeProgressModal";
 import { WorkoutDetailSlider } from "./WorkoutDetailSlider";
 import { WorkoutRowCard } from "./WorkoutRowCard";
 
@@ -19,9 +22,16 @@ export function WorkoutsSection() {
   const language = useAppStore((state) => state.language);
   const gender = useAppStore((state) => state.gender);
   const avatar = useAppStore((state) => state.avatar);
+  const dayCompletedAt = useAppStore((state) => state.dayCompletedAt);
+  const setProgressPaused = useAppStore((state) => state.setProgressPaused);
   const [activeLevel, setActiveLevel] = useState<WorkoutLevel>(1);
   const [sliderVisible, setSliderVisible] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(0);
+  const {
+    showResumeModal,
+    dismissResumeModal,
+    runIfProgressActive,
+  } = useExercisePauseGuard();
 
   const workouts = useMemo(
     () => getLevelWorkouts(activeLevel, gender, avatar),
@@ -33,11 +43,13 @@ export function WorkoutsSection() {
   );
 
   const openWorkout = (exerciseId: string) => {
-    const index = workoutDetails.findIndex(
-      (workout) => workout.id === exerciseId,
-    );
-    setSelectedIndex(index >= 0 ? index : 0);
-    setSliderVisible(true);
+    runIfProgressActive(() => {
+      const index = workoutDetails.findIndex(
+        (workout) => workout.id === exerciseId,
+      );
+      setSelectedIndex(index >= 0 ? index : 0);
+      setSliderVisible(true);
+    });
   };
 
   const closeSlider = () => {
@@ -74,6 +86,16 @@ export function WorkoutsSection() {
         workouts={workoutDetails}
         initialIndex={selectedIndex}
         onClose={closeSlider}
+      />
+
+      <ResumeProgressModal
+        visible={showResumeModal}
+        onClose={dismissResumeModal}
+        onResume={() => {
+          setProgressPaused(false);
+          dismissResumeModal();
+          void syncNextExerciseNotification(dayCompletedAt);
+        }}
       />
     </View>
   );

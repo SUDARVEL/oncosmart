@@ -278,6 +278,8 @@
     "pauseProgress": "Pause Progress",
     "resumeProgress": "Resume Progress",
     "progressPaused": "Progress Paused",
+    "resumeToContinue": "Please resume the progress to continue.",
+    "resumeToContinueOk": "OK",
     "pauseReasonTitle": "Reason for pausing your progress ?",
     "pauseReasonSubtitle": "Tell us what you are feeling , we will adjust your plan to support you better.",
     "pauseReasonTired": "Feeling tired",

@@ -100,13 +100,18 @@ export const useAppStore = create<AppState>()(
         }),
       setParqCleared: (cleared) => set({ parqCleared: cleared }),
       setPainScore: (level, dayInLevel, score) =>
-        set((state) => ({
-          painScores: { ...state.painScores, [`${level}:${dayInLevel}`]: score },
-        })),
+        set((state) => {
+          if (state.progressPaused) return state;
+          return {
+            painScores: { ...state.painScores, [`${level}:${dayInLevel}`]: score },
+          };
+        }),
       setProgressPaused: (paused) => set({ progressPaused: paused }),
       setLevelsCompleted: (count) => set({ levelsCompleted: count }),
       markSessionCompleted: (level, dayInLevel, when) =>
         set((state) => {
+          // Pause Progress freezes program advancement for every avatar/gender.
+          if (state.progressPaused) return state;
           const key = sessionKey(level, dayInLevel);
           if (state.dayCompletedAt[key] && when == null) {
             return state;
@@ -119,6 +124,7 @@ export const useAppStore = create<AppState>()(
         }),
       markDayCompleted: (day, when) =>
         set((state) => {
+          if (state.progressPaused) return state;
           const key = sessionKey(1, day);
           if (state.dayCompletedAt[key] && when == null) {
             return state;

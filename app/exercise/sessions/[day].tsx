@@ -7,10 +7,13 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ExerciseSessionCard } from '../../../components/exercise/ExerciseSessionCard';
 import { PulseOximeterModal } from '../../../components/exercise/PulseOximeterModal';
+import { ResumeProgressModal } from '../../../components/growth/ResumeProgressModal';
 import { ReadyToBeginModal } from '../../../components/pain/ReadyToBeginModal';
+import { useExercisePauseGuard } from '../../../hooks/useExercisePauseGuard';
 import { getDayExercises, getLevelSession } from '../../../lib/getDayExercises';
 import { hasGuidedSession } from '../../../lib/getDay1Session';
 import { getModerateHeartRateUpperLimit } from '../../../lib/moderateHeartRateLimit';
+import { syncNextExerciseNotification } from '../../../lib/nextExerciseNotification';
 import { useAppStore } from '../../../store/useAppStore';
 import { colors } from '../../../theme/colors';
 import { font } from '../../../theme/fonts';
@@ -27,7 +30,14 @@ export default function ExerciseSessionsScreen() {
   const avatar = useAppStore((state) => state.avatar);
   const age = useAppStore((state) => state.age);
   const ageRange = useAppStore((state) => state.ageRange);
+  const dayCompletedAt = useAppStore((state) => state.dayCompletedAt);
+  const setProgressPaused = useAppStore((state) => state.setProgressPaused);
   const maxBpm = getModerateHeartRateUpperLimit(age, ageRange);
+  const {
+    showResumeModal,
+    dismissResumeModal,
+    runIfProgressActive,
+  } = useExercisePauseGuard();
 
   const session = getLevelSession(level);
   const exercises = useMemo(
@@ -38,22 +48,24 @@ export default function ExerciseSessionsScreen() {
   const [showPulseModal, setShowPulseModal] = useState(false);
 
   const beginSession = () => {
-    if (hasGuidedSession(level)) {
-      router.push(
-        `/exercise/${dayInLevel}?session=1&level=${level}&index=0&started=${Date.now()}`,
-      );
-      return;
-    }
+    runIfProgressActive(() => {
+      if (hasGuidedSession(level)) {
+        router.push(
+          `/exercise/${dayInLevel}?session=1&level=${level}&index=0&started=${Date.now()}`,
+        );
+        return;
+      }
 
-    const firstPlayable = exercises.find((exercise) => exercise.playbackSource);
-    if (firstPlayable) {
-      router.push(`/exercise/${dayInLevel}?exercise=${firstPlayable.id}&level=${level}`);
-    }
+      const firstPlayable = exercises.find((exercise) => exercise.playbackSource);
+      if (firstPlayable) {
+        router.push(`/exercise/${dayInLevel}?exercise=${firstPlayable.id}&level=${level}`);
+      }
+    });
   };
 
   const handleStartSession = () => {
     if (!exercises.some((exercise) => exercise.playbackSource)) return;
-    setShowReadyModal(true);
+    runIfProgressActive(() => setShowReadyModal(true));
   };
 
   return (
@@ -127,6 +139,20 @@ export default function ExerciseSessionsScreen() {
         onStart={() => {
           setShowPulseModal(false);
           beginSession();
+        }}
+      />
+
+      <ResumeProgressModal
+        visible={showResumeModal}
+        onClose={() => {
+          dismissResumeModal();
+          router.replace('/home');
+        }}
+        onResume={() => {
+          setProgressPaused(false);
+          dismissResumeModal();
+          void syncNextExerciseNotification(dayCompletedAt);
+          router.replace('/growth');
         }}
       />
     </SafeAreaView>

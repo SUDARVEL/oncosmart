@@ -17,9 +17,11 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 import { BottomTabBar } from "../components/BottomTabBar";
 import { ExerciseVideoBanner } from "../components/ExerciseVideoBanner";
+import { ResumeProgressModal } from "../components/growth/ResumeProgressModal";
 import { HomeAvatarButton } from "../components/home/HomeAvatarButton";
 import { ProgressLogo } from "../components/home/ProgressLogo";
 import { PressableScale } from "../components/PressableScale";
+import { useExercisePauseGuard } from "../hooks/useExercisePauseGuard";
 import { openWhatsAppSupport } from "../lib/openWhatsAppSupport";
 import { QUOTE_CHARACTER_FEMALE } from "../lib/homePageCardImage";
 import { syncNextExerciseNotification } from "../lib/nextExerciseNotification";
@@ -128,6 +130,21 @@ export default function HomeScreen() {
     router.push("/onboarding/avatar?from=home");
   };
 
+  const {
+    showResumeModal,
+    dismissResumeModal,
+    runIfProgressActive,
+  } = useExercisePauseGuard();
+  const setProgressPaused = useAppStore((state) => state.setProgressPaused);
+
+  const handleStartSession = () => {
+    runIfProgressActive(() => {
+      router.push(
+        `/exercise/pain-score?level=${primarySession.level}&day=${primarySession.dayInLevel}`,
+      );
+    });
+  };
+
   return (
     <SafeAreaView style={styles.screen} edges={["top"]}>
       <ScrollView
@@ -203,11 +220,7 @@ export default function HomeScreen() {
             sessionState={primarySession}
             avatar={avatar}
             gender={gender}
-            onStart={() =>
-              router.push(
-                `/exercise/pain-score?level=${primarySession.level}&day=${primarySession.dayInLevel}`,
-              )
-            }
+            onStart={handleStartSession}
           />
         </View>
 
@@ -231,6 +244,17 @@ export default function HomeScreen() {
           home: t("home.tabHome"),
           growth: t("home.tabGrowth"),
           settings: t("home.tabSettings"),
+        }}
+      />
+
+      <ResumeProgressModal
+        visible={showResumeModal}
+        onClose={dismissResumeModal}
+        onResume={() => {
+          setProgressPaused(false);
+          dismissResumeModal();
+          void syncNextExerciseNotification(dayCompletedAt);
+          router.push("/growth");
         }}
       />
     </SafeAreaView>
