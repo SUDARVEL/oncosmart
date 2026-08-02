@@ -30,16 +30,19 @@ export default function ParqResultScreen() {
       </View>
 
       <View style={styles.content}>
-        <View style={styles.hero}>
-          <ParqCheckmarkIllustration size="large" />
+        {/* Tick + copy sit in the vertical center between header and CTA. */}
+        <View style={styles.heroArea}>
+          <View style={styles.hero}>
+            <ParqCheckmarkIllustration size="large" />
 
-          <View style={styles.textBlock}>
-            <Text style={styles.title}>
-              {cleared ? t('parq.congratsTitle') : t('parq.consultTitle')}
-            </Text>
-            <Text style={styles.subtitle}>
-              {cleared ? t('parq.congratsSubtitle') : t('parq.consultSubtitle')}
-            </Text>
+            <View style={styles.textBlock}>
+              <Text style={styles.title}>
+                {cleared ? t('parq.congratsTitle') : t('parq.consultTitle')}
+              </Text>
+              <Text style={styles.subtitle}>
+                {cleared ? t('parq.congratsSubtitle') : t('parq.consultSubtitle')}
+              </Text>
+            </View>
           </View>
         </View>
 
@@ -73,16 +76,18 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
-    justifyContent: 'space-between',
     paddingHorizontal: 24,
     paddingBottom: 28,
-    paddingTop: 40,
+  },
+  heroArea: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   hero: {
     alignItems: 'center',
     paddingHorizontal: 8,
     maxWidth: 360,
-    alignSelf: 'center',
     width: '100%',
     gap: 24,
   },
