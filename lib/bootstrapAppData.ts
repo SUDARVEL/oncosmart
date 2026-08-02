@@ -8,8 +8,9 @@ import { useAppStore } from '../store/useAppStore';
  * land on Login instead of an old saved name/progress from a previous APK.
  */
 const DATA_VERSION_KEY = 'oncosmart-data-version';
-const DATA_VERSION = '5-login-first';
-const ZUSTAND_PERSIST_KEYS = ['oncofitness-app', 'oncofitness-app-v5'];
+/** Bump forces a one-time local wipe so this APK starts Language → Login cleanly. */
+const DATA_VERSION = '6-language-login';
+const ZUSTAND_PERSIST_KEYS = ['oncofitness-app', 'oncofitness-app-v5', 'oncofitness-app-v6'];
 
 let bootstrapPromise: Promise<void> | null = null;
 

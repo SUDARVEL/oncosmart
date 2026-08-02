@@ -43,7 +43,11 @@ export default function UsernameScreen() {
 
   return (
     <SafeAreaView style={styles.screen} edges={['top', 'bottom']}>
-      <ScreenHeader title="" showBack />
+      <ScreenHeader
+        title=""
+        showBack={returnToSettings}
+        onBack={returnToSettings ? () => router.replace('/settings') : undefined}
+      />
 
       <KeyboardAvoidingView
         style={styles.flex}

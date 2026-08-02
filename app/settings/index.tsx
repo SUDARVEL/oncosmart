@@ -13,6 +13,7 @@ import { SettingsRow } from '../../components/settings/SettingsRow';
 import { signOut } from '../../lib/auth';
 import { cancelNextExerciseNotification } from '../../lib/nextExerciseNotification';
 import { openWhatsAppSupport } from '../../lib/openWhatsAppSupport';
+import { setPreferredLanguage } from '../../lib/preferredLanguage';
 import { AppLanguage, useAppStore } from '../../store/useAppStore';
 import { colors } from '../../theme/colors';
 
@@ -34,6 +35,7 @@ export default function SettingsScreen() {
 
   const handleLanguageSelect = (next: AppLanguage) => {
     setLanguage(next);
+    void setPreferredLanguage(next);
     void i18n.changeLanguage(next);
     setLanguageSheetOpen(false);
   };
@@ -50,10 +52,13 @@ export default function SettingsScreen() {
 
   const handleLogout = () => {
     // Sign out clears the Auth session only. Cloud patient data stays for next login.
+    const keptLanguage = useAppStore.getState().language;
     void cancelNextExerciseNotification();
     void signOut();
     resetApp();
-    router.replace('/login');
+    if (keptLanguage) useAppStore.getState().setLanguage(keptLanguage);
+    // Back through Language → Login for the next account.
+    router.replace('/language');
   };
 
   return (

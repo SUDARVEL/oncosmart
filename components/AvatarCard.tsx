@@ -1,5 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
-import { Image, type ImageSourcePropType, StyleSheet, Pressable, View } from 'react-native';
+import { Image, type ImageSourcePropType, Pressable, StyleSheet, View } from 'react-native';
 
 import { colors } from '../theme/colors';
 
@@ -22,17 +22,20 @@ export function AvatarCard({ image, imageKey, selected, onPress }: AvatarCardPro
       style={[styles.card, selected && styles.cardSelected]}
       accessibilityRole="button"
       accessibilityState={{ selected }}
+      accessibilityLabel={`${imageKey} avatar`}
     >
       <View style={styles.imageFrame}>
         {/*
-          Use RN Image (not expo-image) for bundled avatar PNGs so both cards
-          always decode independently — expo-image recycling could blank one side.
+          RN Image + unique key + fadeDuration 0 avoids blank male/female cards
+          seen with image recycling on some Android devices.
         */}
         <Image
-          key={imageKey}
+          key={`avatar-${imageKey}`}
           source={image}
+          defaultSource={typeof image === 'number' ? image : undefined}
           style={styles.image}
           resizeMode="contain"
+          fadeDuration={0}
           accessibilityIgnoresInvertColors
         />
       </View>
@@ -47,13 +50,18 @@ export function AvatarCard({ image, imageKey, selected, onPress }: AvatarCardPro
 
 const styles = StyleSheet.create({
   card: {
-    flex: 1,
-    height: 410,
+    width: '100%',
+    flexGrow: 1,
+    flexShrink: 1,
+    flexBasis: 0,
+    minHeight: 360,
+    maxHeight: 410,
     borderRadius: 8,
     backgroundColor: colors.optionBg,
     overflow: 'hidden',
     alignItems: 'center',
     justifyContent: 'center',
+    paddingVertical: 12,
   },
   cardSelected: {
     backgroundColor: colors.optionBgSelected,
@@ -65,11 +73,11 @@ const styles = StyleSheet.create({
     height: AVATAR_DISPLAY_HEIGHT,
     alignItems: 'center',
     justifyContent: 'center',
+    overflow: 'hidden',
   },
   image: {
     width: AVATAR_DISPLAY_WIDTH,
     height: AVATAR_DISPLAY_HEIGHT,
-    backgroundColor: 'transparent',
   },
   checkBadge: {
     position: 'absolute',

@@ -106,6 +106,7 @@ export default function RootLayout() {
       <CloudSyncBridge />
       <Stack screenOptions={{ headerShown: false, animation: 'fade' }}>
         <Stack.Screen name="index" />
+        <Stack.Screen name="language" />
         <Stack.Screen name="login" />
         <Stack.Screen name="onboarding" />
         <Stack.Screen name="home" />

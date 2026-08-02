@@ -111,9 +111,10 @@ const styles = StyleSheet.create({
   },
   cardsRow: {
     flexDirection: 'row',
-    gap: 32,
+    alignItems: 'stretch',
+    gap: 16,
     flex: 1,
-    // Match AvatarCard height so images appear larger.
     maxHeight: 410,
+    minHeight: 360,
   },
 });

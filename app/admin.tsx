@@ -183,9 +183,11 @@ export default function AdminScreen() {
   );
 
   const handleLogout = () => {
+    const keptLanguage = useAppStore.getState().language;
     void signOut();
     resetApp();
-    router.replace('/login');
+    if (keptLanguage) useAppStore.getState().setLanguage(keptLanguage);
+    router.replace('/language');
   };
 
   const withProgress = patients.filter((p) => p.sessionsCompleted > 0).length;

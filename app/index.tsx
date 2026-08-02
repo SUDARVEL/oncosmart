@@ -1,22 +1,25 @@
 import { useRouter } from 'expo-router';
-import { useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useTranslation } from 'react-i18next';
 
 import { OncosmartLogo } from '../components/OncosmartLogo';
 import { SplashFooter } from '../components/SplashFooter';
 import { getCurrentSession } from '../lib/auth';
 import { bootstrapAppData } from '../lib/bootstrapAppData';
 import { isAdminSession } from '../lib/isAdmin';
+import { getPreferredLanguage } from '../lib/preferredLanguage';
 import { resolvePostAuthRoute } from '../lib/resolvePostAuthRoute';
 import { syncNextExerciseNotification } from '../lib/nextExerciseNotification';
 import { loadCloudProfileIntoStore } from '../lib/userCloudSync';
 import { useAppStore } from '../store/useAppStore';
 import { colors } from '../theme/colors';
 
-const SPLASH_DURATION_MS = 3000;
+/** Short splash — keep the app feeling snappy. */
+const SPLASH_DURATION_MS = 1200;
 
-async function waitForStoreHydration(timeoutMs = 2500): Promise<void> {
+async function waitForStoreHydration(timeoutMs = 1500): Promise<void> {
   const persistApi = useAppStore.persist;
   if (persistApi.hasHydrated()) return;
   await Promise.race([
@@ -31,22 +34,44 @@ async function waitForStoreHydration(timeoutMs = 2500): Promise<void> {
 
 export default function SplashScreen() {
   const router = useRouter();
+  const { i18n } = useTranslation();
+  const navigated = useRef(false);
 
-  // Auth-first: no session → Login (never reuse a leftover local name).
-  // Signed-in + onboarded → home; signed-in incomplete → onboarding; admin → admin.
+  /**
+   * Auth-first product flow:
+   * - No session → Language → Login
+   * - Session + onboarded patient → Home (no onboarding)
+   * - Session + new patient → Onboarding (starts at username)
+   * - Admin → Admin progress only
+   */
   const proceed = useCallback(async () => {
+    if (navigated.current) return;
+    navigated.current = true;
+
     await bootstrapAppData();
     await waitForStoreHydration();
 
+    const preferred = await getPreferredLanguage();
+    if (preferred) {
+      useAppStore.getState().setLanguage(preferred);
+      if (i18n.language !== preferred) {
+        void i18n.changeLanguage(preferred);
+      }
+    }
+
     const session = await getCurrentSession();
     if (!session?.user?.id) {
+      // Always Language → Login when signed out (then onboarding only if new).
+      const language = useAppStore.getState().language ?? preferred;
       useAppStore.getState().resetApp();
-      router.replace('/login');
+      if (language) useAppStore.getState().setLanguage(language);
+      router.replace('/language');
       return;
     }
 
     if (isAdminSession(session)) {
       useAppStore.getState().resetApp();
+      if (preferred) useAppStore.getState().setLanguage(preferred);
       router.replace('/admin');
       return;
     }
@@ -55,7 +80,7 @@ export default function SplashScreen() {
     const completions = useAppStore.getState().dayCompletedAt;
     void syncNextExerciseNotification(completions);
     router.replace(resolvePostAuthRoute(session));
-  }, [router]);
+  }, [i18n, router]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
