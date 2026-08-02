@@ -1,5 +1,5 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { memo, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -11,9 +11,48 @@ import { AppAvatar, useAppStore } from '../../store/useAppStore';
 import { colors } from '../../theme/colors';
 import { font } from '../../theme/fonts';
 
-// Keep requires at module scope and wire each card to exactly one asset.
 const MALE_AVATAR = require('../../assets/avatars/male-avatar.png');
 const FEMALE_AVATAR = require('../../assets/avatars/female-avatar.png');
+
+/** Hard-wired male card — source can never become female. */
+const MaleAvatarOption = memo(function MaleAvatarOption({
+  selected,
+  label,
+  onPress,
+}: {
+  selected: boolean;
+  label: string;
+  onPress: () => void;
+}) {
+  return (
+    <AvatarCard
+      image={MALE_AVATAR}
+      label={label}
+      selected={selected}
+      onPress={onPress}
+    />
+  );
+});
+
+/** Hard-wired female card — source can never become male. */
+const FemaleAvatarOption = memo(function FemaleAvatarOption({
+  selected,
+  label,
+  onPress,
+}: {
+  selected: boolean;
+  label: string;
+  onPress: () => void;
+}) {
+  return (
+    <AvatarCard
+      image={FEMALE_AVATAR}
+      label={label}
+      selected={selected}
+      onPress={onPress}
+    />
+  );
+});
 
 export default function AvatarScreen() {
   const { t } = useTranslation();
@@ -65,22 +104,15 @@ export default function AvatarScreen() {
           <Text style={styles.subtitle}>{t('avatar.subtitle')}</Text>
         </View>
 
-        <View style={styles.cardsRow}>
-          {/* Left = Male only. Right = Female only. Sources never cross. */}
-          <AvatarCard
-            key="card-male"
-            image={MALE_AVATAR}
-            imageKey="male"
-            label={t('gender.male')}
+        <View style={styles.cardsRow} collapsable={false}>
+          <MaleAvatarOption
             selected={selected === 'male'}
+            label={t('gender.male')}
             onPress={() => setSelected('male')}
           />
-          <AvatarCard
-            key="card-female"
-            image={FEMALE_AVATAR}
-            imageKey="female"
-            label={t('gender.female')}
+          <FemaleAvatarOption
             selected={selected === 'female'}
+            label={t('gender.female')}
             onPress={() => setSelected('female')}
           />
         </View>
@@ -128,9 +160,9 @@ const styles = StyleSheet.create({
   },
   cardsRow: {
     flexDirection: 'row',
-    alignItems: 'stretch',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
     gap: 12,
-    minHeight: 420,
   },
   button: {
     marginTop: 8,

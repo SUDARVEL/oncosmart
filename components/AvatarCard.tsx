@@ -1,46 +1,62 @@
 import { Ionicons } from '@expo/vector-icons';
-import { Image, type ImageSourcePropType, Pressable, StyleSheet, Text, View } from 'react-native';
+import {
+  Image,
+  type ImageSourcePropType,
+  Pressable,
+  StyleSheet,
+  Text,
+  useWindowDimensions,
+  View,
+} from 'react-native';
 
 import { colors } from '../theme/colors';
 import { font } from '../theme/fonts';
 
 type AvatarCardProps = {
-  /** Bundled PNG for this card only — never shared across male/female. */
   image: ImageSourcePropType;
-  imageKey: 'male' | 'female';
   label: string;
   selected: boolean;
   onPress: () => void;
 };
 
 /**
- * Avatar picker card.
- * Uses RN Image (not expo-image) so Android never recycles male/female bitmaps
- * into the wrong card when selection changes.
+ * Stable avatar picker card.
+ * - Image never remounts on selection (only border/check change)
+ * - Fixed pixel size (not %/flex) so Android can't shrink/blank a side
+ * - collapsable={false} keeps the native Image view alive
  */
-export function AvatarCard({ image, imageKey, label, selected, onPress }: AvatarCardProps) {
+export function AvatarCard({ image, label, selected, onPress }: AvatarCardProps) {
+  const { width: screenWidth } = useWindowDimensions();
+  const cardWidth = Math.max(140, Math.min(180, (screenWidth - 16 * 2 - 12) / 2));
+  const imageHeight = Math.round(cardWidth * 2.35);
+
   return (
     <Pressable
       onPress={onPress}
-      style={[styles.card, selected && styles.cardSelected]}
+      style={[
+        styles.card,
+        { width: cardWidth },
+        selected && styles.cardSelected,
+      ]}
       accessibilityRole="button"
       accessibilityState={{ selected }}
       accessibilityLabel={label}
     >
-      <View style={styles.imageFrame}>
+      <View
+        collapsable={false}
+        style={[styles.imageFrame, { width: cardWidth - 12, height: imageHeight }]}
+      >
         <Image
-          // Force a dedicated native view per gender; never reuse the other card's bitmap.
-          key={`avatar-static-${imageKey}`}
           source={image}
           defaultSource={typeof image === 'number' ? image : undefined}
-          style={styles.image}
+          style={{ width: cardWidth - 12, height: imageHeight }}
           resizeMode="contain"
           fadeDuration={0}
         />
       </View>
       <Text style={[styles.label, selected && styles.labelSelected]}>{label}</Text>
       {selected ? (
-        <View style={styles.checkBadge}>
+        <View style={styles.checkBadge} pointerEvents="none">
           <Ionicons name="checkmark-circle" size={22} color={colors.buttonPrimary} />
         </View>
       ) : null}
@@ -50,16 +66,13 @@ export function AvatarCard({ image, imageKey, label, selected, onPress }: Avatar
 
 const styles = StyleSheet.create({
   card: {
-    flex: 1,
     borderRadius: 12,
     backgroundColor: colors.optionBg,
     overflow: 'hidden',
     alignItems: 'center',
-    justifyContent: 'flex-start',
-    paddingTop: 12,
+    paddingTop: 10,
     paddingBottom: 12,
     paddingHorizontal: 6,
-    minHeight: 420,
   },
   cardSelected: {
     backgroundColor: colors.optionBgSelected,
@@ -67,17 +80,11 @@ const styles = StyleSheet.create({
     borderColor: colors.optionBorderSelected,
   },
   imageFrame: {
-    width: '100%',
-    height: 360,
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: '#EEF2F6',
     borderRadius: 8,
     overflow: 'hidden',
-  },
-  image: {
-    width: '100%',
-    height: '100%',
   },
   label: {
     marginTop: 10,
