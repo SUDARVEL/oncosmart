@@ -1,5 +1,6 @@
+import { Asset } from 'expo-asset';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { memo, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -11,48 +12,16 @@ import { AppAvatar, useAppStore } from '../../store/useAppStore';
 import { colors } from '../../theme/colors';
 import { font } from '../../theme/fonts';
 
-const MALE_AVATAR = require('../../assets/avatars/male-avatar.png');
-const FEMALE_AVATAR = require('../../assets/avatars/female-avatar.png');
+/**
+ * Opaque JPEG picker assets (no alpha). Large transparent PNGs were blanking
+ * the unselected sibling Image on some Android GPUs when selection changed.
+ */
+const MALE_PICKER = require('../../assets/avatars/male-avatar-picker.jpg');
+const FEMALE_PICKER = require('../../assets/avatars/female-avatar-picker.jpg');
 
-/** Hard-wired male card — source can never become female. */
-const MaleAvatarOption = memo(function MaleAvatarOption({
-  selected,
-  label,
-  onPress,
-}: {
-  selected: boolean;
-  label: string;
-  onPress: () => void;
-}) {
-  return (
-    <AvatarCard
-      image={MALE_AVATAR}
-      label={label}
-      selected={selected}
-      onPress={onPress}
-    />
-  );
-});
-
-/** Hard-wired female card — source can never become male. */
-const FemaleAvatarOption = memo(function FemaleAvatarOption({
-  selected,
-  label,
-  onPress,
-}: {
-  selected: boolean;
-  label: string;
-  onPress: () => void;
-}) {
-  return (
-    <AvatarCard
-      image={FEMALE_AVATAR}
-      label={label}
-      selected={selected}
-      onPress={onPress}
-    />
-  );
-});
+// Warm both bitmaps as soon as this module loads — before first paint.
+Asset.fromModule(MALE_PICKER).downloadAsync().catch(() => undefined);
+Asset.fromModule(FEMALE_PICKER).downloadAsync().catch(() => undefined);
 
 export default function AvatarScreen() {
   const { t } = useTranslation();
@@ -104,15 +73,23 @@ export default function AvatarScreen() {
           <Text style={styles.subtitle}>{t('avatar.subtitle')}</Text>
         </View>
 
+        {/*
+          Both cards always mounted. Selection only toggles overlay props —
+          image sources and slots never remount or resize.
+        */}
         <View style={styles.cardsRow} collapsable={false}>
-          <MaleAvatarOption
-            selected={selected === 'male'}
+          <AvatarCard
+            imageKey="picker-male"
+            image={MALE_PICKER}
             label={t('gender.male')}
+            selected={selected === 'male'}
             onPress={() => setSelected('male')}
           />
-          <FemaleAvatarOption
-            selected={selected === 'female'}
+          <AvatarCard
+            imageKey="picker-female"
+            image={FEMALE_PICKER}
             label={t('gender.female')}
+            selected={selected === 'female'}
             onPress={() => setSelected('female')}
           />
         </View>
@@ -160,9 +137,10 @@ const styles = StyleSheet.create({
   },
   cardsRow: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    justifyContent: 'center',
     alignItems: 'flex-start',
     gap: 12,
+    minHeight: 420,
   },
   button: {
     marginTop: 8,
