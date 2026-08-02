@@ -2,7 +2,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { StyleSheet, Text, View } from 'react-native';
 
 import { PressableScale } from '../PressableScale';
-import { font } from '../../theme/fonts';
+import { colors } from '../../theme/colors';
+import { uiText } from '../../theme/typography';
 
 type SettingsRowProps = {
   title: string;
@@ -15,30 +16,48 @@ export function SettingsRow({ title, description, showChevron = false, onPress }
   const content = (
     <View style={styles.container}>
       <View style={styles.headerRow}>
-        <Text style={styles.title}>{title}</Text>
+        <Text style={styles.title} numberOfLines={2}>
+          {title}
+        </Text>
         {showChevron ? (
-          <Ionicons name="chevron-forward" size={24} color="#1E1E1E" />
+          <Ionicons name="chevron-forward" size={22} color="#1E1E1E" />
         ) : null}
       </View>
-      <Text style={styles.description}>{description}</Text>
+      <Text style={styles.description} numberOfLines={3}>
+        {description}
+      </Text>
     </View>
   );
 
   if (!onPress) {
-    return content;
+    return <View style={styles.rowWrap}>{content}</View>;
   }
 
   return (
-    <PressableScale onPress={onPress} accessibilityRole="button" pressedScale={0.99} pressedOpacity={0.9}>
+    <PressableScale
+      onPress={onPress}
+      accessibilityRole="button"
+      pressedScale={0.99}
+      pressedOpacity={0.92}
+      style={styles.rowWrap}
+    >
       {content}
     </PressableScale>
   );
 }
 
 const styles = StyleSheet.create({
+  rowWrap: {
+    width: '100%',
+    paddingHorizontal: 20,
+    paddingVertical: 14,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: colors.cardBorder,
+    backgroundColor: colors.background,
+  },
   container: {
     width: '100%',
-    gap: 0,
+    gap: 4,
   },
   headerRow: {
     flexDirection: 'row',
@@ -48,15 +67,12 @@ const styles = StyleSheet.create({
   },
   title: {
     flex: 1,
-    fontSize: 16,
-    lineHeight: 22.4,
+    ...uiText(16, 'semiBold'),
     color: '#1E1E1E',
-    ...font('regular'),
   },
   description: {
-    fontSize: 16,
-    lineHeight: 22.4,
+    ...uiText(13, 'regular'),
     color: '#757575',
-    ...font('regular'),
+    paddingRight: 28,
   },
 });

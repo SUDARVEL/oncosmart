@@ -25,22 +25,28 @@ export function uiText(
 }
 
 /**
- * Shared TextInput style — taller field + vertical padding so Tamil
- * placeholders and typed text are never cut off at the bottom.
+ * Shared TextInput style.
+ * On Android avoid lineHeight + includeFontPadding together — that causes
+ * placeholder "ghost second line" / clipping with Tamil.
  */
 export const textFieldStyle: TextStyle = {
-  minHeight: 56,
+  height: 56,
   borderWidth: 1,
   borderColor: colors.inputBorder,
   borderRadius: 8,
   paddingHorizontal: 14,
-  paddingTop: 14,
-  paddingBottom: 14,
+  ...(Platform.OS === 'android'
+    ? {
+        paddingTop: 0,
+        paddingBottom: 0,
+        includeFontPadding: false,
+        textAlignVertical: 'center' as const,
+      }
+    : {
+        paddingVertical: 14,
+      }),
   fontSize: 16,
-  lineHeight: 24,
   ...font('regular'),
   color: colors.textPrimary,
   backgroundColor: colors.background,
-  textAlignVertical: 'center',
-  ...(Platform.OS === 'android' ? { includeFontPadding: true } : null),
 };

@@ -219,10 +219,11 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
+    paddingTop: 8,
     paddingBottom: 120,
   },
   menuAnchor: {
-    paddingTop: 4,
+    paddingTop: 0,
   },
   fab: {
     position: 'absolute',
@@ -231,9 +232,9 @@ const styles = StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: 24,
-    backgroundColor: colors.buttonPrimary,
+    backgroundColor: '#E0F4FF',
     alignItems: 'center',
     justifyContent: 'center',
-    elevation: 4,
+    elevation: 3,
   },
 });

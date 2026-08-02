@@ -5,15 +5,12 @@ import {
   Pressable,
   StyleSheet,
   Text,
+  useWindowDimensions,
   View,
 } from 'react-native';
 
 import { colors } from '../theme/colors';
 import { font } from '../theme/fonts';
-
-/** Fixed picker card size — identical in every selection state. */
-export const AVATAR_PICKER_CARD_WIDTH = 156;
-export const AVATAR_PICKER_IMAGE_HEIGHT = 340;
 
 type AvatarCardProps = {
   imageKey: string;
@@ -24,9 +21,8 @@ type AvatarCardProps = {
 };
 
 /**
- * Figma avatar option states:
- * - none / selected: image always fully visible at the same size
- * - selected: navy border + check badge only (no wash, no shrink, no hide)
+ * Larger avatar picker cards that fill more of the available height.
+ * Selection = navy border + check only (no wash / no border spur artifacts).
  */
 export function AvatarCard({
   imageKey,
@@ -35,18 +31,33 @@ export function AvatarCard({
   selected,
   onPress,
 }: AvatarCardProps) {
+  const { width: screenWidth, height: screenHeight } = useWindowDimensions();
+  // Two cards + gap 12 + screen padding 32
+  const cardWidth = Math.min(180, Math.max(156, (screenWidth - 32 - 12) / 2));
+  // Use more vertical space so less empty white below/above.
+  const imageHeight = Math.min(440, Math.max(360, Math.round(screenHeight * 0.48)));
+
   return (
     <View
-      style={[styles.card, selected && styles.cardSelected]}
+      style={[
+        styles.card,
+        { width: cardWidth },
+        selected && styles.cardSelected,
+      ]}
       collapsable={false}
     >
-      {/* Image is NEVER gated on selection — always mounted, fixed size. */}
-      <View style={styles.imageSlot} collapsable={false}>
+      <View
+        collapsable={false}
+        style={[
+          styles.imageSlot,
+          { width: cardWidth - 16, height: imageHeight },
+        ]}
+      >
         <Image
           key={imageKey}
           source={image}
           defaultSource={typeof image === 'number' ? image : undefined}
-          style={styles.image}
+          style={{ width: cardWidth - 16, height: imageHeight }}
           resizeMode="contain"
           resizeMethod="resize"
           fadeDuration={0}
@@ -55,7 +66,6 @@ export function AvatarCard({
 
       <Text style={[styles.label, selected && styles.labelSelected]}>{label}</Text>
 
-      {/* Full-card tap target — does not wrap the Image in opacity styles. */}
       <Pressable
         onPress={onPress}
         style={styles.hitTarget}
@@ -67,7 +77,7 @@ export function AvatarCard({
 
       {selected ? (
         <View style={styles.checkBadge} pointerEvents="none">
-          <Ionicons name="checkmark-circle" size={22} color={colors.buttonPrimary} />
+          <Ionicons name="checkmark-circle" size={24} color={colors.buttonPrimary} />
         </View>
       ) : null}
     </View>
@@ -76,37 +86,34 @@ export function AvatarCard({
 
 const styles = StyleSheet.create({
   card: {
-    width: AVATAR_PICKER_CARD_WIDTH,
-    borderRadius: 12,
+    borderRadius: 14,
     backgroundColor: colors.optionBg,
     alignItems: 'center',
-    paddingTop: 10,
-    paddingBottom: 12,
+    paddingTop: 12,
+    paddingBottom: 14,
     paddingHorizontal: 6,
-    // Border width reserved always — selecting only changes color.
+    // Always reserve border so selecting never changes layout size.
     borderWidth: 2,
     borderColor: 'transparent',
+    // Clip any border/paint artifacts that used to "extend" past the card.
     overflow: 'hidden',
   },
   cardSelected: {
     borderColor: colors.optionBorderSelected,
+    backgroundColor: colors.optionBgSelected,
   },
   imageSlot: {
-    width: AVATAR_PICKER_CARD_WIDTH - 16,
-    height: AVATAR_PICKER_IMAGE_HEIGHT,
-    borderRadius: 8,
+    borderRadius: 10,
     backgroundColor: colors.optionBg,
     overflow: 'hidden',
   },
-  image: {
-    width: AVATAR_PICKER_CARD_WIDTH - 16,
-    height: AVATAR_PICKER_IMAGE_HEIGHT,
-  },
   label: {
-    marginTop: 10,
-    fontSize: 15,
+    marginTop: 12,
+    fontSize: 16,
+    lineHeight: 24,
     ...font('semiBold'),
     color: colors.textSecondary,
+    includeFontPadding: true,
   },
   labelSelected: {
     color: colors.optionTextSelected,
@@ -116,7 +123,7 @@ const styles = StyleSheet.create({
   },
   checkBadge: {
     position: 'absolute',
-    top: 8,
-    right: 8,
+    top: 10,
+    right: 10,
   },
 });

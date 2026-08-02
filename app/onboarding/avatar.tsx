@@ -106,9 +106,8 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     paddingHorizontal: 16,
     paddingTop: 8,
-    paddingBottom: 28,
-    gap: 20,
-    justifyContent: 'space-between',
+    paddingBottom: 24,
+    gap: 16,
   },
   intro: {
     gap: 8,
@@ -128,10 +127,11 @@ const styles = StyleSheet.create({
   cardsRow: {
     flexDirection: 'row',
     justifyContent: 'center',
-    alignItems: 'flex-start',
+    alignItems: 'stretch',
     gap: 12,
+    flexGrow: 1,
   },
   button: {
-    marginTop: 8,
+    marginTop: 12,
   },
 });
