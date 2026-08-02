@@ -11,11 +11,9 @@ import { AppAvatar, useAppStore } from '../../store/useAppStore';
 import { colors } from '../../theme/colors';
 import { font } from '../../theme/fonts';
 
-// Full-body pickers + square DPs as decode fallback (Home uses DPs successfully).
+// Keep requires at module scope and wire each card to exactly one asset.
 const MALE_AVATAR = require('../../assets/avatars/male-avatar.png');
 const FEMALE_AVATAR = require('../../assets/avatars/female-avatar.png');
-const MALE_AVATAR_DP = require('../../assets/avatars/male-avatar-dp.png');
-const FEMALE_AVATAR_DP = require('../../assets/avatars/female-avatar-dp.png');
 
 export default function AvatarScreen() {
   const { t } = useTranslation();
@@ -68,17 +66,18 @@ export default function AvatarScreen() {
         </View>
 
         <View style={styles.cardsRow}>
+          {/* Left = Male only. Right = Female only. Sources never cross. */}
           <AvatarCard
+            key="card-male"
             image={MALE_AVATAR}
-            fallbackImage={MALE_AVATAR_DP}
             imageKey="male"
             label={t('gender.male')}
             selected={selected === 'male'}
             onPress={() => setSelected('male')}
           />
           <AvatarCard
+            key="card-female"
             image={FEMALE_AVATAR}
-            fallbackImage={FEMALE_AVATAR_DP}
             imageKey="female"
             label={t('gender.female')}
             selected={selected === 'female'}
@@ -107,10 +106,10 @@ const styles = StyleSheet.create({
   },
   content: {
     flexGrow: 1,
-    paddingHorizontal: 20,
-    paddingTop: 12,
+    paddingHorizontal: 16,
+    paddingTop: 8,
     paddingBottom: 28,
-    gap: 20,
+    gap: 16,
   },
   intro: {
     gap: 8,
@@ -131,8 +130,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'stretch',
     gap: 12,
+    minHeight: 420,
   },
   button: {
-    marginTop: 'auto',
+    marginTop: 8,
   },
 });
