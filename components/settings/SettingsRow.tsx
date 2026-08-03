@@ -1,8 +1,9 @@
 import { Ionicons } from '@expo/vector-icons';
 import { StyleSheet, Text, View } from 'react-native';
 
+import { colors } from '../../theme/colors';
+import { uiText } from '../../theme/typography';
 import { PressableScale } from '../PressableScale';
-import { font } from '../../theme/fonts';
 
 type SettingsRowProps = {
   title: string;
@@ -11,52 +12,68 @@ type SettingsRowProps = {
   onPress?: () => void;
 };
 
+/** Compact settings row — less vertical whitespace, full-width layout. */
 export function SettingsRow({ title, description, showChevron = false, onPress }: SettingsRowProps) {
   const content = (
-    <View style={styles.container}>
-      <View style={styles.headerRow}>
-        <Text style={styles.title}>{title}</Text>
-        {showChevron ? (
-          <Ionicons name="chevron-forward" size={24} color="#1E1E1E" />
-        ) : null}
+    <View style={styles.inner}>
+      <View style={styles.textCol}>
+        <Text style={styles.title} numberOfLines={1}>
+          {title}
+        </Text>
+        <Text style={styles.description} numberOfLines={2}>
+          {description}
+        </Text>
       </View>
-      <Text style={styles.description}>{description}</Text>
+      {showChevron ? (
+        <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
+      ) : null}
     </View>
   );
 
   if (!onPress) {
-    return content;
+    return <View style={styles.row}>{content}</View>;
   }
 
   return (
-    <PressableScale onPress={onPress} accessibilityRole="button" pressedScale={0.99} pressedOpacity={0.9}>
+    <PressableScale
+      onPress={onPress}
+      accessibilityRole="button"
+      pressedScale={0.995}
+      pressedOpacity={0.92}
+      style={styles.row}
+    >
       {content}
     </PressableScale>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  row: {
+    alignSelf: 'stretch',
     width: '100%',
-    gap: 0,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: colors.cardBorder,
+    backgroundColor: colors.background,
   },
-  headerRow: {
+  inner: {
+    width: '100%',
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
-    width: '100%',
+    gap: 8,
+  },
+  textCol: {
+    flex: 1,
+    minWidth: 0,
+    gap: 2,
   },
   title: {
-    flex: 1,
-    fontSize: 16,
-    lineHeight: 22.4,
+    ...uiText(15, 'semiBold'),
     color: '#1E1E1E',
-    ...font('regular'),
   },
   description: {
-    fontSize: 16,
-    lineHeight: 22.4,
+    ...uiText(12, 'regular'),
     color: '#757575',
-    ...font('regular'),
   },
 });

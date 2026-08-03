@@ -11,13 +11,12 @@ export type AppAvatar = 'male' | 'female';
 /** @deprecated Prefer numeric `age`. Kept for reading older persisted profiles. */
 export type AgeRange = '18-24' | '25-34' | '35-44' | '45-54' | '55-64';
 export type TreatmentType = 'chemotherapy' | 'radiation' | 'both' | 'none';
+export type PauseReason = 'tired' | 'pain' | 'treatment' | 'unwell';
 
-type AppState = {
+export type AppStateSnapshot = {
   language: AppLanguage | null;
   username: string;
-  /** Whole-number age entered on onboarding (preferred). */
   age: number | null;
-  /** Legacy age band; still read for older installs until they re-enter age. */
   ageRange: AgeRange | null;
   gender: AppGender | null;
   cancerType: string;
@@ -28,13 +27,27 @@ type AppState = {
   parqCleared: boolean | null;
   painScores: Record<string, number>;
   progressPaused: boolean;
+  /** Why progress was paused — kept for admin + cloud sync. */
+  pauseReason: PauseReason | null;
   levelsCompleted: number;
-  /** Epoch ms when each day's guided session was completed, keyed by day number. */
   dayCompletedAt: Record<string, number>;
+  activeAuthUserId: string | null;
+  /** True after the patient finishes or skips the first-run coach tour. */
+  coachTourSeen: boolean;
+};
+
+type CloudHydrateInput = Partial<AppStateSnapshot>;
+
+type AppState = AppStateSnapshot & {
   /** Dev-only flag that bypasses the 24h unlock delay between days. */
   devUnlockOverride: boolean;
   /** Ephemeral queue of badge celebrations to show after a session. */
   pendingBadgeCelebrations: BadgeKey[];
+  /**
+   * Active coach-tour step index, or null when the tour is idle.
+   * Ephemeral (not persisted) so a cold start doesn't reopen mid-tour.
+   */
+  coachTourStep: number | null;
   setLanguage: (language: AppLanguage) => void;
   setUsername: (username: string) => void;
   setAge: (age: number) => void;
@@ -47,8 +60,15 @@ type AppState = {
   setParqAnswer: (index: number, value: boolean) => void;
   setParqCleared: (cleared: boolean) => void;
   setPainScore: (level: number, dayInLevel: number, score: number) => void;
-  setProgressPaused: (paused: boolean) => void;
+  setProgressPaused: (paused: boolean, reason?: PauseReason | null) => void;
   setLevelsCompleted: (count: number) => void;
+  setActiveAuthUserId: (userId: string | null) => void;
+  setCoachTourSeen: (seen: boolean) => void;
+  setCoachTourStep: (step: number | null) => void;
+  /** Restart the product tour from step 0 (Settings → Replay tips). */
+  restartCoachTour: () => void;
+  /** Replace local profile/progress with cloud data for the signed-in user. */
+  hydrateFromCloud: (payload: CloudHydrateInput) => void;
   /** Record a session completion (level + day within level). */
   markSessionCompleted: (level: number, dayInLevel: number, when?: number) => void;
   /** @deprecated Use markSessionCompleted */
@@ -58,6 +78,7 @@ type AppState = {
   dismissBadgeCelebration: () => void;
   /** Dev-only: wipe day progress without touching onboarding profile. */
   devResetProgress: () => void;
+  /** Clear local session cache (logout). Cloud rows stay for next login. */
   resetApp: () => void;
 };
 
@@ -79,8 +100,12 @@ export const useAppStore = create<AppState>()(
       parqCleared: null,
       painScores: {},
       progressPaused: false,
+      pauseReason: null,
       levelsCompleted: 0,
       dayCompletedAt: {},
+      activeAuthUserId: null,
+      coachTourSeen: false,
+      coachTourStep: null,
       devUnlockOverride: false,
       pendingBadgeCelebrations: [],
       setLanguage: (language) => set({ language }),
@@ -100,13 +125,46 @@ export const useAppStore = create<AppState>()(
         }),
       setParqCleared: (cleared) => set({ parqCleared: cleared }),
       setPainScore: (level, dayInLevel, score) =>
-        set((state) => ({
-          painScores: { ...state.painScores, [`${level}:${dayInLevel}`]: score },
-        })),
-      setProgressPaused: (paused) => set({ progressPaused: paused }),
+        set((state) => {
+          if (state.progressPaused) return state;
+          return {
+            painScores: { ...state.painScores, [`${level}:${dayInLevel}`]: score },
+          };
+        }),
+      setProgressPaused: (paused, reason = null) =>
+        set({
+          progressPaused: paused,
+          pauseReason: paused ? reason ?? null : null,
+        }),
       setLevelsCompleted: (count) => set({ levelsCompleted: count }),
+      setActiveAuthUserId: (userId) => set({ activeAuthUserId: userId }),
+      setCoachTourSeen: (seen) => set({ coachTourSeen: Boolean(seen) }),
+      setCoachTourStep: (step) =>
+        set({
+          coachTourStep:
+            step == null || !Number.isFinite(step) ? null : Math.max(0, Math.floor(step)),
+        }),
+      restartCoachTour: () => set({ coachTourSeen: false, coachTourStep: 0 }),
+      hydrateFromCloud: (payload) =>
+        set((state) => ({
+          ...state,
+          ...payload,
+          // Never overwrite local tour completion from cloud profile blobs.
+          coachTourSeen: state.coachTourSeen === true,
+          parqAnswers: payload.parqAnswers
+            ? [...payload.parqAnswers]
+            : state.parqAnswers,
+          painScores: payload.painScores
+            ? { ...payload.painScores }
+            : state.painScores,
+          dayCompletedAt: payload.dayCompletedAt
+            ? { ...payload.dayCompletedAt }
+            : state.dayCompletedAt,
+        })),
       markSessionCompleted: (level, dayInLevel, when) =>
         set((state) => {
+          // Pause Progress freezes program advancement for every avatar/gender.
+          if (state.progressPaused) return state;
           const key = sessionKey(level, dayInLevel);
           if (state.dayCompletedAt[key] && when == null) {
             return state;
@@ -119,6 +177,7 @@ export const useAppStore = create<AppState>()(
         }),
       markDayCompleted: (day, when) =>
         set((state) => {
+          if (state.progressPaused) return state;
           const key = sessionKey(1, day);
           if (state.dayCompletedAt[key] && when == null) {
             return state;
@@ -170,15 +229,22 @@ export const useAppStore = create<AppState>()(
           parqCleared: null,
           painScores: {},
           progressPaused: false,
+          pauseReason: null,
           levelsCompleted: 0,
           dayCompletedAt: {},
+          activeAuthUserId: null,
+          coachTourSeen: false,
+          coachTourStep: null,
           devUnlockOverride: false,
           pendingBadgeCelebrations: [],
         }),
     }),
     {
-      name: 'oncofitness-app',
+      // Bumped so older APK local profiles (saved name/progress) are not reused.
+      name: 'oncofitness-app-v9',
       storage: createJSONStorage(() => AsyncStorage),
+      // Only persist progress while a user is signed in locally. Language is also
+      // stored separately in preferredLanguage for the pre-login gate.
       partialize: (state) => ({
         language: state.language,
         username: state.username,
@@ -193,8 +259,11 @@ export const useAppStore = create<AppState>()(
         parqCleared: state.parqCleared,
         painScores: state.painScores,
         progressPaused: state.progressPaused,
+        pauseReason: state.pauseReason,
         levelsCompleted: state.levelsCompleted,
         dayCompletedAt: state.dayCompletedAt,
+        activeAuthUserId: state.activeAuthUserId,
+        coachTourSeen: state.coachTourSeen,
         devUnlockOverride: state.devUnlockOverride,
       }),
     },

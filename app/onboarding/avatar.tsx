@@ -1,34 +1,39 @@
+import { Asset } from 'expo-asset';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { AvatarCard } from '../../components/AvatarCard';
 import { PrimaryButton } from '../../components/PrimaryButton';
 import { ScreenHeader } from '../../components/ScreenHeader';
+import { useAndroidBack } from '../../hooks/useAndroidBack';
+import { goBackOr } from '../../lib/navBack';
 import { AppAvatar, useAppStore } from '../../store/useAppStore';
 import { colors } from '../../theme/colors';
 import { font } from '../../theme/fonts';
 
-const MALE_AVATAR = require('../../assets/avatars/male-avatar.png');
-const FEMALE_AVATAR = require('../../assets/avatars/female-avatar.png');
+/**
+ * Opaque JPEG picker assets. Both cards stay mounted in every state
+ * (none / male / female) so Android never blanks a sibling image.
+ */
+const MALE_PICKER = require('../../assets/avatars/male-avatar-picker.jpg');
+const FEMALE_PICKER = require('../../assets/avatars/female-avatar-picker.jpg');
+
+Asset.fromModule(MALE_PICKER).downloadAsync().catch(() => undefined);
+Asset.fromModule(FEMALE_PICKER).downloadAsync().catch(() => undefined);
 
 export default function AvatarScreen() {
   const { t } = useTranslation();
   const router = useRouter();
   const { from } = useLocalSearchParams<{ from?: string }>();
   const isFromHome = from === 'home';
+  const isFromSettings = from === 'settings';
   const savedAvatar = useAppStore((state) => state.avatar);
-  const gender = useAppStore((state) => state.gender);
   const setAvatar = useAppStore((state) => state.setAvatar);
+  // Start from saved avatar only — allows the Figma "none selected" state.
   const [selected, setSelected] = useState<AppAvatar | null>(savedAvatar);
-
-  useEffect(() => {
-    if (selected || !gender) return;
-    if (gender === 'male') setSelected('male');
-    if (gender === 'female') setSelected('female');
-  }, [gender, selected]);
 
   const handleContinue = () => {
     if (!selected) return;
@@ -37,35 +42,60 @@ export default function AvatarScreen() {
       router.replace('/home');
       return;
     }
+    if (isFromSettings) {
+      goBackOr(() => router.replace('/settings'));
+      return;
+    }
     router.replace('/onboarding/parq');
   };
 
-  const handleBack = () => {
+  const handleBack = useCallback(() => {
     if (isFromHome) {
-      router.replace('/home');
+      goBackOr(() => router.replace('/home'));
       return;
     }
-    router.back();
-  };
+    if (isFromSettings) {
+      goBackOr(() => router.replace('/settings'));
+      return;
+    }
+    goBackOr(() => router.replace('/home'));
+  }, [isFromHome, isFromSettings, router]);
+
+  useAndroidBack(
+    useCallback(() => {
+      handleBack();
+      return true;
+    }, [handleBack]),
+  );
 
   return (
-    <SafeAreaView style={styles.screen}>
+    <SafeAreaView style={styles.screen} edges={['top', 'bottom']}>
       <ScreenHeader title="" showBack onBack={handleBack} />
 
-      <View style={styles.content}>
+      <ScrollView
+        style={styles.scroll}
+        contentContainerStyle={styles.content}
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
+        bounces={false}
+      >
         <View style={styles.intro}>
           <Text style={styles.title}>{t('avatar.title')}</Text>
           <Text style={styles.subtitle}>{t('avatar.subtitle')}</Text>
         </View>
 
-        <View style={styles.cardsRow}>
+        <View style={styles.cardsRow} collapsable={false}>
           <AvatarCard
-            image={MALE_AVATAR}
+            imageKey="picker-male"
+            image={MALE_PICKER}
+            label={t('gender.male')}
             selected={selected === 'male'}
             onPress={() => setSelected('male')}
           />
           <AvatarCard
-            image={FEMALE_AVATAR}
+            imageKey="picker-female"
+            image={FEMALE_PICKER}
+            label={t('gender.female')}
             selected={selected === 'female'}
             onPress={() => setSelected('female')}
           />
@@ -75,8 +105,9 @@ export default function AvatarScreen() {
           label={t('avatar.saveContinue')}
           onPress={handleContinue}
           disabled={!selected}
+          style={styles.button}
         />
-      </View>
+      </ScrollView>
     </SafeAreaView>
   );
 }
@@ -86,17 +117,21 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.background,
   },
-  content: {
+  scroll: {
     flex: 1,
-    paddingHorizontal: 20,
-    paddingTop: 55,
-    gap: 24,
+  },
+  content: {
+    flexGrow: 1,
+    paddingHorizontal: 16,
+    paddingTop: 4,
+    paddingBottom: 20,
+    gap: 12,
   },
   intro: {
-    gap: 8,
+    gap: 6,
   },
   title: {
-    fontSize: 14,
+    fontSize: 16,
     ...font('semiBold'),
     color: colors.textPrimary,
     letterSpacing: 0.1,
@@ -109,9 +144,11 @@ const styles = StyleSheet.create({
   },
   cardsRow: {
     flexDirection: 'row',
-    gap: 32,
-    flex: 1,
-    // Match AvatarCard height so images appear larger.
-    maxHeight: 410,
+    justifyContent: 'center',
+    alignItems: 'flex-start',
+    gap: 12,
+  },
+  button: {
+    marginTop: 16,
   },
 });

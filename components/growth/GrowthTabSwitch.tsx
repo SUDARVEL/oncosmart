@@ -1,3 +1,4 @@
+import type { Ref } from 'react';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 
@@ -10,6 +11,8 @@ export type GrowthTab = 'progress' | 'workouts';
 type GrowthTabSwitchProps = {
   activeTab: GrowthTab;
   onTabChange: (tab: GrowthTab) => void;
+  progressAnchorRef?: Ref<View>;
+  workoutsAnchorRef?: Ref<View>;
 };
 
 /**
@@ -27,7 +30,12 @@ const FIGMA_CONTAINER_WIDTH =
   CONTAINER_PADDING * 2 +
   CONTAINER_BORDER * 2;
 
-export function GrowthTabSwitch({ activeTab, onTabChange }: GrowthTabSwitchProps) {
+export function GrowthTabSwitch({
+  activeTab,
+  onTabChange,
+  progressAnchorRef,
+  workoutsAnchorRef,
+}: GrowthTabSwitchProps) {
   const { t } = useTranslation();
   const { width: screenWidth } = useWindowDimensions();
 
@@ -40,43 +48,47 @@ export function GrowthTabSwitch({ activeTab, onTabChange }: GrowthTabSwitchProps
 
   return (
     <View style={styles.container}>
-      <PressableScale
-        style={[
-          styles.tab,
-          { width: progressWidth },
-          progressActive ? styles.tabActive : styles.tabInactive,
-        ]}
-        pressedScale={0.96}
-        onPress={() => onTabChange('progress')}
-        accessibilityRole="button"
-        accessibilityState={{ selected: progressActive }}
-      >
-        <Text
-          style={[styles.progressText, progressActive ? styles.textActive : styles.textInactive]}
-          numberOfLines={1}
+      <View ref={progressAnchorRef} collapsable={false}>
+        <PressableScale
+          style={[
+            styles.tab,
+            { width: progressWidth },
+            progressActive ? styles.tabActive : styles.tabInactive,
+          ]}
+          pressedScale={0.96}
+          onPress={() => onTabChange('progress')}
+          accessibilityRole="button"
+          accessibilityState={{ selected: progressActive }}
         >
-          {t('growth.tabProgress')}
-        </Text>
-      </PressableScale>
+          <Text
+            style={[styles.progressText, progressActive ? styles.textActive : styles.textInactive]}
+            numberOfLines={1}
+          >
+            {t('growth.tabProgress')}
+          </Text>
+        </PressableScale>
+      </View>
 
-      <PressableScale
-        style={[
-          styles.tab,
-          { width: workoutsWidth },
-          workoutsActive ? styles.tabActive : styles.tabInactive,
-        ]}
-        pressedScale={0.96}
-        onPress={() => onTabChange('workouts')}
-        accessibilityRole="button"
-        accessibilityState={{ selected: workoutsActive }}
-      >
-        <Text
-          style={[styles.workoutsText, workoutsActive ? styles.textActive : styles.textInactive]}
-          numberOfLines={1}
+      <View ref={workoutsAnchorRef} collapsable={false}>
+        <PressableScale
+          style={[
+            styles.tab,
+            { width: workoutsWidth },
+            workoutsActive ? styles.tabActive : styles.tabInactive,
+          ]}
+          pressedScale={0.96}
+          onPress={() => onTabChange('workouts')}
+          accessibilityRole="button"
+          accessibilityState={{ selected: workoutsActive }}
         >
-          {t('growth.tabWorkouts')}
-        </Text>
-      </PressableScale>
+          <Text
+            style={[styles.workoutsText, workoutsActive ? styles.textActive : styles.textInactive]}
+            numberOfLines={1}
+          >
+            {t('growth.tabWorkouts')}
+          </Text>
+        </PressableScale>
+      </View>
     </View>
   );
 }
@@ -92,11 +104,13 @@ const styles = StyleSheet.create({
     borderColor: '#E5E7EB',
     borderRadius: 41,
     padding: CONTAINER_PADDING,
-    height: 48,
+    minHeight: 52,
+    height: 52,
   },
-  /** Figma pill: h40, radius 35, padding 12×24, justify/align center */
+  /** Figma pill: taller than 40 so Tamil labels are not clipped */
   tab: {
-    height: 40,
+    minHeight: 44,
+    height: 44,
     borderRadius: 35,
     alignItems: 'center',
     justifyContent: 'center',
@@ -112,19 +126,21 @@ const styles = StyleSheet.create({
   tabInactive: {
     backgroundColor: 'transparent',
   },
-  /** முன்னேற்றம் — Roboto Medium 14 */
+  /** முன்னேற்றம் — taller line box so Tamil is not clipped */
   progressText: {
     fontSize: 14,
-    lineHeight: 18,
+    lineHeight: 22,
     textAlign: 'center',
     ...font('medium'),
+    includeFontPadding: true,
   },
-  /** உடற்பயிற்சிகள் — Roboto Regular 14 */
+  /** உடற்பயிற்சிகள் */
   workoutsText: {
     fontSize: 14,
-    lineHeight: 18,
+    lineHeight: 22,
     textAlign: 'center',
     ...font('regular'),
+    includeFontPadding: true,
   },
   /** Selected → Primary blue */
   textActive: {

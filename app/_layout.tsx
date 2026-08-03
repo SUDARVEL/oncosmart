@@ -24,6 +24,7 @@ import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, Platform, StyleSheet, View } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
+import { CloudSyncBridge } from '../components/CloudSyncBridge';
 import { isSupabaseConfigured } from '../lib/env';
 import { ensureExerciseAudioSession } from '../lib/ensureExerciseAudioSession';
 import { prepareNotifications } from '../lib/nextExerciseNotification';
@@ -107,11 +108,14 @@ export default function RootLayout() {
   return (
     <SafeAreaProvider>
       <StatusBar style="dark" />
+      <CloudSyncBridge />
       <Stack screenOptions={{ headerShown: false, animation: 'fade' }}>
         <Stack.Screen name="index" />
+        <Stack.Screen name="language" />
         <Stack.Screen name="login" />
         <Stack.Screen name="onboarding" />
         <Stack.Screen name="home" />
+        <Stack.Screen name="admin" />
         <Stack.Screen name="exercise/[day]" />
         <Stack.Screen name="exercise/sessions/[day]" />
         <Stack.Screen name="exercise/complete" />
@@ -120,7 +124,8 @@ export default function RootLayout() {
           options={{ presentation: 'modal', animation: 'slide_from_bottom' }}
         />
         <Stack.Screen name="growth" />
-        <Stack.Screen name="settings" />
+        <Stack.Screen name="settings/index" />
+        <Stack.Screen name="settings/change-password" />
       </Stack>
     </SafeAreaProvider>
   );

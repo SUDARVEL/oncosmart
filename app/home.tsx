@@ -1,7 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   Dimensions,
@@ -16,13 +16,22 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { BottomTabBar } from "../components/BottomTabBar";
+import { ChatFab } from "../components/ChatFab";
+import { CoachMarkOverlay } from "../components/coach/CoachMarkOverlay";
 import { ExerciseVideoBanner } from "../components/ExerciseVideoBanner";
+import { ResumeProgressModal } from "../components/growth/ResumeProgressModal";
 import { HomeAvatarButton } from "../components/home/HomeAvatarButton";
 import { ProgressLogo } from "../components/home/ProgressLogo";
 import { PressableScale } from "../components/PressableScale";
-import { openWhatsAppSupport } from "../lib/openWhatsAppSupport";
+import { useAndroidBack } from "../hooks/useAndroidBack";
+import { useCoachTour } from "../hooks/useCoachTour";
+import { useExercisePauseGuard } from "../hooks/useExercisePauseGuard";
+import { exitApp } from "../lib/navBack";
 import { QUOTE_CHARACTER_FEMALE } from "../lib/homePageCardImage";
-import { syncNextExerciseNotification } from "../lib/nextExerciseNotification";
+import {
+  ensureNotificationPermissions,
+  syncNextExerciseNotification,
+} from "../lib/nextExerciseNotification";
 import { getHomePagePlaceholderVideo } from "../lib/placeholderVideo";
 import { HOME_DAY_CARD_PREVIEW_ASPECT } from "../lib/exerciseVideoFrame";
 import {
@@ -84,6 +93,17 @@ export default function HomeScreen() {
   const [activeQuote, setActiveQuote] = useState(0);
   const [now, setNow] = useState(() => Date.now());
   const scrollRef = useRef<ScrollView>(null);
+  const {
+    active: coachActive,
+    step: coachStep,
+    stepIndex: coachStepIndex,
+    stepCount: coachStepCount,
+    rect: coachRect,
+    registerHost,
+    registerTarget,
+    next: coachNext,
+    skip: coachSkip,
+  } = useCoachTour("home");
 
   const completedCount = getCompletedSessionCount(dayCompletedAt);
   const activeLevel = getActiveLevel(dayCompletedAt);
@@ -109,7 +129,11 @@ export default function HomeScreen() {
 
   // Keep the local “next exercise ready” reminder aligned with device unlock time.
   useEffect(() => {
-    void syncNextExerciseNotification(dayCompletedAt, { paused: progressPaused });
+    void (async () => {
+      // Ask once on Home so the next-day unlock reminder can fire when the app is closed.
+      await ensureNotificationPermissions();
+      await syncNextExerciseNotification(dayCompletedAt, { paused: progressPaused });
+    })();
   }, [dayCompletedAt, progressPaused]);
 
   const handleQuoteScroll = (
@@ -125,11 +149,53 @@ export default function HomeScreen() {
     if (tab === "settings") router.push("/settings");
   };
 
+  // Home is the app root — system back exits (Android), like other apps.
+  useAndroidBack(
+    useCallback(() => {
+      exitApp();
+      return true;
+    }, []),
+  );
+
   const handleAvatarPress = () => {
     router.push("/onboarding/avatar?from=home");
   };
 
+  const {
+    showResumeModal,
+    dismissResumeModal,
+    runIfProgressActive,
+  } = useExercisePauseGuard();
+  const setProgressPaused = useAppStore((state) => state.setProgressPaused);
+
+  const handleStartSession = () => {
+    runIfProgressActive(() => {
+      router.push(
+        `/exercise/pain-score?level=${primarySession.level}&day=${primarySession.dayInLevel}`,
+      );
+    });
+  };
+
+  const handleCoachNext = () => {
+    if (coachStep?.id === "home.growthTab") {
+      coachNext();
+      router.push("/growth");
+      return;
+    }
+    if (coachStep?.id === "home.settingsTab") {
+      coachNext();
+      router.push("/settings");
+      return;
+    }
+    coachNext();
+  };
+
   return (
+    <View
+      style={styles.screen}
+      ref={(node) => registerHost(node)}
+      collapsable={false}
+    >
     <SafeAreaView style={styles.screen} edges={["top"]}>
       <ScrollView
         style={styles.scroll}
@@ -140,14 +206,23 @@ export default function HomeScreen() {
           <Text style={styles.welcome}>
             {t("home.welcome", { name: username || "Guest" })}
           </Text>
-          <HomeAvatarButton
-            avatar={avatar}
-            onPress={handleAvatarPress}
-            accessibilityLabel={t("home.changeAvatar")}
-          />
+          <View
+            ref={(node) => registerTarget("home.avatar", node)}
+            collapsable={false}
+          >
+            <HomeAvatarButton
+              avatar={avatar}
+              onPress={handleAvatarPress}
+              accessibilityLabel={t("home.changeAvatar")}
+            />
+          </View>
         </View>
 
-        <View style={styles.progressSection}>
+        <View
+          ref={(node) => registerTarget("home.progress", node)}
+          collapsable={false}
+          style={styles.progressSection}
+        >
           <ProgressLogo width={79} height={80} />
           <Text style={styles.daysCompleted}>
             {t("home.daysCompleted", {
@@ -196,7 +271,11 @@ export default function HomeScreen() {
           ))}
         </View>
 
-        <View style={styles.sessionSection}>
+        <View
+          ref={(node) => registerTarget("home.session", node)}
+          collapsable={false}
+          style={styles.sessionSection}
+        >
           <Text style={styles.sessionTitle}>{t("home.sessionTitle")}</Text>
 
           <DayCard
@@ -204,26 +283,14 @@ export default function HomeScreen() {
             sessionState={primarySession}
             avatar={avatar}
             gender={gender}
-            onStart={() =>
-              router.push(
-                `/exercise/pain-score?level=${primarySession.level}&day=${primarySession.dayInLevel}`,
-              )
-            }
+            onStart={handleStartSession}
           />
         </View>
 
         {__DEV__ ? <DevPanel /> : null}
       </ScrollView>
 
-      <PressableScale
-        style={styles.fab}
-        accessibilityRole="button"
-        accessibilityLabel="Chat"
-        onPress={openWhatsAppSupport}
-        pressedScale={0.92}
-      >
-        <Ionicons name="chatbubble" size={24} color={colors.buttonPrimary} />
-      </PressableScale>
+      <ChatFab bottom={88} />
 
       <BottomTabBar
         activeTab="home"
@@ -233,8 +300,42 @@ export default function HomeScreen() {
           growth: t("home.tabGrowth"),
           settings: t("home.tabSettings"),
         }}
+        tabAnchorRefs={{
+          growth: (node) => registerTarget("home.growthTab", node),
+          settings: (node) => registerTarget("home.settingsTab", node),
+        }}
       />
+
+      <ResumeProgressModal
+        visible={showResumeModal}
+        onClose={dismissResumeModal}
+        onResume={() => {
+          setProgressPaused(false);
+          dismissResumeModal();
+          void syncNextExerciseNotification(dayCompletedAt);
+          router.push("/growth");
+        }}
+      />
+
     </SafeAreaView>
+      {/* Outside SafeArea so measureInWindow coords match the spotlight. */}
+      {coachActive && coachStep ? (
+        <CoachMarkOverlay
+          visible
+          title={t(coachStep.titleKey)}
+          body={t(coachStep.bodyKey)}
+          icon={coachStep.icon}
+          stepIndex={coachStepIndex}
+          stepCount={coachStepCount}
+          target={coachRect}
+          preferPlacement={coachStep.preferPlacement}
+          spotlight={coachStep.spotlight}
+          pad={coachStep.pad}
+          onNext={handleCoachNext}
+          onSkip={coachSkip}
+        />
+      ) : null}
+    </View>
   );
 }
 
@@ -445,8 +546,9 @@ const styles = StyleSheet.create({
     fontSize: 21,
     ...font("semiBold"),
     color: colors.textPrimary,
-    letterSpacing: -0.26,
-    lineHeight: 28,
+    letterSpacing: 0,
+    lineHeight: 32,
+    includeFontPadding: true,
   },
   progressSection: {
     marginTop: 16,
@@ -459,8 +561,10 @@ const styles = StyleSheet.create({
     ...font("semiBold"),
     color: colors.progressText,
     textAlign: "center",
-    letterSpacing: -0.23,
-    lineHeight: 20,
+    letterSpacing: 0,
+    // Must be taller than fontSize or Tamil glyphs clip.
+    lineHeight: 30,
+    includeFontPadding: true,
   },
   dots: {
     flexDirection: "row",
@@ -511,8 +615,9 @@ const styles = StyleSheet.create({
     fontSize: 18,
     ...font("semiBold"),
     color: colors.textPrimary,
-    lineHeight: 25,
-    letterSpacing: -0.2,
+    lineHeight: 28,
+    letterSpacing: 0,
+    includeFontPadding: true,
   },
   sessionSection: {
     marginTop: 8,
@@ -671,23 +776,5 @@ const styles = StyleSheet.create({
     ...font("medium"),
     color: "#5B21B6",
     textAlign: "center",
-  },
-  fab: {
-    position: "absolute",
-    right: 9,
-    bottom: 88,
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: colors.tabBarBg,
-    borderWidth: 1,
-    borderColor: colors.buttonPrimary,
-    alignItems: "center",
-    justifyContent: "center",
-    shadowColor: "#000000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 8,
-    elevation: 6,
   },
 });

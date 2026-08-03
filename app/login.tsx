@@ -1,30 +1,61 @@
 import { useRouter } from 'expo-router';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   KeyboardAvoidingView,
   Platform,
+  Pressable,
   ScrollView,
   StyleSheet,
   Text,
-  TextInput,
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { AppTextInput } from '../components/AppTextInput';
 import { OncosmartLogo } from '../components/OncosmartLogo';
 import { PrimaryButton } from '../components/PrimaryButton';
-import { signInWithUsername } from '../lib/auth';
+import { getCurrentSession, signInWithUsername } from '../lib/auth';
+import { isAdminSession } from '../lib/isAdmin';
+import { getPreferredLanguage } from '../lib/preferredLanguage';
+import { openWhatsAppForgotPassword } from '../lib/openWhatsAppSupport';
+import { syncNextExerciseNotification } from '../lib/nextExerciseNotification';
+import { loadCloudProfileIntoStore } from '../lib/userCloudSync';
+import { useAppStore } from '../store/useAppStore';
 import { colors } from '../theme/colors';
 import { font } from '../theme/fonts';
+import { uiText } from '../theme/typography';
 
 export default function LoginScreen() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const router = useRouter();
+  const resetApp = useAppStore((state) => state.resetApp);
+  const setLanguage = useAppStore((state) => state.setLanguage);
+  const setActiveAuthUserId = useAppStore((state) => state.setActiveAuthUserId);
+  const language = useAppStore((state) => state.language);
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Language must be chosen before Login.
+  useEffect(() => {
+    let cancelled = false;
+    void (async () => {
+      if (language) return;
+      const preferred = await getPreferredLanguage();
+      if (cancelled) return;
+      if (preferred) {
+        setLanguage(preferred);
+        if (i18n.language !== preferred) void i18n.changeLanguage(preferred);
+        return;
+      }
+      router.replace('/language');
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [i18n, language, router, setLanguage]);
 
   const canSubmit = username.trim().length > 0 && password.length > 0 && !submitting;
 
@@ -32,12 +63,43 @@ export default function LoginScreen() {
     if (!canSubmit) return;
     setSubmitting(true);
     setError(null);
+
+    // Clear previous account cache but keep the pre-login language choice.
+    const keptLanguage = useAppStore.getState().language;
+    resetApp();
+    if (keptLanguage) setLanguage(keptLanguage);
+
     const result = await signInWithUsername(username, password);
-    if (result.ok) {
-      router.replace('/onboarding');
+    if (!result.ok) {
+      setError(t('login.error'));
+      setSubmitting(false);
       return;
     }
-    setError(t('login.error'));
+
+    const session = await getCurrentSession();
+    if (isAdminSession(session)) {
+      router.replace('/admin');
+      setSubmitting(false);
+      return;
+    }
+    if (session?.user?.id) {
+      // Bind sync immediately so onboarding/progress start uploading right away.
+      setActiveAuthUserId(session.user.id);
+      const cloud = await loadCloudProfileIntoStore(session.user.id);
+      // Keep the language chosen before login for this device session.
+      if (keptLanguage) setLanguage(keptLanguage);
+      void syncNextExerciseNotification(useAppStore.getState().dayCompletedAt);
+
+      // Trust cloud onboarding_complete so returning users always skip onboarding.
+      if (cloud.onboardingComplete) {
+        router.replace('/home');
+      } else {
+        router.replace('/onboarding');
+      }
+      setSubmitting(false);
+      return;
+    }
+    router.replace('/onboarding');
     setSubmitting(false);
   };
 
@@ -64,30 +126,26 @@ export default function LoginScreen() {
 
             <View style={styles.form}>
               <Text style={styles.label}>{t('login.usernameLabel')}</Text>
-              <TextInput
+              <AppTextInput
                 value={username}
                 onChangeText={(v) => {
                   setUsername(v);
                   if (error) setError(null);
                 }}
                 placeholder={t('login.usernamePlaceholder')}
-                placeholderTextColor={colors.textPlaceholder}
-                style={styles.input}
                 autoCapitalize="none"
                 autoCorrect={false}
                 returnKeyType="next"
               />
 
               <Text style={[styles.label, styles.labelSpacing]}>{t('login.passwordLabel')}</Text>
-              <TextInput
+              <AppTextInput
                 value={password}
                 onChangeText={(v) => {
                   setPassword(v);
                   if (error) setError(null);
                 }}
                 placeholder={t('login.passwordPlaceholder')}
-                placeholderTextColor={colors.textPlaceholder}
-                style={styles.input}
                 autoCapitalize="none"
                 autoCorrect={false}
                 secureTextEntry
@@ -96,6 +154,14 @@ export default function LoginScreen() {
               />
 
               {error ? <Text style={styles.errorText}>{error}</Text> : null}
+
+              <Pressable
+                onPress={() => void openWhatsAppForgotPassword(username)}
+                accessibilityRole="link"
+                style={styles.forgotWrap}
+              >
+                <Text style={styles.forgotText}>{t('login.forgotPassword')}</Text>
+              </Pressable>
 
               <PrimaryButton
                 label={submitting ? t('login.signingIn') : t('login.signIn')}
@@ -156,30 +222,24 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   label: {
-    fontSize: 14,
-    ...font('semiBold'),
+    ...uiText(14, 'semiBold'),
     color: colors.textPrimary,
   },
   labelSpacing: {
     marginTop: 6,
   },
-  input: {
-    height: 48,
-    borderWidth: 1,
-    borderColor: colors.inputBorder,
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    fontSize: 16,
-    lineHeight: 20,
-    ...font('regular'),
-    color: colors.textPrimary,
-    backgroundColor: colors.background,
-  },
   errorText: {
-    fontSize: 13,
-    lineHeight: 18,
+    ...uiText(13, 'regular'),
     color: '#DC2626',
-    ...font('regular'),
+  },
+  forgotWrap: {
+    alignSelf: 'flex-end',
+    paddingVertical: 4,
+  },
+  forgotText: {
+    fontSize: 13,
+    ...font('medium'),
+    color: colors.buttonPrimary,
   },
   button: {
     height: 48,

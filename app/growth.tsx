@@ -1,91 +1,123 @@
-import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
-  Pressable,
   ScrollView,
   StyleSheet,
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { BottomTabBar } from '../components/BottomTabBar';
+import { ChatFab } from '../components/ChatFab';
+import { CoachMarkOverlay } from '../components/coach/CoachMarkOverlay';
 import { BadgesSection } from '../components/growth/BadgesSection';
 import { GrowthTabSwitch, type GrowthTab } from '../components/growth/GrowthTabSwitch';
-import { WorkoutsSection } from '../components/growth/WorkoutsSection';
 import { LevelsCard } from '../components/growth/LevelsCard';
 import { PainProgressCard } from '../components/growth/PainProgressCard';
 import { PauseReasonModal, type PauseReason } from '../components/growth/PauseReasonModal';
 import { StreakCard } from '../components/growth/StreakCard';
-import { BottomTabBar } from '../components/BottomTabBar';
+import { WorkoutsSection } from '../components/growth/WorkoutsSection';
 import { ScreenHeader } from '../components/ScreenHeader';
+import { useAndroidBack } from '../hooks/useAndroidBack';
+import { useCoachTour } from '../hooks/useCoachTour';
 import { getDisplayPainScore } from '../lib/getDisplayPainScore';
-import { openWhatsAppSupport } from '../lib/openWhatsAppSupport';
+import { goBackOr } from '../lib/navBack';
 import {
   cancelNextExerciseNotification,
   syncNextExerciseNotification,
 } from '../lib/nextExerciseNotification';
-import { DAYS_PER_LEVEL, getActiveLevel, sessionKey } from '../lib/programProgress';
+import {
+  getCurrentWeekdayStreak,
+  getCurrentWeekPainScores,
+} from '../lib/weekdayStreak';
 import { useAppStore } from '../store/useAppStore';
 import { colors } from '../theme/colors';
 
 const LEVELS_TOTAL = 4;
 
 export default function GrowthScreen() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<GrowthTab>('progress');
   const [showPauseReason, setShowPauseReason] = useState(false);
+  const {
+    active: coachActive,
+    step: coachStep,
+    stepIndex: coachStepIndex,
+    stepCount: coachStepCount,
+    rect: coachRect,
+    registerHost,
+    registerTarget,
+    next: coachNext,
+    skip: coachSkip,
+  } = useCoachTour('growth');
 
   const progressPaused = useAppStore((state) => state.progressPaused);
   const setProgressPaused = useAppStore((state) => state.setProgressPaused);
 
-  const handlePauseReasonSelect = (_reason: PauseReason) => {
-    setShowPauseReason(false);
-    setProgressPaused(true);
-    void cancelNextExerciseNotification();
-  };
+  // Keep the Growth pills in sync with the active coach step.
+  useEffect(() => {
+    if (coachStep?.growthTab) {
+      setActiveTab(coachStep.growthTab);
+    }
+  }, [coachStep?.growthTab]);
 
-  const handleResume = () => {
-    setProgressPaused(false);
-    void syncNextExerciseNotification(useAppStore.getState().dayCompletedAt, {
-      paused: false,
-    });
-  };
   const levelsCompleted = useAppStore((state) => state.levelsCompleted);
   const avatar = useAppStore((state) => state.avatar);
   const painScores = useAppStore((state) => state.painScores);
   const dayCompletedAt = useAppStore((state) => state.dayCompletedAt);
-  const activeLevel = getActiveLevel(dayCompletedAt);
 
-  // Streak card shows 5 weekdays; map them to Day 1..5 of the active level.
-  const completedDaysInWeek = Array.from({ length: 5 }, (_, i) => i + 1).reduce(
-    (count, dayInLevel) => (dayCompletedAt[sessionKey(activeLevel, dayInLevel)] ? count + 1 : count),
-    0,
-  );
+  const handlePauseReasonSelect = (reason: PauseReason) => {
+    setShowPauseReason(false);
+    setProgressPaused(true, reason);
+    // Pausing stops exercise reminders until the patient resumes.
+    void cancelNextExerciseNotification();
+  };
 
-  // Pain chart shows 7 bars; map them to Day 1..7 of the active level.
-  const painScoresByDay = Array.from({ length: DAYS_PER_LEVEL }, (_, i) => {
-    const dayInLevel = i + 1;
-    const key = `${activeLevel}:${dayInLevel}`;
-    const value = painScores[key];
-    return value === undefined ? null : value;
+  const handleResumeProgress = () => {
+    setProgressPaused(false, null);
+    void syncNextExerciseNotification(dayCompletedAt, { paused: false });
+  };
+
+  // Streak circles follow the phone calendar (Mon–Sun): complete on Saturday → Sat fills.
+  const weekdayStreak = getCurrentWeekdayStreak(dayCompletedAt, {
+    locale: i18n.language || 'en',
   });
 
-  // Fallback when there's no pain data for this level yet.
+  // Pain chart follows the same Mon–Sun calendar week as the streak.
+  const painScoresByDay = getCurrentWeekPainScores(dayCompletedAt, painScores);
+
+  // Fallback when there's no pain data for this week yet.
   const painScore = getDisplayPainScore(painScores);
 
   const handleTabPress = (tab: 'home' | 'growth' | 'settings') => {
     if (tab === 'home') router.replace('/home');
-    if (tab === 'settings') router.replace('/settings');
+    if (tab === 'settings') router.push('/settings');
   };
 
+  const handleBack = useCallback(() => {
+    goBackOr(() => router.replace('/home'));
+  }, [router]);
+
+  useAndroidBack(
+    useCallback(() => {
+      handleBack();
+      return true;
+    }, [handleBack]),
+  );
+
   return (
+    <View
+      style={styles.screen}
+      ref={(node) => registerHost(node)}
+      collapsable={false}
+    >
     <SafeAreaView style={styles.screen} edges={['top']}>
       <ScreenHeader
         title={t('growth.title')}
         showBack
-        onBack={() => router.replace('/home')}
+        onBack={handleBack}
       />
 
       <ScrollView
@@ -94,7 +126,12 @@ export default function GrowthScreen() {
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.tabSwitcherWrap}>
-          <GrowthTabSwitch activeTab={activeTab} onTabChange={setActiveTab} />
+          <GrowthTabSwitch
+            activeTab={activeTab}
+            onTabChange={setActiveTab}
+            progressAnchorRef={(node) => registerTarget('growth.progress', node)}
+            workoutsAnchorRef={(node) => registerTarget('growth.workouts', node)}
+          />
         </View>
 
         {activeTab === 'progress' ? (
@@ -105,29 +142,29 @@ export default function GrowthScreen() {
               paused={progressPaused}
               avatar={avatar}
               onPause={() => setShowPauseReason(true)}
-              onResume={handleResume}
+              onResume={handleResumeProgress}
             />
-            <StreakCard paused={progressPaused} completedDays={completedDaysInWeek} />
+            <StreakCard
+              paused={progressPaused}
+              completedByWeekday={weekdayStreak.completed}
+              weekdayLabels={weekdayStreak.labels}
+            />
             <PainProgressCard
               paused={progressPaused}
               scoresByDay={painScoresByDay}
+              weekdayLabels={weekdayStreak.labels}
               fallbackScore={painScore}
             />
             <BadgesSection />
           </View>
         ) : (
-          <WorkoutsSection />
+          <WorkoutsSection
+            firstCardAnchorRef={(node) => registerTarget('growth.workoutCard', node)}
+          />
         )}
       </ScrollView>
 
-      <Pressable
-        style={styles.fab}
-        accessibilityRole="button"
-        accessibilityLabel="Chat"
-        onPress={openWhatsAppSupport}
-      >
-        <Ionicons name="chatbubble" size={24} color={colors.buttonPrimary} />
-      </Pressable>
+      <ChatFab bottom={88} />
 
       <BottomTabBar
         activeTab="growth"
@@ -144,7 +181,32 @@ export default function GrowthScreen() {
         onClose={() => setShowPauseReason(false)}
         onSelect={handlePauseReasonSelect}
       />
+
     </SafeAreaView>
+      {coachActive && coachStep ? (
+        <CoachMarkOverlay
+          visible
+          title={t(coachStep.titleKey)}
+          body={t(coachStep.bodyKey)}
+          icon={coachStep.icon}
+          stepIndex={coachStepIndex}
+          stepCount={coachStepCount}
+          target={coachRect}
+          preferPlacement={coachStep.preferPlacement}
+          spotlight={coachStep.spotlight}
+          pad={coachStep.pad}
+          onNext={() => {
+            if (coachStep.id === 'growth.workoutCard') {
+              coachNext();
+              router.replace('/home');
+              return;
+            }
+            coachNext();
+          }}
+          onSkip={coachSkip}
+        />
+      ) : null}
+    </View>
   );
 }
 
@@ -170,23 +232,5 @@ const styles = StyleSheet.create({
     gap: 16,
     alignItems: 'center',
     width: '100%',
-  },
-  fab: {
-    position: 'absolute',
-    right: 9,
-    bottom: 88,
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: colors.tabBarBg,
-    borderWidth: 1,
-    borderColor: colors.buttonPrimary,
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: '#000000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 8,
-    elevation: 6,
   },
 });

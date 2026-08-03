@@ -7,7 +7,7 @@ import type { WorkoutDetail } from '../../lib/getWorkoutDetails';
 import { getWorkoutRepLabel } from '../../lib/getWorkoutRepLabel';
 import {
   WORKOUT_SLIDER_BODY_HEIGHT,
-  WORKOUT_SLIDER_MEDIA_ASPECT,
+  WORKOUT_SLIDER_MEDIA_HEIGHT,
   WORKOUT_SLIDER_MEDIA_RADIUS,
   WORKOUT_SLIDER_MEDIA_TOP,
   WORKOUT_SLIDER_MEDIA_WIDTH,
@@ -90,25 +90,22 @@ const styles = StyleSheet.create({
     paddingTop: WORKOUT_SLIDER_MEDIA_TOP,
     paddingBottom: 16,
   },
-  /** Fixed Figma 349-wide, 349:446 portrait aspect — width never increased. */
+  /** Fixed Figma 349×446 portrait frame — never use circular Growth thumbs here. */
   mediaWrap: {
     width: WORKOUT_SLIDER_MEDIA_WIDTH,
-    aspectRatio: WORKOUT_SLIDER_MEDIA_ASPECT,
+    height: WORKOUT_SLIDER_MEDIA_HEIGHT,
     borderRadius: WORKOUT_SLIDER_MEDIA_RADIUS,
     overflow: 'hidden',
-    backgroundColor: 'transparent',
+    backgroundColor: '#F3F4F6',
   },
   media: {
     width: '100%',
     height: '100%',
-    borderRadius: WORKOUT_SLIDER_MEDIA_RADIUS,
-    overflow: 'hidden',
     backgroundColor: 'transparent',
   },
   mediaPlaceholder: {
     width: '100%',
     height: '100%',
-    borderRadius: WORKOUT_SLIDER_MEDIA_RADIUS,
     backgroundColor: '#F3F4F6',
   },
   /** Figma: 24 semiBold, #262526 */

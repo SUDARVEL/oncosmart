@@ -6,17 +6,22 @@ import { colors } from '../../theme/colors';
 import { font } from '../../theme/fonts';
 import { GROWTH_ASSETS } from './assets';
 
-const X_LABELS = ['Mon', 'Wed', 'Fri', 'Sun'] as const;
+const DEFAULT_X_LABELS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'] as const;
 const Y_LABELS = ['8', '4', '0'] as const;
 
 /** Slightly taller bars than the Figma base set for a clearer chart. */
 const BAR_HEIGHTS = [80, 70, 60, 60, 50, 40, 40] as const;
 
 type PainProgressCardProps = {
-  /** 7 bars representing Day 1..Day 7 of the active level. Use null when missing. */
+  /**
+   * 7 bars for Mon–Sun of the current local week.
+   * Use null when no pain score was recorded that calendar day.
+   */
   scoresByDay: Array<number | null>;
-  /** Used when there's no pain score for the active level yet. */
+  /** Used when there's no pain score for the week yet. */
   fallbackScore?: number;
+  /** Optional Mon–Sun labels (defaults to English short names). */
+  weekdayLabels?: string[];
   paused?: boolean;
 };
 
@@ -33,10 +38,12 @@ function scoreToBarHeight(score: number): number {
 export function PainProgressCard({
   scoresByDay,
   fallbackScore = 4,
+  weekdayLabels,
   paused = false,
 }: PainProgressCardProps) {
   const { t } = useTranslation();
   const bars = paused ? GROWTH_ASSETS.barsPaused : GROWTH_ASSETS.barsActive;
+  const xLabels = weekdayLabels?.length === 7 ? weekdayLabels : [...DEFAULT_X_LABELS];
   const currentScore =
     [...scoresByDay].reverse().find((v): v is number => typeof v === 'number') ?? fallbackScore;
 
@@ -88,8 +95,8 @@ export function PainProgressCard({
             <View style={[styles.baseline, paused && styles.baselinePaused]} />
 
             <View style={styles.xLabelsRow}>
-              {X_LABELS.map((label) => (
-                <View key={label} style={styles.xLabelWrap}>
+              {xLabels.map((label, index) => (
+                <View key={`${label}-${index}`} style={styles.xLabelWrap}>
                   <View style={[styles.xTick, paused && styles.xTickPaused]} />
                   <Text style={[styles.xLabel, paused && styles.axisLabelPaused]}>{label}</Text>
                 </View>
@@ -220,7 +227,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 4,
   },
   bar: {
-    width: 32,
+    width: 28,
     borderRadius: 2,
   },
   baseline: {
@@ -239,7 +246,7 @@ const styles = StyleSheet.create({
   },
   xLabelWrap: {
     alignItems: 'center',
-    minWidth: 44,
+    minWidth: 28,
   },
   xTick: {
     width: 1,

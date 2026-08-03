@@ -7,17 +7,18 @@ import {
   ScrollView,
   StyleSheet,
   Text,
-  TextInput,
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { AppTextInput } from '../../components/AppTextInput';
 import { OncosmartLogo } from '../../components/OncosmartLogo';
 import { PrimaryButton } from '../../components/PrimaryButton';
 import { ScreenHeader } from '../../components/ScreenHeader';
 import { useAppStore } from '../../store/useAppStore';
 import { colors } from '../../theme/colors';
 import { font } from '../../theme/fonts';
+import { uiText } from '../../theme/typography';
 
 export default function UsernameScreen() {
   const { t } = useTranslation();
@@ -43,7 +44,11 @@ export default function UsernameScreen() {
 
   return (
     <SafeAreaView style={styles.screen} edges={['top', 'bottom']}>
-      <ScreenHeader title="" showBack />
+      <ScreenHeader
+        title=""
+        showBack={returnToSettings}
+        onBack={returnToSettings ? () => router.replace('/settings') : undefined}
+      />
 
       <KeyboardAvoidingView
         style={styles.flex}
@@ -66,12 +71,10 @@ export default function UsernameScreen() {
 
             <View style={styles.form}>
               <Text style={styles.label}>{t('username.label')}</Text>
-              <TextInput
+              <AppTextInput
                 value={name}
                 onChangeText={setName}
                 placeholder={t('username.placeholder')}
-                placeholderTextColor={colors.textPlaceholder}
-                style={styles.input}
                 autoCapitalize="words"
                 autoCorrect={false}
                 returnKeyType="done"
@@ -137,21 +140,8 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   label: {
-    fontSize: 14,
-    ...font('semiBold'),
+    ...uiText(14, 'semiBold'),
     color: colors.textPrimary,
-  },
-  input: {
-    height: 48,
-    borderWidth: 1,
-    borderColor: colors.inputBorder,
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    fontSize: 16,
-    lineHeight: 20,
-    ...font('regular'),
-    color: colors.textPrimary,
-    backgroundColor: colors.background,
   },
   button: {
     height: 48,

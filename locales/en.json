@@ -3,11 +3,12 @@
     "welcome": "Welcome to Oncosmart",
     "tagline": "Move strong and live free!",
     "usernameLabel": "Username",
-    "usernamePlaceholder": "e.g. test01",
+    "usernamePlaceholder": "e.g. user01",
     "passwordLabel": "Password",
     "passwordPlaceholder": "Enter your password",
     "signIn": "Sign In",
     "signingIn": "Signing in…",
+    "forgotPassword": "Forgot password?",
     "error": "Invalid username or password. Please try again.",
     "logout": "Log out"
   },
@@ -114,7 +115,7 @@
     "worstPain": "Worst Pain",
     "info": "Drag the slider to show your pain score, so we can modify your plan.",
     "continue": "Continue",
-    "readyTitle": "Are you ready to begin today's excercise session?",
+    "readyTitle": "Are you ready to begin today's exercise session?",
     "readySubtitle": "Before we begin, please confirm that you feel ready to continue with today's exercise session",
     "readyNo": "No",
     "readyYes": "Yes",
@@ -212,59 +213,59 @@
       },
       "knee-to-chest-right": {
         "title": "Knee to Chest (Right)",
-        "description": "Improves hip mobility and reduces stiffness."
+        "description": "Improves hip mobility and reduces stiffness. Lie on your back with the left leg straight. Using your hands, bring your right knee toward your chest, then slowly return to the starting position."
       },
       "knee-to-chest-left": {
         "title": "Knee to Chest (Left)",
-        "description": "Improves hip mobility and reduces stiffness."
+        "description": "Improves hip mobility and reduces stiffness. Lie on your back with the right leg straight. Using your hands, bring your left knee toward your chest, then slowly return to the starting position."
       },
       "static-quadriceps-right": {
         "title": "Static Quadriceps (Right)",
-        "description": "Strengthens thigh muscles and improves knee control."
+        "description": "Strengthens thigh muscles and improves knee control. Sit with your legs stretched forward. Slowly press your right knee toward the floor, hold briefly, then relax."
       },
       "static-quadriceps-left": {
         "title": "Static Quadriceps (Left)",
-        "description": "Strengthens thigh muscles and improves knee control."
+        "description": "Strengthens thigh muscles and improves knee control. Sit with your legs stretched forward. Slowly press your left knee toward the floor, hold briefly, then relax."
       },
       "hamstring-stretch": {
         "title": "Hamstring Stretch",
-        "description": "Improves flexibility of the back thigh muscles."
+        "description": "Improves flexibility of the back thigh muscles. Sit with your legs stretched forward and slowly bend forward, trying to reach your toes. You should feel a stretch at the back of the thigh. Hold this position."
       },
       "quadriceps-stretch-right": {
         "title": "Quadriceps Stretch (Right)",
-        "description": "Improves flexibility of the front thigh muscles."
+        "description": "Improves flexibility of the front thigh muscles. Stand holding a chair for support. Using your right hand, bend your right knee and lift the heel toward your hip. You should feel a stretch at the front of the thigh. Hold this position."
       },
       "quadriceps-stretch-left": {
         "title": "Quadriceps Stretch (Left)",
-        "description": "Improves flexibility of the front thigh muscles."
+        "description": "Improves flexibility of the front thigh muscles. Stand holding a chair for support. Using your left hand, bend your left knee and lift the heel toward your hip. You should feel a stretch at the front of the thigh. Hold this position."
       },
       "calf-stretch-right": {
         "title": "Calf Stretch (Right)",
-        "description": "Improves flexibility of the lower leg muscles."
+        "description": "Improves flexibility of the lower leg muscles. Stand facing a wall and place your hands on the wall for support. Step the right leg back with the knee straight and lean forward slowly. You should feel a stretch in the right calf. Hold this position."
       },
       "calf-stretch-left": {
         "title": "Calf Stretch (Left)",
-        "description": "Improves flexibility of the lower leg muscles."
+        "description": "Improves flexibility of the lower leg muscles. Stand facing a wall and place your hands on the wall for support. Step the left leg back with the knee straight and lean forward slowly. You should feel a stretch in the left calf. Hold this position."
       },
       "chest-stretch": {
         "title": "Pectoralis Stretch",
-        "description": "Improves flexibility of chest muscles and improves posture."
+        "description": "Improves flexibility of chest muscles and improves posture. Stand in a doorway with your hands at shoulder height on the frame. Lean forward slowly. You should feel a stretch across the chest. Hold this position."
       },
       "triceps-stretch-right": {
         "title": "Triceps Stretch (Right)",
-        "description": "Improves flexibility of the back arm muscles."
+        "description": "Improves flexibility of the back arm muscles. Stand upright, raise your right arm overhead, and bend the elbow. Use your left hand to gently pull the right elbow. You should feel a stretch at the back of the right arm. Hold this position."
       },
       "triceps-stretch-left": {
         "title": "Triceps Stretch (Left)",
-        "description": "Improves flexibility of the back arm muscles."
+        "description": "Improves flexibility of the back arm muscles. Stand upright, raise your left arm overhead, and bend the elbow. Use your right hand to gently pull the left elbow. You should feel a stretch at the back of the left arm. Hold this position."
       },
       "neck-stretch-right": {
         "title": "Neck Stretch (Right)",
-        "description": "Relieves neck stiffness and improves flexibility."
+        "description": "Relieves neck stiffness and improves flexibility. Stand upright and slowly tilt your head toward the left shoulder. Place your left hand on top of your head and gently press. You should feel a stretch on the right side of the neck. Hold this position."
       },
       "neck-stretch-left": {
         "title": "Neck Stretch (Left)",
-        "description": "Relieves neck stiffness and improves flexibility."
+        "description": "Relieves neck stiffness and improves flexibility. Stand upright and slowly tilt your head toward the right shoulder. Place your right hand on top of your head and gently press. You should feel a stretch on the left side of the neck. Hold this position."
       }
     }
   },
@@ -278,6 +279,8 @@
     "pauseProgress": "Pause Progress",
     "resumeProgress": "Resume Progress",
     "progressPaused": "Progress Paused",
+    "resumeToContinue": "Please resume the progress to continue.",
+    "resumeToContinueOk": "OK",
     "pauseReasonTitle": "Reason for pausing your progress ?",
     "pauseReasonSubtitle": "Tell us what you are feeling , we will adjust your plan to support you better.",
     "pauseReasonTired": "Feeling tired",
@@ -285,7 +288,7 @@
     "pauseReasonTreatment": "Recently underwent treatment",
     "pauseReasonUnwell": "Not feeling well",
     "streakStart": "Start your",
-    "streakHighlight": " excercise streaks",
+    "streakHighlight": " exercise streaks",
     "streakEnd": " !",
     "yourProgress": "YOUR PROGRESS",
     "painScore": "Pain Score",
@@ -431,10 +434,34 @@
     "saveProfile": "Save",
     "language": "Language",
     "languageDescription": "Change the app language and exercise video language",
+    "changePassword": "Change Password",
+    "changePasswordDescription": "Update your login password",
     "helpSupport": "Help & Support",
     "helpSupportDescription": "Message us on WhatsApp",
     "logout": "Logout",
-    "logoutDescription": "Description"
+    "logoutDescription": "Sign out of this device",
+    "replayTips": "App tips",
+    "replayTipsDescription": "Replay the guided tour of Home and Growth",
+    "changeAvatar": "Change avatar",
+    "changeAvatarDescription": "Pick a new male or female avatar",
+    "about": "About ONCOSMART",
+    "aboutDescription": "Version {{version}}"
+  },
+  "changePassword": {
+    "title": "Change Password",
+    "subtitle": "Choose a new password for your ONCOSMART account. You can change it any time from Settings.",
+    "currentLabel": "Current password",
+    "currentPlaceholder": "Current password",
+    "newLabel": "New password",
+    "newPlaceholder": "Min. 8 characters",
+    "confirmLabel": "Confirm new password",
+    "confirmPlaceholder": "Re-enter password",
+    "save": "Save password",
+    "saving": "Saving…",
+    "success": "Password updated successfully.",
+    "mismatch": "New passwords do not match.",
+    "tooShort": "New password must be at least 8 characters.",
+    "wrongCurrent": "Current password is incorrect."
   },
   "notifications": {
     "nextExerciseTitle": "Your exercise is ready",
@@ -442,5 +469,73 @@
     "dayCompletedTitle": "Day completed — great work!",
     "dayCompletedBody": "Level {{level}}, Day {{day}} is done. Level {{nextLevel}}, Day {{nextDay}} unlocks in 24 hours — we’ll remind you.",
     "dayCompletedFinalBody": "Level {{level}}, Day {{day}} is done. You’ve finished the program!"
+  },
+  "admin": {
+    "title": "Admin Dashboard",
+    "dashboardHint": "Patient progress overview",
+    "subtitle": "Pull down to refresh. Tap a patient for details.",
+    "summary": "{{total}} accounts · {{onboarded}} onboarded · {{active}} with progress",
+    "logout": "Logout",
+    "empty": "No patient accounts found.",
+    "sessionsProgress": "{{done}} / {{total}} sessions completed",
+    "currentSession": "Current: Level {{level}}, Day {{day}}",
+    "programComplete": "Program complete",
+    "onboarded": "Onboarded",
+    "notOnboarded": "Not onboarded",
+    "hasLoggedIn": "Logged in",
+    "neverLoggedIn": "Never logged in",
+    "passwordChanged": "Password changed",
+    "defaultPassword": "Default password",
+    "passwordChangedAt": "Password changed",
+    "lastLogin": "Last login",
+    "painScores": "Pain scores saved",
+    "paused": "Paused",
+    "levelsDone": "{{count}} levels done",
+    "email": "Email",
+    "age": "Age",
+    "cancerType": "Cancer type",
+    "lastUpdated": "Last updated",
+    "completedSessions": "Completed sessions",
+    "noSessionsYet": "No exercise sessions completed yet.",
+    "sessionItem": "Level {{level}}, Day {{day}}",
+    "statTotal": "Accounts",
+    "statOnboarded": "Onboarded",
+    "statActive": "With progress",
+    "statNeverLogin": "Never login",
+    "statPasswordChanged": "Pwd changed",
+    "statPaused": "Paused",
+    "pauseReason": "Pause reason",
+    "pauseReasonNone": "—",
+    "painScoresTitle": "Pain scores",
+    "painScoreItem": "Level {{level}}, Day {{day}}: {{score}}/10",
+    "noPainScores": "No pain scores recorded yet.",
+    "pauseReasonTired": "Tired",
+    "pauseReasonPain": "Pain",
+    "pauseReasonTreatment": "Treatment",
+    "pauseReasonUnwell": "Unwell"
+  },
+  "coach": {
+    "avatarTitle": "Choose your avatar",
+    "avatarBody": "Tap your photo anytime to pick or change the avatar that represents you.",
+    "homeProgressTitle": "Your progress",
+    "homeProgressBody": "This shows how many exercise days you have completed out of 28.",
+    "sessionTitle": "Today's exercise",
+    "sessionBody": "Start today's session here when it is unlocked. Complete it to move forward.",
+    "growthTabTitle": "Your Growth",
+    "growthTabBody": "Open Growth to see streaks, pain trends, badges, and your workout list.",
+    "progressTitle": "What is Progress?",
+    "progressBody": "Track levels, streaks, pain scores, and badges as you complete sessions.",
+    "workoutsTitle": "What is Workouts?",
+    "workoutsBody": "Browse every exercise in your current level and review what you have done.",
+    "workoutCardTitle": "Exercise details",
+    "workoutCardBody": "Tap any exercise card to open its full description, tips, and how to do the move.",
+    "next": "Next",
+    "done": "Done",
+    "skip": "Skip",
+    "stepOf": "{{current}}/{{total}}",
+    "settingsTabTitle": "Settings",
+    "settingsTabBody": "Open Settings to update your profile, language, password, and get help.",
+    "settingsMenuTitle": "Your Settings",
+    "settingsMenuBody": "Change avatar, edit profile, switch language, update password, replay tips, or contact support here."
   }
 }

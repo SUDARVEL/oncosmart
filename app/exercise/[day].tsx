@@ -10,6 +10,8 @@ import {
   WhyDidYouStopModal,
   type StopReason,
 } from '../../components/exercise/WhyDidYouStopModal';
+import { ResumeProgressModal } from '../../components/growth/ResumeProgressModal';
+import { useExercisePauseGuard } from '../../hooks/useExercisePauseGuard';
 import { getSessionExerciseVideoSource } from '../../lib/getDayExercises';
 import {
   getSessionExerciseForLevel,
@@ -24,7 +26,10 @@ import {
   LEVEL_COMPLETION_BADGE,
 } from '../../lib/getEarnedBadges';
 import { resolveExerciseGuidedPortraitUrl } from '../../lib/exerciseMediaUrls';
-import { scheduleNextExerciseNotification } from '../../lib/nextExerciseNotification';
+import {
+  scheduleNextExerciseNotification,
+  syncNextExerciseNotification,
+} from '../../lib/nextExerciseNotification';
 import {
   isValidGuidedPlaybackUrl,
   sanitizePublicVideoUrl,
@@ -148,6 +153,11 @@ function GuidedSessionScreen({
 
   const completeSession = useCallback(() => {
     const state = useAppStore.getState();
+    // Never advance program progress while the patient has paused.
+    if (state.progressPaused) {
+      router.replace('/home');
+      return;
+    }
     const before = getEarnedBadges(
       state.levelsCompleted,
       getCompletedSessionCount(state.dayCompletedAt),
@@ -326,28 +336,71 @@ export default function ExercisePlayerScreen() {
   }>();
   const dayInLevel = Number(day) || 1;
   const level = Number(levelParam) || 1;
+  const setProgressPaused = useAppStore((state) => state.setProgressPaused);
+  const dayCompletedAt = useAppStore((state) => state.dayCompletedAt);
+  const {
+    progressPaused,
+    showResumeModal,
+    dismissResumeModal,
+    runIfProgressActive,
+  } = useExercisePauseGuard();
 
   useEffect(() => {
+    if (progressPaused) {
+      runIfProgressActive(() => undefined);
+    }
+  }, [progressPaused, runIfProgressActive]);
+
+  useEffect(() => {
+    if (progressPaused) return;
     if (session === '1' && hasGuidedSession(level)) return;
     if (typeof exercise === 'string') return;
     router.replace(`/exercise/sessions/${dayInLevel}?level=${level}`);
-  }, [dayInLevel, exercise, level, router, session]);
+  }, [dayInLevel, exercise, level, progressPaused, router, session]);
+
+  const resumeModal = (
+    <ResumeProgressModal
+      visible={showResumeModal}
+      onClose={() => {
+        dismissResumeModal();
+        router.replace('/home');
+      }}
+      onResume={() => {
+        setProgressPaused(false);
+        dismissResumeModal();
+        void syncNextExerciseNotification(dayCompletedAt);
+        router.replace('/growth');
+      }}
+    />
+  );
+
+  if (progressPaused) {
+    return resumeModal;
+  }
 
   if (session === '1' && hasGuidedSession(level)) {
     return (
-      <GuidedSessionScreen
-        level={level}
-        dayInLevel={dayInLevel}
-        sessionKey={started ?? 'default'}
-      />
+      <>
+        <GuidedSessionScreen
+          level={level}
+          dayInLevel={dayInLevel}
+          sessionKey={started ?? 'default'}
+        />
+        {resumeModal}
+      </>
     );
   }
 
   if (typeof exercise === 'string') {
-    return <LegacyExercisePreview />;
+    return (
+      <>
+        <LegacyExercisePreview />
+        {resumeModal}
+      </>
+    );
   }
 
-  return null;
+  return resumeModal;
 }
 
 const styles = StyleSheet.create({

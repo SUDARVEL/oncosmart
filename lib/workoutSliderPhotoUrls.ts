@@ -58,6 +58,8 @@ const FEMALE_SLIDER_PHOTO_FILES: Partial<Record<string, string>> = {
   // Double space before "Right" is intentional.
   "knee-to-chest-right": "Knee to chest  Right.png",
   "static-quadriceps-right": "Static Quadriceps Right Englsih 1.png",
+  // Verified HTTP 200 — missing this key forced the circular Growth SVG fallback.
+  "static-quadriceps-left": "Static Quadriceps Left English 1.png",
   "hamstring-stretch": "Hamstring stretch.png",
   "quadriceps-stretch-left": "Quadriceps Stretch Left FeMale English 1.png",
   "quadriceps-stretch-right": "Quadriceps Stretch Right FeMale English 1.png",

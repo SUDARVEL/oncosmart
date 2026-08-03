@@ -1,11 +1,13 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ParqCheckmarkIllustration } from '../../../components/ParqCheckmarkIllustration';
 import { PrimaryButton } from '../../../components/PrimaryButton';
+import { saveCloudProfileFromStore } from '../../../lib/userCloudSync';
 import { useAppStore } from '../../../store/useAppStore';
 import { colors } from '../../../theme/colors';
 import { font } from '../../../theme/fonts';
@@ -15,9 +17,17 @@ export default function ParqResultScreen() {
   const router = useRouter();
   const { preview } = useLocalSearchParams<{ preview?: string }>();
   const parqCleared = useAppStore((state) => state.parqCleared);
+  const activeAuthUserId = useAppStore((state) => state.activeAuthUserId);
+  const [saving, setSaving] = useState(false);
   const cleared = preview === 'consult' ? false : preview === 'cleared' ? true : parqCleared === true;
 
-  const handleStart = () => {
+  const handleStart = async () => {
+    // Flush onboarding to cloud before Home so logout/login skips onboarding.
+    if (activeAuthUserId) {
+      setSaving(true);
+      await saveCloudProfileFromStore(activeAuthUserId);
+      setSaving(false);
+    }
     router.replace('/home');
   };
 
@@ -30,22 +40,32 @@ export default function ParqResultScreen() {
       </View>
 
       <View style={styles.content}>
-        <View style={styles.hero}>
-          <ParqCheckmarkIllustration size="large" />
+        {/* Tick + copy sit in the vertical center between header and CTA. */}
+        <View style={styles.heroArea}>
+          <View style={styles.hero}>
+            <ParqCheckmarkIllustration size="large" />
 
-          <View style={styles.textBlock}>
-            <Text style={styles.title}>
-              {cleared ? t('parq.congratsTitle') : t('parq.consultTitle')}
-            </Text>
-            <Text style={styles.subtitle}>
-              {cleared ? t('parq.congratsSubtitle') : t('parq.consultSubtitle')}
-            </Text>
+            <View style={styles.textBlock}>
+              <Text style={styles.title}>
+                {cleared ? t('parq.congratsTitle') : t('parq.consultTitle')}
+              </Text>
+              <Text style={styles.subtitle}>
+                {cleared ? t('parq.congratsSubtitle') : t('parq.consultSubtitle')}
+              </Text>
+            </View>
           </View>
         </View>
 
         <PrimaryButton
-          label={cleared ? t('parq.continuePlan') : t('parq.startPlan')}
-          onPress={handleStart}
+          label={
+            saving
+              ? t('login.signingIn')
+              : cleared
+                ? t('parq.continuePlan')
+                : t('parq.startPlan')
+          }
+          onPress={() => void handleStart()}
+          disabled={saving}
           variant={cleared ? 'primary' : 'muted'}
           style={styles.cta}
         />
@@ -73,16 +93,18 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
-    justifyContent: 'space-between',
     paddingHorizontal: 24,
     paddingBottom: 28,
-    paddingTop: 40,
+  },
+  heroArea: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   hero: {
     alignItems: 'center',
     paddingHorizontal: 8,
     maxWidth: 360,
-    alignSelf: 'center',
     width: '100%',
     gap: 24,
   },
