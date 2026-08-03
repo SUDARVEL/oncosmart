@@ -468,7 +468,12 @@
     "nextExerciseBody": "Level {{level}}, Day {{day}} is unlocked. Open ONCOSMART to start.",
     "dayCompletedTitle": "Day completed — great work!",
     "dayCompletedBody": "Level {{level}}, Day {{day}} is done. Level {{nextLevel}}, Day {{nextDay}} unlocks in 24 hours — we’ll remind you.",
-    "dayCompletedFinalBody": "Level {{level}}, Day {{day}} is done. You’ve finished the program!"
+    "dayCompletedFinalBody": "Level {{level}}, Day {{day}} is done. You’ve finished the program!",
+    "appUpdateTitle": "ONCOSMART update ready",
+    "appUpdateBody": "A new version is ready. Open the app and pull down to refresh."
+  },
+  "refresh": {
+    "hint": "Pull down to refresh"
   },
   "admin": {
     "title": "Admin Dashboard",

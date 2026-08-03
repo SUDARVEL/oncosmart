@@ -2,7 +2,7 @@ import Constants from 'expo-constants';
 import { useRouter } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ScrollView, StyleSheet, View } from 'react-native';
+import { RefreshControl, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { BottomTabBar } from '../../components/BottomTabBar';
@@ -14,6 +14,7 @@ import { ProfileBottomSheet } from '../../components/settings/ProfileBottomSheet
 import { SettingsRow } from '../../components/settings/SettingsRow';
 import { useAndroidBack } from '../../hooks/useAndroidBack';
 import { useCoachTour } from '../../hooks/useCoachTour';
+import { usePullToRefresh } from '../../hooks/usePullToRefresh';
 import { signOut } from '../../lib/auth';
 import { goBackOr } from '../../lib/navBack';
 import { cancelNextExerciseNotification } from '../../lib/nextExerciseNotification';
@@ -45,6 +46,7 @@ export default function SettingsScreen() {
     next: coachNext,
     skip: coachSkip,
   } = useCoachTour('settings');
+  const { refreshing, onRefresh } = usePullToRefresh();
 
   const selectedLanguage: AppLanguage = language === 'ta' ? 'ta' : 'en';
   const languageLabel =
@@ -116,6 +118,14 @@ export default function SettingsScreen() {
         style={styles.scroll}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={() => void onRefresh()}
+            tintColor={colors.buttonPrimary}
+            colors={[colors.buttonPrimary]}
+          />
+        }
       >
         <View
           ref={(node) => registerTarget('settings.menu', node)}

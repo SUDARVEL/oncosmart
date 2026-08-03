@@ -8,6 +8,7 @@ import {
   NativeScrollEvent,
   NativeSyntheticEvent,
   Pressable,
+  RefreshControl,
   ScrollView,
   StyleSheet,
   Text,
@@ -26,6 +27,7 @@ import { PressableScale } from "../components/PressableScale";
 import { useAndroidBack } from "../hooks/useAndroidBack";
 import { useCoachTour } from "../hooks/useCoachTour";
 import { useExercisePauseGuard } from "../hooks/useExercisePauseGuard";
+import { usePullToRefresh } from "../hooks/usePullToRefresh";
 import { exitApp } from "../lib/navBack";
 import { QUOTE_CHARACTER_FEMALE } from "../lib/homePageCardImage";
 import {
@@ -104,6 +106,7 @@ export default function HomeScreen() {
     next: coachNext,
     skip: coachSkip,
   } = useCoachTour("home");
+  const { refreshing, onRefresh } = usePullToRefresh();
 
   const completedCount = getCompletedSessionCount(dayCompletedAt);
   const activeLevel = getActiveLevel(dayCompletedAt);
@@ -201,6 +204,14 @@ export default function HomeScreen() {
         style={styles.scroll}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={() => void onRefresh()}
+            tintColor={colors.buttonPrimary}
+            colors={[colors.buttonPrimary]}
+          />
+        }
       >
         <View style={styles.headerRow}>
           <Text style={styles.welcome}>

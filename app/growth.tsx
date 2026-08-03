@@ -2,6 +2,7 @@ import { useRouter } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
+  RefreshControl,
   ScrollView,
   StyleSheet,
   View,
@@ -21,6 +22,7 @@ import { WorkoutsSection } from '../components/growth/WorkoutsSection';
 import { ScreenHeader } from '../components/ScreenHeader';
 import { useAndroidBack } from '../hooks/useAndroidBack';
 import { useCoachTour } from '../hooks/useCoachTour';
+import { usePullToRefresh } from '../hooks/usePullToRefresh';
 import { getDisplayPainScore } from '../lib/getDisplayPainScore';
 import { goBackOr } from '../lib/navBack';
 import {
@@ -52,6 +54,7 @@ export default function GrowthScreen() {
     next: coachNext,
     skip: coachSkip,
   } = useCoachTour('growth');
+  const { refreshing, onRefresh } = usePullToRefresh();
 
   const progressPaused = useAppStore((state) => state.progressPaused);
   const setProgressPaused = useAppStore((state) => state.setProgressPaused);
@@ -124,6 +127,14 @@ export default function GrowthScreen() {
         style={styles.scroll}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={() => void onRefresh()}
+            tintColor={colors.buttonPrimary}
+            colors={[colors.buttonPrimary]}
+          />
+        }
       >
         <View style={styles.tabSwitcherWrap}>
           <GrowthTabSwitch
