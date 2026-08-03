@@ -37,13 +37,17 @@ export function CloudSyncBridge() {
   const painScores = useAppStore((s) => s.painScores);
   const dayCompletedAt = useAppStore((s) => s.dayCompletedAt);
   const levelsCompleted = useAppStore((s) => s.levelsCompleted);
+  const coachTourSeen = useAppStore((s) => s.coachTourSeen);
 
   useEffect(() => {
     let cancelled = false;
 
     const hydrate = async (userId: string) => {
       const result = await loadCloudProfileIntoStore(userId);
-      if (cancelled || !result.ok) return;
+      if (cancelled) return;
+      // Always unblock first-run tour gating after the cloud attempt.
+      useAppStore.getState().setCloudProfileReady(true);
+      if (!result.ok) return;
       const state = useAppStore.getState();
       void syncNextExerciseNotification(state.dayCompletedAt, {
         paused: state.progressPaused,
@@ -96,6 +100,7 @@ export function CloudSyncBridge() {
     painScores,
     dayCompletedAt,
     levelsCompleted,
+    coachTourSeen,
   ]);
 
   // Immediately persist new session completions + full snapshot.

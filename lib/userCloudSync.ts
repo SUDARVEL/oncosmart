@@ -98,33 +98,42 @@ export async function ensurePatientRow(userId: string, displayName = ''): Promis
 /** Pull this auth user's cloud profile into the local Zustand store. */
 export async function loadCloudProfileIntoStore(userId: string): Promise<CloudLoadResult> {
   const supabase = getSupabase();
-  if (!supabase) return { ok: false, onboardingComplete: false };
+  if (!supabase) {
+    useAppStore.getState().setCloudProfileReady(true);
+    return { ok: false, onboardingComplete: false };
+  }
 
   useAppStore.getState().setActiveAuthUserId(userId);
 
   const patientId = await ensurePatientRow(userId);
   if (!patientId) {
     console.warn('[CloudSync] load aborted — could not ensure patient row');
+    useAppStore.getState().setCloudProfileReady(true);
     return { ok: false, onboardingComplete: false };
   }
 
   const { data, error } = await supabase
     .from('patients')
     .select(
-      'id,user_id,name,language,gender,avatar,age,age_range,cancer_type,treatment_undergoing,underwent_surgery,parq_answers,parq_cleared,progress_paused,pause_reason,pain_scores,day_completed_at,levels_completed,onboarding_complete',
+      'id,user_id,name,language,gender,avatar,age,age_range,cancer_type,treatment_undergoing,underwent_surgery,parq_answers,parq_cleared,progress_paused,pause_reason,pain_scores,day_completed_at,levels_completed,onboarding_complete,coach_tour_seen',
     )
     .eq('user_id', userId)
     .maybeSingle();
 
   if (error) {
     console.warn('[CloudSync] load failed', error.message);
+    useAppStore.getState().setCloudProfileReady(true);
     return { ok: false, onboardingComplete: false };
   }
-  if (!data) return { ok: false, onboardingComplete: false };
+  if (!data) {
+    useAppStore.getState().setCloudProfileReady(true);
+    return { ok: false, onboardingComplete: false };
+  }
 
   const onboardingComplete = Boolean(data.onboarding_complete);
   const dayCompletedAt = asRecordNumber(data.day_completed_at);
   const keptLanguage = useAppStore.getState().language;
+  const hasCompletedAnyDay = Object.keys(dayCompletedAt).length > 0;
 
   // Fresh rows default parq_cleared=false; only treat as answered once onboarded.
   const parqCleared = onboardingComplete
@@ -155,6 +164,8 @@ export async function loadCloudProfileIntoStore(userId: string): Promise<CloudLo
       typeof data.levels_completed === 'number'
         ? data.levels_completed
         : getCompletedLevelsCount(dayCompletedAt),
+    // First-time onboarded users only; anyone with a completed day skips auto tips.
+    coachTourSeen: data.coach_tour_seen === true || hasCompletedAnyDay,
   });
 
   return { ok: true, onboardingComplete };
@@ -191,6 +202,7 @@ export async function saveCloudProfileFromStore(userId: string): Promise<boolean
       day_completed_at: state.dayCompletedAt,
       levels_completed: state.levelsCompleted,
       onboarding_complete: onboardingComplete,
+      coach_tour_seen: state.coachTourSeen === true,
       updated_at: new Date().toISOString(),
     })
     .eq('id', patientId);

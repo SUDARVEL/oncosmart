@@ -48,6 +48,11 @@ type AppState = AppStateSnapshot & {
    * Ephemeral (not persisted) so a cold start doesn't reopen mid-tour.
    */
   coachTourStep: number | null;
+  /**
+   * True after the first cloud profile load attempt for the signed-in user.
+   * Ephemeral — prevents the first-run coach tour from racing ahead of cloud data.
+   */
+  cloudProfileReady: boolean;
   setLanguage: (language: AppLanguage) => void;
   setUsername: (username: string) => void;
   setAge: (age: number) => void;
@@ -65,6 +70,7 @@ type AppState = AppStateSnapshot & {
   setActiveAuthUserId: (userId: string | null) => void;
   setCoachTourSeen: (seen: boolean) => void;
   setCoachTourStep: (step: number | null) => void;
+  setCloudProfileReady: (ready: boolean) => void;
   /** Restart the product tour from step 0 (Settings → Replay tips). */
   restartCoachTour: () => void;
   /** Replace local profile/progress with cloud data for the signed-in user. */
@@ -106,6 +112,7 @@ export const useAppStore = create<AppState>()(
       activeAuthUserId: null,
       coachTourSeen: false,
       coachTourStep: null,
+      cloudProfileReady: false,
       devUnlockOverride: false,
       pendingBadgeCelebrations: [],
       setLanguage: (language) => set({ language }),
@@ -144,23 +151,34 @@ export const useAppStore = create<AppState>()(
           coachTourStep:
             step == null || !Number.isFinite(step) ? null : Math.max(0, Math.floor(step)),
         }),
+      setCloudProfileReady: (ready) => set({ cloudProfileReady: Boolean(ready) }),
       restartCoachTour: () => set({ coachTourSeen: false, coachTourStep: 0 }),
       hydrateFromCloud: (payload) =>
-        set((state) => ({
-          ...state,
-          ...payload,
-          // Never overwrite local tour completion from cloud profile blobs.
-          coachTourSeen: state.coachTourSeen === true,
-          parqAnswers: payload.parqAnswers
-            ? [...payload.parqAnswers]
-            : state.parqAnswers,
-          painScores: payload.painScores
-            ? { ...payload.painScores }
-            : state.painScores,
-          dayCompletedAt: payload.dayCompletedAt
+        set((state) => {
+          const dayCompletedAt = payload.dayCompletedAt
             ? { ...payload.dayCompletedAt }
-            : state.dayCompletedAt,
-        })),
+            : state.dayCompletedAt;
+          const hasCompletedAnyDay = Object.keys(dayCompletedAt).length > 0;
+          // Cloud + local OR any completed day ⇒ never auto-show first-run tips again.
+          // Settings → Replay tips still works via restartCoachTour().
+          const coachTourSeen =
+            payload.coachTourSeen === true ||
+            state.coachTourSeen === true ||
+            hasCompletedAnyDay;
+          return {
+            ...state,
+            ...payload,
+            coachTourSeen,
+            cloudProfileReady: true,
+            parqAnswers: payload.parqAnswers
+              ? [...payload.parqAnswers]
+              : state.parqAnswers,
+            painScores: payload.painScores
+              ? { ...payload.painScores }
+              : state.painScores,
+            dayCompletedAt,
+          };
+        }),
       markSessionCompleted: (level, dayInLevel, when) =>
         set((state) => {
           // Pause Progress freezes program advancement for every avatar/gender.
@@ -235,6 +253,7 @@ export const useAppStore = create<AppState>()(
           activeAuthUserId: null,
           coachTourSeen: false,
           coachTourStep: null,
+          cloudProfileReady: false,
           devUnlockOverride: false,
           pendingBadgeCelebrations: [],
         }),

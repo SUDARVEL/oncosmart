@@ -7,6 +7,7 @@ import {
   type CoachTourScreen,
   type CoachTourStepId,
 } from '../lib/coachTour';
+import { getCompletedSessionCount } from '../lib/programProgress';
 import { useAppStore } from '../store/useAppStore';
 
 type TargetMap = Partial<Record<CoachTourStepId, View | null>>;
@@ -24,11 +25,17 @@ function waitForHydration(): Promise<void> {
 
 /**
  * Crash-safe coach tour driver.
- * Measures targets relative to a host view so the highlight lines up.
+ * Measures targets in window coordinates (overlay uses a fullscreen Modal).
+ *
+ * Auto-starts ONLY for first-time onboarded users who have never finished the
+ * tour and have not completed any exercise day. Returning users / day-1+
+ * completers skip it; Settings → Replay tips can still restart it.
  */
 export function useCoachTour(screen: CoachTourScreen) {
   const coachTourSeen = useAppStore((s) => s.coachTourSeen === true);
   const coachTourStep = useAppStore((s) => s.coachTourStep);
+  const cloudProfileReady = useAppStore((s) => s.cloudProfileReady === true);
+  const dayCompletedAt = useAppStore((s) => s.dayCompletedAt);
   const setCoachTourStep = useAppStore((s) => s.setCoachTourStep);
   const setCoachTourSeen = useAppStore((s) => s.setCoachTourSeen);
 
@@ -36,7 +43,6 @@ export function useCoachTour(screen: CoachTourScreen) {
   const [rect, setRect] = useState<CoachTargetRect | null>(null);
   const [measureTick, setMeasureTick] = useState(0);
   const targetsRef = useRef<TargetMap>({});
-  const hostRef = useRef<View | null>(null);
 
   useEffect(() => {
     let alive = true;
@@ -48,9 +54,8 @@ export function useCoachTour(screen: CoachTourScreen) {
     };
   }, []);
 
-  const registerHost = useCallback((node: View | null) => {
-    hostRef.current = node;
-  }, []);
+  // Host registration kept for call-site compatibility (measurement is window-based).
+  const registerHost = useCallback((_node: View | null) => {}, []);
 
   const registerTarget = useCallback((id: CoachTourStepId, node: View | null) => {
     targetsRef.current[id] = node;
@@ -65,21 +70,48 @@ export function useCoachTour(screen: CoachTourScreen) {
       : null;
 
   const active = Boolean(step && step.screen === screen);
+  const completedCount = getCompletedSessionCount(dayCompletedAt);
 
   useEffect(() => {
-    if (!hydrated || coachTourSeen || coachTourStep != null) return;
+    // Wait for local persist + cloud profile so returning users never flash the tour.
+    if (!hydrated || !cloudProfileReady) return;
+    if (coachTourSeen || coachTourStep != null) return;
     if (screen !== 'home') return;
+
     const state = useAppStore.getState();
+    // Must be fully onboarded (answered questions + avatar).
     if (!state.avatar || state.parqCleared == null) return;
+    // Anyone who already completed a day has used the app — no auto tips.
+    if (getCompletedSessionCount(state.dayCompletedAt) > 0) {
+      setCoachTourSeen(true);
+      return;
+    }
+
     const timer = setTimeout(() => {
       try {
+        const latest = useAppStore.getState();
+        if (latest.coachTourSeen) return;
+        if (latest.coachTourStep != null) return;
+        if (getCompletedSessionCount(latest.dayCompletedAt) > 0) {
+          setCoachTourSeen(true);
+          return;
+        }
         setCoachTourStep(0);
       } catch {
         // ignore
       }
-    }, 800);
+    }, 450);
     return () => clearTimeout(timer);
-  }, [hydrated, coachTourSeen, coachTourStep, screen, setCoachTourStep]);
+  }, [
+    hydrated,
+    cloudProfileReady,
+    coachTourSeen,
+    coachTourStep,
+    screen,
+    completedCount,
+    setCoachTourStep,
+    setCoachTourSeen,
+  ]);
 
   useEffect(() => {
     if (!active || !step) {
@@ -99,13 +131,12 @@ export function useCoachTour(screen: CoachTourScreen) {
     const measure = () => {
       try {
         const node = targetsRef.current[step.id];
-        const host = hostRef.current;
         if (!node || typeof node.measureInWindow !== 'function') {
           if (!cancelled) setRect(null);
           return;
         }
 
-        const apply = (x: number, y: number, width: number, height: number) => {
+        node.measureInWindow((x, y, width, height) => {
           if (cancelled) return;
           if (
             !Number.isFinite(x) ||
@@ -119,32 +150,22 @@ export function useCoachTour(screen: CoachTourScreen) {
             return;
           }
           setRect({ x, y, width, height });
-        };
-
-        // Convert window coords → host-local coords so the highlight aligns.
-        if (host && typeof host.measureInWindow === 'function') {
-          host.measureInWindow((hx, hy) => {
-            node.measureInWindow((x, y, width, height) => {
-              apply(x - hx, y - hy, width, height);
-            });
-          });
-          return;
-        }
-
-        node.measureInWindow(apply);
+        });
       } catch {
         if (!cancelled) setRect(null);
       }
     };
 
-    const t1 = setTimeout(measure, 80);
-    const t2 = setTimeout(measure, 260);
-    const t3 = setTimeout(measure, 520);
+    const t1 = setTimeout(measure, 40);
+    const t2 = setTimeout(measure, 180);
+    const t3 = setTimeout(measure, 420);
+    const t4 = setTimeout(measure, 800);
     return () => {
       cancelled = true;
       clearTimeout(t1);
       clearTimeout(t2);
       clearTimeout(t3);
+      clearTimeout(t4);
     };
   }, [active, step, measureTick]);
 

@@ -1,11 +1,14 @@
 import { Ionicons } from '@expo/vector-icons';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
+  Modal,
   Pressable,
   StyleSheet,
   Text,
   useWindowDimensions,
   View,
+  type LayoutChangeEvent,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -28,7 +31,7 @@ type Props = {
   icon: keyof typeof Ionicons.glyphMap;
   stepIndex: number;
   stepCount: number;
-  /** Host-relative target rect for highlight + card placement. */
+  /** Window-relative target rect for highlight + card placement. */
   target: CoachTargetRect | null;
   preferPlacement: 'below' | 'above';
   spotlight?: CoachSpotlightShape;
@@ -39,6 +42,7 @@ type Props = {
 
 const CARD_MAX_WIDTH = 320;
 const CARD_MARGIN = 20;
+const GAP = 14;
 
 function spotlightRadius(
   shape: CoachSpotlightShape | undefined,
@@ -51,7 +55,8 @@ function spotlightRadius(
 }
 
 /**
- * In-screen coach tooltip with a host-relative highlight ring.
+ * Fullscreen Modal coach tooltip.
+ * Uses window coordinates so the highlight ring lines up with the real UI.
  */
 export function CoachMarkOverlay({
   visible,
@@ -70,14 +75,14 @@ export function CoachMarkOverlay({
   const { t } = useTranslation();
   const { width: screenW, height: screenH } = useWindowDimensions();
   const insets = useSafeAreaInsets();
+  const [cardHeight, setCardHeight] = useState(200);
 
   if (!visible) return null;
 
   const isLast = stepIndex >= stepCount - 1;
   const cardWidth = Math.min(CARD_MAX_WIDTH, screenW - CARD_MARGIN * 2);
-  const estimatedCardH = 210;
+  const estimatedCardH = Math.max(160, cardHeight);
 
-  // Default: comfortable center-upper placement.
   let cardTop = Math.max(insets.top + 72, screenH * 0.22);
   let cardLeft = (screenW - cardWidth) / 2;
   let placeBelow = preferPlacement === 'below';
@@ -85,10 +90,12 @@ export function CoachMarkOverlay({
   let caretLeft = cardWidth / 2 - 8;
 
   const hasTarget = Boolean(target && target.width > 0 && target.height > 0);
+
+  // Keep highlight geometry 1:1 with measureInWindow — no safe-area clamp that shifts it.
   const highlight = hasTarget && target
     ? {
-        left: Math.max(0, target.x - pad),
-        top: Math.max(0, target.y - pad),
+        left: target.x - pad,
+        top: target.y - pad,
         width: target.width + pad * 2,
         height: target.height + pad * 2,
         borderRadius: spotlightRadius(
@@ -100,26 +107,33 @@ export function CoachMarkOverlay({
     : null;
 
   if (hasTarget && target) {
-    const targetBottom = target.y + target.height;
-    const targetTop = target.y;
-    const spaceBelow = screenH - targetBottom - insets.bottom;
-    const spaceAbove = targetTop - insets.top;
+    const highlightBottom = target.y + target.height + pad;
+    const highlightTop = target.y - pad;
+    const spaceBelow = screenH - insets.bottom - highlightBottom;
+    const spaceAbove = highlightTop - insets.top;
 
-    if (preferPlacement === 'below' && spaceBelow > estimatedCardH + 24) {
+    if (preferPlacement === 'below' && spaceBelow > estimatedCardH + GAP) {
       placeBelow = true;
-      cardTop = Math.min(targetBottom + pad + 18, screenH - insets.bottom - estimatedCardH);
+      cardTop = highlightBottom + GAP;
       showCaret = true;
-    } else if (preferPlacement === 'above' && spaceAbove > estimatedCardH + 24) {
+    } else if (preferPlacement === 'above' && spaceAbove > estimatedCardH + GAP) {
       placeBelow = false;
-      cardTop = Math.max(insets.top + 16, targetTop - estimatedCardH - 12);
+      cardTop = Math.max(insets.top + 8, highlightTop - estimatedCardH - GAP);
       showCaret = true;
-    } else if (spaceBelow >= spaceAbove && spaceBelow > 160) {
+    } else if (spaceBelow >= spaceAbove && spaceBelow > 140) {
       placeBelow = true;
-      cardTop = Math.min(targetBottom + pad + 18, screenH - insets.bottom - estimatedCardH);
+      cardTop = highlightBottom + GAP;
       showCaret = true;
-    } else if (spaceAbove > 160) {
+    } else if (spaceAbove > 140) {
       placeBelow = false;
-      cardTop = Math.max(insets.top + 16, targetTop - estimatedCardH - 12);
+      cardTop = Math.max(insets.top + 8, highlightTop - estimatedCardH - GAP);
+      showCaret = true;
+    } else {
+      // Fallback: keep card on-screen without claiming a caret lock.
+      placeBelow = spaceBelow >= spaceAbove;
+      cardTop = placeBelow
+        ? Math.min(highlightBottom + GAP, screenH - insets.bottom - estimatedCardH - 8)
+        : Math.max(insets.top + 8, highlightTop - estimatedCardH - GAP);
       showCaret = true;
     }
 
@@ -129,91 +143,104 @@ export function CoachMarkOverlay({
       screenW - CARD_MARGIN - cardWidth,
     );
     caretLeft = Math.min(
-      Math.max(targetCenterX - cardLeft - 8, 20),
+      Math.max(targetCenterX - cardLeft - 8, 18),
       cardWidth - 28,
     );
   }
 
+  const onCardLayout = (event: LayoutChangeEvent) => {
+    const nextH = event.nativeEvent.layout.height;
+    if (!Number.isFinite(nextH) || nextH < 1) return;
+    if (Math.abs(nextH - cardHeight) > 2) setCardHeight(nextH);
+  };
+
   return (
-    <View style={styles.root} pointerEvents="box-none">
-      <View style={styles.scrim} pointerEvents="auto" />
+    <Modal
+      visible={visible}
+      transparent
+      animationType="fade"
+      statusBarTranslucent
+      onRequestClose={onSkip}
+    >
+      <View style={styles.root} pointerEvents="box-none">
+        <Pressable style={styles.scrim} onPress={onSkip} accessibilityRole="button" />
 
-      {highlight ? (
+        {highlight ? (
+          <View
+            pointerEvents="none"
+            style={[
+              styles.highlight,
+              {
+                left: highlight.left,
+                top: highlight.top,
+                width: highlight.width,
+                height: highlight.height,
+                borderRadius: highlight.borderRadius,
+              },
+            ]}
+          />
+        ) : null}
+
         <View
-          pointerEvents="none"
-          style={[
-            styles.highlight,
-            {
-              left: highlight.left,
-              top: highlight.top,
-              width: highlight.width,
-              height: highlight.height,
-              borderRadius: highlight.borderRadius,
-            },
-          ]}
-        />
-      ) : null}
+          style={[styles.cardWrap, { top: cardTop, left: cardLeft, width: cardWidth }]}
+          pointerEvents="box-none"
+          onLayout={onCardLayout}
+        >
+          {showCaret && placeBelow ? (
+            <View style={[styles.caretUp, { left: caretLeft }]} />
+          ) : null}
 
-      <View
-        style={[styles.cardWrap, { top: cardTop, left: cardLeft, width: cardWidth }]}
-        pointerEvents="box-none"
-      >
-        {showCaret && placeBelow ? (
-          <View style={[styles.caretUp, { left: caretLeft }]} />
-        ) : null}
-
-        <View style={styles.card}>
-          <View style={styles.headerRow}>
-            <View style={styles.iconCircle}>
-              <Ionicons name={icon} size={22} color={colors.buttonPrimary} />
+          <View style={styles.card}>
+            <View style={styles.headerRow}>
+              <View style={styles.iconCircle}>
+                <Ionicons name={icon} size={22} color={colors.buttonPrimary} />
+              </View>
+              <Text style={styles.title}>{title}</Text>
             </View>
-            <Text style={styles.title}>{title}</Text>
-          </View>
 
-          <Text style={styles.body}>{body}</Text>
+            <Text style={styles.body}>{body}</Text>
 
-          <View style={styles.actions}>
-            <Pressable
-              onPress={onSkip}
-              style={styles.skipButton}
-              accessibilityRole="button"
-              accessibilityLabel={t('coach.skip')}
-              hitSlop={8}
-            >
-              <Text style={styles.skipText}>{t('coach.skip')}</Text>
-            </Pressable>
-
-            <View style={styles.actionsRight}>
-              <Text style={styles.stepText}>
-                {t('coach.stepOf', { current: stepIndex + 1, total: stepCount })}
-              </Text>
+            <View style={styles.actions}>
               <Pressable
-                onPress={onNext}
-                style={styles.nextButton}
+                onPress={onSkip}
+                style={styles.skipButton}
                 accessibilityRole="button"
-                accessibilityLabel={isLast ? t('coach.done') : t('coach.next')}
+                accessibilityLabel={t('coach.skip')}
+                hitSlop={8}
               >
-                <Text style={styles.nextText}>
-                  {isLast ? t('coach.done') : `${t('coach.next')} →`}
-                </Text>
+                <Text style={styles.skipText}>{t('coach.skip')}</Text>
               </Pressable>
+
+              <View style={styles.actionsRight}>
+                <Text style={styles.stepText}>
+                  {t('coach.stepOf', { current: stepIndex + 1, total: stepCount })}
+                </Text>
+                <Pressable
+                  onPress={onNext}
+                  style={styles.nextButton}
+                  accessibilityRole="button"
+                  accessibilityLabel={isLast ? t('coach.done') : t('coach.next')}
+                >
+                  <Text style={styles.nextText}>
+                    {isLast ? t('coach.done') : `${t('coach.next')} →`}
+                  </Text>
+                </Pressable>
+              </View>
             </View>
           </View>
-        </View>
 
-        {showCaret && !placeBelow ? (
-          <View style={[styles.caretDown, { left: caretLeft }]} />
-        ) : null}
+          {showCaret && !placeBelow ? (
+            <View style={[styles.caretDown, { left: caretLeft }]} />
+          ) : null}
+        </View>
       </View>
-    </View>
+    </Modal>
   );
 }
 
 const styles = StyleSheet.create({
   root: {
-    ...StyleSheet.absoluteFillObject,
-    zIndex: 1000,
-    elevation: 1000,
+    flex: 1,
   },
   scrim: {
     ...StyleSheet.absoluteFillObject,
@@ -223,7 +250,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     borderWidth: 2.5,
     borderColor: '#FFFFFF',
-    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
   },
   cardWrap: {
     position: 'absolute',
