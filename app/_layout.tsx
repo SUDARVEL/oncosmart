@@ -26,6 +26,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { isSupabaseConfigured } from '../lib/env';
 import { ensureExerciseAudioSession } from '../lib/ensureExerciseAudioSession';
+import { prepareNotifications } from '../lib/nextExerciseNotification';
 import { checkSupabaseConnection } from '../lib/supabase';
 import { useAppStore } from '../store/useAppStore';
 import { colors } from '../theme/colors';
@@ -89,6 +90,10 @@ export default function RootLayout() {
 
   useEffect(() => {
     void ensureExerciseAudioSession();
+  }, []);
+
+  useEffect(() => {
+    void prepareNotifications();
   }, []);
 
   if (!appReady) {

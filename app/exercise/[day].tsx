@@ -179,6 +179,7 @@ function GuidedSessionScreen({
       level,
       dayInLevel,
       completedAt,
+      announceCompletion: true,
     });
 
     router.replace(`/exercise/complete?level=${level}&day=${dayInLevel}`);

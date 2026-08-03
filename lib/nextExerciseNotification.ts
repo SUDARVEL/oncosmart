@@ -1,15 +1,22 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Notifications from 'expo-notifications';
 import { Platform } from 'react-native';
+
 import i18n from '../i18n';
 import {
   getNextSession,
+  parseSessionKey,
   sessionKey,
   UNLOCK_DELAY_MS,
 } from './programProgress';
 
 /** Stable id so we replace the previous “next exercise” reminder. */
 export const NEXT_EXERCISE_NOTIFICATION_ID = 'next-exercise-ready';
+export const DAY_COMPLETED_NOTIFICATION_ID = 'day-completed';
+export const TEST_NOTIFICATION_ID = 'oncosmart-test-notification';
 export const EXERCISE_REMINDER_CHANNEL_ID = 'exercise-reminders';
+
+const SELF_TEST_FLAG_KEY = 'oncosmart.notificationSelfTest.v2';
 
 let handlerConfigured = false;
 
@@ -30,10 +37,21 @@ async function ensureAndroidChannel() {
   if (Platform.OS !== 'android') return;
   await Notifications.setNotificationChannelAsync(EXERCISE_REMINDER_CHANNEL_ID, {
     name: 'Exercise reminders',
-    importance: Notifications.AndroidImportance.HIGH,
+    importance: Notifications.AndroidImportance.MAX,
     vibrationPattern: [0, 250, 250, 250],
+    enableVibrate: true,
     lockscreenVisibility: Notifications.AndroidNotificationVisibility.PUBLIC,
+    bypassDnd: false,
   });
+}
+
+function isGranted(
+  status: Notifications.NotificationPermissionsStatus,
+): boolean {
+  return (
+    status.granted ||
+    status.ios?.status === Notifications.IosAuthorizationStatus.PROVISIONAL
+  );
 }
 
 export async function ensureNotificationPermissions(): Promise<boolean> {
@@ -43,23 +61,116 @@ export async function ensureNotificationPermissions(): Promise<boolean> {
   await ensureAndroidChannel();
 
   const current = await Notifications.getPermissionsAsync();
-  if (current.granted || current.ios?.status === Notifications.IosAuthorizationStatus.PROVISIONAL) {
-    return true;
-  }
+  if (isGranted(current)) return true;
 
   const requested = await Notifications.requestPermissionsAsync();
-  return (
-    requested.granted ||
-    requested.ios?.status === Notifications.IosAuthorizationStatus.PROVISIONAL
-  );
+  return isGranted(requested);
+}
+
+/** Call once at app boot so Android creates the channel before any schedule. */
+export async function prepareNotifications(): Promise<boolean> {
+  if (Platform.OS === 'web') return false;
+  try {
+    ensureNotificationHandler();
+    await ensureAndroidChannel();
+    return await ensureNotificationPermissions();
+  } catch (error) {
+    console.warn('[notifications] prepare failed', error);
+    return false;
+  }
+}
+
+async function cancelById(id: string): Promise<void> {
+  try {
+    await Notifications.cancelScheduledNotificationAsync(id);
+  } catch {
+    // Nothing scheduled yet.
+  }
 }
 
 export async function cancelNextExerciseNotification(): Promise<void> {
   if (Platform.OS === 'web') return;
+  await cancelById(NEXT_EXERCISE_NOTIFICATION_ID);
+}
+
+function unlockTrigger(unlockAt: number): Notifications.NotificationTriggerInput {
+  const seconds = Math.max(1, Math.ceil((unlockAt - Date.now()) / 1000));
+
+  // TIME_INTERVAL is more reliable than DATE on many Android OEMs for
+  // “fire once after N seconds”, and still survives app backgrounding.
+  return {
+    type: Notifications.SchedulableTriggerInputTypes.TIME_INTERVAL,
+    seconds,
+    repeats: false,
+    channelId: EXERCISE_REMINDER_CHANNEL_ID,
+  };
+}
+
+async function presentNow(params: {
+  identifier: string;
+  title: string;
+  body: string;
+  data?: Record<string, unknown>;
+}): Promise<void> {
+  await Notifications.scheduleNotificationAsync({
+    identifier: params.identifier,
+    content: {
+      title: params.title,
+      body: params.body,
+      sound: 'default',
+      priority: Notifications.AndroidNotificationPriority.MAX,
+      data: params.data,
+    },
+    trigger:
+      Platform.OS === 'android'
+        ? {
+            type: Notifications.SchedulableTriggerInputTypes.TIME_INTERVAL,
+            seconds: 1,
+            repeats: false,
+            channelId: EXERCISE_REMINDER_CHANNEL_ID,
+          }
+        : null,
+  });
+}
+
+/** Immediate banner: day finished + next unlock reminder confirmed. */
+export async function presentDayCompletedNotification(params: {
+  level: number;
+  dayInLevel: number;
+}): Promise<void> {
+  if (Platform.OS === 'web') return;
+
+  const allowed = await ensureNotificationPermissions();
+  if (!allowed) return;
+
+  const next = getNextSession(params.level, params.dayInLevel);
+  const title = i18n.t('notifications.dayCompletedTitle');
+  const body = next
+    ? i18n.t('notifications.dayCompletedBody', {
+        level: params.level,
+        day: params.dayInLevel,
+        nextLevel: next.level,
+        nextDay: next.dayInLevel,
+      })
+    : i18n.t('notifications.dayCompletedFinalBody', {
+        level: params.level,
+        day: params.dayInLevel,
+      });
+
   try {
-    await Notifications.cancelScheduledNotificationAsync(NEXT_EXERCISE_NOTIFICATION_ID);
-  } catch {
-    // Nothing scheduled yet.
+    await cancelById(DAY_COMPLETED_NOTIFICATION_ID);
+    await presentNow({
+      identifier: DAY_COMPLETED_NOTIFICATION_ID,
+      title,
+      body,
+      data: {
+        type: 'day-completed',
+        level: params.level,
+        dayInLevel: params.dayInLevel,
+      },
+    });
+  } catch (error) {
+    console.warn('[notifications] day-completed present failed', error);
   }
 }
 
@@ -71,8 +182,17 @@ export async function scheduleNextExerciseNotification(params: {
   level: number;
   dayInLevel: number;
   completedAt?: number;
+  /** When true, also show an immediate “day completed” notification. */
+  announceCompletion?: boolean;
 }): Promise<void> {
   if (Platform.OS === 'web') return;
+
+  if (params.announceCompletion) {
+    await presentDayCompletedNotification({
+      level: params.level,
+      dayInLevel: params.dayInLevel,
+    });
+  }
 
   const next = getNextSession(params.level, params.dayInLevel);
   if (!next) {
@@ -90,7 +210,10 @@ export async function scheduleNextExerciseNotification(params: {
   }
 
   const allowed = await ensureNotificationPermissions();
-  if (!allowed) return;
+  if (!allowed) {
+    console.warn('[notifications] permission denied — next-day reminder not scheduled');
+    return;
+  }
 
   await cancelNextExerciseNotification();
 
@@ -100,71 +223,136 @@ export async function scheduleNextExerciseNotification(params: {
     day: next.dayInLevel,
   });
 
-  await Notifications.scheduleNotificationAsync({
-    identifier: NEXT_EXERCISE_NOTIFICATION_ID,
-    content: {
-      title,
-      body,
-      sound: true,
-      data: {
-        type: 'next-exercise-ready',
-        level: next.level,
-        dayInLevel: next.dayInLevel,
+  try {
+    await Notifications.scheduleNotificationAsync({
+      identifier: NEXT_EXERCISE_NOTIFICATION_ID,
+      content: {
+        title,
+        body,
+        sound: 'default',
+        priority: Notifications.AndroidNotificationPriority.MAX,
+        data: {
+          type: 'next-exercise-ready',
+          level: next.level,
+          dayInLevel: next.dayInLevel,
+          unlockAt,
+        },
       },
-    },
-    trigger: {
-      type: Notifications.SchedulableTriggerInputTypes.DATE,
-      date: new Date(unlockAt),
-      channelId: EXERCISE_REMINDER_CHANNEL_ID,
-    },
-  });
+      trigger: unlockTrigger(unlockAt),
+    });
+  } catch (error) {
+    console.warn('[notifications] schedule next-exercise failed', error);
+  }
+}
+
+/**
+ * Fire a short-delay test notification so we can verify permission + channel
+ * without waiting 24 hours.
+ */
+export async function sendTestNotification(delaySeconds = 3): Promise<boolean> {
+  if (Platform.OS === 'web') return false;
+
+  const allowed = await ensureNotificationPermissions();
+  if (!allowed) return false;
+
+  const seconds = Math.max(1, Math.floor(delaySeconds));
+
+  try {
+    await cancelById(TEST_NOTIFICATION_ID);
+    await Notifications.scheduleNotificationAsync({
+      identifier: TEST_NOTIFICATION_ID,
+      content: {
+        title: i18n.t('notifications.testTitle'),
+        body: i18n.t('notifications.testBody'),
+        sound: 'default',
+        priority: Notifications.AndroidNotificationPriority.MAX,
+        data: { type: 'test' },
+      },
+      trigger: {
+        type: Notifications.SchedulableTriggerInputTypes.TIME_INTERVAL,
+        seconds,
+        repeats: false,
+        channelId: EXERCISE_REMINDER_CHANNEL_ID,
+      },
+    });
+    return true;
+  } catch (error) {
+    console.warn('[notifications] test schedule failed', error);
+    return false;
+  }
+}
+
+/**
+ * One-shot self-test after this update: when the user next opens Home,
+ * schedule a test notification a few seconds later.
+ */
+export async function runNotificationSelfTestIfNeeded(): Promise<boolean> {
+  if (Platform.OS === 'web') return false;
+
+  try {
+    const done = await AsyncStorage.getItem(SELF_TEST_FLAG_KEY);
+    if (done === '1') return false;
+
+    const ok = await sendTestNotification(5);
+    if (ok) {
+      await AsyncStorage.setItem(SELF_TEST_FLAG_KEY, '1');
+    }
+    return ok;
+  } catch (error) {
+    console.warn('[notifications] self-test failed', error);
+    return false;
+  }
+}
+
+/** Find the latest completed session that still has an incomplete next day. */
+function findLatestCompletableSession(
+  completions: Record<string, number>,
+): { level: number; dayInLevel: number; completedAt: number } | null {
+  const entries: { level: number; dayInLevel: number; completedAt: number }[] = [];
+
+  for (const [key, at] of Object.entries(completions)) {
+    if (typeof at !== 'number' || !Number.isFinite(at)) continue;
+    const parsed = parseSessionKey(key);
+    if (!parsed) continue;
+    entries.push({ ...parsed, completedAt: at });
+  }
+
+  if (entries.length === 0) return null;
+
+  entries.sort((a, b) => b.completedAt - a.completedAt);
+
+  for (const entry of entries) {
+    const next = getNextSession(entry.level, entry.dayInLevel);
+    if (!next) continue;
+    if (completions[sessionKey(next.level, next.dayInLevel)]) continue;
+    return entry;
+  }
+
+  return null;
 }
 
 /** Re-schedule from persisted completions (app open / permission granted later). */
 export async function syncNextExerciseNotification(
   completions: Record<string, number>,
+  options?: { paused?: boolean },
 ): Promise<void> {
   if (Platform.OS === 'web') return;
 
-  // Find the latest completed session; schedule for its next unlock if still future.
-  let latestKey: string | null = null;
-  let latestAt = 0;
-  for (const [key, at] of Object.entries(completions)) {
-    if (typeof at !== 'number' || !Number.isFinite(at)) continue;
-    if (at >= latestAt) {
-      latestAt = at;
-      latestKey = key;
-    }
-  }
-
-  if (!latestKey) {
+  if (options?.paused) {
     await cancelNextExerciseNotification();
     return;
   }
 
-  const match = /^L(\d+)D(\d+)$/.exec(latestKey);
-  if (!match) {
-    await cancelNextExerciseNotification();
-    return;
-  }
-
-  const level = Number(match[1]);
-  const dayInLevel = Number(match[2]);
-  const next = getNextSession(level, dayInLevel);
-  if (!next) {
-    await cancelNextExerciseNotification();
-    return;
-  }
-
-  // If the next session is already completed, keep walking forward via latest completion.
-  if (completions[sessionKey(next.level, next.dayInLevel)]) {
+  const latest = findLatestCompletableSession(completions);
+  if (!latest) {
     await cancelNextExerciseNotification();
     return;
   }
 
   await scheduleNextExerciseNotification({
-    level,
-    dayInLevel,
-    completedAt: latestAt,
+    level: latest.level,
+    dayInLevel: latest.dayInLevel,
+    completedAt: latest.completedAt,
+    announceCompletion: false,
   });
 }

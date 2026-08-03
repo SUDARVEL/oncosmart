@@ -2,7 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Pressable, ScrollView, StyleSheet } from 'react-native';
+import { Alert, Pressable, ScrollView, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { BottomTabBar } from '../components/BottomTabBar';
@@ -11,7 +11,10 @@ import { LanguageBottomSheet } from '../components/settings/LanguageBottomSheet'
 import { ProfileBottomSheet } from '../components/settings/ProfileBottomSheet';
 import { SettingsRow } from '../components/settings/SettingsRow';
 import { signOut } from '../lib/auth';
-import { cancelNextExerciseNotification } from '../lib/nextExerciseNotification';
+import {
+  cancelNextExerciseNotification,
+  sendTestNotification,
+} from '../lib/nextExerciseNotification';
 import { openWhatsAppSupport } from '../lib/openWhatsAppSupport';
 import { AppLanguage, useAppStore } from '../store/useAppStore';
 import { colors } from '../theme/colors';
@@ -55,6 +58,14 @@ export default function SettingsScreen() {
     router.replace('/login');
   };
 
+  const handleTestNotification = async () => {
+    const ok = await sendTestNotification(3);
+    Alert.alert(
+      t('notifications.testTitle'),
+      ok ? t('notifications.testScheduled') : t('notifications.testDenied'),
+    );
+  };
+
   return (
     <SafeAreaView style={styles.screen} edges={['top']}>
       <ScreenHeader
@@ -86,6 +97,14 @@ export default function SettingsScreen() {
           description={t('settings.helpSupportDescription')}
           showChevron
           onPress={openWhatsAppSupport}
+        />
+        <SettingsRow
+          title={t('notifications.testRow')}
+          description={t('notifications.testRowDescription')}
+          showChevron
+          onPress={() => {
+            void handleTestNotification();
+          }}
         />
         <SettingsRow
           title={t('settings.logout')}

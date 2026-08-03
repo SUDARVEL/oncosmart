@@ -21,6 +21,10 @@ import { BottomTabBar } from '../components/BottomTabBar';
 import { ScreenHeader } from '../components/ScreenHeader';
 import { getDisplayPainScore } from '../lib/getDisplayPainScore';
 import { openWhatsAppSupport } from '../lib/openWhatsAppSupport';
+import {
+  cancelNextExerciseNotification,
+  syncNextExerciseNotification,
+} from '../lib/nextExerciseNotification';
 import { DAYS_PER_LEVEL, getActiveLevel, sessionKey } from '../lib/programProgress';
 import { useAppStore } from '../store/useAppStore';
 import { colors } from '../theme/colors';
@@ -39,6 +43,14 @@ export default function GrowthScreen() {
   const handlePauseReasonSelect = (_reason: PauseReason) => {
     setShowPauseReason(false);
     setProgressPaused(true);
+    void cancelNextExerciseNotification();
+  };
+
+  const handleResume = () => {
+    setProgressPaused(false);
+    void syncNextExerciseNotification(useAppStore.getState().dayCompletedAt, {
+      paused: false,
+    });
   };
   const levelsCompleted = useAppStore((state) => state.levelsCompleted);
   const avatar = useAppStore((state) => state.avatar);
@@ -93,7 +105,7 @@ export default function GrowthScreen() {
               paused={progressPaused}
               avatar={avatar}
               onPause={() => setShowPauseReason(true)}
-              onResume={() => setProgressPaused(false)}
+              onResume={handleResume}
             />
             <StreakCard paused={progressPaused} completedDays={completedDaysInWeek} />
             <PainProgressCard
