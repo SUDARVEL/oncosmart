@@ -1,16 +1,16 @@
-import { Image } from 'expo-image';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, Text, View } from 'react-native';
 
 import { colors } from '../../theme/colors';
 import { font } from '../../theme/fonts';
-import { GROWTH_ASSETS } from './assets';
 
 const DEFAULT_X_LABELS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'] as const;
 const Y_LABELS = ['8', '4', '0'] as const;
 
-/** Slightly taller bars than the Figma base set for a clearer chart. */
-const BAR_HEIGHTS = [80, 70, 60, 60, 50, 40, 40] as const;
+/** Chart plot height for a max pain score of 10. */
+const MAX_BAR_HEIGHT = 80;
+const MIN_BAR_HEIGHT = 8;
 
 type PainProgressCardProps = {
   /**
@@ -29,10 +29,10 @@ function clamp(value: number, min: number, max: number): number {
   return Math.min(max, Math.max(min, value));
 }
 
+/** Map 0–10 pain → visible bar height (0 still shows a tiny stub). */
 function scoreToBarHeight(score: number): number {
   const normalized = clamp(score, 0, 10) / 10;
-  const idx = Math.round(normalized * (BAR_HEIGHTS.length - 1));
-  return BAR_HEIGHTS[idx];
+  return Math.round(MIN_BAR_HEIGHT + normalized * (MAX_BAR_HEIGHT - MIN_BAR_HEIGHT));
 }
 
 export function PainProgressCard({
@@ -42,10 +42,14 @@ export function PainProgressCard({
   paused = false,
 }: PainProgressCardProps) {
   const { t } = useTranslation();
-  const bars = paused ? GROWTH_ASSETS.barsPaused : GROWTH_ASSETS.barsActive;
   const xLabels = weekdayLabels?.length === 7 ? weekdayLabels : [...DEFAULT_X_LABELS];
   const currentScore =
     [...scoresByDay].reverse().find((v): v is number => typeof v === 'number') ?? fallbackScore;
+
+  const activeColor = paused ? '#9CA3AF' : colors.buttonPrimary;
+  const gradientColors = paused
+    ? (['rgba(156, 163, 175, 0.25)', '#9CA3AF'] as const)
+    : (['rgba(15, 128, 202, 0.25)', colors.buttonPrimary] as const);
 
   return (
     <View style={[styles.card, paused && styles.cardPaused]}>
@@ -78,16 +82,21 @@ export function PainProgressCard({
             </View>
 
             <View style={styles.barsRow}>
-              {bars.map((bar, index) => {
+              {Array.from({ length: 7 }, (_, index) => {
                 const score = scoresByDay[index];
-                const height = score == null ? 0 : scoreToBarHeight(score);
+                if (score == null || !Number.isFinite(score)) {
+                  return <View key={index} style={styles.barSlot} />;
+                }
+                const height = scoreToBarHeight(score);
                 return (
-                  <Image
-                    key={index}
-                    source={bar}
-                    style={[styles.bar, { height }]}
-                    contentFit="fill"
-                  />
+                  <View key={index} style={styles.barSlot}>
+                    <LinearGradient
+                      colors={[...gradientColors]}
+                      start={{ x: 0.5, y: 0 }}
+                      end={{ x: 0.5, y: 1 }}
+                      style={[styles.bar, { height, backgroundColor: activeColor }]}
+                    />
+                  </View>
                 );
               })}
             </View>
@@ -98,7 +107,9 @@ export function PainProgressCard({
               {xLabels.map((label, index) => (
                 <View key={`${label}-${index}`} style={styles.xLabelWrap}>
                   <View style={[styles.xTick, paused && styles.xTickPaused]} />
-                  <Text style={[styles.xLabel, paused && styles.axisLabelPaused]}>{label}</Text>
+                  <Text style={[styles.xLabel, paused && styles.axisLabelPaused]} numberOfLines={1}>
+                    {label}
+                  </Text>
                 </View>
               ))}
             </View>
@@ -222,13 +233,21 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'flex-end',
     justifyContent: 'space-between',
-    height: 80,
+    height: MAX_BAR_HEIGHT,
     marginBottom: 4,
-    paddingHorizontal: 4,
+    paddingHorizontal: 2,
+  },
+  barSlot: {
+    width: 28,
+    alignItems: 'center',
+    justifyContent: 'flex-end',
+    height: MAX_BAR_HEIGHT,
   },
   bar: {
-    width: 28,
-    borderRadius: 2,
+    width: 18,
+    borderTopLeftRadius: 6,
+    borderTopRightRadius: 6,
+    minHeight: MIN_BAR_HEIGHT,
   },
   baseline: {
     width: '100%',
@@ -242,11 +261,11 @@ const styles = StyleSheet.create({
   xLabelsRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    paddingHorizontal: 6,
+    paddingHorizontal: 0,
   },
   xLabelWrap: {
     alignItems: 'center',
-    minWidth: 28,
+    width: 36,
   },
   xTick: {
     width: 1,
@@ -258,7 +277,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#E5E7EB',
   },
   xLabel: {
-    fontSize: 11,
+    fontSize: 10,
     ...font('regular'),
     color: colors.textPlaceholder,
     textAlign: 'center',

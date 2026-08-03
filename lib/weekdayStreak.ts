@@ -44,6 +44,13 @@ export function jsDayToMondayIndex(jsDay: number): number {
   return (jsDay + 6) % 7;
 }
 
+function weekBounds(now: number): { weekStart: number; weekEnd: number } {
+  const monday = getLocalWeekMonday(now);
+  const weekStart = monday.getTime();
+  const weekEnd = weekStart + 7 * 24 * 60 * 60 * 1000;
+  return { weekStart, weekEnd };
+}
+
 /**
  * Marks Mon–Sun circles from completion timestamps in the current local week.
  * Completing a session on Saturday fills Saturday only.
@@ -56,11 +63,7 @@ export function getCurrentWeekdayStreak(
   const locale = options?.locale ?? 'en';
   const labels = getWeekdayLabels(locale);
   const completed = [false, false, false, false, false, false, false];
-
-  const monday = getLocalWeekMonday(now);
-  const weekStart = monday.getTime();
-  // Exclusive end: next Monday 00:00 local (covers Mon–Sun).
-  const weekEnd = weekStart + 7 * 24 * 60 * 60 * 1000;
+  const { weekStart, weekEnd } = weekBounds(now);
 
   for (const value of Object.values(completions)) {
     if (typeof value !== 'number' || !Number.isFinite(value)) continue;
@@ -73,8 +76,14 @@ export function getCurrentWeekdayStreak(
 
 /**
  * Pain scores for Mon–Sun of the current local week.
- * Uses completion timestamps to place each session's pain score on the calendar day
- * it was done (pain key format: `${level}:${dayInLevel}`).
+ *
+ * Placement rules (in order):
+ * 1. Session completed this week + matching pain key `${level}:${day}` → that weekday
+ * 2. Else pain key exists and its session completed this week (same as 1, defensive)
+ * 3. Else if we still have no bars but have any pain score + a completion this week,
+ *    put the latest pain on the latest completion weekday this week
+ * 4. Else if we have pain but no completion this week, put the latest pain on today's bar
+ *    so the graph never shows a score in the header with an empty chart
  */
 export function getCurrentWeekPainScores(
   completions: Record<string, number>,
@@ -83,22 +92,25 @@ export function getCurrentWeekPainScores(
 ): Array<number | null> {
   const now = options?.now ?? Date.now();
   const scores: Array<number | null> = [null, null, null, null, null, null, null];
-
-  const monday = getLocalWeekMonday(now);
-  const weekStart = monday.getTime();
-  const weekEnd = weekStart + 7 * 24 * 60 * 60 * 1000;
-
-  // Prefer the latest completion on a given weekday if multiple exist.
+  const { weekStart, weekEnd } = weekBounds(now);
   const latestAt = [-1, -1, -1, -1, -1, -1, -1];
+
+  let latestWeekCompletionAt = -1;
+  let latestWeekCompletionIdx = -1;
 
   for (const [key, completedAt] of Object.entries(completions)) {
     if (typeof completedAt !== 'number' || !Number.isFinite(completedAt)) continue;
     if (completedAt < weekStart || completedAt >= weekEnd) continue;
 
+    const idx = jsDayToMondayIndex(new Date(completedAt).getDay());
+    if (completedAt >= latestWeekCompletionAt) {
+      latestWeekCompletionAt = completedAt;
+      latestWeekCompletionIdx = idx;
+    }
+
     const parsed = parseSessionKey(key);
     if (!parsed) continue;
 
-    const idx = jsDayToMondayIndex(new Date(completedAt).getDay());
     const painKey = `${parsed.level}:${parsed.dayInLevel}`;
     const score = painScores[painKey];
     if (typeof score !== 'number' || !Number.isFinite(score)) continue;
@@ -109,5 +121,23 @@ export function getCurrentWeekPainScores(
     }
   }
 
+  const hasAnyBar = scores.some((v) => typeof v === 'number');
+  if (hasAnyBar) return scores;
+
+  // Fallback: pick the most recently written pain score.
+  let latestPain: number | null = null;
+  for (const value of Object.values(painScores)) {
+    if (typeof value !== 'number' || !Number.isFinite(value)) continue;
+    latestPain = value;
+  }
+  if (latestPain == null) return scores;
+
+  if (latestWeekCompletionIdx >= 0) {
+    scores[latestWeekCompletionIdx] = latestPain;
+    return scores;
+  }
+
+  // No completion this week — still show today's bar so header score isn't orphaned.
+  scores[jsDayToMondayIndex(new Date(now).getDay())] = latestPain;
   return scores;
 }
