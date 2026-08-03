@@ -22,7 +22,7 @@ import { ProgressLogo } from "../components/home/ProgressLogo";
 import { PressableScale } from "../components/PressableScale";
 import { openWhatsAppSupport } from "../lib/openWhatsAppSupport";
 import { QUOTE_CHARACTER_FEMALE } from "../lib/homePageCardImage";
-import { syncNextExerciseNotification, runNotificationSelfTestIfNeeded } from "../lib/nextExerciseNotification";
+import { syncNextExerciseNotification } from "../lib/nextExerciseNotification";
 import { getHomePagePlaceholderVideo } from "../lib/placeholderVideo";
 import { HOME_DAY_CARD_PREVIEW_ASPECT } from "../lib/exerciseVideoFrame";
 import {
@@ -111,11 +111,6 @@ export default function HomeScreen() {
   useEffect(() => {
     void syncNextExerciseNotification(dayCompletedAt, { paused: progressPaused });
   }, [dayCompletedAt, progressPaused]);
-
-  // After this update, fire one test notification so users can confirm alerts work.
-  useEffect(() => {
-    void runNotificationSelfTestIfNeeded();
-  }, []);
 
   const handleQuoteScroll = (
     event: NativeSyntheticEvent<NativeScrollEvent>,

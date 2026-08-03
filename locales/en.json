@@ -441,12 +441,6 @@
     "nextExerciseBody": "Level {{level}}, Day {{day}} is unlocked. Open ONCOSMART to start.",
     "dayCompletedTitle": "Day completed — great work!",
     "dayCompletedBody": "Level {{level}}, Day {{day}} is done. Level {{nextLevel}}, Day {{nextDay}} unlocks in 24 hours — we’ll remind you.",
-    "dayCompletedFinalBody": "Level {{level}}, Day {{day}} is done. You’ve finished the program!",
-    "testTitle": "ONCOSMART notification check",
-    "testBody": "Notifications are working. You’ll get a reminder when your next exercise day unlocks.",
-    "testRow": "Test notification",
-    "testRowDescription": "Send a test alert in a few seconds",
-    "testScheduled": "Test notification coming in a few seconds. Leave the app to see it.",
-    "testDenied": "Please allow notifications for ONCOSMART in Android settings."
+    "dayCompletedFinalBody": "Level {{level}}, Day {{day}} is done. You’ve finished the program!"
   }
 }

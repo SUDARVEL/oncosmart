@@ -1,4 +1,3 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Notifications from 'expo-notifications';
 import { Platform } from 'react-native';
 
@@ -13,10 +12,7 @@ import {
 /** Stable id so we replace the previous “next exercise” reminder. */
 export const NEXT_EXERCISE_NOTIFICATION_ID = 'next-exercise-ready';
 export const DAY_COMPLETED_NOTIFICATION_ID = 'day-completed';
-export const TEST_NOTIFICATION_ID = 'oncosmart-test-notification';
 export const EXERCISE_REMINDER_CHANNEL_ID = 'exercise-reminders';
-
-const SELF_TEST_FLAG_KEY = 'oncosmart.notificationSelfTest.v2';
 
 let handlerConfigured = false;
 
@@ -133,7 +129,7 @@ async function presentNow(params: {
   });
 }
 
-/** Immediate banner: day finished + next unlock reminder confirmed. */
+/** Immediate banner when a day is finished. */
 export async function presentDayCompletedNotification(params: {
   level: number;
   dayInLevel: number;
@@ -242,65 +238,6 @@ export async function scheduleNextExerciseNotification(params: {
     });
   } catch (error) {
     console.warn('[notifications] schedule next-exercise failed', error);
-  }
-}
-
-/**
- * Fire a short-delay test notification so we can verify permission + channel
- * without waiting 24 hours.
- */
-export async function sendTestNotification(delaySeconds = 3): Promise<boolean> {
-  if (Platform.OS === 'web') return false;
-
-  const allowed = await ensureNotificationPermissions();
-  if (!allowed) return false;
-
-  const seconds = Math.max(1, Math.floor(delaySeconds));
-
-  try {
-    await cancelById(TEST_NOTIFICATION_ID);
-    await Notifications.scheduleNotificationAsync({
-      identifier: TEST_NOTIFICATION_ID,
-      content: {
-        title: i18n.t('notifications.testTitle'),
-        body: i18n.t('notifications.testBody'),
-        sound: 'default',
-        priority: Notifications.AndroidNotificationPriority.MAX,
-        data: { type: 'test' },
-      },
-      trigger: {
-        type: Notifications.SchedulableTriggerInputTypes.TIME_INTERVAL,
-        seconds,
-        repeats: false,
-        channelId: EXERCISE_REMINDER_CHANNEL_ID,
-      },
-    });
-    return true;
-  } catch (error) {
-    console.warn('[notifications] test schedule failed', error);
-    return false;
-  }
-}
-
-/**
- * One-shot self-test after this update: when the user next opens Home,
- * schedule a test notification a few seconds later.
- */
-export async function runNotificationSelfTestIfNeeded(): Promise<boolean> {
-  if (Platform.OS === 'web') return false;
-
-  try {
-    const done = await AsyncStorage.getItem(SELF_TEST_FLAG_KEY);
-    if (done === '1') return false;
-
-    const ok = await sendTestNotification(5);
-    if (ok) {
-      await AsyncStorage.setItem(SELF_TEST_FLAG_KEY, '1');
-    }
-    return ok;
-  } catch (error) {
-    console.warn('[notifications] self-test failed', error);
-    return false;
   }
 }
 
