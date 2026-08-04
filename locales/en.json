@@ -293,6 +293,8 @@
     "yourProgress": "YOUR PROGRESS",
     "painScore": "Pain Score",
     "painScoreValue": "{{score}}/10",
+    "painWeekLabel": "This week · {{range}}",
+    "painWeekFallback": "This week",
     "lowerIsBetter": "Lower is better",
     "allBadges": "All Badges",
     "badgesSubtitle": "Track your achievements and milestones",

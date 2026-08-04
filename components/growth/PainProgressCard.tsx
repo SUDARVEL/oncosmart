@@ -5,7 +5,7 @@ import { StyleSheet, Text, View } from 'react-native';
 import { colors } from '../../theme/colors';
 import { font } from '../../theme/fonts';
 
-const DEFAULT_X_LABELS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'] as const;
+const DEFAULT_X_LABELS = ['1', '2', '3', '4', '5', '6', '7'] as const;
 const Y_LABELS = ['8', '4', '0'] as const;
 
 /** Chart plot height for a max pain score of 10. */
@@ -20,8 +20,10 @@ type PainProgressCardProps = {
   scoresByDay: Array<number | null>;
   /** Used when there's no pain score for the week yet. */
   fallbackScore?: number;
-  /** Optional Mon–Sun labels (defaults to English short names). */
+  /** Optional 1–7 labels (defaults to numeric). */
   weekdayLabels?: string[];
+  /** e.g. "3 – 9 Aug" for the current cloud-backed week. */
+  weekRangeLabel?: string;
   paused?: boolean;
 };
 
@@ -39,6 +41,7 @@ export function PainProgressCard({
   scoresByDay,
   fallbackScore = 4,
   weekdayLabels,
+  weekRangeLabel,
   paused = false,
 }: PainProgressCardProps) {
   const { t } = useTranslation();
@@ -54,13 +57,17 @@ export function PainProgressCard({
   return (
     <View style={[styles.card, paused && styles.cardPaused]}>
       <View style={styles.headerRow}>
-        <Text style={styles.title}>{t('growth.yourProgress')}</Text>
-        <View style={styles.scoreBlock}>
-          <Text style={styles.scoreLabel}>{t('growth.painScore')}</Text>
-          <Text style={[styles.scoreValue, paused && styles.scoreValuePaused]}>
-            {t('growth.painScoreValue', { score: currentScore })}
+        <View style={styles.titleBlock}>
+          <Text style={styles.title}>{t('growth.painScore')}</Text>
+          <Text style={[styles.weekLabel, paused && styles.axisLabelPaused]}>
+            {weekRangeLabel
+              ? t('growth.painWeekLabel', { range: weekRangeLabel })
+              : t('growth.painWeekFallback')}
           </Text>
         </View>
+        <Text style={[styles.scoreValue, paused && styles.scoreValuePaused]}>
+          {t('growth.painScoreValue', { score: currentScore })}
+        </Text>
       </View>
 
       <View style={styles.content}>
@@ -144,23 +151,22 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     gap: 12,
   },
-  title: {
+  titleBlock: {
     flex: 1,
+    gap: 2,
+  },
+  title: {
     fontSize: 16,
     ...font('semiBold'),
     color: colors.textPrimary,
     letterSpacing: -0.26,
-    lineHeight: 28,
+    lineHeight: 24,
   },
-  scoreBlock: {
-    alignItems: 'flex-end',
-    gap: 2,
-  },
-  scoreLabel: {
-    fontSize: 14,
+  weekLabel: {
+    fontSize: 13,
     ...font('medium'),
-    color: '#4B5563',
-    textAlign: 'right',
+    color: colors.textMuted,
+    lineHeight: 18,
   },
   scoreValue: {
     fontSize: 22,

@@ -293,6 +293,8 @@
     "yourProgress": "உங்கள் முன்னேற்றம்",
     "painScore": "வலி அளவு",
     "painScoreValue": "{{score}}/10",
+    "painWeekLabel": "இந்த வாரம் · {{range}}",
+    "painWeekFallback": "இந்த வாரம்",
     "lowerIsBetter": "குறைவாக இருப்பது சிறந்தது",
     "allBadges": "சாதனை பதக்கங்கள்",
     "badgesSubtitle": "உங்கள் சாதனைகளை காணுங்கள்",

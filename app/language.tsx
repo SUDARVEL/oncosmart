@@ -1,5 +1,5 @@
 import { useRouter } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -7,6 +7,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { LanguageCard } from '../components/LanguageCard';
 import { PrimaryButton } from '../components/PrimaryButton';
 import { ScreenHeader } from '../components/ScreenHeader';
+import { useAndroidBack } from '../hooks/useAndroidBack';
+import { exitApp } from '../lib/navBack';
 import { setPreferredLanguage } from '../lib/preferredLanguage';
 import { AppLanguage, useAppStore } from '../store/useAppStore';
 import { colors } from '../theme/colors';
@@ -25,6 +27,14 @@ export default function PreLoginLanguageScreen() {
     void i18n.changeLanguage(selected);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selected]);
+
+  // Never allow back into a cleared "Welcome, Guest" Home after logout.
+  useAndroidBack(
+    useCallback(() => {
+      exitApp();
+      return true;
+    }, []),
+  );
 
   const handleContinue = () => {
     if (!selected) return;

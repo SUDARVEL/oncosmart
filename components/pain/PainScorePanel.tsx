@@ -2,6 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import Slider from '@react-native-community/slider';
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
@@ -11,6 +12,11 @@ import { font } from '../../theme/fonts';
 
 const GREEN_EMOJI = require('../../assets/pain/5b81571eee979fd8c0337a790a7179307ce7266c.svg');
 const RED_EMOJI = require('../../assets/pain/741a629974ea0a2f6f0d82c61bd20e5468f81be5.svg');
+const THUMB_SIZE = 28;
+
+function clampScore(value: number): number {
+  return Math.min(PAIN_MAX, Math.max(PAIN_MIN, value));
+}
 
 type Props = {
   score: number;
@@ -20,12 +26,17 @@ type Props = {
 
 export function PainScorePanel({ score, onScoreChange, onContinue }: Props) {
   const { t } = useTranslation();
+  const [trackWidth, setTrackWidth] = useState(0);
   const theme = getPainTheme(score, {
     noPain: t('pain.noPain'),
     moderatePain: t('pain.moderatePain'),
     worstPain: t('pain.worstPain'),
   });
   const displayScore = Math.round(score);
+  const thumbLeft =
+    trackWidth > THUMB_SIZE
+      ? (clampScore(displayScore) / PAIN_MAX) * (trackWidth - THUMB_SIZE)
+      : 0;
 
   return (
     <LinearGradient
@@ -46,7 +57,10 @@ export function PainScorePanel({ score, onScoreChange, onContinue }: Props) {
         <View style={styles.sliderCard}>
           <View style={styles.sliderRow}>
             <Image source={GREEN_EMOJI} style={styles.emoji} contentFit="contain" />
-            <View style={styles.sliderTrackWrap}>
+            <View
+              style={styles.sliderTrackWrap}
+              onLayout={(event) => setTrackWidth(event.nativeEvent.layout.width)}
+            >
               <LinearGradient
                 colors={['#10B981', '#F59E0B', '#EF4444', '#DC2626']}
                 locations={[0, 0.6, 0.9, 1]}
@@ -63,8 +77,10 @@ export function PainScorePanel({ score, onScoreChange, onContinue }: Props) {
                 onValueChange={onScoreChange}
                 minimumTrackTintColor="transparent"
                 maximumTrackTintColor="transparent"
-                thumbTintColor="#F3F4F6"
+                thumbTintColor="transparent"
               />
+              {/* Larger visible cursor — native thumb alone is too small on many devices. */}
+              <View pointerEvents="none" style={[styles.customThumb, { left: thumbLeft }]} />
             </View>
             <Image source={RED_EMOJI} style={styles.emoji} contentFit="contain" />
           </View>
@@ -160,19 +176,35 @@ const styles = StyleSheet.create({
   },
   sliderTrackWrap: {
     flex: 1,
-    height: 24,
+    height: 40,
     justifyContent: 'center',
   },
   sliderGradient: {
     position: 'absolute',
     left: 0,
     right: 0,
-    height: 10,
+    height: 12,
     borderRadius: 999,
   },
   slider: {
     width: '100%',
-    height: 24,
+    height: 40,
+  },
+  customThumb: {
+    position: 'absolute',
+    top: '50%',
+    marginTop: -(THUMB_SIZE / 2),
+    width: THUMB_SIZE,
+    height: THUMB_SIZE,
+    borderRadius: THUMB_SIZE / 2,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 2.5,
+    borderColor: colors.buttonPrimary,
+    shadowColor: '#000',
+    shadowOpacity: 0.18,
+    shadowRadius: 4,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 3,
   },
   scaleLabels: {
     flexDirection: 'row',

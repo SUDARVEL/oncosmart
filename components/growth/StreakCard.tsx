@@ -120,8 +120,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   dayLabel: {
-    fontSize: 10,
-    ...font('medium'),
+    fontSize: 13,
+    ...font('semiBold'),
     color: colors.textMuted,
   },
   subtitle: {

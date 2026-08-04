@@ -3,6 +3,7 @@ import { useEffect, useRef } from 'react';
 import { getCurrentSession, onAuthStateChange } from '../lib/auth';
 import { isAdminSession } from '../lib/isAdmin';
 import { syncNextExerciseNotification } from '../lib/nextExerciseNotification';
+import { registerExpoPushToken } from '../lib/pushTokens';
 import {
   loadCloudProfileIntoStore,
   persistSessionProgress,
@@ -47,6 +48,8 @@ export function CloudSyncBridge() {
       if (cancelled) return;
       // Always unblock first-run tour gating after the cloud attempt.
       useAppStore.getState().setCloudProfileReady(true);
+      // Register for Expo push so EAS Update alerts can reach this device.
+      void registerExpoPushToken(userId);
       if (!result.ok) return;
       const state = useAppStore.getState();
       void syncNextExerciseNotification(state.dayCompletedAt, {

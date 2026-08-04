@@ -97,6 +97,14 @@ export default function SettingsScreen() {
       await signOut();
       resetApp();
       if (keptLanguage) useAppStore.getState().setLanguage(keptLanguage);
+      // Clear stacked Home/Settings so Android back can't open "Welcome, Guest".
+      try {
+        if (typeof router.dismissAll === 'function') {
+          router.dismissAll();
+        }
+      } catch {
+        // ignore
+      }
       router.replace('/language');
     })();
   };

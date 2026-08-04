@@ -1,14 +1,17 @@
 /**
  * Mon–Sun streak + pain helpers using the device's local calendar/timezone.
+ * Circles are labeled 1–7 for the current week; when the week rolls over, a fresh week starts.
  */
 
 import { parseSessionKey } from './programProgress';
 
 export type WeekdayStreak = {
-  /** Local short labels for Mon–Sun (device locale). */
+  /** Day-of-week labels for the current week (1–7). */
   labels: string[];
   /** True when any session was completed on that weekday in the current local week. */
   completed: boolean[];
+  /** Human-readable range for the current week, e.g. "3–9 Aug". */
+  weekRangeLabel: string;
 };
 
 function startOfLocalDay(date: Date): Date {
@@ -26,17 +29,30 @@ export function getLocalWeekMonday(now: number = Date.now()): Date {
   return d;
 }
 
-/** Short Mon–Sun labels from the phone locale (e.g. MON / திங்கள்). */
-export function getWeekdayLabels(locale: string = 'en'): string[] {
-  const formatter = new Intl.DateTimeFormat(locale, { weekday: 'short' });
-  // 2024-01-01 is a Monday.
-  const monday = new Date(2024, 0, 1, 12, 0, 0, 0);
-  return Array.from({ length: 7 }, (_, i) => {
-    const day = new Date(monday);
-    day.setDate(monday.getDate() + i);
-    const label = formatter.format(day).replace(/\./g, '').trim();
-    return label.toLocaleUpperCase(locale);
-  });
+/** Streak / chart labels are always 1–7 for the current Mon–Sun week. */
+export function getWeekdayLabels(_locale: string = 'en'): string[] {
+  return ['1', '2', '3', '4', '5', '6', '7'];
+}
+
+/** Short date range for the current local week (Mon–Sun). */
+export function getCurrentWeekRangeLabel(
+  locale: string = 'en',
+  now: number = Date.now(),
+): string {
+  const monday = getLocalWeekMonday(now);
+  const sunday = new Date(monday);
+  sunday.setDate(monday.getDate() + 6);
+
+  try {
+    const fmt = new Intl.DateTimeFormat(locale, { day: 'numeric', month: 'short' });
+    const start = fmt.format(monday);
+    const end = fmt.format(sunday);
+    return `${start} – ${end}`;
+  } catch {
+    const start = `${monday.getDate()}/${monday.getMonth() + 1}`;
+    const end = `${sunday.getDate()}/${sunday.getMonth() + 1}`;
+    return `${start} – ${end}`;
+  }
 }
 
 /** Map JS getDay() (0=Sun) to Mon-first index (0=Mon … 6=Sun). */
@@ -67,11 +83,16 @@ export function getCurrentWeekdayStreak(
 
   for (const value of Object.values(completions)) {
     if (typeof value !== 'number' || !Number.isFinite(value)) continue;
+    // Only this calendar week — next Monday starts a fresh 1–7 streak.
     if (value < weekStart || value >= weekEnd) continue;
     completed[jsDayToMondayIndex(new Date(value).getDay())] = true;
   }
 
-  return { labels, completed };
+  return {
+    labels,
+    completed,
+    weekRangeLabel: getCurrentWeekRangeLabel(locale, now),
+  };
 }
 
 /**

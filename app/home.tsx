@@ -28,6 +28,7 @@ import { useAndroidBack } from "../hooks/useAndroidBack";
 import { useCoachTour } from "../hooks/useCoachTour";
 import { useExercisePauseGuard } from "../hooks/useExercisePauseGuard";
 import { usePullToRefresh } from "../hooks/usePullToRefresh";
+import { getCurrentSession } from "../lib/auth";
 import { exitApp } from "../lib/navBack";
 import { QUOTE_CHARACTER_FEMALE } from "../lib/homePageCardImage";
 import {
@@ -107,6 +108,20 @@ export default function HomeScreen() {
     skip: coachSkip,
   } = useCoachTour("home");
   const { refreshing, onRefresh } = usePullToRefresh();
+
+  // After logout, never keep showing a guest Home if the stack wasn't cleared.
+  useEffect(() => {
+    let alive = true;
+    void getCurrentSession().then((session) => {
+      if (!alive) return;
+      if (!session?.user?.id) {
+        router.replace("/language");
+      }
+    });
+    return () => {
+      alive = false;
+    };
+  }, [router]);
 
   const completedCount = getCompletedSessionCount(dayCompletedAt);
   const activeLevel = getActiveLevel(dayCompletedAt);

@@ -10,7 +10,7 @@ type Props = {
   accessibilityLabel?: string;
 };
 
-/** Shared WhatsApp chat FAB — outlined stroke icon on every screen. */
+/** Shared WhatsApp chat FAB — filled bubble icon. */
 export function ChatFab({
   bottom = 96,
   accessibilityLabel = 'Chat',
@@ -23,7 +23,7 @@ export function ChatFab({
       onPress={openWhatsAppSupport}
       pressedScale={0.94}
     >
-      <Ionicons name="chatbubble-outline" size={22} color={colors.buttonPrimary} />
+      <Ionicons name="chatbubble" size={22} color={colors.buttonPrimary} />
     </PressableScale>
   );
 }

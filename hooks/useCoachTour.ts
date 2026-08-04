@@ -25,7 +25,7 @@ function waitForHydration(): Promise<void> {
 
 /**
  * Crash-safe coach tour driver.
- * Measures targets in window coordinates (overlay uses a fullscreen Modal).
+ * Measures targets in window coordinates (overlay is an in-tree absolute layer).
  *
  * Auto-starts ONLY for first-time onboarded users who have never finished the
  * tour and have not completed any exercise day. Returning users / day-1+
@@ -54,11 +54,15 @@ export function useCoachTour(screen: CoachTourScreen) {
     };
   }, []);
 
-  // Host registration kept for call-site compatibility (measurement is window-based).
+  // Kept for call-site compatibility (overlay uses the same host tree).
   const registerHost = useCallback((_node: View | null) => {}, []);
 
   const registerTarget = useCallback((id: CoachTourStepId, node: View | null) => {
     targetsRef.current[id] = node;
+    if (node) {
+      // Remeasure when a target mounts/layout changes.
+      setMeasureTick((n) => n + 1);
+    }
   }, []);
 
   const step =
@@ -73,15 +77,12 @@ export function useCoachTour(screen: CoachTourScreen) {
   const completedCount = getCompletedSessionCount(dayCompletedAt);
 
   useEffect(() => {
-    // Wait for local persist + cloud profile so returning users never flash the tour.
     if (!hydrated || !cloudProfileReady) return;
     if (coachTourSeen || coachTourStep != null) return;
     if (screen !== 'home') return;
 
     const state = useAppStore.getState();
-    // Must be fully onboarded (answered questions + avatar).
     if (!state.avatar || state.parqCleared == null) return;
-    // Anyone who already completed a day has used the app — no auto tips.
     if (getCompletedSessionCount(state.dayCompletedAt) > 0) {
       setCoachTourSeen(true);
       return;
@@ -100,7 +101,7 @@ export function useCoachTour(screen: CoachTourScreen) {
       } catch {
         // ignore
       }
-    }, 450);
+    }, 700);
     return () => clearTimeout(timer);
   }, [
     hydrated,
@@ -127,45 +128,51 @@ export function useCoachTour(screen: CoachTourScreen) {
   useEffect(() => {
     if (!active || !step) return;
     let cancelled = false;
+    let attempts = 0;
+
+    const applyRect = (x: number, y: number, width: number, height: number) => {
+      if (cancelled) return;
+      if (
+        !Number.isFinite(x) ||
+        !Number.isFinite(y) ||
+        !Number.isFinite(width) ||
+        !Number.isFinite(height) ||
+        width < 1 ||
+        height < 1
+      ) {
+        return;
+      }
+      setRect({ x, y, width, height });
+    };
 
     const measure = () => {
       try {
         const node = targetsRef.current[step.id];
         if (!node || typeof node.measureInWindow !== 'function') {
-          if (!cancelled) setRect(null);
           return;
         }
 
-        node.measureInWindow((x, y, width, height) => {
-          if (cancelled) return;
-          if (
-            !Number.isFinite(x) ||
-            !Number.isFinite(y) ||
-            !Number.isFinite(width) ||
-            !Number.isFinite(height) ||
-            width < 1 ||
-            height < 1
-          ) {
-            setRect(null);
-            return;
-          }
-          setRect({ x, y, width, height });
-        });
+        // Overlay is in-tree under the same host — window coords match absoluteFill.
+        node.measureInWindow((x, y, width, height) => applyRect(x, y, width, height));
       } catch {
-        if (!cancelled) setRect(null);
+        // ignore
       }
     };
 
-    const t1 = setTimeout(measure, 40);
-    const t2 = setTimeout(measure, 180);
-    const t3 = setTimeout(measure, 420);
-    const t4 = setTimeout(measure, 800);
+    const tick = () => {
+      if (cancelled) return;
+      attempts += 1;
+      measure();
+      if (attempts < 8) {
+        timers.push(setTimeout(tick, attempts < 3 ? 80 : 220));
+      }
+    };
+
+    const timers: ReturnType<typeof setTimeout>[] = [];
+    timers.push(setTimeout(tick, 16));
     return () => {
       cancelled = true;
-      clearTimeout(t1);
-      clearTimeout(t2);
-      clearTimeout(t3);
-      clearTimeout(t4);
+      for (const t of timers) clearTimeout(t);
     };
   }, [active, step, measureTick]);
 

@@ -2,7 +2,6 @@ import { Ionicons } from '@expo/vector-icons';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
-  Modal,
   Pressable,
   StyleSheet,
   Text,
@@ -55,8 +54,8 @@ function spotlightRadius(
 }
 
 /**
- * Fullscreen Modal coach tooltip.
- * Uses window coordinates so the highlight ring lines up with the real UI.
+ * In-tree overlay (not a Modal) so measureInWindow coords match the highlight.
+ * Avoids Android Modal window-offset misalignment.
  */
 export function CoachMarkOverlay({
   visible,
@@ -91,7 +90,6 @@ export function CoachMarkOverlay({
 
   const hasTarget = Boolean(target && target.width > 0 && target.height > 0);
 
-  // Keep highlight geometry 1:1 with measureInWindow — no safe-area clamp that shifts it.
   const highlight = hasTarget && target
     ? {
         left: target.x - pad,
@@ -129,7 +127,6 @@ export function CoachMarkOverlay({
       cardTop = Math.max(insets.top + 8, highlightTop - estimatedCardH - GAP);
       showCaret = true;
     } else {
-      // Fallback: keep card on-screen without claiming a caret lock.
       placeBelow = spaceBelow >= spaceAbove;
       cardTop = placeBelow
         ? Math.min(highlightBottom + GAP, screenH - insets.bottom - estimatedCardH - 8)
@@ -155,92 +152,86 @@ export function CoachMarkOverlay({
   };
 
   return (
-    <Modal
-      visible={visible}
-      transparent
-      animationType="fade"
-      statusBarTranslucent
-      onRequestClose={onSkip}
-    >
-      <View style={styles.root} pointerEvents="box-none">
-        <Pressable style={styles.scrim} onPress={onSkip} accessibilityRole="button" />
+    <View style={styles.root} pointerEvents="box-none">
+      <Pressable style={styles.scrim} onPress={onSkip} accessibilityRole="button" />
 
-        {highlight ? (
-          <View
-            pointerEvents="none"
-            style={[
-              styles.highlight,
-              {
-                left: highlight.left,
-                top: highlight.top,
-                width: highlight.width,
-                height: highlight.height,
-                borderRadius: highlight.borderRadius,
-              },
-            ]}
-          />
+      {highlight ? (
+        <View
+          pointerEvents="none"
+          style={[
+            styles.highlight,
+            {
+              left: highlight.left,
+              top: highlight.top,
+              width: highlight.width,
+              height: highlight.height,
+              borderRadius: highlight.borderRadius,
+            },
+          ]}
+        />
+      ) : null}
+
+      <View
+        style={[styles.cardWrap, { top: cardTop, left: cardLeft, width: cardWidth }]}
+        pointerEvents="box-none"
+        onLayout={onCardLayout}
+      >
+        {showCaret && placeBelow ? (
+          <View style={[styles.caretUp, { left: caretLeft }]} />
         ) : null}
 
-        <View
-          style={[styles.cardWrap, { top: cardTop, left: cardLeft, width: cardWidth }]}
-          pointerEvents="box-none"
-          onLayout={onCardLayout}
-        >
-          {showCaret && placeBelow ? (
-            <View style={[styles.caretUp, { left: caretLeft }]} />
-          ) : null}
-
-          <View style={styles.card}>
-            <View style={styles.headerRow}>
-              <View style={styles.iconCircle}>
-                <Ionicons name={icon} size={22} color={colors.buttonPrimary} />
-              </View>
-              <Text style={styles.title}>{title}</Text>
+        <View style={styles.card}>
+          <View style={styles.headerRow}>
+            <View style={styles.iconCircle}>
+              <Ionicons name={icon} size={22} color={colors.buttonPrimary} />
             </View>
-
-            <Text style={styles.body}>{body}</Text>
-
-            <View style={styles.actions}>
-              <Pressable
-                onPress={onSkip}
-                style={styles.skipButton}
-                accessibilityRole="button"
-                accessibilityLabel={t('coach.skip')}
-                hitSlop={8}
-              >
-                <Text style={styles.skipText}>{t('coach.skip')}</Text>
-              </Pressable>
-
-              <View style={styles.actionsRight}>
-                <Text style={styles.stepText}>
-                  {t('coach.stepOf', { current: stepIndex + 1, total: stepCount })}
-                </Text>
-                <Pressable
-                  onPress={onNext}
-                  style={styles.nextButton}
-                  accessibilityRole="button"
-                  accessibilityLabel={isLast ? t('coach.done') : t('coach.next')}
-                >
-                  <Text style={styles.nextText}>
-                    {isLast ? t('coach.done') : `${t('coach.next')} →`}
-                  </Text>
-                </Pressable>
-              </View>
-            </View>
+            <Text style={styles.title}>{title}</Text>
           </View>
 
-          {showCaret && !placeBelow ? (
-            <View style={[styles.caretDown, { left: caretLeft }]} />
-          ) : null}
+          <Text style={styles.body}>{body}</Text>
+
+          <View style={styles.actions}>
+            <Pressable
+              onPress={onSkip}
+              style={styles.skipButton}
+              accessibilityRole="button"
+              accessibilityLabel={t('coach.skip')}
+              hitSlop={8}
+            >
+              <Text style={styles.skipText}>{t('coach.skip')}</Text>
+            </Pressable>
+
+            <View style={styles.actionsRight}>
+              <Text style={styles.stepText}>
+                {t('coach.stepOf', { current: stepIndex + 1, total: stepCount })}
+              </Text>
+              <Pressable
+                onPress={onNext}
+                style={styles.nextButton}
+                accessibilityRole="button"
+                accessibilityLabel={isLast ? t('coach.done') : t('coach.next')}
+              >
+                <Text style={styles.nextText}>
+                  {isLast ? t('coach.done') : `${t('coach.next')} →`}
+                </Text>
+              </Pressable>
+            </View>
+          </View>
         </View>
+
+        {showCaret && !placeBelow ? (
+          <View style={[styles.caretDown, { left: caretLeft }]} />
+        ) : null}
       </View>
-    </Modal>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   root: {
-    flex: 1,
+    ...StyleSheet.absoluteFillObject,
+    zIndex: 1000,
+    elevation: 1000,
   },
   scrim: {
     ...StyleSheet.absoluteFillObject,

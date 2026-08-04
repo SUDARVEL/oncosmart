@@ -164,6 +164,7 @@ export default function GrowthScreen() {
               paused={progressPaused}
               scoresByDay={painScoresByDay}
               weekdayLabels={weekdayStreak.labels}
+              weekRangeLabel={weekdayStreak.weekRangeLabel}
               fallbackScore={painScore}
             />
             <BadgesSection />

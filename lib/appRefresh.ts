@@ -9,6 +9,7 @@ import {
   ensureNotificationPermissions,
   syncNextExerciseNotification,
 } from './nextExerciseNotification';
+import { requestAppUpdateBroadcast } from './pushTokens';
 import { loadCloudProfileIntoStore } from './userCloudSync';
 
 /** Local notification when a new EAS Update is downloaded and waiting. */
@@ -17,6 +18,7 @@ export const APP_UPDATE_CHANNEL_ID = 'app-updates';
 
 const LAST_NOTIFIED_UPDATE_KEY = 'oncosmart.lastNotifiedUpdateId';
 const PENDING_UPDATE_KEY = 'oncosmart.pendingUpdateId';
+const RELOAD_LOCK_KEY = 'oncosmart.updateReloadLock';
 
 export type UpdateRefreshStatus =
   | 'disabled'
@@ -30,9 +32,10 @@ export type AppRefreshResult = {
   updateStatus: UpdateRefreshStatus;
 };
 
+let reloadInFlight = false;
+
 function updatesSupported(): boolean {
   if (Platform.OS === 'web') return false;
-  // Expo Go / local dev cannot apply EAS Update channels.
   if (__DEV__) return false;
   return Updates.isEnabled === true;
 }
@@ -41,7 +44,7 @@ async function ensureUpdateChannel(): Promise<void> {
   if (Platform.OS !== 'android') return;
   await Notifications.setNotificationChannelAsync(APP_UPDATE_CHANNEL_ID, {
     name: 'App updates',
-    importance: Notifications.AndroidImportance.DEFAULT,
+    importance: Notifications.AndroidImportance.HIGH,
     vibrationPattern: [0, 180],
     enableVibrate: true,
     lockscreenVisibility: Notifications.AndroidNotificationVisibility.PUBLIC,
@@ -114,15 +117,18 @@ export async function notifyAppUpdateReady(updateId: string | null): Promise<voi
       title: i18n.t('notifications.appUpdateTitle'),
       body: i18n.t('notifications.appUpdateBody'),
       sound: true,
-      ...(Platform.OS === 'android'
-        ? { channelId: APP_UPDATE_CHANNEL_ID }
-        : {}),
+      ...(Platform.OS === 'android' ? { channelId: APP_UPDATE_CHANNEL_ID } : {}),
       data: { type: 'app_update', updateId: updateId ?? '' },
     },
     trigger: null,
   });
 
   await markUpdateNotified(updateId);
+
+  // Fan-out to every registered device (once per update id, server-side).
+  if (updateId) {
+    void requestAppUpdateBroadcast(updateId);
+  }
 }
 
 /** Pull latest patient profile / progress from Supabase into the local store. */
@@ -145,18 +151,28 @@ export async function refreshCloudData(): Promise<boolean> {
 }
 
 async function reloadDownloadedUpdate(): Promise<UpdateRefreshStatus> {
+  if (reloadInFlight) return 'reloading';
+  reloadInFlight = true;
   try {
+    // Soft lock so a double pull doesn't race reloads.
+    await AsyncStorage.setItem(RELOAD_LOCK_KEY, String(Date.now()));
     await Updates.reloadAsync();
     return 'reloading';
   } catch (error) {
+    reloadInFlight = false;
     console.warn('[AppRefresh] reload failed', error);
+    try {
+      await AsyncStorage.removeItem(RELOAD_LOCK_KEY);
+    } catch {
+      // ignore
+    }
     return 'error';
   }
 }
 
 /**
  * Check EAS Update for a new bundle.
- * - notifyIfReady: fire a local notification (once per update id)
+ * - notifyIfReady: local + push broadcast (once per update id)
  * - reloadIfReady: apply immediately (used by pull-to-refresh)
  */
 export async function checkFetchAppUpdate(options?: {
@@ -171,7 +187,6 @@ export async function checkFetchAppUpdate(options?: {
     if (check.isAvailable) {
       const fetched = await Updates.fetchUpdateAsync();
       if (!fetched.isNew) {
-        // Already on disk from a previous quiet download — apply on pull.
         if (options?.reloadIfReady) {
           await consumePendingUpdate();
           return reloadDownloadedUpdate();
@@ -185,8 +200,9 @@ export async function checkFetchAppUpdate(options?: {
         Updates.updateId ??
         null;
 
+      await markUpdatePending(updateId);
+
       if (options?.notifyIfReady) {
-        await markUpdatePending(updateId);
         await notifyAppUpdateReady(updateId);
       }
 
@@ -195,7 +211,6 @@ export async function checkFetchAppUpdate(options?: {
         return reloadDownloadedUpdate();
       }
 
-      await markUpdatePending(updateId);
       return 'downloaded';
     }
 
@@ -217,15 +232,28 @@ export async function checkFetchAppUpdate(options?: {
  * 2) download + apply any pending EAS Update so the new build appears immediately
  */
 export async function runPullToRefresh(): Promise<AppRefreshResult> {
-  const cloudOk = await refreshCloudData();
-  const updateStatus = await checkFetchAppUpdate({
-    reloadIfReady: true,
-    notifyIfReady: false,
-  });
+  let cloudOk = false;
+  try {
+    cloudOk = await refreshCloudData();
+  } catch (error) {
+    console.warn('[AppRefresh] cloud refresh threw', error);
+  }
+
+  let updateStatus: UpdateRefreshStatus = 'disabled';
+  try {
+    updateStatus = await checkFetchAppUpdate({
+      reloadIfReady: true,
+      notifyIfReady: false,
+    });
+  } catch (error) {
+    console.warn('[AppRefresh] update apply threw', error);
+    updateStatus = 'error';
+  }
+
   return { cloudOk, updateStatus };
 }
 
-/** Quiet foreground check: download update and notify (user pull-refreshes to apply). */
+/** Quiet foreground check: download update and notify all devices. */
 export async function checkForUpdateInBackground(): Promise<UpdateRefreshStatus> {
   return checkFetchAppUpdate({
     reloadIfReady: false,

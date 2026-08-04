@@ -26,9 +26,16 @@ create table if not exists patients (
   levels_completed integer not null default 0,
   onboarding_complete boolean not null default false,
   coach_tour_seen boolean not null default false,
+  expo_push_token text,
   password_changed_at timestamptz,
   created_at timestamptz default now(),
   updated_at timestamptz not null default now()
+);
+
+create table if not exists app_update_broadcasts (
+  update_id text primary key,
+  sent_at timestamptz not null default now(),
+  recipient_count integer not null default 0
 );
 
 create table if not exists exercise_completions (
