@@ -9,7 +9,6 @@ import {
   ensureNotificationPermissions,
   syncNextExerciseNotification,
 } from './nextExerciseNotification';
-import { requestAppUpdateBroadcast } from './pushTokens';
 import { loadCloudProfileIntoStore } from './userCloudSync';
 
 /** Local notification when a new EAS Update is downloaded and waiting. */
@@ -124,11 +123,6 @@ export async function notifyAppUpdateReady(updateId: string | null): Promise<voi
   });
 
   await markUpdateNotified(updateId);
-
-  // Fan-out to every registered device (once per update id, server-side).
-  if (updateId) {
-    void requestAppUpdateBroadcast(updateId);
-  }
 }
 
 /** Pull latest patient profile / progress from Supabase into the local store. */

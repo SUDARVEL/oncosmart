@@ -112,12 +112,16 @@ export default function HomeScreen() {
   // After logout, never keep showing a guest Home if the stack wasn't cleared.
   useEffect(() => {
     let alive = true;
-    void getCurrentSession().then((session) => {
-      if (!alive) return;
-      if (!session?.user?.id) {
-        router.replace("/language");
-      }
-    });
+    void getCurrentSession()
+      .then((session) => {
+        if (!alive) return;
+        if (!session?.user?.id) {
+          router.replace("/language");
+        }
+      })
+      .catch(() => {
+        // Ignore auth probe failures — do not crash Home.
+      });
     return () => {
       alive = false;
     };

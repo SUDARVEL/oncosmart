@@ -58,11 +58,9 @@ export function useCoachTour(screen: CoachTourScreen) {
   const registerHost = useCallback((_node: View | null) => {}, []);
 
   const registerTarget = useCallback((id: CoachTourStepId, node: View | null) => {
+    // Ref-only — never setState here. Inline ref callbacks re-fire every render;
+    // setState would infinite-loop and crash the screen on open.
     targetsRef.current[id] = node;
-    if (node) {
-      // Remeasure when a target mounts/layout changes.
-      setMeasureTick((n) => n + 1);
-    }
   }, []);
 
   const step =

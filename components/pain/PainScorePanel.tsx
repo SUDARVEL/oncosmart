@@ -77,7 +77,7 @@ export function PainScorePanel({ score, onScoreChange, onContinue }: Props) {
                 onValueChange={onScoreChange}
                 minimumTrackTintColor="transparent"
                 maximumTrackTintColor="transparent"
-                thumbTintColor="transparent"
+                thumbTintColor="#FFFFFF"
               />
               {/* Larger visible cursor — native thumb alone is too small on many devices. */}
               <View pointerEvents="none" style={[styles.customThumb, { left: thumbLeft }]} />

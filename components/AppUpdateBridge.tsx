@@ -23,6 +23,8 @@ export function AppUpdateBridge() {
       checkingRef.current = true;
       try {
         await checkForUpdateInBackground();
+      } catch (error) {
+        console.warn('[AppUpdateBridge] check failed', error);
       } finally {
         checkingRef.current = false;
       }
