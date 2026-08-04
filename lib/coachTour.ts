@@ -4,6 +4,7 @@ export type CoachTourStepId =
   | 'home.session'
   | 'home.growthTab'
   | 'growth.progress'
+  | 'growth.pauseProgress'
   | 'growth.workouts'
   | 'growth.workoutCard'
   | 'home.settingsTab'
@@ -25,6 +26,7 @@ export type CoachTourStep = {
     | 'play-circle-outline'
     | 'stats-chart-outline'
     | 'trending-up-outline'
+    | 'pause-circle-outline'
     | 'list-outline'
     | 'document-text-outline'
     | 'settings-outline';
@@ -83,6 +85,17 @@ export const COACH_TOUR_STEPS: CoachTourStep[] = [
     icon: 'trending-up-outline',
     titleKey: 'coach.progressTitle',
     bodyKey: 'coach.progressBody',
+    growthTab: 'progress',
+  },
+  {
+    id: 'growth.pauseProgress',
+    screen: 'growth',
+    preferPlacement: 'above',
+    spotlight: 'pill',
+    pad: 8,
+    icon: 'pause-circle-outline',
+    titleKey: 'coach.pauseProgressTitle',
+    bodyKey: 'coach.pauseProgressBody',
     growthTab: 'progress',
   },
   {

@@ -45,8 +45,8 @@ function formatPauseReason(
   patient: AdminPatientProgress,
   t: (key: string) => string,
 ): string {
-  if (!patient.progressPaused) return t('admin.pauseReasonNone');
-  switch (patient.pauseReason) {
+  const reason = patient.pauseReason;
+  switch (reason) {
     case 'tired':
       return t('admin.pauseReasonTired');
     case 'pain':
@@ -56,7 +56,10 @@ function formatPauseReason(
     case 'unwell':
       return t('admin.pauseReasonUnwell');
     default:
-      return t('admin.pauseReasonNone');
+      if (typeof reason === 'string' && reason.trim()) return reason.trim();
+      return patient.progressPaused
+        ? t('admin.pauseReasonUnknown')
+        : t('admin.pauseReasonNone');
   }
 }
 
@@ -169,6 +172,15 @@ function PatientCard({
         ) : null}
       </View>
 
+      {patient.progressPaused ? (
+        <View style={styles.pauseBanner}>
+          <Text style={styles.pauseBannerTitle}>{t('admin.quitPausedTitle')}</Text>
+          <Text style={styles.pauseBannerReason}>
+            {t('admin.pauseReason')}: {formatPauseReason(patient, t)}
+          </Text>
+        </View>
+      ) : null}
+
       {expanded ? (
         <View style={styles.detailBlock}>
           <Text style={styles.detailLine}>
@@ -198,6 +210,11 @@ function PatientCard({
             </Text>
           ) : null}
 
+          <Text style={styles.completedTitle}>{t('admin.quitPausedTitle')}</Text>
+          <Text style={styles.detailLine}>
+            {t('admin.pauseStatus')}:{' '}
+            {patient.progressPaused ? t('admin.paused') : t('admin.notPaused')}
+          </Text>
           <Text style={styles.detailLine}>
             {t('admin.pauseReason')}: {formatPauseReason(patient, t)}
           </Text>
@@ -542,6 +559,26 @@ const styles = StyleSheet.create({
     ...font('medium'),
     fontSize: 12,
     color: colors.textSecondary,
+  },
+  pauseBanner: {
+    marginTop: 10,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#F59E0B',
+    backgroundColor: '#FFFBEB',
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    gap: 2,
+  },
+  pauseBannerTitle: {
+    ...font('semiBold'),
+    fontSize: 13,
+    color: '#92400E',
+  },
+  pauseBannerReason: {
+    ...font('medium'),
+    fontSize: 13,
+    color: '#78350F',
   },
   detailBlock: {
     borderTopWidth: 1,

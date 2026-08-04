@@ -198,6 +198,8 @@ export async function saveCloudProfileFromStore(userId: string): Promise<boolean
       parq_cleared: state.parqCleared,
       progress_paused: state.progressPaused,
       pause_reason: state.progressPaused ? state.pauseReason : null,
+      // Clear stamp on resume; set paused_at only when newly pausing (below).
+      ...(state.progressPaused ? {} : { paused_at: null }),
       pain_scores: state.painScores,
       day_completed_at: state.dayCompletedAt,
       levels_completed: state.levelsCompleted,
@@ -211,6 +213,19 @@ export async function saveCloudProfileFromStore(userId: string): Promise<boolean
     console.warn('[CloudSync] save failed', error.message);
     return false;
   }
+
+  // Stamp paused_at once when the patient quits/pauses (admin can see when).
+  if (state.progressPaused && state.pauseReason) {
+    const { error: pauseStampError } = await supabase
+      .from('patients')
+      .update({ paused_at: new Date().toISOString() })
+      .eq('id', patientId)
+      .is('paused_at', null);
+    if (pauseStampError) {
+      console.warn('[CloudSync] paused_at stamp failed', pauseStampError.message);
+    }
+  }
+
   return true;
 }
 

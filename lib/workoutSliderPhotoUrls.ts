@@ -32,8 +32,15 @@ const MALE_SLIDER_PHOTO_FILES: Record<string, string> = {
   "chest-stretch": "Pectorals Stretch Slider.png",
   "triceps-stretch-right": "Tricep Stretch Slider Right.png",
   "triceps-stretch-left": "Tricep Stretch Slider Left.png",
-  "neck-stretch-right": "Neck Stretch ( right ).png",
-  "neck-stretch-left": "Neck Stretch Left.png",
+  // Full-frame Home page assets (old slider crops showed half the pose).
+  "neck-stretch-right": "neck stretch addon.png",
+  "neck-stretch-left": "neck stretch left add on.png",
+};
+
+/** Male neck-stretch photos live in Home page/ (not Male Slider Photos). */
+const MALE_SLIDER_FOLDER_OVERRIDES: Partial<Record<string, string>> = {
+  "neck-stretch-left": "Home page",
+  "neck-stretch-right": "Home page",
 };
 
 /**
@@ -102,8 +109,8 @@ export function getWorkoutSliderPhotoUrl(
 
   const folder = isFemale
     ? FEMALE_SLIDER_PHOTOS_PREFIX
-    : MALE_SLIDER_PHOTOS_PREFIX;
-  const cacheKey = `${isFemale ? "f" : "m"}|${exerciseId}|${photoFile}`;
+    : MALE_SLIDER_FOLDER_OVERRIDES[exerciseId] ?? MALE_SLIDER_PHOTOS_PREFIX;
+  const cacheKey = `${isFemale ? "f" : "m"}|${folder}|${exerciseId}|${photoFile}`;
   const cached = sliderPhotoUrlCache.get(cacheKey);
   if (cached) return cached;
 

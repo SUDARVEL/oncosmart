@@ -1,4 +1,5 @@
 import { Image } from "expo-image";
+import type { Ref } from "react";
 import { useTranslation } from "react-i18next";
 import { StyleSheet, Text, View } from "react-native";
 import { SvgXml } from "react-native-svg";
@@ -21,6 +22,8 @@ type LevelsCardProps = {
   avatar: AppAvatar | null;
   onPause: () => void;
   onResume: () => void;
+  /** Coach-mark anchor for the Pause / Resume Progress control. */
+  pauseAnchorRef?: Ref<View>;
 };
 
 export function LevelsCard({
@@ -30,6 +33,7 @@ export function LevelsCard({
   avatar,
   onPause,
   onResume,
+  pauseAnchorRef,
 }: LevelsCardProps) {
   const { t } = useTranslation();
   const isFemale = avatar === "female";
@@ -70,27 +74,29 @@ export function LevelsCard({
         </View>
       </View>
 
-      {paused ? (
-        <PressableScale
-          style={styles.resumeButton}
-          onPress={onResume}
-          accessibilityRole="button"
-          accessibilityLabel={t("growth.resumeProgress")}
-        >
-          <SvgXml xml={PLAY_ICON_XML} width={12} height={16} />
-          <Text style={styles.resumeText}>{t("growth.resumeProgress")}</Text>
-        </PressableScale>
-      ) : (
-        <PressableScale
-          style={styles.pauseButton}
-          onPress={onPause}
-          accessibilityRole="button"
-          accessibilityLabel={t("growth.pauseProgress")}
-        >
-          <SvgXml xml={PAUSE_ICON_XML} width={10} height={12} />
-          <Text style={styles.pauseText}>{t("growth.pauseProgress")}</Text>
-        </PressableScale>
-      )}
+      <View ref={pauseAnchorRef} collapsable={false} style={styles.pauseAnchor}>
+        {paused ? (
+          <PressableScale
+            style={styles.resumeButton}
+            onPress={onResume}
+            accessibilityRole="button"
+            accessibilityLabel={t("growth.resumeProgress")}
+          >
+            <SvgXml xml={PLAY_ICON_XML} width={12} height={16} />
+            <Text style={styles.resumeText}>{t("growth.resumeProgress")}</Text>
+          </PressableScale>
+        ) : (
+          <PressableScale
+            style={styles.pauseButton}
+            onPress={onPause}
+            accessibilityRole="button"
+            accessibilityLabel={t("growth.pauseProgress")}
+          >
+            <SvgXml xml={PAUSE_ICON_XML} width={10} height={12} />
+            <Text style={styles.pauseText}>{t("growth.pauseProgress")}</Text>
+          </PressableScale>
+        )}
+      </View>
     </View>
   );
 }
@@ -171,6 +177,10 @@ const styles = StyleSheet.create({
     marginLeft: -47,
     marginTop: -72,
   },
+  pauseAnchor: {
+    marginTop: 12,
+    alignItems: "center",
+  },
   pauseButton: {
     flexDirection: "row",
     alignItems: "center",
@@ -183,7 +193,6 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     backgroundColor: colors.background,
     minWidth: 137,
-    marginTop: 12,
   },
   pauseText: {
     fontSize: 12,
@@ -205,7 +214,6 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     backgroundColor: colors.background,
     minWidth: 147,
-    marginTop: 12,
   },
   resumeText: {
     fontSize: 12,

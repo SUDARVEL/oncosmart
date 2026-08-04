@@ -154,6 +154,7 @@ export default function GrowthScreen() {
               avatar={avatar}
               onPause={() => setShowPauseReason(true)}
               onResume={handleResumeProgress}
+              pauseAnchorRef={(node) => registerTarget('growth.pauseProgress', node)}
             />
             <StreakCard
               paused={progressPaused}
