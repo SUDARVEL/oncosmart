@@ -20,8 +20,8 @@ const MALE_LANDSCAPE_PHOTO_FILES: Partial<Record<string, string>> = {
   'calf-stretch-right': 'Calf stretch Male Right Landscape.png',
   'calf-stretch-left': 'Calf stretch Male Left Landscape.png',
   // Full-frame Home page assets (landscape crops were cutting the pose in half).
-  'neck-stretch-left': 'neck stretch left add on.png',
-  'neck-stretch-right': 'neck stretch addon.png',
+  'neck-stretch-left': 'neck stretch addon.png',
+  'neck-stretch-right': 'neck stretch left add on.png',
   'quadriceps-stretch-left': 'Quadriceps Stretch Male Left.png',
   'quadriceps-stretch-right': 'Quadriceps Stretch Male Right.png',
   'triceps-stretch-left': 'Triceps Stretch Left Male Landsacpe.png',

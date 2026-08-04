@@ -33,8 +33,8 @@ const MALE_SLIDER_PHOTO_FILES: Record<string, string> = {
   "triceps-stretch-right": "Tricep Stretch Slider Right.png",
   "triceps-stretch-left": "Tricep Stretch Slider Left.png",
   // Full-frame Home page assets (old slider crops showed half the pose).
-  "neck-stretch-right": "neck stretch addon.png",
-  "neck-stretch-left": "neck stretch left add on.png",
+  "neck-stretch-left": "neck stretch addon.png",
+  "neck-stretch-right": "neck stretch left add on.png",
 };
 
 /** Male neck-stretch photos live in Home page/ (not Male Slider Photos). */
