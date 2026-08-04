@@ -175,8 +175,11 @@ export default function SettingsScreen() {
             description={t('settings.replayTipsDescription')}
             showChevron
             onPress={() => {
-              restartCoachTour();
+              // Go Home first, then start tips so anchors are laid out before measure.
               router.replace('/home');
+              setTimeout(() => {
+                restartCoachTour();
+              }, 350);
             }}
           />
           <SettingsRow

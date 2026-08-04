@@ -5,7 +5,6 @@ import {
   Pressable,
   StyleSheet,
   Text,
-  useWindowDimensions,
   View,
   type LayoutChangeEvent,
 } from 'react-native';
@@ -17,7 +16,9 @@ import { font } from '../../theme/fonts';
 import { uiText } from '../../theme/typography';
 
 export type CoachTargetRect = {
+  /** Host-relative X (same coordinate space as this absolute overlay). */
   x: number;
+  /** Host-relative Y (same coordinate space as this absolute overlay). */
   y: number;
   width: number;
   height: number;
@@ -30,7 +31,7 @@ type Props = {
   icon: keyof typeof Ionicons.glyphMap;
   stepIndex: number;
   stepCount: number;
-  /** Window-relative target rect for highlight + card placement. */
+  /** Host-relative target rect for highlight + card placement. */
   target: CoachTargetRect | null;
   preferPlacement: 'below' | 'above';
   spotlight?: CoachSpotlightShape;
@@ -54,8 +55,9 @@ function spotlightRadius(
 }
 
 /**
- * In-tree overlay (not a Modal) so measureInWindow coords match the highlight.
- * Avoids Android Modal window-offset misalignment.
+ * In-tree fullscreen overlay.
+ * Target rects MUST be host-relative (see useCoachTour) so the ring sits
+ * exactly on the measured control on every device.
  */
 export function CoachMarkOverlay({
   visible,
@@ -72,24 +74,28 @@ export function CoachMarkOverlay({
   onSkip,
 }: Props) {
   const { t } = useTranslation();
-  const { width: screenW, height: screenH } = useWindowDimensions();
   const insets = useSafeAreaInsets();
   const [cardHeight, setCardHeight] = useState(200);
+  const [overlaySize, setOverlaySize] = useState({ width: 0, height: 0 });
 
   if (!visible) return null;
 
+  const screenW = overlaySize.width > 0 ? overlaySize.width : 360;
+  const screenH = overlaySize.height > 0 ? overlaySize.height : 720;
+
   const isLast = stepIndex >= stepCount - 1;
-  const cardWidth = Math.min(CARD_MAX_WIDTH, screenW - CARD_MARGIN * 2);
+  const cardWidth = Math.min(CARD_MAX_WIDTH, Math.max(200, screenW - CARD_MARGIN * 2));
   const estimatedCardH = Math.max(160, cardHeight);
 
   let cardTop = Math.max(insets.top + 72, screenH * 0.22);
-  let cardLeft = (screenW - cardWidth) / 2;
+  let cardLeft = Math.max(CARD_MARGIN, (screenW - cardWidth) / 2);
   let placeBelow = preferPlacement === 'below';
   let showCaret = false;
   let caretLeft = cardWidth / 2 - 8;
 
   const hasTarget = Boolean(target && target.width > 0 && target.height > 0);
 
+  // 1:1 with host-relative measure — no safe-area clamp that shifts the ring.
   const highlight = hasTarget && target
     ? {
         left: target.x - pad,
@@ -137,13 +143,24 @@ export function CoachMarkOverlay({
     const targetCenterX = target.x + target.width / 2;
     cardLeft = Math.min(
       Math.max(CARD_MARGIN, targetCenterX - cardWidth / 2),
-      screenW - CARD_MARGIN - cardWidth,
+      Math.max(CARD_MARGIN, screenW - CARD_MARGIN - cardWidth),
     );
     caretLeft = Math.min(
       Math.max(targetCenterX - cardLeft - 8, 18),
       cardWidth - 28,
     );
   }
+
+  const onRootLayout = (event: LayoutChangeEvent) => {
+    const { width, height } = event.nativeEvent.layout;
+    if (!Number.isFinite(width) || !Number.isFinite(height) || width < 1 || height < 1) return;
+    if (
+      Math.abs(width - overlaySize.width) > 1 ||
+      Math.abs(height - overlaySize.height) > 1
+    ) {
+      setOverlaySize({ width, height });
+    }
+  };
 
   const onCardLayout = (event: LayoutChangeEvent) => {
     const nextH = event.nativeEvent.layout.height;
@@ -152,7 +169,12 @@ export function CoachMarkOverlay({
   };
 
   return (
-    <View style={styles.root} pointerEvents="box-none">
+    <View
+      style={styles.root}
+      pointerEvents="box-none"
+      onLayout={onRootLayout}
+      collapsable={false}
+    >
       <Pressable style={styles.scrim} onPress={onSkip} accessibilityRole="button" />
 
       {highlight ? (
@@ -241,7 +263,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     borderWidth: 2.5,
     borderColor: '#FFFFFF',
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    backgroundColor: 'rgba(255, 255, 255, 0.12)',
   },
   cardWrap: {
     position: 'absolute',

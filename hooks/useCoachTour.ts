@@ -23,13 +23,23 @@ function waitForHydration(): Promise<void> {
   });
 }
 
+function isValidRect(x: number, y: number, width: number, height: number): boolean {
+  return (
+    Number.isFinite(x) &&
+    Number.isFinite(y) &&
+    Number.isFinite(width) &&
+    Number.isFinite(height) &&
+    width >= 1 &&
+    height >= 1
+  );
+}
+
 /**
  * Crash-safe coach tour driver.
- * Measures targets in window coordinates (overlay is an in-tree absolute layer).
  *
- * Auto-starts ONLY for first-time onboarded users who have never finished the
- * tour and have not completed any exercise day. Returning users / day-1+
- * completers skip it; Settings → Replay tips can still restart it.
+ * Alignment rule (all devices): measure target + host in window space, then
+ * convert to HOST-relative coords for the in-tree absolute overlay. This cancels
+ * status-bar / native-stack offsets that break raw measureInWindow placement.
  */
 export function useCoachTour(screen: CoachTourScreen) {
   const coachTourSeen = useAppStore((s) => s.coachTourSeen === true);
@@ -43,6 +53,7 @@ export function useCoachTour(screen: CoachTourScreen) {
   const [rect, setRect] = useState<CoachTargetRect | null>(null);
   const [measureTick, setMeasureTick] = useState(0);
   const targetsRef = useRef<TargetMap>({});
+  const hostRef = useRef<View | null>(null);
 
   useEffect(() => {
     let alive = true;
@@ -54,12 +65,12 @@ export function useCoachTour(screen: CoachTourScreen) {
     };
   }, []);
 
-  // Kept for call-site compatibility (overlay uses the same host tree).
-  const registerHost = useCallback((_node: View | null) => {}, []);
+  const registerHost = useCallback((node: View | null) => {
+    hostRef.current = node;
+  }, []);
 
   const registerTarget = useCallback((id: CoachTourStepId, node: View | null) => {
-    // Ref-only — never setState here. Inline ref callbacks re-fire every render;
-    // setState would infinite-loop and crash the screen on open.
+    // Ref-only — never setState here (inline refs re-fire every render).
     targetsRef.current[id] = node;
   }, []);
 
@@ -127,47 +138,75 @@ export function useCoachTour(screen: CoachTourScreen) {
     if (!active || !step) return;
     let cancelled = false;
     let attempts = 0;
+    const timers: ReturnType<typeof setTimeout>[] = [];
 
     const applyRect = (x: number, y: number, width: number, height: number) => {
-      if (cancelled) return;
-      if (
-        !Number.isFinite(x) ||
-        !Number.isFinite(y) ||
-        !Number.isFinite(width) ||
-        !Number.isFinite(height) ||
-        width < 1 ||
-        height < 1
-      ) {
-        return;
-      }
-      setRect({ x, y, width, height });
+      if (cancelled || !isValidRect(x, y, width, height)) return;
+      setRect((prev) => {
+        if (
+          prev &&
+          Math.abs(prev.x - x) < 0.5 &&
+          Math.abs(prev.y - y) < 0.5 &&
+          Math.abs(prev.width - width) < 0.5 &&
+          Math.abs(prev.height - height) < 0.5
+        ) {
+          return prev;
+        }
+        return { x, y, width, height };
+      });
     };
 
     const measure = () => {
       try {
         const node = targetsRef.current[step.id];
-        if (!node || typeof node.measureInWindow !== 'function') {
+        const host = hostRef.current;
+        if (!node || typeof node.measureInWindow !== 'function') return;
+
+        // Hard rule: host-relative = targetWindow - hostWindow.
+        // Works on every Android/iOS inset / native-stack offset.
+        if (host && typeof host.measureInWindow === 'function') {
+          host.measureInWindow((hostX, hostY) => {
+            if (cancelled) return;
+            node.measureInWindow((x, y, width, height) => {
+              if (cancelled) return;
+              if (!isValidRect(x, y, width, height)) return;
+              if (!Number.isFinite(hostX) || !Number.isFinite(hostY)) {
+                applyRect(x, y, width, height);
+                return;
+              }
+              applyRect(x - hostX, y - hostY, width, height);
+            });
+          });
           return;
         }
 
-        // Overlay is in-tree under the same host — window coords match absoluteFill.
-        node.measureInWindow((x, y, width, height) => applyRect(x, y, width, height));
+        node.measureInWindow((x, y, width, height) => {
+          applyRect(x, y, width, height);
+        });
       } catch {
         // ignore
       }
     };
 
+    const delays = [80, 160, 280, 450, 700, 1000, 1500, 2200];
     const tick = () => {
       if (cancelled) return;
-      attempts += 1;
       measure();
-      if (attempts < 8) {
-        timers.push(setTimeout(tick, attempts < 3 ? 80 : 220));
+      if (attempts < delays.length) {
+        const wait = delays[attempts];
+        attempts += 1;
+        timers.push(setTimeout(tick, wait));
       }
     };
 
-    const timers: ReturnType<typeof setTimeout>[] = [];
-    timers.push(setTimeout(tick, 16));
+    timers.push(
+      setTimeout(() => {
+        InteractionManager.runAfterInteractions(() => {
+          tick();
+        });
+      }, 40),
+    );
+
     return () => {
       cancelled = true;
       for (const t of timers) clearTimeout(t);
