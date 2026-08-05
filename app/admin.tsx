@@ -186,31 +186,33 @@ function PatientCard({
 
       {patient.progressPaused && patient.progressHoldType === 'pause' ? (
         <View style={styles.pauseBanner}>
-          <Text style={styles.pauseBannerTitle}>{t('admin.pausedTitle')}</Text>
+          <Text style={styles.pauseBannerTitle}>{t('admin.pauseSectionTitle')}</Text>
           <Text style={styles.pauseBannerReason}>
-            {t('admin.pauseReason')}:{' '}
+            {t('admin.pausedTimeLabel')}:{' '}
+            {patient.pausedAt
+              ? formatWhen(Date.parse(patient.pausedAt), i18n.language)
+              : t('admin.pauseReasonNone')}
+          </Text>
+          <Text style={styles.pauseBannerReason}>
+            {t('admin.reasonLabel')}:{' '}
             {formatHoldReason(patient.pauseReason, t, 'admin.pauseReasonUnknown')}
           </Text>
-          {patient.pausedAt ? (
-            <Text style={styles.pauseBannerReason}>
-              {t('admin.pausedAt')}: {formatWhen(Date.parse(patient.pausedAt), i18n.language)}
-            </Text>
-          ) : null}
         </View>
       ) : null}
 
       {patient.progressPaused && patient.progressHoldType === 'quit' ? (
         <View style={styles.quitBanner}>
-          <Text style={styles.quitBannerTitle}>{t('admin.quitTitle')}</Text>
+          <Text style={styles.quitBannerTitle}>{t('admin.quitSectionTitle')}</Text>
           <Text style={styles.quitBannerReason}>
-            {t('admin.quitReason')}:{' '}
+            {t('admin.quitTimeLabel')}:{' '}
+            {patient.quitAt
+              ? formatWhen(Date.parse(patient.quitAt), i18n.language)
+              : t('admin.pauseReasonNone')}
+          </Text>
+          <Text style={styles.quitBannerReason}>
+            {t('admin.reasonLabel')}:{' '}
             {formatHoldReason(patient.quitReason, t, 'admin.quitReasonUnknown')}
           </Text>
-          {patient.quitAt ? (
-            <Text style={styles.quitBannerReason}>
-              {t('admin.quitAt')}: {formatWhen(Date.parse(patient.quitAt), i18n.language)}
-            </Text>
-          ) : null}
         </View>
       ) : null}
 
@@ -243,27 +245,33 @@ function PatientCard({
             </Text>
           ) : null}
 
-          <Text style={styles.completedTitle}>{t('admin.holdStatusTitle')}</Text>
+          <Text style={styles.completedTitle}>{t('admin.pauseSectionTitle')}</Text>
           <Text style={styles.detailLine}>
-            {t('admin.pauseStatus')}:{' '}
-            {patient.progressPaused
-              ? patient.progressHoldType === 'quit'
-                ? t('admin.quit')
-                : t('admin.paused')
-              : t('admin.notPaused')}
+            {t('admin.pausedTimeLabel')}:{' '}
+            {patient.progressHoldType === 'pause' && patient.pausedAt
+              ? formatWhen(Date.parse(patient.pausedAt), i18n.language)
+              : t('admin.pauseReasonNone')}
           </Text>
-          {patient.progressHoldType === 'pause' ? (
-            <Text style={styles.detailLine}>
-              {t('admin.pauseReason')}:{' '}
-              {formatHoldReason(patient.pauseReason, t, 'admin.pauseReasonUnknown')}
-            </Text>
-          ) : null}
-          {patient.progressHoldType === 'quit' ? (
-            <Text style={styles.detailLine}>
-              {t('admin.quitReason')}:{' '}
-              {formatHoldReason(patient.quitReason, t, 'admin.quitReasonUnknown')}
-            </Text>
-          ) : null}
+          <Text style={styles.detailLine}>
+            {t('admin.reasonLabel')}:{' '}
+            {patient.progressHoldType === 'pause'
+              ? formatHoldReason(patient.pauseReason, t, 'admin.pauseReasonNone')
+              : t('admin.pauseReasonNone')}
+          </Text>
+
+          <Text style={styles.completedTitle}>{t('admin.quitSectionTitle')}</Text>
+          <Text style={styles.detailLine}>
+            {t('admin.quitTimeLabel')}:{' '}
+            {patient.progressHoldType === 'quit' && patient.quitAt
+              ? formatWhen(Date.parse(patient.quitAt), i18n.language)
+              : t('admin.pauseReasonNone')}
+          </Text>
+          <Text style={styles.detailLine}>
+            {t('admin.reasonLabel')}:{' '}
+            {patient.progressHoldType === 'quit'
+              ? formatHoldReason(patient.quitReason, t, 'admin.pauseReasonNone')
+              : t('admin.pauseReasonNone')}
+          </Text>
 
           <Text style={styles.completedTitle}>{t('admin.painScoresTitle')}</Text>
           {Object.keys(patient.painScores).length === 0 ? (
