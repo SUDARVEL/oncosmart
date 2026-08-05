@@ -17,7 +17,6 @@ import { ScreenHeader } from '../components/ScreenHeader';
 import {
   fetchAdminHoldAlerts,
   markAdminHoldAlertRead,
-  presentAdminHoldLocalNotification,
   type AdminHoldAlert,
 } from '../lib/adminHoldAlerts';
 import {
@@ -27,8 +26,7 @@ import {
   sortedCompletedSessions,
   type AdminPatientProgress,
 } from '../lib/adminProgress';
-import { getCurrentSession, signOut } from '../lib/auth';
-import { registerAdminPushTokenDetailed } from '../lib/pushTokens';
+import { signOut } from '../lib/auth';
 import { useAppStore } from '../store/useAppStore';
 import { colors } from '../theme/colors';
 import { font } from '../theme/fonts';
@@ -339,7 +337,6 @@ export default function AdminScreen() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [expandedId, setExpandedId] = useState<string | null>(null);
-  const [pushStatus, setPushStatus] = useState<string>('');
 
   const stats = useMemo(() => buildAdminDashboardStats(patients), [patients]);
   const unreadAlerts = useMemo(
@@ -360,51 +357,10 @@ export default function AdminScreen() {
     setRefreshing(false);
   }, []);
 
-  const registerAlertsQuietly = useCallback(async () => {
-    const session = await getCurrentSession();
-    const userId = session?.user?.id;
-    if (!userId) return;
-    const result = await registerAdminPushTokenDetailed(userId);
-    if (result.status === 'saved') {
-      setPushStatus(t('admin.alertsEnabled'));
-      return;
-    }
-    if (result.status === 'no_permission') {
-      setPushStatus(t('admin.alertsPermissionDenied'));
-      return;
-    }
-    // Remote Expo token may be unavailable without FCM — local/realtime alerts still work.
-    setPushStatus(t('admin.alertsLocalOnly'));
-  }, [t]);
-
-  const enableAlerts = useCallback(async () => {
-    const session = await getCurrentSession();
-    const userId = session?.user?.id;
-    if (!userId) {
-      setPushStatus(t('admin.alertsError'));
-      return;
-    }
-    const result = await registerAdminPushTokenDetailed(userId);
-    if (result.status === 'saved') {
-      setPushStatus(t('admin.alertsEnabled'));
-    } else if (result.status === 'no_permission') {
-      setPushStatus(t('admin.alertsPermissionDenied'));
-      return;
-    } else {
-      setPushStatus(t('admin.alertsLocalOnly'));
-    }
-    // Always fire a local test so the admin can confirm notifications appear.
-    await presentAdminHoldLocalNotification({
-      title: t('admin.testAlertTitle'),
-      body: t('admin.testAlertBody'),
-    });
-  }, [t]);
-
   useFocusEffect(
     useCallback(() => {
       void load('initial');
-      void registerAlertsQuietly();
-    }, [load, registerAlertsQuietly]),
+    }, [load]),
   );
 
   const handleLogout = () => {
@@ -446,14 +402,6 @@ export default function AdminScreen() {
           <View style={styles.alertsCard}>
             <Text style={styles.alertsTitle}>{t('admin.alertsTitle')}</Text>
             <Text style={styles.alertsHint}>{t('admin.alertsHint')}</Text>
-            {pushStatus ? <Text style={styles.alertsStatus}>{pushStatus}</Text> : null}
-            <Pressable
-              onPress={() => void enableAlerts()}
-              accessibilityRole="button"
-              style={styles.enableAlertsBtn}
-            >
-              <Text style={styles.enableAlertsText}>{t('admin.enableAlerts')}</Text>
-            </Pressable>
             {unreadAlerts.length === 0 ? (
               <Text style={styles.alertsEmpty}>{t('admin.alertsEmpty')}</Text>
             ) : (
@@ -657,23 +605,6 @@ const styles = StyleSheet.create({
     ...font('regular'),
     fontSize: 12,
     color: colors.textMuted,
-  },
-  alertsStatus: {
-    ...font('medium'),
-    fontSize: 12,
-    color: colors.buttonPrimary,
-  },
-  enableAlertsBtn: {
-    alignSelf: 'flex-start',
-    backgroundColor: colors.buttonPrimary,
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-  },
-  enableAlertsText: {
-    ...font('semiBold'),
-    fontSize: 13,
-    color: '#FFFFFF',
   },
   alertsEmpty: {
     ...font('regular'),
