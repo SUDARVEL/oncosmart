@@ -1,4 +1,6 @@
 import '../i18n';
+// Define admin background task in the global scope before React mounts.
+import '../lib/adminAlertBackgroundTask';
 
 import {
   Antonio_700Bold,

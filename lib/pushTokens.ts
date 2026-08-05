@@ -5,7 +5,8 @@
  * Android FCM / google-services can hard-crash some devices.
  *
  * Admin registration is enabled (best-effort, never throws) so pause/quit
- * alerts can reach the admin dashboard device when FCM is available.
+ * alerts can reach the admin device while the app is closed. Instant remote
+ * delivery on Android also needs FCM credentials on the EAS project.
  */
 import Constants from 'expo-constants';
 import { Platform } from 'react-native';

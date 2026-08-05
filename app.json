@@ -3,13 +3,16 @@
     "name": "ONCOSMART",
     "slug": "oncofitness-app",
     "scheme": "oncofitness",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.oncosmart.oncofitness"
+      "bundleIdentifier": "com.oncosmart.oncofitness",
+      "infoPlist": {
+        "UIBackgroundModes": ["processing", "remote-notification"]
+      }
     },
     "android": {
       "package": "com.oncosmart.oncofitness",
@@ -54,7 +57,8 @@
         }
       ],
       "expo-asset",
-      "expo-updates"
+      "expo-updates",
+      "expo-background-task"
     ],
     "extra": {
       "router": {},

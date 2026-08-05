@@ -3,6 +3,10 @@ import { useEffect, useRef } from 'react';
 import { AppState, type AppStateStatus } from 'react-native';
 
 import {
+  registerAdminHoldAlertBackgroundTask,
+  unregisterAdminHoldAlertBackgroundTask,
+} from '../lib/adminAlertBackgroundTask';
+import {
   fetchAdminHoldAlerts,
   markAdminHoldAlertRead,
   presentAdminHoldLocalNotification,
@@ -18,9 +22,9 @@ const POLL_MS = 4000;
 
 /**
  * For the signed-in admin:
- * - register Expo push token (best-effort remote)
- * - Realtime + polling for new pause/quit alerts
- * - fire an immediate local notification (works without FCM)
+ * - register Expo push token (best-effort remote / closed-app)
+ * - register background task so alerts still arrive after the app is closed
+ * - Realtime + foreground polling for immediate local notifications
  */
 export function AdminAlertBridge() {
   const seenIds = useRef<Set<string>>(new Set());
@@ -56,7 +60,6 @@ export function AdminAlertBridge() {
         alertId: alert.id,
         holdType: alert.holdType,
       });
-      // Mark read so catch-up / poll does not re-fire after app restart.
       void markAdminHoldAlertRead(alert.id);
       try {
         await AsyncStorage.setItem(LAST_NOTIFIED_KEY, alert.createdAt || new Date().toISOString());
@@ -67,12 +70,10 @@ export function AdminAlertBridge() {
 
     const pollNewAlerts = async () => {
       if (!ready.current || cancelled || !adminUserId.current) return;
-      if (appStateRef.current !== 'active') return;
 
       const alerts = await fetchAdminHoldAlerts(15);
       if (cancelled) return;
 
-      // Notify any unread alert we haven't seen yet (newest first → reverse for chrono notify).
       const unseen = alerts
         .filter((a) => !a.readAt && !seenIds.current.has(a.id))
         .reverse();
@@ -88,6 +89,7 @@ export function AdminAlertBridge() {
       seenIds.current = new Set();
 
       void registerAdminPushToken(userId);
+      void registerAdminHoldAlertBackgroundTask();
 
       const existing = await fetchAdminHoldAlerts(30);
       if (cancelled) return;
@@ -105,7 +107,6 @@ export function AdminAlertBridge() {
       }
       ready.current = true;
 
-      // Catch-up notifications for recent unread.
       await pollNewAlerts();
 
       channel = supabase
@@ -147,7 +148,11 @@ export function AdminAlertBridge() {
         .subscribe();
 
       pollTimer = setInterval(() => {
-        void pollNewAlerts();
+        // Keep polling in foreground; when backgrounded the OS may throttle timers,
+        // so the registered background task is the closed-app path.
+        if (appStateRef.current === 'active') {
+          void pollNewAlerts();
+        }
       }, POLL_MS);
     };
 
@@ -162,6 +167,7 @@ export function AdminAlertBridge() {
         teardown();
         ready.current = false;
         adminUserId.current = null;
+        void unregisterAdminHoldAlertBackgroundTask();
         return;
       }
       void bootstrap(session.user.id);
@@ -169,8 +175,9 @@ export function AdminAlertBridge() {
 
     const appSub = AppState.addEventListener('change', (next) => {
       appStateRef.current = next;
-      if (next === 'active') {
-        void registerAdminPushToken(adminUserId.current ?? '');
+      if (next === 'active' && adminUserId.current) {
+        void registerAdminPushToken(adminUserId.current);
+        void registerAdminHoldAlertBackgroundTask();
         void pollNewAlerts();
       }
     });
