@@ -476,7 +476,7 @@
     "dayCompletedBody": "Level {{level}}, Day {{day}} is done. Level {{nextLevel}}, Day {{nextDay}} unlocks in 24 hours — we’ll remind you.",
     "dayCompletedFinalBody": "Level {{level}}, Day {{day}} is done. You’ve finished the program!",
     "appUpdateTitle": "ONCOSMART update ready",
-    "appUpdateBody": "A new version is ready. Open the app and pull down to refresh."
+    "appUpdateBody": "A new version is installing now. The app will refresh in a moment."
   },
   "refresh": {
     "hint": "Pull down to refresh"

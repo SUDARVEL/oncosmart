@@ -3,13 +3,12 @@ import { AppState, type AppStateStatus } from 'react-native';
 
 import { checkForUpdateInBackground } from '../lib/appRefresh';
 
-const FOREGROUND_CHECK_DELAY_MS = 2500;
-const STARTUP_CHECK_DELAY_MS = 6000;
+const FOREGROUND_CHECK_DELAY_MS = 800;
+const STARTUP_CHECK_DELAY_MS = 1200;
 
 /**
- * Quietly checks for EAS Updates when the app opens / returns to foreground.
- * Downloads the bundle and posts a local notification so the patient can
- * pull-to-refresh inside the app to apply it.
+ * Checks for EAS Updates when the app opens / returns to foreground.
+ * Downloads the bundle, posts a local notification, and reloads automatically.
  */
 export function AppUpdateBridge() {
   const checkingRef = useRef(false);

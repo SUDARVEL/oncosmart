@@ -247,10 +247,13 @@ export async function runPullToRefresh(): Promise<AppRefreshResult> {
   return { cloudOk, updateStatus };
 }
 
-/** Quiet foreground check: download update and notify all devices. */
+/**
+ * Foreground check: download any pending EAS Update, notify once, then
+ * reload the app automatically so users don't keep pull-to-refreshing.
+ */
 export async function checkForUpdateInBackground(): Promise<UpdateRefreshStatus> {
   return checkFetchAppUpdate({
-    reloadIfReady: false,
+    reloadIfReady: true,
     notifyIfReady: true,
   });
 }
