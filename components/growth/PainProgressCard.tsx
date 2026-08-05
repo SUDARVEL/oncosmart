@@ -5,7 +5,7 @@ import { StyleSheet, Text, View } from 'react-native';
 import { colors } from '../../theme/colors';
 import { font } from '../../theme/fonts';
 
-const DEFAULT_X_LABELS = ['1', '2', '3', '4', '5', '6', '7'] as const;
+const DEFAULT_X_LABELS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'] as const;
 const Y_LABELS = ['8', '4', '0'] as const;
 
 /** Chart plot height for a max pain score of 10. */
@@ -20,7 +20,7 @@ type PainProgressCardProps = {
   scoresByDay: Array<number | null>;
   /** Used when there's no pain score for the week yet. */
   fallbackScore?: number;
-  /** Optional 1–7 labels (defaults to numeric). */
+  /** Optional Mon–Sun labels (defaults to English short names). */
   weekdayLabels?: string[];
   /** e.g. "3 – 9 Aug" for the current cloud-backed week. */
   weekRangeLabel?: string;

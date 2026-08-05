@@ -18,6 +18,9 @@ type Props = {
   exerciseId: string;
 };
 
+/** Extra height so the full-body pose can hang below the grey stage (Figma). */
+const PREVIEW_OVERFLOW = 28;
+
 function formatRepBadge(repLabel: string): string {
   const trimmed = repLabel.trim();
   if (/^x\d+/i.test(trimmed)) {
@@ -26,7 +29,10 @@ function formatRepBadge(repLabel: string): string {
   return trimmed;
 }
 
-/** Figma day-session card — 180px shell, 257×112 media, no letterbox / crop bars. */
+/**
+ * Figma day-session card — grey landscape stage with the full character pose
+ * (feet may extend below the grey rounded rect). Do not crop or stretch photos.
+ */
 export function ExerciseSessionCard({
   name,
   repLabel,
@@ -37,14 +43,18 @@ export function ExerciseSessionCard({
   return (
     <View style={styles.card} accessibilityRole="text">
       <View style={styles.body}>
-        <View style={styles.previewWrap}>
+        <View style={styles.previewStage}>
+          <View style={styles.previewBackdrop} />
           {previewVideo ? (
-            <SessionCardLoopVideo uri={previewVideo} />
+            <View style={styles.videoClip}>
+              <SessionCardLoopVideo uri={previewVideo} />
+            </View>
           ) : previewPhoto ? (
             <CachedMediaImage
               source={previewPhoto}
               style={styles.previewImage}
-              contentFit="fill"
+              contentFit="contain"
+              contentPosition="bottom"
               recyclingKey={`session-card-${exerciseId}`}
               cachePolicy="memory-disk"
             />
@@ -72,7 +82,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#F3F4F6',
     borderRadius: 8,
-    // Shadow/Raised: 0 2px 4px -2px rgba(0,0,0,0.08), 0 4px 8px -2px rgba(0,0,0,0.04)
+    overflow: 'visible',
     ...Platform.select({
       ios: {
         shadowColor: '#000000',
@@ -99,8 +109,25 @@ const styles = StyleSheet.create({
     gap: 8,
     alignItems: 'center',
     justifyContent: 'center',
+    overflow: 'visible',
   },
-  previewWrap: {
+  /** Stage is taller than the grey plate so feet can sit on the white card. */
+  previewStage: {
+    width: SESSION_EXERCISE_CARD_PREVIEW_WIDTH,
+    height: SESSION_EXERCISE_CARD_PREVIEW_HEIGHT + PREVIEW_OVERFLOW,
+    alignItems: 'center',
+    justifyContent: 'flex-start',
+    overflow: 'visible',
+  },
+  previewBackdrop: {
+    position: 'absolute',
+    top: 0,
+    width: SESSION_EXERCISE_CARD_PREVIEW_WIDTH,
+    height: SESSION_EXERCISE_CARD_PREVIEW_HEIGHT,
+    borderRadius: 8,
+    backgroundColor: '#D1D5DB',
+  },
+  videoClip: {
     width: SESSION_EXERCISE_CARD_PREVIEW_WIDTH,
     height: SESSION_EXERCISE_CARD_PREVIEW_HEIGHT,
     borderRadius: 8,
@@ -108,7 +135,7 @@ const styles = StyleSheet.create({
   },
   previewImage: {
     width: SESSION_EXERCISE_CARD_PREVIEW_WIDTH,
-    height: SESSION_EXERCISE_CARD_PREVIEW_HEIGHT,
+    height: SESSION_EXERCISE_CARD_PREVIEW_HEIGHT + PREVIEW_OVERFLOW,
   },
   title: {
     fontSize: 16,

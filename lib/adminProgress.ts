@@ -1,4 +1,6 @@
 import { getSupabase } from './supabase';
+import type { ProgressHoldType } from './progressHold';
+import { asProgressHoldType } from './progressHold';
 import {
   DAYS_PER_LEVEL,
   TOTAL_SESSIONS,
@@ -20,7 +22,11 @@ export type AdminPatientProgress = {
   cancerType: string;
   onboardingComplete: boolean;
   progressPaused: boolean;
+  progressHoldType: ProgressHoldType | null;
   pauseReason: string | null;
+  quitReason: string | null;
+  pausedAt: string | null;
+  quitAt: string | null;
   levelsCompleted: number;
   dayCompletedAt: Record<string, number>;
   painScores: Record<string, number>;
@@ -41,6 +47,7 @@ export type AdminDashboardStats = {
   neverLoggedIn: number;
   passwordChanged: number;
   paused: number;
+  quit: number;
   sessionBuckets: { label: string; count: number }[];
 };
 
@@ -74,7 +81,11 @@ type RpcRow = {
   cancer_type: string | null;
   onboarding_complete: boolean | null;
   progress_paused: boolean | null;
+  progress_hold_type: string | null;
   pause_reason: string | null;
+  quit_reason: string | null;
+  paused_at: string | null;
+  quit_at: string | null;
   levels_completed: number | null;
   day_completed_at: Record<string, number> | null;
   pain_scores: Record<string, number> | null;
@@ -105,6 +116,19 @@ export async function fetchAdminPatientProgress(): Promise<AdminPatientProgress[
         ? row.sessions_completed
         : getCompletedSessionCount(dayCompletedAt);
     const activeLevel = getActiveLevel(dayCompletedAt);
+    const progressPaused = Boolean(row.progress_paused);
+    let progressHoldType = asProgressHoldType(row.progress_hold_type);
+    if (progressPaused && !progressHoldType) {
+      progressHoldType = row.quit_reason || row.quit_at ? 'quit' : 'pause';
+    }
+    const pauseReason =
+      typeof row.pause_reason === 'string' && row.pause_reason.trim()
+        ? row.pause_reason.trim()
+        : null;
+    const quitReason =
+      typeof row.quit_reason === 'string' && row.quit_reason.trim()
+        ? row.quit_reason.trim()
+        : null;
     return {
       userId: row.user_id,
       accountEmail: row.account_email,
@@ -116,11 +140,13 @@ export async function fetchAdminPatientProgress(): Promise<AdminPatientProgress[
       age: typeof row.age === 'number' ? row.age : null,
       cancerType: row.cancer_type ?? '',
       onboardingComplete: Boolean(row.onboarding_complete),
-      progressPaused: Boolean(row.progress_paused),
-      pauseReason:
-        typeof row.pause_reason === 'string' && row.pause_reason.trim()
-          ? row.pause_reason.trim()
-          : null,
+      progressPaused,
+      progressHoldType: progressPaused ? progressHoldType : null,
+      pauseReason: progressHoldType === 'pause' ? pauseReason : null,
+      quitReason:
+        progressHoldType === 'quit' ? quitReason ?? pauseReason : quitReason,
+      pausedAt: row.paused_at,
+      quitAt: row.quit_at,
       levelsCompleted: typeof row.levels_completed === 'number' ? row.levels_completed : 0,
       dayCompletedAt,
       painScores: asRecordNumber(row.pain_scores),
@@ -153,7 +179,11 @@ export function buildAdminDashboardStats(
     withProgress: patients.filter((p) => p.sessionsCompleted > 0).length,
     neverLoggedIn: patients.filter((p) => !p.lastSignInAt).length,
     passwordChanged: patients.filter((p) => p.passwordChanged).length,
-    paused: patients.filter((p) => p.progressPaused).length,
+    paused: patients.filter(
+      (p) => p.progressPaused && p.progressHoldType !== 'quit',
+    ).length,
+    quit: patients.filter((p) => p.progressPaused && p.progressHoldType === 'quit')
+      .length,
     sessionBuckets: buckets.map((b) => ({
       label: b.label,
       count: patients.filter(

@@ -29,9 +29,31 @@ export function getLocalWeekMonday(now: number = Date.now()): Date {
   return d;
 }
 
-/** Streak / chart labels are always 1–7 for the current Mon–Sun week. */
+/** Streak circles use 1–7 for the current Mon–Sun week. */
 export function getWeekdayLabels(_locale: string = 'en'): string[] {
   return ['1', '2', '3', '4', '5', '6', '7'];
+}
+
+/** Pain chart uses short weekday names (Mon–Sun) for the current week. */
+export function getWeekdayDayNames(locale: string = 'en'): string[] {
+  const normalized =
+    locale === 'ta' || locale.startsWith('ta-')
+      ? 'ta-IN'
+      : locale === 'en' || locale.startsWith('en-')
+        ? 'en-US'
+        : locale;
+  try {
+    const formatter = new Intl.DateTimeFormat(normalized, { weekday: 'short' });
+    // 2024-01-01 is a Monday.
+    const monday = new Date(2024, 0, 1, 12, 0, 0, 0);
+    return Array.from({ length: 7 }, (_, i) => {
+      const day = new Date(monday);
+      day.setDate(monday.getDate() + i);
+      return formatter.format(day).replace(/\./g, '').trim();
+    });
+  } catch {
+    return ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+  }
 }
 
 /** Short date range for the current local week (Mon–Sun). */

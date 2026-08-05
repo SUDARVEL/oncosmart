@@ -33,7 +33,9 @@ export function CloudSyncBridge() {
   const parqAnswers = useAppStore((s) => s.parqAnswers);
   const parqCleared = useAppStore((s) => s.parqCleared);
   const progressPaused = useAppStore((s) => s.progressPaused);
+  const progressHoldType = useAppStore((s) => s.progressHoldType);
   const pauseReason = useAppStore((s) => s.pauseReason);
+  const quitReason = useAppStore((s) => s.quitReason);
   const painScores = useAppStore((s) => s.painScores);
   const dayCompletedAt = useAppStore((s) => s.dayCompletedAt);
   const levelsCompleted = useAppStore((s) => s.levelsCompleted);
@@ -96,7 +98,9 @@ export function CloudSyncBridge() {
     parqAnswers,
     parqCleared,
     progressPaused,
+    progressHoldType,
     pauseReason,
+    quitReason,
     painScores,
     dayCompletedAt,
     levelsCompleted,

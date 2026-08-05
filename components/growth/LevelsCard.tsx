@@ -19,8 +19,11 @@ type LevelsCardProps = {
   completed: number;
   total: number;
   paused: boolean;
+  /** When paused, whether this is a temporary pause or a quit. */
+  holdType?: "pause" | "quit" | null;
   avatar: AppAvatar | null;
   onPause: () => void;
+  onQuit: () => void;
   onResume: () => void;
   /** Coach-mark anchor for the Pause / Resume Progress control. */
   pauseAnchorRef?: Ref<View>;
@@ -30,8 +33,10 @@ export function LevelsCard({
   completed,
   total,
   paused,
+  holdType = null,
   avatar,
   onPause,
+  onQuit,
   onResume,
   pauseAnchorRef,
 }: LevelsCardProps) {
@@ -40,6 +45,8 @@ export function LevelsCard({
   const avatarSource = isFemale
     ? GROWTH_ASSETS.femaleAvatarGrowth
     : GROWTH_ASSETS.maleAvatarGrowth;
+  const resumeLabel =
+    holdType === "quit" ? t("growth.resumeAfterQuit") : t("growth.resumeProgress");
 
   return (
     <View style={styles.card}>
@@ -80,21 +87,31 @@ export function LevelsCard({
             style={styles.resumeButton}
             onPress={onResume}
             accessibilityRole="button"
-            accessibilityLabel={t("growth.resumeProgress")}
+            accessibilityLabel={resumeLabel}
           >
             <SvgXml xml={PLAY_ICON_XML} width={12} height={16} />
-            <Text style={styles.resumeText}>{t("growth.resumeProgress")}</Text>
+            <Text style={styles.resumeText}>{resumeLabel}</Text>
           </PressableScale>
         ) : (
-          <PressableScale
-            style={styles.pauseButton}
-            onPress={onPause}
-            accessibilityRole="button"
-            accessibilityLabel={t("growth.pauseProgress")}
-          >
-            <SvgXml xml={PAUSE_ICON_XML} width={10} height={12} />
-            <Text style={styles.pauseText}>{t("growth.pauseProgress")}</Text>
-          </PressableScale>
+          <View style={styles.actionRow}>
+            <PressableScale
+              style={styles.pauseButton}
+              onPress={onPause}
+              accessibilityRole="button"
+              accessibilityLabel={t("growth.pauseProgress")}
+            >
+              <SvgXml xml={PAUSE_ICON_XML} width={10} height={12} />
+              <Text style={styles.pauseText}>{t("growth.pauseProgress")}</Text>
+            </PressableScale>
+            <PressableScale
+              style={styles.quitButton}
+              onPress={onQuit}
+              accessibilityRole="button"
+              accessibilityLabel={t("growth.quitProgress")}
+            >
+              <Text style={styles.quitText}>{t("growth.quitProgress")}</Text>
+            </PressableScale>
+          </View>
         )}
       </View>
     </View>
@@ -180,6 +197,14 @@ const styles = StyleSheet.create({
   pauseAnchor: {
     marginTop: 12,
     alignItems: "center",
+    width: "100%",
+  },
+  actionRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 10,
+    flexWrap: "wrap",
   },
   pauseButton: {
     flexDirection: "row",
@@ -198,6 +223,26 @@ const styles = StyleSheet.create({
     fontSize: 12,
     ...font("semiBold"),
     color: colors.buttonPrimary,
+    letterSpacing: 0,
+    lineHeight: 18,
+    includeFontPadding: true,
+  },
+  quitButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    height: 35,
+    paddingHorizontal: 16,
+    borderWidth: 1,
+    borderColor: "#FECACA",
+    borderRadius: 8,
+    backgroundColor: colors.background,
+    minWidth: 120,
+  },
+  quitText: {
+    fontSize: 12,
+    ...font("semiBold"),
+    color: "#B91C1C",
     letterSpacing: 0,
     lineHeight: 18,
     includeFontPadding: true,

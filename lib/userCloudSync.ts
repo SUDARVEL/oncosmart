@@ -1,4 +1,5 @@
 import { getCompletedLevelsCount } from './programProgress';
+import { asHoldReason, asProgressHoldType, type ProgressHoldType } from './progressHold';
 import { getSupabase } from './supabase';
 import type {
   AgeRange,
@@ -9,14 +10,6 @@ import type {
   TreatmentType,
 } from '../store/useAppStore';
 import { useAppStore } from '../store/useAppStore';
-
-const PAUSE_REASONS = new Set<PauseReason>(['tired', 'pain', 'treatment', 'unwell']);
-
-function asPauseReason(value: unknown): PauseReason | null {
-  return typeof value === 'string' && PAUSE_REASONS.has(value as PauseReason)
-    ? (value as PauseReason)
-    : null;
-}
 
 export type CloudLoadResult = {
   ok: boolean;
@@ -115,7 +108,7 @@ export async function loadCloudProfileIntoStore(userId: string): Promise<CloudLo
   const { data, error } = await supabase
     .from('patients')
     .select(
-      'id,user_id,name,language,gender,avatar,age,age_range,cancer_type,treatment_undergoing,underwent_surgery,parq_answers,parq_cleared,progress_paused,pause_reason,pain_scores,day_completed_at,levels_completed,onboarding_complete,coach_tour_seen',
+      'id,user_id,name,language,gender,avatar,age,age_range,cancer_type,treatment_undergoing,underwent_surgery,parq_answers,parq_cleared,progress_paused,progress_hold_type,pause_reason,quit_reason,pain_scores,day_completed_at,levels_completed,onboarding_complete,coach_tour_seen',
     )
     .eq('user_id', userId)
     .maybeSingle();
@@ -142,6 +135,19 @@ export async function loadCloudProfileIntoStore(userId: string): Promise<CloudLo
       : true
     : null;
 
+  const progressPaused = Boolean(data.progress_paused);
+  let progressHoldType = asProgressHoldType(data.progress_hold_type);
+  if (progressPaused && !progressHoldType) {
+    // Legacy rows only had pause_reason / progress_paused.
+    progressHoldType = data.quit_reason ? 'quit' : 'pause';
+  }
+  const pauseReason =
+    progressPaused && progressHoldType === 'pause' ? asHoldReason(data.pause_reason) : null;
+  const quitReason =
+    progressPaused && progressHoldType === 'quit'
+      ? asHoldReason(data.quit_reason) ?? asHoldReason(data.pause_reason)
+      : null;
+
   useAppStore.getState().hydrateFromCloud({
     activeAuthUserId: userId,
     username: (data.name ?? '').trim(),
@@ -156,8 +162,10 @@ export async function loadCloudProfileIntoStore(userId: string): Promise<CloudLo
       typeof data.underwent_surgery === 'boolean' ? data.underwent_surgery : null,
     parqAnswers: asParqAnswers(data.parq_answers),
     parqCleared,
-    progressPaused: Boolean(data.progress_paused),
-    pauseReason: Boolean(data.progress_paused) ? asPauseReason(data.pause_reason) : null,
+    progressPaused,
+    progressHoldType: progressPaused ? progressHoldType : null,
+    pauseReason,
+    quitReason,
     painScores: asRecordNumber(data.pain_scores),
     dayCompletedAt,
     levelsCompleted:
@@ -181,6 +189,11 @@ export async function saveCloudProfileFromStore(userId: string): Promise<boolean
 
   const state = useAppStore.getState();
   const onboardingComplete = computeOnboardingComplete(state);
+  const holdType: ProgressHoldType | null = state.progressPaused
+    ? state.progressHoldType === 'quit'
+      ? 'quit'
+      : 'pause'
+    : null;
 
   const { error } = await supabase
     .from('patients')
@@ -197,9 +210,12 @@ export async function saveCloudProfileFromStore(userId: string): Promise<boolean
       parq_answers: state.parqAnswers,
       parq_cleared: state.parqCleared,
       progress_paused: state.progressPaused,
-      pause_reason: state.progressPaused ? state.pauseReason : null,
-      // Clear stamp on resume; set paused_at only when newly pausing (below).
-      ...(state.progressPaused ? {} : { paused_at: null }),
+      progress_hold_type: holdType,
+      pause_reason: holdType === 'pause' ? state.pauseReason : null,
+      quit_reason: holdType === 'quit' ? state.quitReason : null,
+      ...(state.progressPaused
+        ? {}
+        : { paused_at: null, quit_at: null, progress_hold_type: null }),
       pain_scores: state.painScores,
       day_completed_at: state.dayCompletedAt,
       levels_completed: state.levelsCompleted,
@@ -214,15 +230,25 @@ export async function saveCloudProfileFromStore(userId: string): Promise<boolean
     return false;
   }
 
-  // Stamp paused_at once when the patient quits/pauses (admin can see when).
-  if (state.progressPaused && state.pauseReason) {
+  // Stamp paused_at / quit_at once when newly holding (admin can see when).
+  if (holdType === 'pause' && state.pauseReason) {
     const { error: pauseStampError } = await supabase
       .from('patients')
-      .update({ paused_at: new Date().toISOString() })
+      .update({ paused_at: new Date().toISOString(), quit_at: null })
       .eq('id', patientId)
       .is('paused_at', null);
     if (pauseStampError) {
       console.warn('[CloudSync] paused_at stamp failed', pauseStampError.message);
+    }
+  }
+  if (holdType === 'quit' && state.quitReason) {
+    const { error: quitStampError } = await supabase
+      .from('patients')
+      .update({ quit_at: new Date().toISOString() })
+      .eq('id', patientId)
+      .is('quit_at', null);
+    if (quitStampError) {
+      console.warn('[CloudSync] quit_at stamp failed', quitStampError.message);
     }
   }
 
@@ -292,3 +318,5 @@ export async function upsertSessionCompletion(params: {
     console.warn('[CloudSync] completion upsert failed', error.message);
   }
 }
+
+export type { PauseReason };

@@ -21,7 +21,8 @@ import {
   sortedCompletedSessions,
   type AdminPatientProgress,
 } from '../lib/adminProgress';
-import { signOut } from '../lib/auth';
+import { getCurrentSession, signOut } from '../lib/auth';
+import { registerAdminPushToken } from '../lib/pushTokens';
 import { useAppStore } from '../store/useAppStore';
 import { colors } from '../theme/colors';
 import { font } from '../theme/fonts';
@@ -41,11 +42,11 @@ function formatWhen(ms: number | null | undefined, locale: string): string {
   }
 }
 
-function formatPauseReason(
-  patient: AdminPatientProgress,
+function formatHoldReason(
+  reason: string | null | undefined,
   t: (key: string) => string,
+  unknownKey: string,
 ): string {
-  const reason = patient.pauseReason;
   switch (reason) {
     case 'tired':
       return t('admin.pauseReasonTired');
@@ -57,9 +58,7 @@ function formatPauseReason(
       return t('admin.pauseReasonUnwell');
     default:
       if (typeof reason === 'string' && reason.trim()) return reason.trim();
-      return patient.progressPaused
-        ? t('admin.pauseReasonUnknown')
-        : t('admin.pauseReasonNone');
+      return t(unknownKey);
   }
 }
 
@@ -165,19 +164,45 @@ function PatientCard({
             {patient.passwordChanged ? t('admin.passwordChanged') : t('admin.defaultPassword')}
           </Text>
         </View>
-        {patient.progressPaused ? (
+        {patient.progressPaused && patient.progressHoldType === 'pause' ? (
           <View style={[styles.badge, styles.badgeWarn]}>
             <Text style={styles.badgeText}>{t('admin.paused')}</Text>
           </View>
         ) : null}
+        {patient.progressPaused && patient.progressHoldType === 'quit' ? (
+          <View style={[styles.badge, styles.badgeDanger]}>
+            <Text style={styles.badgeText}>{t('admin.quit')}</Text>
+          </View>
+        ) : null}
       </View>
 
-      {patient.progressPaused ? (
+      {patient.progressPaused && patient.progressHoldType === 'pause' ? (
         <View style={styles.pauseBanner}>
-          <Text style={styles.pauseBannerTitle}>{t('admin.quitPausedTitle')}</Text>
+          <Text style={styles.pauseBannerTitle}>{t('admin.pausedTitle')}</Text>
           <Text style={styles.pauseBannerReason}>
-            {t('admin.pauseReason')}: {formatPauseReason(patient, t)}
+            {t('admin.pauseReason')}:{' '}
+            {formatHoldReason(patient.pauseReason, t, 'admin.pauseReasonUnknown')}
           </Text>
+          {patient.pausedAt ? (
+            <Text style={styles.pauseBannerReason}>
+              {t('admin.pausedAt')}: {formatWhen(Date.parse(patient.pausedAt), i18n.language)}
+            </Text>
+          ) : null}
+        </View>
+      ) : null}
+
+      {patient.progressPaused && patient.progressHoldType === 'quit' ? (
+        <View style={styles.quitBanner}>
+          <Text style={styles.quitBannerTitle}>{t('admin.quitTitle')}</Text>
+          <Text style={styles.quitBannerReason}>
+            {t('admin.quitReason')}:{' '}
+            {formatHoldReason(patient.quitReason, t, 'admin.quitReasonUnknown')}
+          </Text>
+          {patient.quitAt ? (
+            <Text style={styles.quitBannerReason}>
+              {t('admin.quitAt')}: {formatWhen(Date.parse(patient.quitAt), i18n.language)}
+            </Text>
+          ) : null}
         </View>
       ) : null}
 
@@ -210,14 +235,27 @@ function PatientCard({
             </Text>
           ) : null}
 
-          <Text style={styles.completedTitle}>{t('admin.quitPausedTitle')}</Text>
+          <Text style={styles.completedTitle}>{t('admin.holdStatusTitle')}</Text>
           <Text style={styles.detailLine}>
             {t('admin.pauseStatus')}:{' '}
-            {patient.progressPaused ? t('admin.paused') : t('admin.notPaused')}
+            {patient.progressPaused
+              ? patient.progressHoldType === 'quit'
+                ? t('admin.quit')
+                : t('admin.paused')
+              : t('admin.notPaused')}
           </Text>
-          <Text style={styles.detailLine}>
-            {t('admin.pauseReason')}: {formatPauseReason(patient, t)}
-          </Text>
+          {patient.progressHoldType === 'pause' ? (
+            <Text style={styles.detailLine}>
+              {t('admin.pauseReason')}:{' '}
+              {formatHoldReason(patient.pauseReason, t, 'admin.pauseReasonUnknown')}
+            </Text>
+          ) : null}
+          {patient.progressHoldType === 'quit' ? (
+            <Text style={styles.detailLine}>
+              {t('admin.quitReason')}:{' '}
+              {formatHoldReason(patient.quitReason, t, 'admin.quitReasonUnknown')}
+            </Text>
+          ) : null}
 
           <Text style={styles.completedTitle}>{t('admin.painScoresTitle')}</Text>
           {Object.keys(patient.painScores).length === 0 ? (
@@ -299,6 +337,11 @@ export default function AdminScreen() {
   useFocusEffect(
     useCallback(() => {
       void load('initial');
+      // Register this admin device for pause/quit push alerts.
+      void getCurrentSession().then((session) => {
+        const userId = session?.user?.id;
+        if (userId) void registerAdminPushToken(userId);
+      });
     }, [load]),
   );
 
@@ -345,6 +388,7 @@ export default function AdminScreen() {
             <StatChip label={t('admin.statNeverLogin')} value={stats.neverLoggedIn} />
             <StatChip label={t('admin.statPasswordChanged')} value={stats.passwordChanged} />
             <StatChip label={t('admin.statPaused')} value={stats.paused} />
+            <StatChip label={t('admin.statQuit')} value={stats.quit} />
           </View>
 
           <SessionBarChart buckets={stats.sessionBuckets} />
@@ -555,6 +599,9 @@ const styles = StyleSheet.create({
   badgeWarn: {
     backgroundColor: '#FEF3C7',
   },
+  badgeDanger: {
+    backgroundColor: '#FEE2E2',
+  },
   badgeText: {
     ...font('medium'),
     fontSize: 12,
@@ -579,6 +626,26 @@ const styles = StyleSheet.create({
     ...font('medium'),
     fontSize: 13,
     color: '#78350F',
+  },
+  quitBanner: {
+    marginTop: 10,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#EF4444',
+    backgroundColor: '#FEF2F2',
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    gap: 2,
+  },
+  quitBannerTitle: {
+    ...font('semiBold'),
+    fontSize: 13,
+    color: '#991B1B',
+  },
+  quitBannerReason: {
+    ...font('medium'),
+    fontSize: 13,
+    color: '#7F1D1D',
   },
   detailBlock: {
     borderTopWidth: 1,

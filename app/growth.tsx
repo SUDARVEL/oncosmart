@@ -29,9 +29,13 @@ import {
   cancelNextExerciseNotification,
   syncNextExerciseNotification,
 } from '../lib/nextExerciseNotification';
+import { notifyAdminsOfHold } from '../lib/adminNotify';
+import type { ProgressHoldType } from '../lib/progressHold';
+import { saveCloudProfileFromStore } from '../lib/userCloudSync';
 import {
   getCurrentWeekdayStreak,
   getCurrentWeekPainScores,
+  getWeekdayDayNames,
 } from '../lib/weekdayStreak';
 import { useAppStore } from '../store/useAppStore';
 import { colors } from '../theme/colors';
@@ -42,7 +46,7 @@ export default function GrowthScreen() {
   const { t, i18n } = useTranslation();
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<GrowthTab>('progress');
-  const [showPauseReason, setShowPauseReason] = useState(false);
+  const [holdModalType, setHoldModalType] = useState<ProgressHoldType | null>(null);
   const {
     active: coachActive,
     step: coachStep,
@@ -57,7 +61,9 @@ export default function GrowthScreen() {
   const { refreshing, onRefresh } = usePullToRefresh();
 
   const progressPaused = useAppStore((state) => state.progressPaused);
+  const progressHoldType = useAppStore((state) => state.progressHoldType);
   const setProgressPaused = useAppStore((state) => state.setProgressPaused);
+  const username = useAppStore((state) => state.username);
 
   // Keep the Growth pills in sync with the active coach step.
   useEffect(() => {
@@ -71,15 +77,29 @@ export default function GrowthScreen() {
   const painScores = useAppStore((state) => state.painScores);
   const dayCompletedAt = useAppStore((state) => state.dayCompletedAt);
 
-  const handlePauseReasonSelect = (reason: PauseReason) => {
-    setShowPauseReason(false);
-    setProgressPaused(true, reason);
-    // Pausing stops exercise reminders until the patient resumes.
+  const handleHoldReasonSelect = (reason: PauseReason) => {
+    const holdType = holdModalType ?? 'pause';
+    setHoldModalType(null);
+    setProgressPaused(true, reason, holdType);
+    // Holding stops exercise reminders until the patient resumes.
     void cancelNextExerciseNotification();
+    const displayName = username.trim() || 'Patient';
+    const authUserId = useAppStore.getState().activeAuthUserId;
+    void (async () => {
+      if (authUserId) {
+        await saveCloudProfileFromStore(authUserId);
+      }
+      await notifyAdminsOfHold({
+        holdType,
+        reason,
+        patientName: displayName,
+        patientUsername: displayName,
+      });
+    })();
   };
 
   const handleResumeProgress = () => {
-    setProgressPaused(false, null);
+    setProgressPaused(false, null, null);
     void syncNextExerciseNotification(dayCompletedAt, { paused: false });
   };
 
@@ -88,7 +108,8 @@ export default function GrowthScreen() {
     locale: i18n.language || 'en',
   });
 
-  // Pain chart follows the same Mon–Sun calendar week as the streak.
+  // Pain chart uses Mon–Sun names for this week's scores.
+  const painWeekdayLabels = getWeekdayDayNames(i18n.language || 'en');
   const painScoresByDay = getCurrentWeekPainScores(dayCompletedAt, painScores);
 
   // Fallback when there's no pain data for this week yet.
@@ -151,8 +172,10 @@ export default function GrowthScreen() {
               completed={levelsCompleted}
               total={LEVELS_TOTAL}
               paused={progressPaused}
+              holdType={progressHoldType ?? (progressPaused ? 'pause' : null)}
               avatar={avatar}
-              onPause={() => setShowPauseReason(true)}
+              onPause={() => setHoldModalType('pause')}
+              onQuit={() => setHoldModalType('quit')}
               onResume={handleResumeProgress}
               pauseAnchorRef={(node) => registerTarget('growth.pauseProgress', node)}
             />
@@ -164,7 +187,7 @@ export default function GrowthScreen() {
             <PainProgressCard
               paused={progressPaused}
               scoresByDay={painScoresByDay}
-              weekdayLabels={weekdayStreak.labels}
+              weekdayLabels={painWeekdayLabels}
               weekRangeLabel={weekdayStreak.weekRangeLabel}
               fallbackScore={painScore}
             />
@@ -190,9 +213,10 @@ export default function GrowthScreen() {
       />
 
       <PauseReasonModal
-        visible={showPauseReason}
-        onClose={() => setShowPauseReason(false)}
-        onSelect={handlePauseReasonSelect}
+        visible={holdModalType != null}
+        holdType={holdModalType ?? 'pause'}
+        onClose={() => setHoldModalType(null)}
+        onSelect={handleHoldReasonSelect}
       />
 
     </SafeAreaView>

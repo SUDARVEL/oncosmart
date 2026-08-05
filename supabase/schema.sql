@@ -16,11 +16,20 @@ create table if not exists patients (
   parq_answers jsonb not null default '[]'::jsonb,
   parq_cleared boolean default false,
   progress_paused boolean not null default false,
+  progress_hold_type text check (
+    progress_hold_type is null
+    or progress_hold_type = any (array['pause'::text, 'quit'::text])
+  ),
   pause_reason text check (
     pause_reason is null
     or pause_reason = any (array['tired'::text, 'pain'::text, 'treatment'::text, 'unwell'::text])
   ),
+  quit_reason text check (
+    quit_reason is null
+    or quit_reason = any (array['tired'::text, 'pain'::text, 'treatment'::text, 'unwell'::text])
+  ),
   paused_at timestamptz,
+  quit_at timestamptz,
   pain_scores jsonb not null default '{}'::jsonb,
   day_completed_at jsonb not null default '{}'::jsonb,
   levels_completed integer not null default 0,
@@ -36,6 +45,13 @@ create table if not exists app_update_broadcasts (
   update_id text primary key,
   sent_at timestamptz not null default now(),
   recipient_count integer not null default 0
+);
+
+-- Admin devices that receive pause/quit alerts
+create table if not exists admin_push_tokens (
+  user_id uuid primary key references auth.users(id) on delete cascade,
+  expo_push_token text not null,
+  updated_at timestamptz not null default now()
 );
 
 create table if not exists exercise_completions (

@@ -2,22 +2,25 @@ import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
+import type { ProgressHoldType } from '../../lib/progressHold';
 import { font } from '../../theme/fonts';
 
 export type PauseReason = 'tired' | 'pain' | 'treatment' | 'unwell';
 
 type Props = {
   visible: boolean;
+  holdType: ProgressHoldType;
   onClose: () => void;
   onSelect: (reason: PauseReason) => void;
 };
 
 /**
- * Figma "Reason for pausing your progress?" popup (3124:12545 / 3177:9710).
- * Shown when the patient taps Pause Progress on the Growth screen. Tamil + English.
+ * Reason picker for Pause Progress or Quit Progress on Growth.
+ * Tamil + English via i18n keys.
  */
-export function PauseReasonModal({ visible, onClose, onSelect }: Props) {
+export function PauseReasonModal({ visible, holdType, onClose, onSelect }: Props) {
   const { t } = useTranslation();
+  const isQuit = holdType === 'quit';
 
   const options: { reason: PauseReason; label: string }[] = [
     { reason: 'tired', label: t('growth.pauseReasonTired') },
@@ -31,7 +34,9 @@ export function PauseReasonModal({ visible, onClose, onSelect }: Props) {
       <View style={styles.backdrop}>
         <View style={styles.card}>
           <View style={styles.header}>
-            <Text style={styles.title}>{t('growth.pauseReasonTitle')}</Text>
+            <Text style={styles.title}>
+              {isQuit ? t('growth.quitReasonTitle') : t('growth.pauseReasonTitle')}
+            </Text>
             <Pressable
               onPress={onClose}
               style={styles.closeButton}
@@ -49,7 +54,9 @@ export function PauseReasonModal({ visible, onClose, onSelect }: Props) {
             showsVerticalScrollIndicator={false}
             bounces={false}
           >
-            <Text style={styles.subtitle}>{t('growth.pauseReasonSubtitle')}</Text>
+            <Text style={styles.subtitle}>
+              {isQuit ? t('growth.quitReasonSubtitle') : t('growth.pauseReasonSubtitle')}
+            </Text>
 
             <View style={styles.options}>
               {options.map((option) => (
@@ -80,7 +87,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingHorizontal: 16,
   },
-  /** Figma: white card, radius 16, SingleShadow-2 (0 4 6 rgba(17,24,39,.2)) */
   card: {
     width: '100%',
     maxWidth: 390,
@@ -101,7 +107,6 @@ const styles = StyleSheet.create({
     padding: 16,
     gap: 12,
   },
-  /** Figma Gray-Neutral/100 #374151, Roboto SemiBold 16 */
   title: {
     flex: 1,
     fontSize: 16,
@@ -135,7 +140,6 @@ const styles = StyleSheet.create({
     gap: 15,
     marginTop: 8,
   },
-  /** Figma button: h44, radius 8, border #D5D7DA, Shadow/xs */
   optionButton: {
     height: 44,
     borderWidth: 1,
@@ -151,7 +155,6 @@ const styles = StyleSheet.create({
     shadowRadius: 2,
     elevation: 1,
   },
-  /** Figma Gray/700 #414651, Roboto SemiBold 16 */
   optionText: {
     fontSize: 16,
     lineHeight: 24,

@@ -4,6 +4,7 @@ import { createJSONStorage, persist } from 'zustand/middleware';
 
 import { getCompletedLevelsCount, sessionKey } from '../lib/programProgress';
 import type { BadgeKey } from '../lib/getEarnedBadges';
+import type { ProgressHoldType } from '../lib/progressHold';
 
 export type AppLanguage = 'en' | 'ta';
 export type AppGender = 'male' | 'female' | 'prefer_not_to_say';
@@ -12,6 +13,7 @@ export type AppAvatar = 'male' | 'female';
 export type AgeRange = '18-24' | '25-34' | '35-44' | '45-54' | '55-64';
 export type TreatmentType = 'chemotherapy' | 'radiation' | 'both' | 'none';
 export type PauseReason = 'tired' | 'pain' | 'treatment' | 'unwell';
+export type { ProgressHoldType };
 
 export type AppStateSnapshot = {
   language: AppLanguage | null;
@@ -27,8 +29,12 @@ export type AppStateSnapshot = {
   parqCleared: boolean | null;
   painScores: Record<string, number>;
   progressPaused: boolean;
+  /** pause = temporary hold, quit = stopped the program. */
+  progressHoldType: ProgressHoldType | null;
   /** Why progress was paused — kept for admin + cloud sync. */
   pauseReason: PauseReason | null;
+  /** Why the patient quit — separate from pause reason. */
+  quitReason: PauseReason | null;
   levelsCompleted: number;
   dayCompletedAt: Record<string, number>;
   activeAuthUserId: string | null;
@@ -65,7 +71,16 @@ type AppState = AppStateSnapshot & {
   setParqAnswer: (index: number, value: boolean) => void;
   setParqCleared: (cleared: boolean) => void;
   setPainScore: (level: number, dayInLevel: number, score: number) => void;
-  setProgressPaused: (paused: boolean, reason?: PauseReason | null) => void;
+  /**
+   * Freeze or unfreeze progress.
+   * When holding, pass `holdType` (`pause` | `quit`) plus a reason.
+   * When resuming, call with `paused: false`.
+   */
+  setProgressPaused: (
+    paused: boolean,
+    reason?: PauseReason | null,
+    holdType?: ProgressHoldType | null,
+  ) => void;
   setLevelsCompleted: (count: number) => void;
   setActiveAuthUserId: (userId: string | null) => void;
   setCoachTourSeen: (seen: boolean) => void;
@@ -106,7 +121,9 @@ export const useAppStore = create<AppState>()(
       parqCleared: null,
       painScores: {},
       progressPaused: false,
+      progressHoldType: null,
       pauseReason: null,
+      quitReason: null,
       levelsCompleted: 0,
       dayCompletedAt: {},
       activeAuthUserId: null,
@@ -138,10 +155,28 @@ export const useAppStore = create<AppState>()(
             painScores: { ...state.painScores, [`${level}:${dayInLevel}`]: score },
           };
         }),
-      setProgressPaused: (paused, reason = null) =>
-        set({
-          progressPaused: paused,
-          pauseReason: paused ? reason ?? null : null,
+      setProgressPaused: (paused, reason = null, holdType = null) =>
+        set((state) => {
+          if (!paused) {
+            return {
+              progressPaused: false,
+              progressHoldType: null,
+              pauseReason: null,
+              quitReason: null,
+            };
+          }
+          const nextType: ProgressHoldType =
+            holdType === 'quit' || holdType === 'pause'
+              ? holdType
+              : state.progressHoldType === 'quit'
+                ? 'quit'
+                : 'pause';
+          return {
+            progressPaused: true,
+            progressHoldType: nextType,
+            pauseReason: nextType === 'pause' ? reason ?? null : null,
+            quitReason: nextType === 'quit' ? reason ?? null : null,
+          };
         }),
       setLevelsCompleted: (count) => set({ levelsCompleted: count }),
       setActiveAuthUserId: (userId) => set({ activeAuthUserId: userId }),
@@ -247,7 +282,9 @@ export const useAppStore = create<AppState>()(
           parqCleared: null,
           painScores: {},
           progressPaused: false,
+          progressHoldType: null,
           pauseReason: null,
+          quitReason: null,
           levelsCompleted: 0,
           dayCompletedAt: {},
           activeAuthUserId: null,
@@ -278,7 +315,9 @@ export const useAppStore = create<AppState>()(
         parqCleared: state.parqCleared,
         painScores: state.painScores,
         progressPaused: state.progressPaused,
+        progressHoldType: state.progressHoldType,
         pauseReason: state.pauseReason,
+        quitReason: state.quitReason,
         levelsCompleted: state.levelsCompleted,
         dayCompletedAt: state.dayCompletedAt,
         activeAuthUserId: state.activeAuthUserId,
