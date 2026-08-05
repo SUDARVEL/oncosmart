@@ -1,14 +1,16 @@
-import {
-  buildHoldAlertCopy,
-  createAdminHoldAlert,
-} from './adminHoldAlerts';
+import { buildHoldAlertCopy } from './adminHoldAlerts';
 import type { HoldReason, ProgressHoldType } from './progressHold';
 import { getSupabase } from './supabase';
 
 /**
  * Notify admins that a patient paused or quit.
- * 1) Always write an `admin_hold_alerts` row (admin dashboard + realtime).
- * 2) Best-effort Expo remote push via edge function (needs a registered admin token).
+ *
+ * Alert rows are created by the `patients_emit_hold_alert` DB trigger when
+ * `saveCloudProfileFromStore` writes pause/quit fields. This function only
+ * best-effort sends Expo remote push (needs a registered admin token).
+ *
+ * The signed-in admin app also polls/realtime `admin_hold_alerts` and shows
+ * a local notification even when remote push tokens are missing.
  */
 export async function notifyAdminsOfHold(params: {
   holdType: ProgressHoldType;
@@ -16,8 +18,6 @@ export async function notifyAdminsOfHold(params: {
   patientName: string;
   patientUsername?: string;
 }): Promise<void> {
-  const alertId = await createAdminHoldAlert(params);
-
   const supabase = getSupabase();
   if (!supabase) return;
 
@@ -35,11 +35,12 @@ export async function notifyAdminsOfHold(params: {
         patientUsername: params.patientUsername ?? params.patientName,
         title: copy.title,
         body: copy.body,
-        alertId,
+        // Alert already created by patients trigger after cloud save.
+        alertId: 'trigger',
       },
     });
     if (error) {
-      console.warn('[AdminNotify] hold notify failed', error.message);
+      console.warn('[AdminNotify] edge push failed (alert still saved)', error.message);
       return;
     }
     console.log('[AdminNotify] hold notify result', data);

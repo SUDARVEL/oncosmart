@@ -19,8 +19,9 @@ async function ensureAndroidAdminChannel(): Promise<void> {
     const Notifications = await import('expo-notifications');
     await Notifications.setNotificationChannelAsync('admin-alerts', {
       name: 'Admin alerts',
-      importance: Notifications.AndroidImportance.HIGH,
+      importance: Notifications.AndroidImportance.MAX,
       vibrationPattern: [0, 250, 250, 250],
+      enableVibrate: true,
       lockscreenVisibility: Notifications.AndroidNotificationVisibility.PUBLIC,
     });
   } catch {

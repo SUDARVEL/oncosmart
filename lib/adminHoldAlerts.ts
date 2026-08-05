@@ -142,9 +142,10 @@ export async function createAdminHoldAlert(params: {
       body,
     })
     .select('id')
-    .single();
+    .maybeSingle();
 
   if (error) {
+    // DB trigger may already have written the alert — treat as soft success.
     console.warn('[AdminAlerts] insert failed', error.message);
     return null;
   }
