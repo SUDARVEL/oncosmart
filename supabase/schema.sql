@@ -54,6 +54,20 @@ create table if not exists admin_push_tokens (
   updated_at timestamptz not null default now()
 );
 
+-- Durable pause/quit alerts for the admin dashboard + realtime local notify
+create table if not exists admin_hold_alerts (
+  id uuid primary key default gen_random_uuid(),
+  patient_user_id uuid references auth.users(id) on delete set null,
+  patient_name text not null default '',
+  patient_username text not null default '',
+  hold_type text not null check (hold_type = any (array['pause'::text, 'quit'::text])),
+  reason text,
+  title text not null,
+  body text not null,
+  created_at timestamptz not null default now(),
+  read_at timestamptz
+);
+
 create table if not exists exercise_completions (
   id uuid primary key default gen_random_uuid(),
   patient_id uuid references patients(id) on delete cascade not null,

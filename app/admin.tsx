@@ -15,6 +15,12 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ScreenHeader } from '../components/ScreenHeader';
 import {
+  fetchAdminHoldAlerts,
+  markAdminHoldAlertRead,
+  presentAdminHoldLocalNotification,
+  type AdminHoldAlert,
+} from '../lib/adminHoldAlerts';
+import {
   TOTAL_SESSIONS,
   buildAdminDashboardStats,
   fetchAdminPatientProgress,
@@ -22,7 +28,7 @@ import {
   type AdminPatientProgress,
 } from '../lib/adminProgress';
 import { getCurrentSession, signOut } from '../lib/auth';
-import { registerAdminPushToken } from '../lib/pushTokens';
+import { registerAdminPushTokenDetailed } from '../lib/pushTokens';
 import { useAppStore } from '../store/useAppStore';
 import { colors } from '../theme/colors';
 import { font } from '../theme/fonts';
@@ -319,30 +325,76 @@ export default function AdminScreen() {
   const router = useRouter();
   const resetApp = useAppStore((state) => state.resetApp);
   const [patients, setPatients] = useState<AdminPatientProgress[]>([]);
+  const [alerts, setAlerts] = useState<AdminHoldAlert[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [pushStatus, setPushStatus] = useState<string>('');
 
   const stats = useMemo(() => buildAdminDashboardStats(patients), [patients]);
+  const unreadAlerts = useMemo(
+    () => alerts.filter((alert) => !alert.readAt).slice(0, 8),
+    [alerts],
+  );
 
   const load = useCallback(async (mode: 'initial' | 'refresh' = 'initial') => {
     if (mode === 'initial') setLoading(true);
     if (mode === 'refresh') setRefreshing(true);
-    const rows = await fetchAdminPatientProgress();
+    const [rows, holdAlerts] = await Promise.all([
+      fetchAdminPatientProgress(),
+      fetchAdminHoldAlerts(20),
+    ]);
     setPatients(rows);
+    setAlerts(holdAlerts);
     setLoading(false);
     setRefreshing(false);
   }, []);
 
+  const registerAlertsQuietly = useCallback(async () => {
+    const session = await getCurrentSession();
+    const userId = session?.user?.id;
+    if (!userId) return;
+    const result = await registerAdminPushTokenDetailed(userId);
+    if (result.status === 'saved') {
+      setPushStatus(t('admin.alertsEnabled'));
+      return;
+    }
+    if (result.status === 'no_permission') {
+      setPushStatus(t('admin.alertsPermissionDenied'));
+      return;
+    }
+    // Remote Expo token may be unavailable without FCM — local/realtime alerts still work.
+    setPushStatus(t('admin.alertsLocalOnly'));
+  }, [t]);
+
+  const enableAlerts = useCallback(async () => {
+    const session = await getCurrentSession();
+    const userId = session?.user?.id;
+    if (!userId) {
+      setPushStatus(t('admin.alertsError'));
+      return;
+    }
+    const result = await registerAdminPushTokenDetailed(userId);
+    if (result.status === 'saved') {
+      setPushStatus(t('admin.alertsEnabled'));
+    } else if (result.status === 'no_permission') {
+      setPushStatus(t('admin.alertsPermissionDenied'));
+      return;
+    } else {
+      setPushStatus(t('admin.alertsLocalOnly'));
+    }
+    // Always fire a local test so the admin can confirm notifications appear.
+    await presentAdminHoldLocalNotification({
+      title: t('admin.testAlertTitle'),
+      body: t('admin.testAlertBody'),
+    });
+  }, [t]);
+
   useFocusEffect(
     useCallback(() => {
       void load('initial');
-      // Register this admin device for pause/quit push alerts.
-      void getCurrentSession().then((session) => {
-        const userId = session?.user?.id;
-        if (userId) void registerAdminPushToken(userId);
-      });
-    }, [load]),
+      void registerAlertsQuietly();
+    }, [load, registerAlertsQuietly]),
   );
 
   const handleLogout = () => {
@@ -381,6 +433,45 @@ export default function AdminScreen() {
           }
           showsVerticalScrollIndicator={false}
         >
+          <View style={styles.alertsCard}>
+            <Text style={styles.alertsTitle}>{t('admin.alertsTitle')}</Text>
+            <Text style={styles.alertsHint}>{t('admin.alertsHint')}</Text>
+            {pushStatus ? <Text style={styles.alertsStatus}>{pushStatus}</Text> : null}
+            <Pressable
+              onPress={() => void enableAlerts()}
+              accessibilityRole="button"
+              style={styles.enableAlertsBtn}
+            >
+              <Text style={styles.enableAlertsText}>{t('admin.enableAlerts')}</Text>
+            </Pressable>
+            {unreadAlerts.length === 0 ? (
+              <Text style={styles.alertsEmpty}>{t('admin.alertsEmpty')}</Text>
+            ) : (
+              unreadAlerts.map((alert) => (
+                <Pressable
+                  key={alert.id}
+                  style={[
+                    styles.alertRow,
+                    alert.holdType === 'quit' ? styles.alertRowQuit : styles.alertRowPause,
+                  ]}
+                  onPress={() => {
+                    void markAdminHoldAlertRead(alert.id);
+                    setAlerts((prev) =>
+                      prev.map((item) =>
+                        item.id === alert.id
+                          ? { ...item, readAt: new Date().toISOString() }
+                          : item,
+                      ),
+                    );
+                  }}
+                >
+                  <Text style={styles.alertTitle}>{alert.title}</Text>
+                  <Text style={styles.alertBody}>{alert.body}</Text>
+                </Pressable>
+              ))
+            )}
+          </View>
+
           <View style={styles.statGrid}>
             <StatChip label={t('admin.statTotal')} value={stats.total} />
             <StatChip label={t('admin.statOnboarded')} value={stats.onboarded} />
@@ -538,6 +629,73 @@ const styles = StyleSheet.create({
     ...font('semiBold'),
     fontSize: 12,
     color: colors.textPrimary,
+  },
+  alertsCard: {
+    borderWidth: 1,
+    borderColor: colors.cardBorder,
+    borderRadius: 12,
+    padding: 14,
+    backgroundColor: colors.homeCardBg,
+    gap: 8,
+  },
+  alertsTitle: {
+    ...font('semiBold'),
+    fontSize: 15,
+    color: colors.textPrimary,
+  },
+  alertsHint: {
+    ...font('regular'),
+    fontSize: 12,
+    color: colors.textMuted,
+  },
+  alertsStatus: {
+    ...font('medium'),
+    fontSize: 12,
+    color: colors.buttonPrimary,
+  },
+  enableAlertsBtn: {
+    alignSelf: 'flex-start',
+    backgroundColor: colors.buttonPrimary,
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+  },
+  enableAlertsText: {
+    ...font('semiBold'),
+    fontSize: 13,
+    color: '#FFFFFF',
+  },
+  alertsEmpty: {
+    ...font('regular'),
+    fontSize: 13,
+    color: colors.textMuted,
+    marginTop: 4,
+  },
+  alertRow: {
+    borderRadius: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+    gap: 2,
+  },
+  alertRowPause: {
+    backgroundColor: '#FFFBEB',
+    borderWidth: 1,
+    borderColor: '#F59E0B',
+  },
+  alertRowQuit: {
+    backgroundColor: '#FEF2F2',
+    borderWidth: 1,
+    borderColor: '#EF4444',
+  },
+  alertTitle: {
+    ...font('semiBold'),
+    fontSize: 13,
+    color: colors.textPrimary,
+  },
+  alertBody: {
+    ...font('regular'),
+    fontSize: 12,
+    color: colors.textSecondary,
   },
   card: {
     borderWidth: 1,

@@ -6,6 +6,9 @@ type Body = {
   reason?: string | null;
   patientName?: string;
   patientUsername?: string;
+  title?: string;
+  body?: string;
+  alertId?: string | null;
 };
 
 type ExpoMessage = {
@@ -15,6 +18,7 @@ type ExpoMessage = {
   sound: "default";
   data: Record<string, string>;
   channelId?: string;
+  priority?: "default" | "normal" | "high";
 };
 
 function reasonLabel(reason: string | null | undefined): string {
@@ -100,16 +104,38 @@ Deno.serve(async (req: Request) => {
       : patientUsername;
   const reasonText = reasonLabel(payload.reason);
   const actionWord = holdType === "quit" ? "quit" : "paused";
-  const title = holdType === "quit" ? "Patient quit exercise" : "Patient paused exercise";
-  const body = `${patientName} (${patientUsername}) has ${actionWord}. Reason: ${reasonText}.`;
+  const title =
+    typeof payload.title === "string" && payload.title.trim()
+      ? payload.title.trim()
+      : holdType === "quit"
+        ? "Patient quit exercise"
+        : "Patient paused exercise";
+  const body =
+    typeof payload.body === "string" && payload.body.trim()
+      ? payload.body.trim()
+      : `${patientName} (${patientUsername}) has ${actionWord}. Reason: ${reasonText}.`;
 
   const admin = createClient(supabaseUrl, serviceKey);
+
+  // Ensure an alert row exists even if the client insert failed.
+  if (!payload.alertId) {
+    await admin.from("admin_hold_alerts").insert({
+      patient_user_id: userData.user.id,
+      patient_name: patientName,
+      patient_username: patientUsername,
+      hold_type: holdType,
+      reason: typeof payload.reason === "string" ? payload.reason : null,
+      title,
+      body,
+    });
+  }
+
   const { data: rows, error: tokenError } = await admin
     .from("admin_push_tokens")
     .select("expo_push_token");
 
   if (tokenError) {
-    return new Response(JSON.stringify({ error: tokenError.message }), {
+    return new Response(JSON.stringify({ error: tokenError.message, alertSaved: true }), {
       status: 500,
       headers: { "Content-Type": "application/json" },
     });
@@ -124,9 +150,16 @@ Deno.serve(async (req: Request) => {
   );
 
   if (tokens.length === 0) {
-    return new Response(JSON.stringify({ ok: true, sent: 0, reason: "no_admin_tokens" }), {
-      headers: { "Content-Type": "application/json" },
-    });
+    return new Response(
+      JSON.stringify({
+        ok: true,
+        sent: 0,
+        reason: "no_admin_tokens",
+        alertSaved: true,
+        hint: "Open Admin once and tap Enable alerts so this device can receive push.",
+      }),
+      { headers: { "Content-Type": "application/json" } },
+    );
   }
 
   const messages: ExpoMessage[] = tokens.map((to) => ({
@@ -134,6 +167,7 @@ Deno.serve(async (req: Request) => {
     title,
     body,
     sound: "default",
+    priority: "high",
     channelId: "admin-alerts",
     data: {
       type: "patient_hold",
@@ -141,10 +175,12 @@ Deno.serve(async (req: Request) => {
       patientUsername,
       patientName,
       reason: typeof payload.reason === "string" ? payload.reason : "",
+      alertId: typeof payload.alertId === "string" ? payload.alertId : "",
     },
   }));
 
   let sent = 0;
+  const tickets: unknown[] = [];
   for (let i = 0; i < messages.length; i += 100) {
     const chunk = messages.slice(i, i + 100);
     const pushRes = await fetch("https://exp.host/--/api/v2/push/send", {
@@ -157,10 +193,15 @@ Deno.serve(async (req: Request) => {
     });
     if (pushRes.ok) {
       sent += chunk.length;
+      try {
+        tickets.push(await pushRes.json());
+      } catch {
+        // ignore parse errors
+      }
     }
   }
 
-  return new Response(JSON.stringify({ ok: true, sent }), {
+  return new Response(JSON.stringify({ ok: true, sent, alertSaved: true, tickets }), {
     headers: { "Content-Type": "application/json" },
   });
 });

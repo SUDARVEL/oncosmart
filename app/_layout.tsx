@@ -24,6 +24,7 @@ import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, Platform, StyleSheet, View } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
+import { AdminAlertBridge } from '../components/AdminAlertBridge';
 import { AppUpdateBridge } from '../components/AppUpdateBridge';
 import { CloudSyncBridge } from '../components/CloudSyncBridge';
 import { isSupabaseConfigured } from '../lib/env';
@@ -110,6 +111,7 @@ export default function RootLayout() {
     <SafeAreaProvider>
       <StatusBar style="dark" />
       <CloudSyncBridge />
+      <AdminAlertBridge />
       <AppUpdateBridge />
       <Stack screenOptions={{ headerShown: false, animation: 'fade' }}>
         <Stack.Screen name="index" />

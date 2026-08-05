@@ -58,17 +58,41 @@ async function getExpoPushTokenSafe(): Promise<string | null> {
   }
 }
 
+export type AdminPushRegisterResult = {
+  token: string | null;
+  /** permission | token | saved | not_admin | error */
+  status: 'saved' | 'no_permission' | 'no_token' | 'not_admin' | 'error';
+};
+
 /** Register this device for admin pause/quit alerts (admin sessions only). */
-export async function registerAdminPushToken(userId: string): Promise<string | null> {
+export async function registerAdminPushToken(
+  userId: string,
+): Promise<string | null> {
+  const result = await registerAdminPushTokenDetailed(userId);
+  return result.token;
+}
+
+export async function registerAdminPushTokenDetailed(
+  userId: string,
+): Promise<AdminPushRegisterResult> {
   const supabase = getSupabase();
-  if (!supabase || !userId) return null;
+  if (!supabase || !userId) return { token: null, status: 'error' };
 
   try {
     const { data } = await supabase.auth.getUser();
-    if (!isAdminUser(data.user)) return null;
+    if (!isAdminUser(data.user)) return { token: null, status: 'not_admin' };
+
+    const Notifications = await import('expo-notifications');
+    const permissions = await Notifications.getPermissionsAsync();
+    let granted = permissions.granted;
+    if (!granted) {
+      const requested = await Notifications.requestPermissionsAsync();
+      granted = requested.granted;
+    }
+    if (!granted) return { token: null, status: 'no_permission' };
 
     const token = await getExpoPushTokenSafe();
-    if (!token) return null;
+    if (!token) return { token: null, status: 'no_token' };
 
     const { error } = await supabase.from('admin_push_tokens').upsert(
       {
@@ -80,15 +104,15 @@ export async function registerAdminPushToken(userId: string): Promise<string | n
     );
     if (error) {
       console.warn('[Push] admin token upsert failed', error.message);
-      return null;
+      return { token: null, status: 'error' };
     }
-    return token;
+    return { token, status: 'saved' };
   } catch (error) {
     console.warn(
       '[Push] admin register threw',
       error instanceof Error ? error.message : String(error),
     );
-    return null;
+    return { token: null, status: 'error' };
   }
 }
 
