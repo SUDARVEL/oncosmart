@@ -18,9 +18,6 @@ type Props = {
   exerciseId: string;
 };
 
-/** Extra height so the full-body pose can hang below the grey stage (Figma). */
-const PREVIEW_OVERFLOW = 28;
-
 function formatRepBadge(repLabel: string): string {
   const trimmed = repLabel.trim();
   if (/^x\d+/i.test(trimmed)) {
@@ -30,8 +27,9 @@ function formatRepBadge(repLabel: string): string {
 }
 
 /**
- * Figma day-session card — grey landscape stage with the full character pose
- * (feet may extend below the grey rounded rect). Do not crop or stretch photos.
+ * Figma day-session card — one continuous landscape grey stage (257×112)
+ * with the character filling the frame. Use cover so portrait/mismatched
+ * assets never leave side letterbox “tabs”.
  */
 export function ExerciseSessionCard({
   name,
@@ -44,21 +42,20 @@ export function ExerciseSessionCard({
     <View style={styles.card} accessibilityRole="text">
       <View style={styles.body}>
         <View style={styles.previewStage}>
-          <View style={styles.previewBackdrop} />
           {previewVideo ? (
-            <View style={styles.videoClip}>
-              <SessionCardLoopVideo uri={previewVideo} />
-            </View>
+            <SessionCardLoopVideo uri={previewVideo} />
           ) : previewPhoto ? (
             <CachedMediaImage
               source={previewPhoto}
-              style={styles.previewImage}
-              contentFit="contain"
-              contentPosition="bottom"
+              style={styles.previewMedia}
+              contentFit="cover"
+              contentPosition="center"
               recyclingKey={`session-card-${exerciseId}`}
               cachePolicy="memory-disk"
             />
-          ) : null}
+          ) : (
+            <View style={styles.previewPlaceholder} />
+          )}
         </View>
 
         <Text style={styles.title} numberOfLines={2}>
@@ -82,7 +79,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#F3F4F6',
     borderRadius: 8,
-    overflow: 'visible',
+    overflow: 'hidden',
     ...Platform.select({
       ios: {
         shadowColor: '#000000',
@@ -109,33 +106,22 @@ const styles = StyleSheet.create({
     gap: 8,
     alignItems: 'center',
     justifyContent: 'center',
-    overflow: 'visible',
   },
-  /** Stage is taller than the grey plate so feet can sit on the white card. */
+  /** Single continuous landscape stage — Figma 257×112, radius 8. */
   previewStage: {
-    width: SESSION_EXERCISE_CARD_PREVIEW_WIDTH,
-    height: SESSION_EXERCISE_CARD_PREVIEW_HEIGHT + PREVIEW_OVERFLOW,
-    alignItems: 'center',
-    justifyContent: 'flex-start',
-    overflow: 'visible',
-  },
-  previewBackdrop: {
-    position: 'absolute',
-    top: 0,
-    width: SESSION_EXERCISE_CARD_PREVIEW_WIDTH,
-    height: SESSION_EXERCISE_CARD_PREVIEW_HEIGHT,
-    borderRadius: 8,
-    backgroundColor: '#D1D5DB',
-  },
-  videoClip: {
     width: SESSION_EXERCISE_CARD_PREVIEW_WIDTH,
     height: SESSION_EXERCISE_CARD_PREVIEW_HEIGHT,
     borderRadius: 8,
     overflow: 'hidden',
+    backgroundColor: '#D1D5DB',
   },
-  previewImage: {
-    width: SESSION_EXERCISE_CARD_PREVIEW_WIDTH,
-    height: SESSION_EXERCISE_CARD_PREVIEW_HEIGHT + PREVIEW_OVERFLOW,
+  previewMedia: {
+    width: '100%',
+    height: '100%',
+  },
+  previewPlaceholder: {
+    flex: 1,
+    backgroundColor: '#D1D5DB',
   },
   title: {
     fontSize: 16,

@@ -3,7 +3,7 @@ import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, Text, View } from 'react-native';
 
-import { getWeekdayLabels } from '../../lib/weekdayStreak';
+import { getWeekdayDayNames } from '../../lib/weekdayStreak';
 import { colors } from '../../theme/colors';
 import { font } from '../../theme/fonts';
 
@@ -14,8 +14,10 @@ type StreakCardProps = {
    * Index 0 = Monday … 6 = Sunday.
    */
   completedByWeekday?: boolean[];
-  /** Optional override labels; defaults to phone-locale short weekdays. */
+  /** Mon–Sun short names; defaults to phone-locale weekdays. */
   weekdayLabels?: string[];
+  /** e.g. "3 – 9 Aug" for the current week. */
+  weekRangeLabel?: string;
 };
 
 const EMPTY_WEEK = [false, false, false, false, false, false, false];
@@ -24,15 +26,25 @@ export function StreakCard({
   paused = false,
   completedByWeekday = EMPTY_WEEK,
   weekdayLabels,
+  weekRangeLabel,
 }: StreakCardProps) {
   const { t, i18n } = useTranslation();
   const labels = useMemo(
-    () => weekdayLabels ?? getWeekdayLabels(i18n.language || 'en'),
+    () => weekdayLabels ?? getWeekdayDayNames(i18n.language || 'en'),
     [weekdayLabels, i18n.language],
   );
 
   return (
     <View style={styles.card}>
+      <View style={styles.header}>
+        <Text style={styles.title}>{t('growth.streakTitle')}</Text>
+        <Text style={styles.weekLabel}>
+          {weekRangeLabel
+            ? t('growth.streakWeekLabel', { range: weekRangeLabel })
+            : t('growth.streakWeekFallback')}
+        </Text>
+      </View>
+
       <View style={styles.daysRow}>
         {labels.map((day, index) => {
           const isFilled = completedByWeekday[index] === true;
@@ -54,7 +66,9 @@ export function StreakCard({
                   end={{ x: 0.8, y: 1 }}
                   style={styles.dayGradient}
                 >
-                  <Text style={styles.dayLabel}>{day}</Text>
+                  <Text style={styles.dayLabel} numberOfLines={1}>
+                    {day}
+                  </Text>
                 </LinearGradient>
               ) : isGreyedActive ? (
                 <LinearGradient
@@ -63,10 +77,14 @@ export function StreakCard({
                   end={{ x: 0.85, y: 1 }}
                   style={styles.dayGradient}
                 >
-                  <Text style={styles.dayLabel}>{day}</Text>
+                  <Text style={styles.dayLabel} numberOfLines={1}>
+                    {day}
+                  </Text>
                 </LinearGradient>
               ) : (
-                <Text style={styles.dayLabel}>{day}</Text>
+                <Text style={styles.dayLabel} numberOfLines={1}>
+                  {day}
+                </Text>
               )}
             </View>
           );
@@ -89,21 +107,39 @@ const styles = StyleSheet.create({
     borderColor: colors.cardBorder,
     borderRadius: 16,
     paddingHorizontal: 10,
-    paddingVertical: 8,
+    paddingVertical: 10,
     gap: 10,
     alignItems: 'center',
   },
+  header: {
+    alignSelf: 'stretch',
+    gap: 2,
+    paddingHorizontal: 4,
+  },
+  title: {
+    fontSize: 16,
+    ...font('semiBold'),
+    color: colors.textPrimary,
+    letterSpacing: -0.26,
+    lineHeight: 22,
+  },
+  weekLabel: {
+    fontSize: 13,
+    ...font('medium'),
+    color: colors.textMuted,
+    lineHeight: 18,
+  },
   daysRow: {
     flexDirection: 'row',
-    gap: 6,
+    gap: 4,
     alignItems: 'center',
     justifyContent: 'space-between',
     width: '100%',
   },
   dayCircle: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 42,
+    height: 42,
+    borderRadius: 21,
     borderWidth: 1,
     borderColor: colors.buttonDisabled,
     overflow: 'hidden',
@@ -120,7 +156,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   dayLabel: {
-    fontSize: 13,
+    fontSize: 11,
     ...font('semiBold'),
     color: colors.textMuted,
   },

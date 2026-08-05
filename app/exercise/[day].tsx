@@ -12,7 +12,10 @@ import {
 } from '../../components/exercise/WhyDidYouStopModal';
 import { ResumeProgressModal } from '../../components/growth/ResumeProgressModal';
 import { useExercisePauseGuard } from '../../hooks/useExercisePauseGuard';
+import { notifyAdminsOfHold } from '../../lib/adminNotify';
 import { getSessionExerciseVideoSource } from '../../lib/getDayExercises';
+import type { QuitReason } from '../../lib/progressHold';
+import { saveCloudProfileFromStore } from '../../lib/userCloudSync';
 import {
   getSessionExerciseForLevel,
   getSessionExercisesForLevel,
@@ -27,6 +30,7 @@ import {
 } from '../../lib/getEarnedBadges';
 import { resolveExerciseGuidedPortraitUrl } from '../../lib/exerciseMediaUrls';
 import {
+  cancelNextExerciseNotification,
   scheduleNextExerciseNotification,
   syncNextExerciseNotification,
 } from '../../lib/nextExerciseNotification';
@@ -220,16 +224,33 @@ function GuidedSessionScreen({
     setPhase('exercise');
   }, [completeSession, exerciseIndex, level]);
 
-  const exitSession = useCallback(() => {
-    setShowStopModal(false);
-    router.back();
-  }, [router]);
-
   const handleStopReason = useCallback(
-    (_reason: StopReason) => {
-      exitSession();
+    (reason: StopReason) => {
+      // Mid-exercise back → Why did you stop? = Quit (admin sees quit + reason).
+      const quitReason: QuitReason =
+        reason === 'tired' || reason === 'pain' || reason === 'exploring'
+          ? reason
+          : 'exploring';
+      setShowStopModal(false);
+      const state = useAppStore.getState();
+      state.setProgressPaused(true, quitReason, 'quit');
+      void cancelNextExerciseNotification();
+      const displayName = state.username.trim() || 'Patient';
+      const authUserId = state.activeAuthUserId;
+      void (async () => {
+        if (authUserId) {
+          await saveCloudProfileFromStore(authUserId);
+        }
+        await notifyAdminsOfHold({
+          holdType: 'quit',
+          reason: quitReason,
+          patientName: displayName,
+          patientUsername: displayName,
+        });
+      })();
+      router.replace('/home');
     },
-    [exitSession],
+    [router],
   );
 
   const handleBackPress = useCallback(() => {

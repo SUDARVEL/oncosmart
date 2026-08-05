@@ -19,11 +19,10 @@ type LevelsCardProps = {
   completed: number;
   total: number;
   paused: boolean;
-  /** When paused, whether this is a temporary pause or a quit. */
+  /** When held, whether this is a temporary pause or a mid-exercise quit. */
   holdType?: "pause" | "quit" | null;
   avatar: AppAvatar | null;
   onPause: () => void;
-  onQuit: () => void;
   onResume: () => void;
   /** Coach-mark anchor for the Pause / Resume Progress control. */
   pauseAnchorRef?: Ref<View>;
@@ -36,7 +35,6 @@ export function LevelsCard({
   holdType = null,
   avatar,
   onPause,
-  onQuit,
   onResume,
   pauseAnchorRef,
 }: LevelsCardProps) {
@@ -93,25 +91,15 @@ export function LevelsCard({
             <Text style={styles.resumeText}>{resumeLabel}</Text>
           </PressableScale>
         ) : (
-          <View style={styles.actionRow}>
-            <PressableScale
-              style={styles.pauseButton}
-              onPress={onPause}
-              accessibilityRole="button"
-              accessibilityLabel={t("growth.pauseProgress")}
-            >
-              <SvgXml xml={PAUSE_ICON_XML} width={10} height={12} />
-              <Text style={styles.pauseText}>{t("growth.pauseProgress")}</Text>
-            </PressableScale>
-            <PressableScale
-              style={styles.quitButton}
-              onPress={onQuit}
-              accessibilityRole="button"
-              accessibilityLabel={t("growth.quitProgress")}
-            >
-              <Text style={styles.quitText}>{t("growth.quitProgress")}</Text>
-            </PressableScale>
-          </View>
+          <PressableScale
+            style={styles.pauseButton}
+            onPress={onPause}
+            accessibilityRole="button"
+            accessibilityLabel={t("growth.pauseProgress")}
+          >
+            <SvgXml xml={PAUSE_ICON_XML} width={10} height={12} />
+            <Text style={styles.pauseText}>{t("growth.pauseProgress")}</Text>
+          </PressableScale>
         )}
       </View>
     </View>
@@ -199,13 +187,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     width: "100%",
   },
-  actionRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 10,
-    flexWrap: "wrap",
-  },
   pauseButton: {
     flexDirection: "row",
     alignItems: "center",
@@ -223,26 +204,6 @@ const styles = StyleSheet.create({
     fontSize: 12,
     ...font("semiBold"),
     color: colors.buttonPrimary,
-    letterSpacing: 0,
-    lineHeight: 18,
-    includeFontPadding: true,
-  },
-  quitButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    height: 35,
-    paddingHorizontal: 16,
-    borderWidth: 1,
-    borderColor: "#FECACA",
-    borderRadius: 8,
-    backgroundColor: colors.background,
-    minWidth: 120,
-  },
-  quitText: {
-    fontSize: 12,
-    ...font("semiBold"),
-    color: "#B91C1C",
     letterSpacing: 0,
     lineHeight: 18,
     includeFontPadding: true,

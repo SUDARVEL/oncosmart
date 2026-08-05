@@ -76,8 +76,5 @@ export const SESSION_EXERCISE_CARD_PREVIEW_ASPECT =
   SESSION_EXERCISE_CARD_PREVIEW_WIDTH / SESSION_EXERCISE_CARD_PREVIEW_HEIGHT;
 export const SESSION_EXERCISE_CARD_PREVIEW_BACKGROUND = '#FFFFFF';
 
-/**
- * Session list card shell — Figma ~180, plus room so the full-body pose
- * (feet below the grey stage) stays inside the white card.
- */
-export const SESSION_EXERCISE_CARD_HEIGHT = 208;
+/** Session list card shell — Figma height 180. */
+export const SESSION_EXERCISE_CARD_HEIGHT = 180;

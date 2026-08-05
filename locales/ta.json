@@ -277,7 +277,6 @@
     "levelsCount": "{{completed}}/{{total}}",
     "levelsCompleted": "முடிக்கப்பட்ட நிலைகள்",
     "pauseProgress": "முன்னேற்றம் இடைநிறுத்து",
-    "quitProgress": "முன்னேற்றத்தை நிறுத்து",
     "resumeProgress": "முன்னேற்றத்தை தொடரவும்",
     "resumeAfterQuit": "முன்னேற்றத்தை தொடரவும்",
     "progressPaused": "முன்னேற்றம் இடைநிறுத்தப்பட்டது",
@@ -285,12 +284,13 @@
     "resumeToContinueOk": "சரி",
     "pauseReasonTitle": "முன்னேற்றத்தை ஏன் இடைநிறுத்தினீர்கள்?",
     "pauseReasonSubtitle": "நீங்கள் எப்படி உணர்கிறீர்கள் என்பதை தெரிவுசெய்யவும், அதன்படி உங்கள் பயிற்சி திட்டம் மாற்றப்படும்.",
-    "quitReasonTitle": "முன்னேற்றத்தை ஏன் நிறுத்துகிறீர்கள்?",
-    "quitReasonSubtitle": "ஏன் நிறுத்துகிறீர்கள் என்பதைச் சொல்லுங்கள். பின்னர் தொடர விரும்பினால் உங்கள் திட்டம் சேமிக்கப்படும்.",
     "pauseReasonTired": "சோர்வாக இருப்பதால்",
     "pauseReasonPain": "வலி இருப்பதால்",
     "pauseReasonTreatment": "சமீபத்தில் சிகிச்சை பெற்றதால்",
     "pauseReasonUnwell": "உடல் நலம் சரியில்லாததால்",
+    "streakTitle": "இந்த வார தொடர்",
+    "streakWeekLabel": "{{range}}",
+    "streakWeekFallback": "திங் – ஞாயி இந்த வாரம்",
     "streakStart": "",
     "streakHighlight": "உங்கள் உடற்பயிற்சியை தொடர்ந்து செய்யுங்கள்!",
     "streakEnd": "",
@@ -546,7 +546,8 @@
     "pauseReasonTired": "சோர்வு",
     "pauseReasonPain": "வலி",
     "pauseReasonTreatment": "சிகிச்சை",
-    "pauseReasonUnwell": "உடல்நலக்குறைவு"
+    "pauseReasonUnwell": "உடல்நலக்குறைவு",
+    "quitReasonExploring": "வெறுமனே பார்த்தல்"
   },
   "chat": {
     "placeholder": "உங்கள் செய்தியை எழுதவும்...",

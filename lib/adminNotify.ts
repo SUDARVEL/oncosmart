@@ -2,9 +2,8 @@ import {
   buildHoldAlertCopy,
   createAdminHoldAlert,
 } from './adminHoldAlerts';
-import type { ProgressHoldType } from './progressHold';
+import type { HoldReason, ProgressHoldType } from './progressHold';
 import { getSupabase } from './supabase';
-import type { PauseReason } from '../store/useAppStore';
 
 /**
  * Notify admins that a patient paused or quit.
@@ -13,7 +12,7 @@ import type { PauseReason } from '../store/useAppStore';
  */
 export async function notifyAdminsOfHold(params: {
   holdType: ProgressHoldType;
-  reason: PauseReason | null;
+  reason: HoldReason | null;
   patientName: string;
   patientUsername?: string;
 }): Promise<void> {

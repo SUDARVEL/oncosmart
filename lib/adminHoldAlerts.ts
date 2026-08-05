@@ -1,9 +1,8 @@
 import * as Notifications from 'expo-notifications';
 import { Platform } from 'react-native';
 
-import type { ProgressHoldType } from './progressHold';
+import type { HoldReason, ProgressHoldType } from './progressHold';
 import { getSupabase } from './supabase';
-import type { PauseReason } from '../store/useAppStore';
 
 export type AdminHoldAlert = {
   id: string;
@@ -30,6 +29,8 @@ function reasonLabel(reason: string | null | undefined): string {
       return 'Recently underwent treatment';
     case 'unwell':
       return 'Not feeling well';
+    case 'exploring':
+      return 'Just exploring';
     default:
       return typeof reason === 'string' && reason.trim() ? reason.trim() : 'No reason given';
   }
@@ -37,7 +38,7 @@ function reasonLabel(reason: string | null | undefined): string {
 
 export function buildHoldAlertCopy(params: {
   holdType: ProgressHoldType;
-  reason: PauseReason | string | null;
+  reason: HoldReason | string | null;
   patientName: string;
   patientUsername?: string;
 }): { title: string; body: string } {
@@ -109,7 +110,7 @@ export async function presentAdminHoldLocalNotification(params: {
 /** Patient-side: persist an alert row so admin always sees pause/quit. */
 export async function createAdminHoldAlert(params: {
   holdType: ProgressHoldType;
-  reason: PauseReason | null;
+  reason: HoldReason | null;
   patientName: string;
   patientUsername?: string;
 }): Promise<string | null> {

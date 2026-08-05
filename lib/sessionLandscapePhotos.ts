@@ -19,9 +19,9 @@ const MALE_LANDSCAPE_PHOTO_FILES: Partial<Record<string, string>> = {
   'chest-stretch': 'Chest Stretch back male 1.png',
   'calf-stretch-right': 'Calf stretch Male Right Landscape.png',
   'calf-stretch-left': 'Calf stretch Male Left Landscape.png',
-  // Full-frame Home page assets (landscape crops were cutting the pose in half).
-  'neck-stretch-left': 'neck stretch addon.png',
-  'neck-stretch-right': 'neck stretch left add on.png',
+  // True 1920×1080 landscape stages (same framing as triceps/calf).
+  'neck-stretch-left': 'Neck stretch Left Male Landscape.png',
+  'neck-stretch-right': 'Neck stretch Right Male Landscape.png',
   'quadriceps-stretch-left': 'Quadriceps Stretch Male Left.png',
   'quadriceps-stretch-right': 'Quadriceps Stretch Male Right.png',
   'triceps-stretch-left': 'Triceps Stretch Left Male Landsacpe.png',
@@ -76,14 +76,7 @@ export function getSessionLandscapePhotoUrl(
     : MALE_LANDSCAPE_PHOTO_FILES[exerciseId];
   if (!file) return null;
 
-  const maleNeckStretch =
-    !isFemale &&
-    (exerciseId === 'neck-stretch-left' || exerciseId === 'neck-stretch-right');
-  const folder = isFemale
-    ? FEMALE_LANDSCAPE_FOLDER
-    : maleNeckStretch
-      ? 'Home page'
-      : MALE_LANDSCAPE_FOLDER;
+  const folder = isFemale ? FEMALE_LANDSCAPE_FOLDER : MALE_LANDSCAPE_FOLDER;
   const cacheKey = `${isFemale ? 'f' : 'm'}|${folder}|${exerciseId}|${file}`;
   const cached = landscapeUrlCache.get(cacheKey);
   if (cached) return cached;

@@ -62,6 +62,8 @@ function formatHoldReason(
       return t('admin.pauseReasonTreatment');
     case 'unwell':
       return t('admin.pauseReasonUnwell');
+    case 'exploring':
+      return t('admin.quitReasonExploring');
     default:
       if (typeof reason === 'string' && reason.trim()) return reason.trim();
       return t(unknownKey);

@@ -31,6 +31,8 @@ function reasonLabel(reason: string | null | undefined): string {
       return "Recently underwent treatment";
     case "unwell":
       return "Not feeling well";
+    case "exploring":
+      return "Just exploring";
     default:
       return typeof reason === "string" && reason.trim() ? reason.trim() : "No reason given";
   }

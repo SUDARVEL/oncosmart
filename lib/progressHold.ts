@@ -1,34 +1,35 @@
-import type { PauseReason } from '../store/useAppStore';
-
-/** How the patient froze the program — pause (temporary) vs quit (stopped). */
+/** How the patient froze the program — pause (Growth) vs quit (mid-exercise exit). */
 export type ProgressHoldType = 'pause' | 'quit';
 
-export type HoldReason = PauseReason;
+/** Reasons from Growth → Pause Progress. */
+export type PauseReason = 'tired' | 'pain' | 'treatment' | 'unwell';
 
-const HOLD_REASONS = new Set<HoldReason>(['tired', 'pain', 'treatment', 'unwell']);
+/** Reasons from guided session → Why did you stop? */
+export type QuitReason = 'tired' | 'pain' | 'exploring';
 
-export function asHoldReason(value: unknown): HoldReason | null {
-  return typeof value === 'string' && HOLD_REASONS.has(value as HoldReason)
-    ? (value as HoldReason)
+export type HoldReason = PauseReason | QuitReason;
+
+const PAUSE_REASONS = new Set<PauseReason>(['tired', 'pain', 'treatment', 'unwell']);
+const QUIT_REASONS = new Set<QuitReason>(['tired', 'pain', 'exploring']);
+
+export function asPauseReason(value: unknown): PauseReason | null {
+  return typeof value === 'string' && PAUSE_REASONS.has(value as PauseReason)
+    ? (value as PauseReason)
     : null;
+}
+
+export function asQuitReason(value: unknown): QuitReason | null {
+  return typeof value === 'string' && QUIT_REASONS.has(value as QuitReason)
+    ? (value as QuitReason)
+    : null;
+}
+
+/** @deprecated use asPauseReason / asQuitReason */
+export function asHoldReason(value: unknown): HoldReason | null {
+  return asPauseReason(value) ?? asQuitReason(value);
 }
 
 export function asProgressHoldType(value: unknown): ProgressHoldType | null {
   if (value === 'pause' || value === 'quit') return value;
   return null;
-}
-
-export function reasonLabelKey(reason: string | null | undefined): string {
-  switch (reason) {
-    case 'tired':
-      return 'admin.pauseReasonTired';
-    case 'pain':
-      return 'admin.pauseReasonPain';
-    case 'treatment':
-      return 'admin.pauseReasonTreatment';
-    case 'unwell':
-      return 'admin.pauseReasonUnwell';
-    default:
-      return '';
-  }
 }

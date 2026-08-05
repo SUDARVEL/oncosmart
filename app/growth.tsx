@@ -30,7 +30,6 @@ import {
   syncNextExerciseNotification,
 } from '../lib/nextExerciseNotification';
 import { notifyAdminsOfHold } from '../lib/adminNotify';
-import type { ProgressHoldType } from '../lib/progressHold';
 import { saveCloudProfileFromStore } from '../lib/userCloudSync';
 import {
   getCurrentWeekdayStreak,
@@ -46,7 +45,7 @@ export default function GrowthScreen() {
   const { t, i18n } = useTranslation();
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<GrowthTab>('progress');
-  const [holdModalType, setHoldModalType] = useState<ProgressHoldType | null>(null);
+  const [showPauseReason, setShowPauseReason] = useState(false);
   const {
     active: coachActive,
     step: coachStep,
@@ -77,11 +76,10 @@ export default function GrowthScreen() {
   const painScores = useAppStore((state) => state.painScores);
   const dayCompletedAt = useAppStore((state) => state.dayCompletedAt);
 
-  const handleHoldReasonSelect = (reason: PauseReason) => {
-    const holdType = holdModalType ?? 'pause';
-    setHoldModalType(null);
-    setProgressPaused(true, reason, holdType);
-    // Holding stops exercise reminders until the patient resumes.
+  const handlePauseReasonSelect = (reason: PauseReason) => {
+    setShowPauseReason(false);
+    setProgressPaused(true, reason, 'pause');
+    // Pausing stops exercise reminders until the patient resumes.
     void cancelNextExerciseNotification();
     const displayName = username.trim() || 'Patient';
     const authUserId = useAppStore.getState().activeAuthUserId;
@@ -90,7 +88,7 @@ export default function GrowthScreen() {
         await saveCloudProfileFromStore(authUserId);
       }
       await notifyAdminsOfHold({
-        holdType,
+        holdType: 'pause',
         reason,
         patientName: displayName,
         patientUsername: displayName,
@@ -103,13 +101,11 @@ export default function GrowthScreen() {
     void syncNextExerciseNotification(dayCompletedAt, { paused: false });
   };
 
-  // Streak circles follow the phone calendar (Mon–Sun): complete on Saturday → Sat fills.
+  // Streak + pain follow the phone calendar week (Mon–Sun).
   const weekdayStreak = getCurrentWeekdayStreak(dayCompletedAt, {
     locale: i18n.language || 'en',
   });
-
-  // Pain chart uses Mon–Sun names for this week's scores.
-  const painWeekdayLabels = getWeekdayDayNames(i18n.language || 'en');
+  const weekDayNames = getWeekdayDayNames(i18n.language || 'en');
   const painScoresByDay = getCurrentWeekPainScores(dayCompletedAt, painScores);
 
   // Fallback when there's no pain data for this week yet.
@@ -174,20 +170,20 @@ export default function GrowthScreen() {
               paused={progressPaused}
               holdType={progressHoldType ?? (progressPaused ? 'pause' : null)}
               avatar={avatar}
-              onPause={() => setHoldModalType('pause')}
-              onQuit={() => setHoldModalType('quit')}
+              onPause={() => setShowPauseReason(true)}
               onResume={handleResumeProgress}
               pauseAnchorRef={(node) => registerTarget('growth.pauseProgress', node)}
             />
             <StreakCard
               paused={progressPaused}
               completedByWeekday={weekdayStreak.completed}
-              weekdayLabels={weekdayStreak.labels}
+              weekdayLabels={weekDayNames}
+              weekRangeLabel={weekdayStreak.weekRangeLabel}
             />
             <PainProgressCard
               paused={progressPaused}
               scoresByDay={painScoresByDay}
-              weekdayLabels={painWeekdayLabels}
+              weekdayLabels={weekDayNames}
               weekRangeLabel={weekdayStreak.weekRangeLabel}
               fallbackScore={painScore}
             />
@@ -213,10 +209,10 @@ export default function GrowthScreen() {
       />
 
       <PauseReasonModal
-        visible={holdModalType != null}
-        holdType={holdModalType ?? 'pause'}
-        onClose={() => setHoldModalType(null)}
-        onSelect={handleHoldReasonSelect}
+        visible={showPauseReason}
+        holdType="pause"
+        onClose={() => setShowPauseReason(false)}
+        onSelect={handlePauseReasonSelect}
       />
 
     </SafeAreaView>

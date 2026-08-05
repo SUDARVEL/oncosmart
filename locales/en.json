@@ -277,7 +277,6 @@
     "levelsCount": "{{completed}}/{{total}}",
     "levelsCompleted": "Levels Completed",
     "pauseProgress": "Pause Progress",
-    "quitProgress": "Quit Progress",
     "resumeProgress": "Resume Progress",
     "resumeAfterQuit": "Resume Progress",
     "progressPaused": "Progress Paused",
@@ -285,12 +284,13 @@
     "resumeToContinueOk": "OK",
     "pauseReasonTitle": "Reason for pausing your progress ?",
     "pauseReasonSubtitle": "Tell us what you are feeling , we will adjust your plan to support you better.",
-    "quitReasonTitle": "Reason for quitting your progress ?",
-    "quitReasonSubtitle": "Tell us why you are stopping. Your plan stays saved if you want to resume later.",
     "pauseReasonTired": "Feeling tired",
     "pauseReasonPain": "Having pain",
     "pauseReasonTreatment": "Recently underwent treatment",
     "pauseReasonUnwell": "Not feeling well",
+    "streakTitle": "This week's streak",
+    "streakWeekLabel": "{{range}}",
+    "streakWeekFallback": "Mon – Sun this week",
     "streakStart": "Start your",
     "streakHighlight": " exercise streaks",
     "streakEnd": " !",
@@ -546,7 +546,8 @@
     "pauseReasonTired": "Tired",
     "pauseReasonPain": "Pain",
     "pauseReasonTreatment": "Treatment",
-    "pauseReasonUnwell": "Unwell"
+    "pauseReasonUnwell": "Unwell",
+    "quitReasonExploring": "Just exploring"
   },
   "coach": {
     "avatarTitle": "Choose your avatar",

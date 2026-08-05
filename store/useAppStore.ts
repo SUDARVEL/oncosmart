@@ -4,7 +4,7 @@ import { createJSONStorage, persist } from 'zustand/middleware';
 
 import { getCompletedLevelsCount, sessionKey } from '../lib/programProgress';
 import type { BadgeKey } from '../lib/getEarnedBadges';
-import type { ProgressHoldType } from '../lib/progressHold';
+import type { ProgressHoldType, PauseReason, QuitReason } from '../lib/progressHold';
 
 export type AppLanguage = 'en' | 'ta';
 export type AppGender = 'male' | 'female' | 'prefer_not_to_say';
@@ -12,8 +12,7 @@ export type AppAvatar = 'male' | 'female';
 /** @deprecated Prefer numeric `age`. Kept for reading older persisted profiles. */
 export type AgeRange = '18-24' | '25-34' | '35-44' | '45-54' | '55-64';
 export type TreatmentType = 'chemotherapy' | 'radiation' | 'both' | 'none';
-export type PauseReason = 'tired' | 'pain' | 'treatment' | 'unwell';
-export type { ProgressHoldType };
+export type { ProgressHoldType, PauseReason, QuitReason };
 
 export type AppStateSnapshot = {
   language: AppLanguage | null;
@@ -31,10 +30,10 @@ export type AppStateSnapshot = {
   progressPaused: boolean;
   /** pause = temporary hold, quit = stopped the program. */
   progressHoldType: ProgressHoldType | null;
-  /** Why progress was paused — kept for admin + cloud sync. */
+  /** Why progress was paused (Growth → Pause Progress). */
   pauseReason: PauseReason | null;
-  /** Why the patient quit — separate from pause reason. */
-  quitReason: PauseReason | null;
+  /** Why the patient quit mid-exercise (Why did you stop?). */
+  quitReason: QuitReason | null;
   levelsCompleted: number;
   dayCompletedAt: Record<string, number>;
   activeAuthUserId: string | null;
@@ -78,7 +77,7 @@ type AppState = AppStateSnapshot & {
    */
   setProgressPaused: (
     paused: boolean,
-    reason?: PauseReason | null,
+    reason?: PauseReason | QuitReason | null,
     holdType?: ProgressHoldType | null,
   ) => void;
   setLevelsCompleted: (count: number) => void;
@@ -174,8 +173,10 @@ export const useAppStore = create<AppState>()(
           return {
             progressPaused: true,
             progressHoldType: nextType,
-            pauseReason: nextType === 'pause' ? reason ?? null : null,
-            quitReason: nextType === 'quit' ? reason ?? null : null,
+            pauseReason:
+              nextType === 'pause' ? ((reason as PauseReason | null) ?? null) : null,
+            quitReason:
+              nextType === 'quit' ? ((reason as QuitReason | null) ?? null) : null,
           };
         }),
       setLevelsCompleted: (count) => set({ levelsCompleted: count }),

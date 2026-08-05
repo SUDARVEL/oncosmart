@@ -1,12 +1,16 @@
 import { getCompletedLevelsCount } from './programProgress';
-import { asHoldReason, asProgressHoldType, type ProgressHoldType } from './progressHold';
+import {
+  asPauseReason,
+  asProgressHoldType,
+  asQuitReason,
+  type ProgressHoldType,
+} from './progressHold';
 import { getSupabase } from './supabase';
 import type {
   AgeRange,
   AppAvatar,
   AppGender,
   AppLanguage,
-  PauseReason,
   TreatmentType,
 } from '../store/useAppStore';
 import { useAppStore } from '../store/useAppStore';
@@ -142,10 +146,10 @@ export async function loadCloudProfileIntoStore(userId: string): Promise<CloudLo
     progressHoldType = data.quit_reason ? 'quit' : 'pause';
   }
   const pauseReason =
-    progressPaused && progressHoldType === 'pause' ? asHoldReason(data.pause_reason) : null;
+    progressPaused && progressHoldType === 'pause' ? asPauseReason(data.pause_reason) : null;
   const quitReason =
     progressPaused && progressHoldType === 'quit'
-      ? asHoldReason(data.quit_reason) ?? asHoldReason(data.pause_reason)
+      ? asQuitReason(data.quit_reason) ?? asQuitReason(data.pause_reason)
       : null;
 
   useAppStore.getState().hydrateFromCloud({
@@ -318,5 +322,3 @@ export async function upsertSessionCompletion(params: {
     console.warn('[CloudSync] completion upsert failed', error.message);
   }
 }
-
-export type { PauseReason };
