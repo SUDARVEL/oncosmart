@@ -30,3 +30,6 @@ npm run dev
 Sections are empty on purpose. Define each one (start with **Hero**), then we implement it.
 
 Home slots: `hero` → `selected-work` → `about` → `cta`
+
+Inspiration board (Wall of Portfolios interactive category + live examples):
+[`docs/INSPIRATION.md`](docs/INSPIRATION.md)
