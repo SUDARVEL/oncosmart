@@ -1,35 +1,52 @@
-# UX Portfolio
+# Portfolio
 
-Next.js + Supabase + React Three Fiber portfolio shell.
+Standalone UX design portfolio — **separate** from the Oncosmart fitness app.
+
+| Piece | Project |
+|-------|---------|
+| GitHub | New repo `SUDARVEL/portfolio` (extract from `/portfolio` in oncosmart until that repo exists) |
+| Supabase | New project named **portfolio** (not the fitness DB) |
+| Host | Vercel → Root = repo root (or `portfolio` while still inside oncosmart) |
 
 ## Stack
 
-- **Next.js** (App Router) — site
-- **Supabase** — profile, projects, case study sections, contact messages, media
-- **GitHub → Vercel** — host (set Root Directory to `portfolio`)
-- **R3F / Drei** — 3D (Home + Gallery; added when you define those sections)
+- Next.js (App Router) + TypeScript + Tailwind
+- Supabase (profile, projects, case studies, contact, media)
+- React Three Fiber / Drei (Home + Gallery 3D when defined)
+- Framer Motion
 
 ## Local
 
 ```bash
-cd portfolio
+cd portfolio   # or clone SUDARVEL/portfolio when live
 cp .env.example .env.local
 npm install
 npm run dev
 ```
 
-## Supabase setup (when ready)
+## Supabase
 
-1. Create a **new** Supabase project
-2. Run [`supabase/schema.sql`](supabase/schema.sql) in the SQL editor
+1. Create project **portfolio** in your Supabase org (separate from Oncosmart fitness)
+2. Run [`supabase/schema.sql`](supabase/schema.sql)
 3. Create public Storage bucket `portfolio-media`
-4. Put URL + anon key in `.env.local`
+4. Set in `.env.local`:
 
-## Building sections
+```
+NEXT_PUBLIC_SUPABASE_URL=
+NEXT_PUBLIC_SUPABASE_ANON_KEY=
+```
 
-Sections are empty on purpose. Define each one (start with **Hero**), then we implement it.
+## GitHub (new repo)
 
-Home slots: `hero` → `selected-work` → `about` → `cta`
+This agent cannot create repos under your account. On GitHub:
 
-Inspiration board (Wall of Portfolios interactive category + live examples):
-[`docs/INSPIRATION.md`](docs/INSPIRATION.md)
+1. **New repository** → name: `portfolio` → owner: `SUDARVEL`
+2. Then either push this folder as the repo root, or tell the agent the repo URL after you create it
+
+While waiting, code lives in the oncosmart monorepo at `/portfolio`.
+
+## Sections
+
+Empty on purpose. Define Hero first, then we implement section-by-section.
+
+Inspiration: [`docs/INSPIRATION.md`](docs/INSPIRATION.md)

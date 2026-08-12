@@ -4,6 +4,8 @@
  */
 export const siteConfig = {
   name: "Portfolio", // replace with your name / brand
+  project: "portfolio",
+  relatedTo: "oncosmart", // same owner; separate GitHub + Supabase projects
   nav: [
     { href: "/", label: "Home" },
     { href: "/work", label: "Work" },
