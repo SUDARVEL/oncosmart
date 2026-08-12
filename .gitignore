@@ -52,3 +52,6 @@ assets/videos/*.mp4
 assets/videos/*.mov
 
 expo-qr.png
+
+# Standalone portfolio lives in its own GitHub repo — not part of Oncosmart
+portfolio/
