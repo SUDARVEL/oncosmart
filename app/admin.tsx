@@ -373,13 +373,26 @@ export default function AdminScreen() {
 
   return (
     <SafeAreaView style={styles.screen} edges={['top', 'bottom']}>
-      <ScreenHeader title={t('admin.title')} />
+      <ScreenHeader
+        title={t('admin.title')}
+        showBack
+        onBack={() => router.replace('/home')}
+      />
 
       <View style={styles.summaryBar}>
         <Text style={styles.summaryText}>{t('admin.dashboardHint')}</Text>
-        <Pressable onPress={handleLogout} accessibilityRole="button" style={styles.logoutBtn}>
-          <Text style={styles.logoutText}>{t('admin.logout')}</Text>
-        </Pressable>
+        <View style={styles.summaryActions}>
+          <Pressable
+            onPress={() => router.replace('/home')}
+            accessibilityRole="button"
+            style={styles.openAppBtn}
+          >
+            <Text style={styles.openAppText}>{t('admin.openExerciseApp')}</Text>
+          </Pressable>
+          <Pressable onPress={handleLogout} accessibilityRole="button" style={styles.logoutBtn}>
+            <Text style={styles.logoutText}>{t('admin.logout')}</Text>
+          </Pressable>
+        </View>
       </View>
 
       {loading ? (
@@ -481,6 +494,22 @@ const styles = StyleSheet.create({
     ...font('medium'),
     fontSize: 13,
     color: colors.textSecondary,
+  },
+  summaryActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  openAppBtn: {
+    paddingVertical: 6,
+    paddingHorizontal: 10,
+    borderRadius: 8,
+    backgroundColor: colors.buttonPrimary,
+  },
+  openAppText: {
+    ...font('semiBold'),
+    fontSize: 12,
+    color: '#FFFFFF',
   },
   logoutBtn: {
     paddingVertical: 6,

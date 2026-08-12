@@ -12,6 +12,7 @@ import { isAdminSession } from '../lib/isAdmin';
 import { getPreferredLanguage } from '../lib/preferredLanguage';
 import { resolvePostAuthRoute } from '../lib/resolvePostAuthRoute';
 import { syncNextExerciseNotification } from '../lib/nextExerciseNotification';
+import { prepareAdminExerciseProfile } from '../lib/prepareAdminExerciseProfile';
 import { loadCloudProfileIntoStore } from '../lib/userCloudSync';
 import { useAppStore } from '../store/useAppStore';
 import { colors } from '../theme/colors';
@@ -42,7 +43,7 @@ export default function SplashScreen() {
    * - No session → Language → Login
    * - Session + onboarded patient → Home (no onboarding)
    * - Session + new patient → Onboarding (starts at username)
-   * - Admin → Admin progress only
+   * - Admin → Home (exercise app) + dashboard/testing from Settings
    */
   const proceed = useCallback(async () => {
     if (navigated.current) return;
@@ -70,9 +71,12 @@ export default function SplashScreen() {
     }
 
     if (isAdminSession(session)) {
+      const language = useAppStore.getState().language ?? preferred;
       useAppStore.getState().resetApp();
-      if (preferred) useAppStore.getState().setLanguage(preferred);
-      router.replace('/admin');
+      if (language) useAppStore.getState().setLanguage(language);
+      await prepareAdminExerciseProfile(session, language);
+      void syncNextExerciseNotification(useAppStore.getState().dayCompletedAt);
+      router.replace('/home');
       return;
     }
 

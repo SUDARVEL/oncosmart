@@ -12,6 +12,7 @@ import { ScreenHeader } from '../../components/ScreenHeader';
 import { LanguageBottomSheet } from '../../components/settings/LanguageBottomSheet';
 import { ProfileBottomSheet } from '../../components/settings/ProfileBottomSheet';
 import { SettingsRow } from '../../components/settings/SettingsRow';
+import { AdminTestingTools } from '../../components/admin/AdminTestingTools';
 import { useAndroidBack } from '../../hooks/useAndroidBack';
 import { useCoachTour } from '../../hooks/useCoachTour';
 import { usePullToRefresh } from '../../hooks/usePullToRefresh';
@@ -20,6 +21,7 @@ import { goBackOr } from '../../lib/navBack';
 import { cancelNextExerciseNotification } from '../../lib/nextExerciseNotification';
 import { openWhatsAppSupport } from '../../lib/openWhatsAppSupport';
 import { setPreferredLanguage } from '../../lib/preferredLanguage';
+import { useIsAdmin } from '../../lib/useIsAdmin';
 import { saveCloudProfileFromStore } from '../../lib/userCloudSync';
 import { AppLanguage, useAppStore } from '../../store/useAppStore';
 import { colors } from '../../theme/colors';
@@ -27,6 +29,7 @@ import { colors } from '../../theme/colors';
 export default function SettingsScreen() {
   const { t, i18n } = useTranslation();
   const router = useRouter();
+  const isAdmin = useIsAdmin();
   const language = useAppStore((state) => state.language);
   const setLanguage = useAppStore((state) => state.setLanguage);
   const username = useAppStore((state) => state.username);
@@ -182,6 +185,17 @@ export default function SettingsScreen() {
               }, 350);
             }}
           />
+          {isAdmin ? (
+            <>
+              <SettingsRow
+                title={t('settings.adminDashboard')}
+                description={t('settings.adminDashboardDescription')}
+                showChevron
+                onPress={() => router.push('/admin')}
+              />
+              <AdminTestingTools title={t('settings.adminTestingTitle')} />
+            </>
+          ) : null}
           <SettingsRow
             title={t('settings.about')}
             description={t('settings.aboutDescription', { version: appVersion })}

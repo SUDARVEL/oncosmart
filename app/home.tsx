@@ -16,6 +16,7 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+import { AdminTestingTools } from "../components/admin/AdminTestingTools";
 import { BottomTabBar } from "../components/BottomTabBar";
 import { ChatFab } from "../components/ChatFab";
 import { CoachMarkOverlay } from "../components/coach/CoachMarkOverlay";
@@ -47,6 +48,7 @@ import {
   TOTAL_SESSIONS,
   type SessionState,
 } from "../lib/programProgress";
+import { useIsAdmin } from "../lib/useIsAdmin";
 import { useAppStore } from "../store/useAppStore";
 import { colors } from "../theme/colors";
 import { font } from "../theme/fonts";
@@ -85,6 +87,7 @@ function getPrimarySessionState(states: SessionState[]): SessionState {
 export default function HomeScreen() {
   const { t } = useTranslation();
   const router = useRouter();
+  const isAdmin = useIsAdmin();
   const username = useAppStore((state) => state.username);
   const avatar = useAppStore((state) => state.avatar);
   const gender = useAppStore((state) => state.gender);
@@ -317,7 +320,12 @@ export default function HomeScreen() {
           />
         </View>
 
-        {__DEV__ ? <DevPanel /> : null}
+        {__DEV__ || isAdmin ? (
+          <>
+            {isAdmin ? <AdminTestingTools title={t('settings.adminTestingTitle')} /> : null}
+            {__DEV__ ? <DevPanel /> : null}
+          </>
+        ) : null}
       </ScrollView>
 
       <ChatFab bottom={88} />

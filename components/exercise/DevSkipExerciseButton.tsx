@@ -7,13 +7,20 @@ type Props = {
   exerciseNumber: number;
   totalExercises: number;
   onPress: () => void;
+  /** When true, show even in production (admin demo testing). */
+  enabled?: boolean;
 };
 
-/** Dev-only skip control — sits under the header so it never covers exercise text. */
-export function DevSkipExerciseButton({ exerciseNumber, totalExercises, onPress }: Props) {
+/** Skip control for __DEV__ or admin testing — sits under the header. */
+export function DevSkipExerciseButton({
+  exerciseNumber,
+  totalExercises,
+  onPress,
+  enabled = false,
+}: Props) {
   const insets = useSafeAreaInsets();
 
-  if (!__DEV__) return null;
+  if (!__DEV__ && !enabled) return null;
 
   return (
     <View
@@ -26,7 +33,7 @@ export function DevSkipExerciseButton({ exerciseNumber, totalExercises, onPress 
         accessibilityRole="button"
         accessibilityLabel="Skip current exercise"
       >
-        <Text style={styles.label}>DEV</Text>
+        <Text style={styles.label}>{enabled && !__DEV__ ? 'ADMIN' : 'DEV'}</Text>
         <Text style={styles.text}>
           Skip ({exerciseNumber}/{totalExercises})
         </Text>

@@ -451,7 +451,10 @@
     "changeAvatar": "அவதாரத்தை மாற்று",
     "changeAvatarDescription": "ஆண் அல்லது பெண் அவதாரத்தை தேர்வு செய்யுங்கள்",
     "about": "ONCOSMART பற்றி",
-    "aboutDescription": "பதிப்பு {{version}}"
+    "aboutDescription": "பதிப்பு {{version}}",
+    "adminDashboard": "நிர்வாக டாஷ்போர்டு",
+    "adminDashboardDescription": "நோயாளி முன்னேற்றம், இடைநிறுத்தம்/நிறுத்த அறிவிப்புகள்",
+    "adminTestingTitle": "நிர்வாக சோதனை கருவிகள்"
   },
   "changePassword": {
     "title": "கடவுச்சொல் மாற்று",
@@ -484,6 +487,7 @@
   "admin": {
     "title": "நிர்வாக டாஷ்போர்டு",
     "dashboardHint": "நோயாளி முன்னேற்ற மேற்பார்வை",
+    "openExerciseApp": "பயிற்சி ஆப்பைத் திற",
     "alertsTitle": "இடைநிறுத்தம் / நிறுத்த அறிவிப்புகள்",
     "alertsHint": "நோயாளி இடைநிறுத்தினால் அல்லது நிறுத்தினால் இங்கேயும் இந்த போனில் அறிவிப்பாகவும் தானாகத் தோன்றும்.",
     "alertsEmpty": "புதிய இடைநிறுத்தம்/நிறுத்த அறிவிப்புகள் இல்லை.",

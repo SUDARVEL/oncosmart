@@ -15,6 +15,7 @@ import { useExercisePauseGuard } from '../../hooks/useExercisePauseGuard';
 import { notifyAdminsOfHold } from '../../lib/adminNotify';
 import { getSessionExerciseVideoSource } from '../../lib/getDayExercises';
 import type { QuitReason } from '../../lib/progressHold';
+import { useIsAdmin } from '../../lib/useIsAdmin';
 import { saveCloudProfileFromStore } from '../../lib/userCloudSync';
 import {
   getSessionExerciseForLevel,
@@ -103,6 +104,7 @@ function GuidedSessionScreen({
   sessionKey: string;
 }) {
   const router = useRouter();
+  const isAdmin = useIsAdmin();
   const { index: indexParam } = useLocalSearchParams<{
     index?: string;
   }>();
@@ -289,6 +291,7 @@ function GuidedSessionScreen({
       exerciseNumber={exerciseIndex + 1}
       totalExercises={totalExercises}
       onPress={devSkipExercise}
+      enabled={isAdmin}
     />
   );
 

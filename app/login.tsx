@@ -20,6 +20,7 @@ import { isAdminSession } from '../lib/isAdmin';
 import { getPreferredLanguage } from '../lib/preferredLanguage';
 import { openWhatsAppForgotPassword } from '../lib/openWhatsAppSupport';
 import { syncNextExerciseNotification } from '../lib/nextExerciseNotification';
+import { prepareAdminExerciseProfile } from '../lib/prepareAdminExerciseProfile';
 import { loadCloudProfileIntoStore } from '../lib/userCloudSync';
 import { useAppStore } from '../store/useAppStore';
 import { colors } from '../theme/colors';
@@ -77,8 +78,11 @@ export default function LoginScreen() {
     }
 
     const session = await getCurrentSession();
-    if (isAdminSession(session)) {
-      router.replace('/admin');
+    if (isAdminSession(session) && session?.user?.id) {
+      // Admin gets the full exercise app + dashboard/testing tools from Settings.
+      await prepareAdminExerciseProfile(session, keptLanguage);
+      void syncNextExerciseNotification(useAppStore.getState().dayCompletedAt);
+      router.replace('/home');
       setSubmitting(false);
       return;
     }

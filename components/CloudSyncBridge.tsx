@@ -1,7 +1,6 @@
 import { useEffect, useRef } from 'react';
 
 import { getCurrentSession, onAuthStateChange } from '../lib/auth';
-import { isAdminSession } from '../lib/isAdmin';
 import { syncNextExerciseNotification } from '../lib/nextExerciseNotification';
 import {
   loadCloudProfileIntoStore,
@@ -57,12 +56,12 @@ export function CloudSyncBridge() {
     };
 
     void getCurrentSession().then((session) => {
-      if (cancelled || !session?.user?.id || isAdminSession(session)) return;
+      if (cancelled || !session?.user?.id) return;
       void hydrate(session.user.id);
     });
 
     const unsubscribe = onAuthStateChange((session) => {
-      if (!session?.user?.id || isAdminSession(session)) return;
+      if (!session?.user?.id) return;
       void hydrate(session.user.id);
     });
 

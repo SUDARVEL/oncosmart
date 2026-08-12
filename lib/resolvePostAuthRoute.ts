@@ -8,7 +8,8 @@ import { useAppStore } from '../store/useAppStore';
 export function resolvePostAuthRoute(
   session?: Session | null,
 ): '/admin' | '/home' | '/onboarding' {
-  if (isAdminSession(session)) return '/admin';
+  // Admins use the full patient exercise app; dashboard is reachable from Settings.
+  if (isAdminSession(session)) return '/home';
   const state = useAppStore.getState();
   return isOnboardingComplete(state) ? '/home' : '/onboarding';
 }

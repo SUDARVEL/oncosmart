@@ -451,7 +451,10 @@
     "changeAvatar": "Change avatar",
     "changeAvatarDescription": "Pick a new male or female avatar",
     "about": "About ONCOSMART",
-    "aboutDescription": "Version {{version}}"
+    "aboutDescription": "Version {{version}}",
+    "adminDashboard": "Admin dashboard",
+    "adminDashboardDescription": "Patient progress, pause/quit alerts",
+    "adminTestingTitle": "Admin testing tools"
   },
   "changePassword": {
     "title": "Change Password",
@@ -484,6 +487,7 @@
   "admin": {
     "title": "Admin Dashboard",
     "dashboardHint": "Patient progress overview",
+    "openExerciseApp": "Open exercise app",
     "alertsTitle": "Pause / Quit alerts",
     "alertsHint": "When a patient pauses or quits, it shows here and as a notification on this phone automatically.",
     "alertsEmpty": "No new pause/quit alerts yet.",
