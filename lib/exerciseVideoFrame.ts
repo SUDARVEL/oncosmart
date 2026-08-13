@@ -36,7 +36,11 @@ export type GuidedVideoPresentation = {
   /** Default portrait instructor crop vs full-frame dual-panel (chest stretch). */
   layout: 'portrait-crop' | 'fill-frame';
   contentFit: GuidedVideoContentFit;
-  objectPosition: 'center bottom' | 'center';
+  objectPosition: 'center bottom' | 'center' | `${string} ${string}`;
+  /** Zoom inside the crop window (>1 trims top chrome). */
+  sourceScale?: number;
+  /** Nudge video down (px) to hide baked-in top UI in specific assets. */
+  sourceTranslateYPx?: number;
 };
 
 const DEFAULT_GUIDED_VIDEO_PRESENTATION: GuidedVideoPresentation = {
@@ -52,11 +56,35 @@ const CHEST_STRETCH_VIDEO_PRESENTATION: GuidedVideoPresentation = {
   objectPosition: 'center',
 };
 
+/**
+ * Wall push-up portrait exports include a top-right slider arrow in the source.
+ * Zoom + downward nudge keeps the instructor framed like other exercises.
+ */
+const WALL_PUSHUP_VIDEO_PRESENTATION: GuidedVideoPresentation = {
+  layout: 'portrait-crop',
+  contentFit: 'cover',
+  objectPosition: 'center 92%',
+  sourceScale: 1.12,
+  sourceTranslateYPx: 36,
+};
+
 export function getGuidedVideoPresentation(exerciseId: string): GuidedVideoPresentation {
   if (exerciseId === 'chest-stretch') {
     return CHEST_STRETCH_VIDEO_PRESENTATION;
   }
+  if (exerciseId === 'wall-pushup') {
+    return WALL_PUSHUP_VIDEO_PRESENTATION;
+  }
   return DEFAULT_GUIDED_VIDEO_PRESENTATION;
+}
+
+export function getGuidedVideoTransformStyle(
+  presentation: GuidedVideoPresentation,
+): { transform: ({ translateY: number } | { scale: number })[] } | undefined {
+  const scale = presentation.sourceScale ?? 1;
+  const translateY = presentation.sourceTranslateYPx ?? 0;
+  if (scale === 1 && translateY === 0) return undefined;
+  return { transform: [{ translateY }, { scale }] };
 }
 
 /** Home day-card video — full-bleed 16:9 inside the wide card. */

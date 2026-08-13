@@ -7,6 +7,7 @@ import {
   EXERCISE_VIDEO_FRAME_BORDER_RADIUS,
   EXERCISE_VIDEO_SOURCE_ASPECT,
   getGuidedVideoPresentation,
+  getGuidedVideoTransformStyle,
 } from '../../lib/exerciseVideoFrame';
 import { shouldAcceptVideoEnd } from './sessionVideoCompletion';
 
@@ -39,6 +40,7 @@ export function SessionVideoPlayer({
 }: Props) {
   const presentation = getGuidedVideoPresentation(exerciseId);
   const fillFrame = presentation.layout === 'fill-frame';
+  const cropTransform = getGuidedVideoTransformStyle(presentation);
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const onEndedRef = useRef(onEnded);
   const onProgressRef = useRef(onProgress);
@@ -233,29 +235,31 @@ export function SessionVideoPlayer({
     <View style={styles.wrap}>
       {/* Default: 349×578 source bottom-aligned in 349×444. Chest stretch fills frame. */}
       <View style={fillFrame ? styles.fillBox : styles.sourceBox}>
-        {createElement('video', {
-          key: `${source}-${restartToken}`,
-          ref: videoRef,
-          src: source,
-          playsInline: true,
-          preload: 'auto',
-          controls: false,
-          muted: false,
-          defaultMuted: false,
-          style: {
-            ...styles.video,
-            objectFit: presentation.contentFit,
-            objectPosition: presentation.objectPosition,
-          },
-          onLoadStart: handleWaiting,
-          onWaiting: handleWaiting,
-          onCanPlay: handleCanPlay,
-          onPlaying: handlePlaying,
-          onLoadedMetadata: handleLoadedMetadata,
-          onTimeUpdate: handleTimeUpdate,
-          onEnded: handleEnded,
-          onError: handleError,
-        })}
+        <View style={[styles.cropInner, cropTransform as object]}>
+          {createElement('video', {
+            key: `${source}-${restartToken}`,
+            ref: videoRef,
+            src: source,
+            playsInline: true,
+            preload: 'auto',
+            controls: false,
+            muted: false,
+            defaultMuted: false,
+            style: {
+              ...styles.video,
+              objectFit: presentation.contentFit,
+              objectPosition: presentation.objectPosition,
+            },
+            onLoadStart: handleWaiting,
+            onWaiting: handleWaiting,
+            onCanPlay: handleCanPlay,
+            onPlaying: handlePlaying,
+            onLoadedMetadata: handleLoadedMetadata,
+            onTimeUpdate: handleTimeUpdate,
+            onEnded: handleEnded,
+            onError: handleError,
+          })}
+        </View>
       </View>
     </View>
   );
@@ -278,6 +282,10 @@ const styles = StyleSheet.create({
     aspectRatio: EXERCISE_VIDEO_SOURCE_ASPECT,
   },
   fillBox: {
+    width: '100%',
+    height: '100%',
+  },
+  cropInner: {
     width: '100%',
     height: '100%',
   },

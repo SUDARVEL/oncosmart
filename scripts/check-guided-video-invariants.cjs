@@ -53,6 +53,11 @@ assert(
     frame.includes("layout: 'fill-frame'"),
   'Chest stretch must use full-frame dual-panel presentation',
 );
+assert(
+  frame.includes("exerciseId === 'wall-pushup'") &&
+    frame.includes('sourceScale'),
+  'Wall push-up must use extra crop to hide top slider arrow',
+);
 
 const policy = read('lib/videoStoragePolicy.ts');
 assert(
