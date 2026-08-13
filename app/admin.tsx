@@ -14,6 +14,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ScreenHeader } from '../components/ScreenHeader';
+import { AdminSessionBpmTable } from '../components/admin/AdminSessionBpmTable';
 import {
   fetchAdminHoldAlerts,
   markAdminHoldAlertRead,
@@ -22,8 +23,8 @@ import {
 import {
   TOTAL_SESSIONS,
   buildAdminDashboardStats,
+  buildAdminSessionRows,
   fetchAdminPatientProgress,
-  sortedCompletedSessions,
   type AdminPatientProgress,
 } from '../lib/adminProgress';
 import { signOut } from '../lib/auth';
@@ -134,7 +135,7 @@ function PatientCard({
   onToggle: () => void;
 }) {
   const { t, i18n } = useTranslation();
-  const completed = sortedCompletedSessions(patient.dayCompletedAt);
+  const sessionRows = useMemo(() => buildAdminSessionRows(patient), [patient]);
   const progressLabel = t('admin.sessionsProgress', {
     done: patient.sessionsCompleted,
     total: TOTAL_SESSIONS,
@@ -335,45 +336,11 @@ function PatientCard({
               ))
           )}
 
-          <Text style={styles.completedTitle}>{t('admin.completedSessions')}</Text>
-          {completed.length === 0 ? (
-            <Text style={styles.emptySessions}>{t('admin.noSessionsYet')}</Text>
-          ) : (
-            completed.map((session) => {
-              const painKey = `${session.level}:${session.dayInLevel}`;
-              const pain = patient.painScores[painKey];
-              const detail = patient.sessionDetails.find(
-                (row) => row.sessionKey === session.key,
-              );
-              const bpmParts: string[] = [];
-              if (typeof detail?.startBpm === 'number') {
-                bpmParts.push(t('admin.startBpm', { bpm: detail.startBpm }));
-              }
-              if (typeof detail?.endBpm === 'number') {
-                bpmParts.push(t('admin.endBpm', { bpm: detail.endBpm }));
-              }
-              const extras = [
-                typeof pain === 'number' ? `${pain}/10` : null,
-                bpmParts.length > 0 ? bpmParts.join(' · ') : null,
-              ]
-                .filter(Boolean)
-                .join(' · ');
-              return (
-                <View key={session.key} style={styles.sessionRow}>
-                  <Text style={styles.sessionKey}>
-                    {t('admin.sessionItem', {
-                      level: session.level,
-                      day: session.dayInLevel,
-                    })}
-                    {extras ? ` · ${extras}` : ''}
-                  </Text>
-                  <Text style={styles.sessionWhen}>
-                    {formatWhen(session.completedAt, i18n.language)}
-                  </Text>
-                </View>
-              );
-            })
-          )}
+          <Text style={styles.completedTitle}>{t('admin.bpmTableTitle')}</Text>
+          <AdminSessionBpmTable
+            rows={sessionRows}
+            formatWhen={(ms) => formatWhen(ms, i18n.language)}
+          />
         </View>
       ) : null}
     </View>

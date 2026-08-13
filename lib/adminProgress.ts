@@ -53,6 +53,76 @@ export type AdminPatientProgress = {
   createdAt: string | null;
 };
 
+export type AdminSessionRow = {
+  sessionKey: string;
+  level: number;
+  dayInLevel: number;
+  completedAt: number | null;
+  painScore: number | null;
+  startBpm: number | null;
+  endBpm: number | null;
+};
+
+export function buildAdminSessionRows(patient: AdminPatientProgress): AdminSessionRow[] {
+  const completed = sortedCompletedSessions(patient.dayCompletedAt);
+  const detailByKey = new Map(
+    patient.sessionDetails.map((detail) => [detail.sessionKey, detail]),
+  );
+  const seen = new Set<string>();
+  const rows: AdminSessionRow[] = [];
+
+  for (const session of completed) {
+    seen.add(session.key);
+    const detail = detailByKey.get(session.key);
+    const painKey = `${session.level}:${session.dayInLevel}`;
+    const painFromProfile = patient.painScores[painKey];
+    rows.push({
+      sessionKey: session.key,
+      level: session.level,
+      dayInLevel: session.dayInLevel,
+      completedAt: session.completedAt,
+      painScore:
+        typeof painFromProfile === 'number'
+          ? painFromProfile
+          : typeof detail?.painScore === 'number' && Number.isFinite(detail.painScore)
+            ? detail.painScore
+            : null,
+      startBpm:
+        typeof detail?.startBpm === 'number' && Number.isFinite(detail.startBpm)
+          ? detail.startBpm
+          : null,
+      endBpm:
+        typeof detail?.endBpm === 'number' && Number.isFinite(detail.endBpm)
+          ? detail.endBpm
+          : null,
+    });
+  }
+
+  for (const detail of patient.sessionDetails) {
+    if (seen.has(detail.sessionKey)) continue;
+    rows.push({
+      sessionKey: detail.sessionKey,
+      level: detail.level,
+      dayInLevel: detail.dayInLevel,
+      completedAt: detail.completedAt ? Date.parse(detail.completedAt) : null,
+      painScore:
+        typeof detail.painScore === 'number' && Number.isFinite(detail.painScore)
+          ? detail.painScore
+          : null,
+      startBpm:
+        typeof detail.startBpm === 'number' && Number.isFinite(detail.startBpm)
+          ? detail.startBpm
+          : null,
+      endBpm:
+        typeof detail.endBpm === 'number' && Number.isFinite(detail.endBpm)
+          ? detail.endBpm
+          : null,
+    });
+  }
+
+  return rows.sort((a, b) => a.level - b.level || a.dayInLevel - b.dayInLevel);
+}
+
 export type AdminDashboardStats = {
   total: number;
   onboarded: number;
