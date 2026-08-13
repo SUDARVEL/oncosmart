@@ -97,6 +97,7 @@
     "dayLabel": "DAY {{day}}",
     "levelSuffix": " - level {{level}}",
     "daySubtitle": "Exercise Session",
+    "daySubtitleWithLevel": "Level {{level}} · Day {{day}}",
     "start": "Start",
     "completed": "Completed",
     "unlocksIn": "Unlocks in {{time}}",

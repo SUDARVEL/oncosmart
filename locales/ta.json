@@ -97,6 +97,7 @@
     "dayLabel": "நாள் {{day}}",
     "levelSuffix": " - நிலை {{level}}",
     "daySubtitle": "பயிற்சி அமர்வு",
+    "daySubtitleWithLevel": "நிலை {{level}} · நாள் {{day}}",
     "start": "தொடங்கு",
     "completed": "முடிந்தது",
     "unlocksIn": "{{time}} இல் திறக்கும்",

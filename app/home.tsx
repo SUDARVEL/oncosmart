@@ -45,6 +45,7 @@ import {
   formatCountdown,
   getActiveLevel,
   getCompletedSessionCount,
+  getOverallSessionNumber,
   getSessionState,
   sessionKey,
   TOTAL_SESSIONS,
@@ -402,6 +403,8 @@ function DayCard({
   const isLocked = status === "locked";
   const placeholderVideo = getHomePagePlaceholderVideo(avatar, gender);
 
+  const overallDay = getOverallSessionNumber(level, dayInLevel);
+
   return (
     <View style={[styles.dayCard, isLocked && styles.dayCardLocked]}>
       <View style={styles.exerciseBannerWrap}>
@@ -421,9 +424,11 @@ function DayCard({
 
       <View style={styles.dayCardBody}>
         <Text style={styles.dayLabel}>
-          {t("home.dayLabel", { day: dayInLevel })}
+          {t("home.dayLabel", { day: overallDay })}
         </Text>
-        <Text style={styles.daySubtitle}>{t("home.daySubtitle")}</Text>
+        <Text style={styles.daySubtitle}>
+          {t("home.daySubtitleWithLevel", { level, day: dayInLevel })}
+        </Text>
 
         {status === "completed" ? (
           <View style={styles.completedButton}>

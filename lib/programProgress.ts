@@ -75,6 +75,10 @@ export function isLevelUnlocked(level: number, completions: Completions): boolea
   return isLevelComplete(level - 1, completions);
 }
 
+export function getOverallSessionNumber(level: number, dayInLevel: number): number {
+  return (level - 1) * DAYS_PER_LEVEL + dayInLevel;
+}
+
 export function getSessionState(
   level: number,
   dayInLevel: number,
