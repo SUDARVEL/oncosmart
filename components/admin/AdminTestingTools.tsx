@@ -2,6 +2,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import {
   DAYS_PER_LEVEL,
+  UNLOCK_ADMIN_BACKDATE_MS,
   getActiveLevel,
   sessionKey,
 } from '../../lib/programProgress';
@@ -38,7 +39,7 @@ export function AdminTestingTools({ title = 'Admin testing tools' }: Props) {
     if (progressPaused) setProgressPaused(false, null, null);
   };
 
-  const hoursAgo = (hours: number) => Date.now() - hours * 60 * 60 * 1000;
+  const backdateMs = UNLOCK_ADMIN_BACKDATE_MS;
 
   return (
     <View style={styles.panel}>
@@ -54,7 +55,7 @@ export function AdminTestingTools({ title = 'Admin testing tools' }: Props) {
           onPress={() => {
             if (!nextDayToSkip) return;
             ensureUnpaused();
-            markSessionCompleted(activeLevel, nextDayToSkip, hoursAgo(25));
+            markSessionCompleted(activeLevel, nextDayToSkip, Date.now() - backdateMs);
           }}
         />
         <ToolButton
@@ -66,7 +67,7 @@ export function AdminTestingTools({ title = 'Admin testing tools' }: Props) {
                 markSessionCompleted(
                   activeLevel,
                   day,
-                  hoursAgo((DAYS_PER_LEVEL - day + 1) * 25),
+                  Date.now() - (DAYS_PER_LEVEL - day + 1) * backdateMs,
                 );
               }
             }
@@ -83,13 +84,13 @@ export function AdminTestingTools({ title = 'Admin testing tools' }: Props) {
               markSessionCompleted(
                 activeLevel,
                 day,
-                hoursAgo((DAYS_PER_LEVEL - day + 1) * 25),
+                Date.now() - (DAYS_PER_LEVEL - day + 1) * backdateMs,
               );
             }
           }}
         />
         <ToolButton
-          label={devUnlockOverride ? 'Bypass 24h: ON' : 'Bypass 24h: OFF'}
+          label={devUnlockOverride ? 'Bypass 12h: ON' : 'Bypass 12h: OFF'}
           active={devUnlockOverride}
           onPress={() => setDevUnlockOverride(!devUnlockOverride)}
         />

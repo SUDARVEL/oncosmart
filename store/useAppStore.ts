@@ -46,7 +46,7 @@ export type AppStateSnapshot = {
 type CloudHydrateInput = Partial<AppStateSnapshot>;
 
 type AppState = AppStateSnapshot & {
-  /** Dev-only flag that bypasses the 24h unlock delay between days. */
+  /** Dev-only flag that bypasses the 12h unlock delay between days. */
   devUnlockOverride: boolean;
   /** Ephemeral queue of badge celebrations to show after a session. */
   pendingBadgeCelebrations: BadgeKey[];

@@ -148,9 +148,9 @@
     "levelTitle": "Level {{level}} Completed!",
     "dayTitle": "Level {{level}} — Day {{day}} Done!",
     "subtitle": "Great work. Your exercise session is saved.",
-    "unlockInfo": "Day {{day}} unlocks after 24 hours, around {{when}}.",
-    "nextDayUnlock": "Day {{day}} unlocks after 24 hours, around {{when}}.",
-    "nextLevelUnlock": "Level {{level}} unlocks after 24 hours, around {{when}}.",
+    "unlockInfo": "Day {{day}} unlocks after 12 hours, around {{when}}.",
+    "nextDayUnlock": "Day {{day}} unlocks after 12 hours, around {{when}}.",
+    "nextLevelUnlock": "Level {{level}} unlocks after 12 hours, around {{when}}.",
     "allDone": "You have completed all available days.",
     "goHome": "Go to Home",
     "viewProgress": "View Progress"
@@ -485,7 +485,7 @@
     "nextExerciseTitle": "Your exercise is ready",
     "nextExerciseBody": "Level {{level}}, Day {{day}} is unlocked. Open ONCOSMART to start.",
     "dayCompletedTitle": "Day completed — great work!",
-    "dayCompletedBody": "Level {{level}}, Day {{day}} is done. Level {{nextLevel}}, Day {{nextDay}} unlocks in 24 hours — we’ll remind you.",
+    "dayCompletedBody": "Level {{level}}, Day {{day}} is done. Level {{nextLevel}}, Day {{nextDay}} unlocks in 12 hours — we’ll remind you.",
     "dayCompletedFinalBody": "Level {{level}}, Day {{day}} is done. You’ve finished the program!",
     "appUpdateTitle": "ONCOSMART update ready",
     "appUpdateBody": "A new version is installing now. The app will refresh in a moment."

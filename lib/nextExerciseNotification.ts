@@ -172,7 +172,7 @@ export async function presentDayCompletedNotification(params: {
 
 /**
  * Schedule a local notification at the device-local unlock time
- * (completedAt + 24h) for the next exercise day.
+ * (completedAt + 12h) for the next exercise day.
  */
 export async function scheduleNextExerciseNotification(params: {
   level: number;

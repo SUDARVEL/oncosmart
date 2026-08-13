@@ -1,7 +1,11 @@
 export const DAYS_PER_LEVEL = 7;
 export const TOTAL_LEVELS = 4;
 export const TOTAL_SESSIONS = DAYS_PER_LEVEL * TOTAL_LEVELS;
-export const UNLOCK_DELAY_MS = 24 * 60 * 60 * 1000;
+/** Wait between completing one day and unlocking the next (same day count / program structure). */
+export const UNLOCK_DELAY_MS = 12 * 60 * 60 * 1000;
+export const UNLOCK_DELAY_HOURS = 12;
+/** Backdate admin test completions so the following day is already unlocked. */
+export const UNLOCK_ADMIN_BACKDATE_MS = UNLOCK_DELAY_MS + 60 * 60 * 1000;
 
 export type SessionStatus = 'completed' | 'available' | 'locked';
 

@@ -40,6 +40,8 @@ import { getHomePagePlaceholderVideo } from "../lib/placeholderVideo";
 import { HOME_DAY_CARD_PREVIEW_ASPECT } from "../lib/exerciseVideoFrame";
 import {
   DAYS_PER_LEVEL,
+  UNLOCK_ADMIN_BACKDATE_MS,
+  UNLOCK_DELAY_HOURS,
   formatCountdown,
   getActiveLevel,
   getCompletedSessionCount,
@@ -485,12 +487,12 @@ function DevPanel() {
             markSessionCompleted(
               activeLevel,
               1,
-              Date.now() - 25 * 60 * 60 * 1000,
+              Date.now() - UNLOCK_ADMIN_BACKDATE_MS,
             )
           }
         >
           <Text style={styles.devButtonText}>
-            Complete L{activeLevel}D1 (-25h)
+            Complete L{activeLevel}D1 (-{UNLOCK_DELAY_HOURS + 1}h)
           </Text>
         </Pressable>
         <Pressable
@@ -510,15 +512,15 @@ function DevPanel() {
           disabled={!nextDayToSkip}
           onPress={() => {
             if (!nextDayToSkip) return;
-            // Complete the next incomplete day with (-25h) so the following day unlocks immediately.
+            // Backdate completion so the following day is already unlocked (12h rule).
             markSessionCompleted(
               activeLevel,
               nextDayToSkip,
-              Date.now() - 25 * 60 * 60 * 1000,
+              Date.now() - UNLOCK_ADMIN_BACKDATE_MS,
             );
           }}
         >
-          <Text style={styles.devButtonText}>Skip next day (-25h)</Text>
+          <Text style={styles.devButtonText}>Skip next day</Text>
         </Pressable>
       </View>
       <View style={styles.devRow}>
@@ -530,7 +532,7 @@ function DevPanel() {
               markSessionCompleted(
                 activeLevel,
                 day,
-                Date.now() - (DAYS_PER_LEVEL - day) * 25 * 60 * 60 * 1000,
+                Date.now() - (DAYS_PER_LEVEL - day + 1) * UNLOCK_ADMIN_BACKDATE_MS,
               );
             }
           }}
@@ -546,7 +548,7 @@ function DevPanel() {
           onPress={() => setDevUnlockOverride(!devUnlockOverride)}
         >
           <Text style={styles.devButtonText}>
-            Bypass 24h: {devUnlockOverride ? "ON" : "OFF"}
+            Bypass 12h: {devUnlockOverride ? "ON" : "OFF"}
           </Text>
         </Pressable>
       </View>
