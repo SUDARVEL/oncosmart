@@ -39,6 +39,7 @@ export function CloudSyncBridge() {
   const dayCompletedAt = useAppStore((s) => s.dayCompletedAt);
   const levelsCompleted = useAppStore((s) => s.levelsCompleted);
   const coachTourSeen = useAppStore((s) => s.coachTourSeen);
+  const sessionBpmByKey = useAppStore((s) => s.sessionBpmByKey);
 
   useEffect(() => {
     let cancelled = false;
@@ -123,15 +124,18 @@ export function CloudSyncBridge() {
       const level = Number(match[1]);
       const dayInLevel = Number(match[2]);
       const painScore = painScores[`${level}:${dayInLevel}`];
+      const bpm = sessionBpmByKey[key];
       void persistSessionProgress({
         userId: activeAuthUserId,
         level,
         dayInLevel,
         completedAt: at,
         painScore,
+        startBpm: bpm?.startBpm,
+        endBpm: bpm?.endBpm,
       });
     }
-  }, [activeAuthUserId, dayCompletedAt, painScores]);
+  }, [activeAuthUserId, dayCompletedAt, painScores, sessionBpmByKey]);
 
   return null;
 }

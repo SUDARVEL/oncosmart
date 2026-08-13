@@ -106,6 +106,24 @@ function SessionBarChart({
   );
 }
 
+function formatTreatmentType(
+  treatment: AdminPatientProgress['treatmentUndergoing'],
+  t: (key: string) => string,
+): string {
+  switch (treatment) {
+    case 'chemotherapy':
+      return t('treatment.chemotherapy');
+    case 'radiation':
+      return t('treatment.radiation');
+    case 'both':
+      return t('treatment.both');
+    case 'none':
+      return t('treatment.none');
+    default:
+      return t('admin.pauseReasonNone');
+  }
+}
+
 function PatientCard({
   patient,
   expanded,
@@ -170,19 +188,19 @@ function PatientCard({
             {patient.passwordChanged ? t('admin.passwordChanged') : t('admin.defaultPassword')}
           </Text>
         </View>
-        {patient.progressPaused && patient.progressHoldType === 'pause' ? (
+        {patient.progressPaused ? (
           <View style={[styles.badge, styles.badgeWarn]}>
             <Text style={styles.badgeText}>{t('admin.paused')}</Text>
           </View>
         ) : null}
-        {patient.progressPaused && patient.progressHoldType === 'quit' ? (
+        {patient.quitReason || patient.quitAt ? (
           <View style={[styles.badge, styles.badgeDanger]}>
             <Text style={styles.badgeText}>{t('admin.quit')}</Text>
           </View>
         ) : null}
       </View>
 
-      {patient.progressPaused && patient.progressHoldType === 'pause' ? (
+      {patient.progressPaused ? (
         <View style={styles.pauseBanner}>
           <Text style={styles.pauseBannerTitle}>{t('admin.pauseSectionTitle')}</Text>
           <Text style={styles.pauseBannerReason}>
@@ -198,7 +216,7 @@ function PatientCard({
         </View>
       ) : null}
 
-      {patient.progressPaused && patient.progressHoldType === 'quit' ? (
+      {patient.quitReason || patient.quitAt ? (
         <View style={styles.quitBanner}>
           <Text style={styles.quitBannerTitle}>{t('admin.quitSectionTitle')}</Text>
           <Text style={styles.quitBannerReason}>
@@ -243,16 +261,34 @@ function PatientCard({
             </Text>
           ) : null}
 
+          <Text style={styles.completedTitle}>{t('admin.cancerSectionTitle')}</Text>
+          <Text style={styles.detailLine}>
+            {t('admin.cancerType')}:{' '}
+            {patient.cancerType.trim() ? patient.cancerType : t('admin.pauseReasonNone')}
+          </Text>
+          <Text style={styles.detailLine}>
+            {t('admin.treatmentUndergoing')}:{' '}
+            {formatTreatmentType(patient.treatmentUndergoing, t)}
+          </Text>
+          <Text style={styles.detailLine}>
+            {t('admin.underwentSurgery')}:{' '}
+            {patient.underwentSurgery == null
+              ? t('admin.pauseReasonNone')
+              : patient.underwentSurgery
+                ? t('treatment.yes')
+                : t('treatment.no')}
+          </Text>
+
           <Text style={styles.completedTitle}>{t('admin.pauseSectionTitle')}</Text>
           <Text style={styles.detailLine}>
             {t('admin.pausedTimeLabel')}:{' '}
-            {patient.progressHoldType === 'pause' && patient.pausedAt
+            {patient.progressPaused && patient.pausedAt
               ? formatWhen(Date.parse(patient.pausedAt), i18n.language)
               : t('admin.pauseReasonNone')}
           </Text>
           <Text style={styles.detailLine}>
             {t('admin.reasonLabel')}:{' '}
-            {patient.progressHoldType === 'pause'
+            {patient.progressPaused
               ? formatHoldReason(patient.pauseReason, t, 'admin.pauseReasonNone')
               : t('admin.pauseReasonNone')}
           </Text>
@@ -260,14 +296,14 @@ function PatientCard({
           <Text style={styles.completedTitle}>{t('admin.quitSectionTitle')}</Text>
           <Text style={styles.detailLine}>
             {t('admin.quitTimeLabel')}:{' '}
-            {patient.progressHoldType === 'quit' && patient.quitAt
+            {patient.quitAt
               ? formatWhen(Date.parse(patient.quitAt), i18n.language)
               : t('admin.pauseReasonNone')}
           </Text>
           <Text style={styles.detailLine}>
             {t('admin.reasonLabel')}:{' '}
-            {patient.progressHoldType === 'quit'
-              ? formatHoldReason(patient.quitReason, t, 'admin.pauseReasonNone')
+            {patient.quitReason
+              ? formatHoldReason(patient.quitReason, t, 'admin.quitReasonUnknown')
               : t('admin.pauseReasonNone')}
           </Text>
 
@@ -306,6 +342,22 @@ function PatientCard({
             completed.map((session) => {
               const painKey = `${session.level}:${session.dayInLevel}`;
               const pain = patient.painScores[painKey];
+              const detail = patient.sessionDetails.find(
+                (row) => row.sessionKey === session.key,
+              );
+              const bpmParts: string[] = [];
+              if (typeof detail?.startBpm === 'number') {
+                bpmParts.push(t('admin.startBpm', { bpm: detail.startBpm }));
+              }
+              if (typeof detail?.endBpm === 'number') {
+                bpmParts.push(t('admin.endBpm', { bpm: detail.endBpm }));
+              }
+              const extras = [
+                typeof pain === 'number' ? `${pain}/10` : null,
+                bpmParts.length > 0 ? bpmParts.join(' · ') : null,
+              ]
+                .filter(Boolean)
+                .join(' · ');
               return (
                 <View key={session.key} style={styles.sessionRow}>
                   <Text style={styles.sessionKey}>
@@ -313,7 +365,7 @@ function PatientCard({
                       level: session.level,
                       day: session.dayInLevel,
                     })}
-                    {typeof pain === 'number' ? ` · ${pain}/10` : ''}
+                    {extras ? ` · ${extras}` : ''}
                   </Text>
                   <Text style={styles.sessionWhen}>
                     {formatWhen(session.completedAt, i18n.language)}

@@ -9,6 +9,7 @@ import { ExerciseSessionCard } from '../../../components/exercise/ExerciseSessio
 import { PulseOximeterModal } from '../../../components/exercise/PulseOximeterModal';
 import { ResumeProgressModal } from '../../../components/growth/ResumeProgressModal';
 import { ReadyToBeginModal } from '../../../components/pain/ReadyToBeginModal';
+import { ChatFab } from '../../../components/ChatFab';
 import { useExercisePauseGuard } from '../../../hooks/useExercisePauseGuard';
 import { getDayExercises, getLevelSession } from '../../../lib/getDayExercises';
 import { hasGuidedSession } from '../../../lib/getDay1Session';
@@ -47,18 +48,20 @@ export default function ExerciseSessionsScreen() {
   const [showReadyModal, setShowReadyModal] = useState(false);
   const [showPulseModal, setShowPulseModal] = useState(false);
 
-  const beginSession = () => {
+  const beginSession = (startBpm: number) => {
     runIfProgressActive(() => {
       if (hasGuidedSession(level)) {
         router.push(
-          `/exercise/${dayInLevel}?session=1&level=${level}&index=0&started=${Date.now()}`,
+          `/exercise/${dayInLevel}?session=1&level=${level}&index=0&started=${Date.now()}&startBpm=${startBpm}`,
         );
         return;
       }
 
       const firstPlayable = exercises.find((exercise) => exercise.playbackSource);
       if (firstPlayable) {
-        router.push(`/exercise/${dayInLevel}?exercise=${firstPlayable.id}&level=${level}`);
+        router.push(
+          `/exercise/${dayInLevel}?exercise=${firstPlayable.id}&level=${level}&startBpm=${startBpm}`,
+        );
       }
     });
   };
@@ -136,11 +139,13 @@ export default function ExerciseSessionsScreen() {
         visible={showPulseModal}
         maxBpm={maxBpm}
         onCancel={() => setShowPulseModal(false)}
-        onStart={() => {
+        onStart={(bpm) => {
           setShowPulseModal(false);
-          beginSession();
+          beginSession(bpm);
         }}
       />
+
+      <ChatFab bottom={88} />
 
       <ResumeProgressModal
         visible={showResumeModal}

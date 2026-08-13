@@ -77,6 +77,8 @@ create table if not exists exercise_completions (
   session_key text,
   exercise_id text,
   pain_score int,
+  start_bpm int,
+  end_bpm int,
   completed_at timestamptz default now(),
   unique (patient_id, session_key)
 );

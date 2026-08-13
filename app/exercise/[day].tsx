@@ -4,6 +4,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { DevSkipExerciseButton } from '../../components/exercise/DevSkipExerciseButton';
+import { EndBpmModal } from '../../components/exercise/EndBpmModal';
 import { ExercisePlayerView } from '../../components/exercise/ExercisePlayerView';
 import { RestTimerScreen } from '../../components/exercise/RestTimerScreen';
 import {
@@ -11,6 +12,7 @@ import {
   type StopReason,
 } from '../../components/exercise/WhyDidYouStopModal';
 import { ResumeProgressModal } from '../../components/growth/ResumeProgressModal';
+import { ChatFab } from '../../components/ChatFab';
 import { useExercisePauseGuard } from '../../hooks/useExercisePauseGuard';
 import { notifyAdminsOfHold } from '../../lib/adminNotify';
 import { getSessionExerciseVideoSource } from '../../lib/getDayExercises';
@@ -43,6 +45,7 @@ import { isExerciseInLevel } from '../../lib/levelExercisePrograms';
 import {
   DAYS_PER_LEVEL,
   getCompletedSessionCount,
+  sessionKey,
 } from '../../lib/programProgress';
 import { useAppStore } from '../../store/useAppStore';
 import { colors } from '../../theme/colors';
@@ -85,23 +88,28 @@ function LegacyExercisePreview() {
   }
 
   return (
-    <ExercisePlayerView
-      exercise={sessionExercise}
-      videoSources={[source]}
-      onComplete={() => router.back()}
-      onBackPress={() => router.back()}
-    />
+    <>
+      <ExercisePlayerView
+        exercise={sessionExercise}
+        videoSources={[source]}
+        onComplete={() => router.back()}
+        onBackPress={() => router.back()}
+      />
+      <ChatFab bottom={88} />
+    </>
   );
 }
 
 function GuidedSessionScreen({
   level,
   dayInLevel,
-  sessionKey,
+  sessionKey: sessionRouteKey,
+  startBpm,
 }: {
   level: number;
   dayInLevel: number;
   sessionKey: string;
+  startBpm: number;
 }) {
   const router = useRouter();
   const isAdmin = useIsAdmin();
@@ -116,6 +124,7 @@ function GuidedSessionScreen({
   const [exerciseIndex, setExerciseIndex] = useState(() => Math.max(0, Number(indexParam) || 0));
   const [phase, setPhase] = useState<'exercise' | 'rest'>('exercise');
   const [showStopModal, setShowStopModal] = useState(false);
+  const [showEndBpmModal, setShowEndBpmModal] = useState(false);
   const exerciseFinishedRef = useRef(false);
 
   useEffect(() => {
@@ -123,13 +132,66 @@ function GuidedSessionScreen({
     setPhase('exercise');
     setShowStopModal(false);
     exerciseFinishedRef.current = false;
-  }, [indexParam, sessionKey]);
+  }, [indexParam, sessionRouteKey]);
 
   useEffect(() => {
     exerciseFinishedRef.current = false;
   }, [exerciseIndex]);
 
   const sessionExercise = getSessionExerciseForLevel(level, exerciseIndex);
+
+  const finalizeSession = useCallback(
+    (endBpm: number) => {
+      const state = useAppStore.getState();
+      if (state.progressPaused) {
+        router.replace('/home');
+        return;
+      }
+      const key = sessionKey(level, dayInLevel);
+      if (startBpm > 0 && endBpm > 0) {
+        state.setSessionBpm(key, { startBpm, endBpm });
+      }
+      const before = getEarnedBadges(
+        state.levelsCompleted,
+        getCompletedSessionCount(state.dayCompletedAt),
+      );
+
+      state.markSessionCompleted(level, dayInLevel);
+
+      const afterState = useAppStore.getState();
+      const after = getEarnedBadges(
+        afterState.levelsCompleted,
+        getCompletedSessionCount(afterState.dayCompletedAt),
+      );
+      const newlyEarned = getNewlyEarnedBadges(before, after);
+
+      if (dayInLevel >= DAYS_PER_LEVEL) {
+        const levelBadge = LEVEL_COMPLETION_BADGE[level];
+        if (levelBadge && after.has(levelBadge) && !newlyEarned.includes(levelBadge)) {
+          newlyEarned.push(levelBadge);
+        }
+      }
+
+      if (newlyEarned.length > 0) {
+        afterState.enqueueBadgeCelebrations(newlyEarned);
+      }
+
+      const completedAt = afterState.dayCompletedAt[key];
+      void scheduleNextExerciseNotification({
+        level,
+        dayInLevel,
+        completedAt,
+        announceCompletion: true,
+      });
+
+      router.replace(`/exercise/complete?level=${level}&day=${dayInLevel}`);
+    },
+    [dayInLevel, level, router, startBpm],
+  );
+
+  const completeSession = useCallback(() => {
+    setShowEndBpmModal(true);
+  }, []);
 
   const videoSources = useMemo(() => {
     if (!sessionExercise) return [];
@@ -156,50 +218,6 @@ function GuidedSessionScreen({
     const sanitized = sanitizePublicVideoUrl(catalogFallback);
     return isValidGuidedPlaybackUrl(sanitized) ? [sanitized] : [];
   }, [avatar, level, gender, language, sessionExercise]);
-
-  const completeSession = useCallback(() => {
-    const state = useAppStore.getState();
-    // Never advance program progress while the patient has paused.
-    if (state.progressPaused) {
-      router.replace('/home');
-      return;
-    }
-    const before = getEarnedBadges(
-      state.levelsCompleted,
-      getCompletedSessionCount(state.dayCompletedAt),
-    );
-
-    state.markSessionCompleted(level, dayInLevel);
-
-    const afterState = useAppStore.getState();
-    const after = getEarnedBadges(
-      afterState.levelsCompleted,
-      getCompletedSessionCount(afterState.dayCompletedAt),
-    );
-    const newlyEarned = getNewlyEarnedBadges(before, after);
-
-    // Always celebrate the level badge when that level's last day is finished.
-    if (dayInLevel >= DAYS_PER_LEVEL) {
-      const levelBadge = LEVEL_COMPLETION_BADGE[level];
-      if (levelBadge && after.has(levelBadge) && !newlyEarned.includes(levelBadge)) {
-        newlyEarned.push(levelBadge);
-      }
-    }
-
-    if (newlyEarned.length > 0) {
-      afterState.enqueueBadgeCelebrations(newlyEarned);
-    }
-
-    const completedAt = afterState.dayCompletedAt[sessionKey];
-    void scheduleNextExerciseNotification({
-      level,
-      dayInLevel,
-      completedAt,
-      announceCompletion: true,
-    });
-
-    router.replace(`/exercise/complete?level=${level}&day=${dayInLevel}`);
-  }, [dayInLevel, level, router, sessionKey]);
 
   const handleExerciseComplete = useCallback(() => {
     if (exerciseFinishedRef.current) return;
@@ -235,7 +253,7 @@ function GuidedSessionScreen({
           : 'exploring';
       setShowStopModal(false);
       const state = useAppStore.getState();
-      state.setProgressPaused(true, quitReason, 'quit');
+      state.recordExerciseQuit(quitReason);
       void cancelNextExerciseNotification();
       const displayName = state.username.trim() || 'Patient';
       const authUserId = state.activeAuthUserId;
@@ -310,6 +328,14 @@ function GuidedSessionScreen({
           onClose={() => setShowStopModal(false)}
           onSelect={handleStopReason}
         />
+        <EndBpmModal
+          visible={showEndBpmModal}
+          onSubmit={(endBpm) => {
+            setShowEndBpmModal(false);
+            finalizeSession(endBpm);
+          }}
+        />
+        <ChatFab bottom={88} />
       </>
     );
   }
@@ -337,7 +363,7 @@ function GuidedSessionScreen({
         videoSources={videoSources}
         onComplete={handleExerciseComplete}
         onBackPress={handleBackPress}
-        overlayPaused={showStopModal}
+        overlayPaused={showStopModal || showEndBpmModal}
       />
       {devSkipButton}
       <WhyDidYouStopModal
@@ -345,21 +371,31 @@ function GuidedSessionScreen({
         onClose={() => setShowStopModal(false)}
         onSelect={handleStopReason}
       />
+      <EndBpmModal
+        visible={showEndBpmModal}
+        onSubmit={(endBpm) => {
+          setShowEndBpmModal(false);
+          finalizeSession(endBpm);
+        }}
+      />
+      <ChatFab bottom={88} />
     </>
   );
 }
 
 export default function ExercisePlayerScreen() {
   const router = useRouter();
-  const { day, session, exercise, started, level: levelParam } = useLocalSearchParams<{
+  const { day, session, exercise, started, level: levelParam, startBpm: startBpmParam } = useLocalSearchParams<{
     day: string;
     session?: string;
     exercise?: string;
     started?: string;
     level?: string;
+    startBpm?: string;
   }>();
   const dayInLevel = Number(day) || 1;
   const level = Number(levelParam) || 1;
+  const startBpm = Math.max(0, Number(startBpmParam) || 0);
   const setProgressPaused = useAppStore((state) => state.setProgressPaused);
   const dayCompletedAt = useAppStore((state) => state.dayCompletedAt);
   const {
@@ -409,6 +445,7 @@ export default function ExercisePlayerScreen() {
           level={level}
           dayInLevel={dayInLevel}
           sessionKey={started ?? 'default'}
+          startBpm={startBpm}
         />
         {resumeModal}
       </>

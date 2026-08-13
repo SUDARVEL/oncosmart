@@ -3,7 +3,6 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   ActivityIndicator,
-  LayoutChangeEvent,
   Platform,
   Pressable,
   ScrollView,
@@ -52,13 +51,8 @@ export function ExercisePlayerView({
   const [videoProgress, setVideoProgress] = useState(0);
   const [isBuffering, setIsBuffering] = useState(true);
   const [playbackFailed, setPlaybackFailed] = useState(false);
-  const [seekRequest, setSeekRequest] = useState<{ fraction: number; token: number } | null>(
-    null,
-  );
   const [audioUnlockToken, setAudioUnlockToken] = useState(0);
-  const [progressTrackWidth, setProgressTrackWidth] = useState(0);
   const completedRef = useRef(false);
-  const seekTokenRef = useRef(0);
 
   const unlockAudio = useCallback(() => {
     setAudioUnlockToken((value) => value + 1);
@@ -101,7 +95,6 @@ export function ExercisePlayerView({
     setVideoProgress(0);
     setIsBuffering(true);
     setPlaybackFailed(false);
-    setSeekRequest(null);
     setAudioUnlockToken((value) => value + 1);
   }, [exercise.id, videoSources.join('|')]);
 
@@ -131,21 +124,7 @@ export function ExercisePlayerView({
     setVideoProgress(0);
     setIsBuffering(true);
     setPlaybackFailed(false);
-    setSeekRequest(null);
     setRestartToken((value) => value + 1);
-  };
-
-  const handleProgressTrackLayout = (event: LayoutChangeEvent) => {
-    setProgressTrackWidth(event.nativeEvent.layout.width);
-  };
-
-  const seekFromLocationX = (locationX: number) => {
-    if (progressTrackWidth <= 0 || overlayPaused) return;
-    unlockAudio();
-    const fraction = Math.min(Math.max(locationX / progressTrackWidth, 0), 1);
-    seekTokenRef.current += 1;
-    setSeekRequest({ fraction, token: seekTokenRef.current });
-    setVideoProgress(fraction);
   };
 
   return (
@@ -181,7 +160,6 @@ export function ExercisePlayerView({
               exerciseId={exercise.id}
               isPaused={playbackPaused}
               restartToken={restartToken}
-              seekRequest={seekRequest}
               audioUnlockToken={audioUnlockToken}
               onProgress={setVideoProgress}
               onBuffering={setIsBuffering}
@@ -203,15 +181,14 @@ export function ExercisePlayerView({
           ) : null}
         </Pressable>
 
-        <Pressable
+        <View
           style={[styles.videoProgressTrack, { width: frameWidth }]}
-          onLayout={handleProgressTrackLayout}
-          onPress={(event) => seekFromLocationX(event.nativeEvent.locationX)}
-          accessibilityRole="adjustable"
+          accessibilityRole="progressbar"
           accessibilityLabel="Video progress"
+          accessibilityValue={{ min: 0, max: 100, now: videoProgressPercent }}
         >
           <View style={[styles.videoProgressFill, { width: `${videoProgressPercent}%` }]} />
-        </Pressable>
+        </View>
 
         <Text style={[styles.exerciseTitle, { maxWidth: frameWidth }]} numberOfLines={2}>
           {title}

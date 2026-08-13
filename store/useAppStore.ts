@@ -34,6 +34,8 @@ export type AppStateSnapshot = {
   pauseReason: PauseReason | null;
   /** Why the patient quit mid-exercise (Why did you stop?). */
   quitReason: QuitReason | null;
+  /** Start/end BPM captured per session key (L1D1, etc.) before cloud sync. */
+  sessionBpmByKey: Record<string, { startBpm: number; endBpm: number }>;
   levelsCompleted: number;
   dayCompletedAt: Record<string, number>;
   activeAuthUserId: string | null;
@@ -80,6 +82,12 @@ type AppState = AppStateSnapshot & {
     reason?: PauseReason | QuitReason | null,
     holdType?: ProgressHoldType | null,
   ) => void;
+  /** Record mid-exercise quit without pausing program progress. */
+  recordExerciseQuit: (reason: QuitReason) => void;
+  setSessionBpm: (
+    key: string,
+    data: { startBpm: number; endBpm?: number },
+  ) => void;
   setLevelsCompleted: (count: number) => void;
   setActiveAuthUserId: (userId: string | null) => void;
   setCoachTourSeen: (seen: boolean) => void;
@@ -123,6 +131,7 @@ export const useAppStore = create<AppState>()(
       progressHoldType: null,
       pauseReason: null,
       quitReason: null,
+      sessionBpmByKey: {},
       levelsCompleted: 0,
       dayCompletedAt: {},
       activeAuthUserId: null,
@@ -161,22 +170,33 @@ export const useAppStore = create<AppState>()(
               progressPaused: false,
               progressHoldType: null,
               pauseReason: null,
-              quitReason: null,
             };
           }
-          const nextType: ProgressHoldType =
-            holdType === 'quit' || holdType === 'pause'
-              ? holdType
-              : state.progressHoldType === 'quit'
-                ? 'quit'
-                : 'pause';
+          // Growth → Pause Progress only. Mid-exercise quit uses recordExerciseQuit().
+          if (holdType === 'quit') {
+            return state;
+          }
           return {
             progressPaused: true,
-            progressHoldType: nextType,
-            pauseReason:
-              nextType === 'pause' ? ((reason as PauseReason | null) ?? null) : null,
-            quitReason:
-              nextType === 'quit' ? ((reason as QuitReason | null) ?? null) : null,
+            progressHoldType: 'pause',
+            pauseReason: (reason as PauseReason | null) ?? null,
+          };
+        }),
+      recordExerciseQuit: (reason) =>
+        set({
+          quitReason: reason,
+        }),
+      setSessionBpm: (key, data) =>
+        set((state) => {
+          const existing = state.sessionBpmByKey[key];
+          return {
+            sessionBpmByKey: {
+              ...state.sessionBpmByKey,
+              [key]: {
+                startBpm: data.startBpm ?? existing?.startBpm ?? 0,
+                endBpm: data.endBpm ?? existing?.endBpm ?? 0,
+              },
+            },
           };
         }),
       setLevelsCompleted: (count) => set({ levelsCompleted: count }),
@@ -286,6 +306,7 @@ export const useAppStore = create<AppState>()(
           progressHoldType: null,
           pauseReason: null,
           quitReason: null,
+          sessionBpmByKey: {},
           levelsCompleted: 0,
           dayCompletedAt: {},
           activeAuthUserId: null,
