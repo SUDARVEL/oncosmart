@@ -1,12 +1,14 @@
 import { useVideoPlayer, VideoView } from 'expo-video';
-import { useCallback, useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import { ensureExerciseAudioSession } from '../../lib/ensureExerciseAudioSession';
 import {
   EXERCISE_VIDEO_FRAME_BACKGROUND,
   EXERCISE_VIDEO_SOURCE_ASPECT,
+  getGuidedVideoCropTranslateY,
   getGuidedVideoPresentation,
+  getGuidedVideoSourceBoxStyle,
   getGuidedVideoTransformStyle,
 } from '../../lib/exerciseVideoFrame';
 import { shouldAcceptVideoEnd } from './sessionVideoCompletion';
@@ -50,7 +52,10 @@ export function SessionVideoPlayer({
 }: Props) {
   const presentation = getGuidedVideoPresentation(exerciseId);
   const fillFrame = presentation.layout === 'fill-frame';
-  const cropTransform = getGuidedVideoTransformStyle(presentation);
+  const sourceBoxStyle = getGuidedVideoSourceBoxStyle(presentation);
+  const [cropHeight, setCropHeight] = useState(0);
+  const cropTransform = getGuidedVideoTransformStyle(presentation, cropHeight);
+  const contentPositionDy = getGuidedVideoCropTranslateY(presentation, cropHeight);
   const onEndedRef = useRef(onEnded);
   const onProgressRef = useRef(onProgress);
   const onBufferingRef = useRef(onBuffering);
@@ -221,12 +226,21 @@ export function SessionVideoPlayer({
   return (
     <View style={styles.frame}>
       {/* Default: 349×578 source bottom-aligned in 349×444. Chest stretch fills frame. */}
-      <View style={fillFrame ? styles.fillBox : styles.sourceBox}>
-        <View style={[styles.cropInner, cropTransform]}>
+      <View style={[fillFrame ? styles.fillBox : styles.sourceBox, sourceBoxStyle]}>
+        <View
+          style={[styles.cropInner, cropTransform]}
+          onLayout={(event) => {
+            const nextHeight = event.nativeEvent.layout.height;
+            if (nextHeight > 0 && nextHeight !== cropHeight) {
+              setCropHeight(nextHeight);
+            }
+          }}
+        >
           <VideoView
             style={styles.video}
             player={player}
             contentFit={presentation.contentFit}
+            contentPosition={contentPositionDy > 0 ? { dy: contentPositionDy } : undefined}
             nativeControls={false}
           />
         </View>

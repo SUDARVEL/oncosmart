@@ -1,4 +1,4 @@
-import { createElement, useCallback, useEffect, useRef } from 'react';
+import { createElement, useCallback, useEffect, useRef, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import { ensureExerciseAudioSession } from '../../lib/ensureExerciseAudioSession';
@@ -7,6 +7,7 @@ import {
   EXERCISE_VIDEO_FRAME_BORDER_RADIUS,
   EXERCISE_VIDEO_SOURCE_ASPECT,
   getGuidedVideoPresentation,
+  getGuidedVideoSourceBoxStyle,
   getGuidedVideoTransformStyle,
 } from '../../lib/exerciseVideoFrame';
 import { shouldAcceptVideoEnd } from './sessionVideoCompletion';
@@ -40,7 +41,9 @@ export function SessionVideoPlayer({
 }: Props) {
   const presentation = getGuidedVideoPresentation(exerciseId);
   const fillFrame = presentation.layout === 'fill-frame';
-  const cropTransform = getGuidedVideoTransformStyle(presentation);
+  const sourceBoxStyle = getGuidedVideoSourceBoxStyle(presentation);
+  const [cropHeight, setCropHeight] = useState(0);
+  const cropTransform = getGuidedVideoTransformStyle(presentation, cropHeight);
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const onEndedRef = useRef(onEnded);
   const onProgressRef = useRef(onProgress);
@@ -234,8 +237,16 @@ export function SessionVideoPlayer({
   return (
     <View style={styles.wrap}>
       {/* Default: 349×578 source bottom-aligned in 349×444. Chest stretch fills frame. */}
-      <View style={fillFrame ? styles.fillBox : styles.sourceBox}>
-        <View style={[styles.cropInner, cropTransform as object]}>
+      <View style={[fillFrame ? styles.fillBox : styles.sourceBox, sourceBoxStyle]}>
+        <View
+          style={[styles.cropInner, cropTransform as object]}
+          onLayout={(event) => {
+            const nextHeight = event.nativeEvent.layout.height;
+            if (nextHeight > 0 && nextHeight !== cropHeight) {
+              setCropHeight(nextHeight);
+            }
+          }}
+        >
           {createElement('video', {
             key: `${source}-${restartToken}`,
             ref: videoRef,

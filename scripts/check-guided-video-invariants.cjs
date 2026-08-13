@@ -55,7 +55,8 @@ assert(
 );
 assert(
   frame.includes("exerciseId === 'wall-pushup'") &&
-    frame.includes('sourceScale'),
+    frame.includes('sourceScale') &&
+    frame.includes('sourceBoxBottomPx'),
   'Wall push-up must use extra crop to hide top slider arrow',
 );
 

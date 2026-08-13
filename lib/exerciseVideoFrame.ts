@@ -41,6 +41,10 @@ export type GuidedVideoPresentation = {
   sourceScale?: number;
   /** Nudge video down (px) to hide baked-in top UI in specific assets. */
   sourceTranslateYPx?: number;
+  /** Nudge video down as a fraction of the crop box height (responsive). */
+  sourceTranslateYRatio?: number;
+  /** Shift the tall source box down to crop more from the top (px, negative hides chrome). */
+  sourceBoxBottomPx?: number;
 };
 
 const DEFAULT_GUIDED_VIDEO_PRESENTATION: GuidedVideoPresentation = {
@@ -57,15 +61,17 @@ const CHEST_STRETCH_VIDEO_PRESENTATION: GuidedVideoPresentation = {
 };
 
 /**
- * Wall push-up portrait exports include a top-right slider arrow in the source.
- * Zoom + downward nudge keeps the instructor framed like other exercises.
+ * Wall push-up portrait exports include baked-in slider chrome and extra headroom
+ * (male + female, English + Tamil). Zoom, downward nudge, and source-box shift
+ * keep the instructor framed like other exercises without clipping top UI.
  */
 const WALL_PUSHUP_VIDEO_PRESENTATION: GuidedVideoPresentation = {
   layout: 'portrait-crop',
   contentFit: 'cover',
-  objectPosition: 'center 92%',
-  sourceScale: 1.12,
-  sourceTranslateYPx: 36,
+  objectPosition: 'center 96%',
+  sourceScale: 1.2,
+  sourceTranslateYRatio: 0.11,
+  sourceBoxBottomPx: -54,
 };
 
 export function getGuidedVideoPresentation(exerciseId: string): GuidedVideoPresentation {
@@ -78,13 +84,34 @@ export function getGuidedVideoPresentation(exerciseId: string): GuidedVideoPrese
   return DEFAULT_GUIDED_VIDEO_PRESENTATION;
 }
 
+export function getGuidedVideoCropTranslateY(
+  presentation: GuidedVideoPresentation,
+  containerHeight = 0,
+): number {
+  if (presentation.sourceTranslateYPx != null) {
+    return presentation.sourceTranslateYPx;
+  }
+  if (presentation.sourceTranslateYRatio != null && containerHeight > 0) {
+    return containerHeight * presentation.sourceTranslateYRatio;
+  }
+  return 0;
+}
+
 export function getGuidedVideoTransformStyle(
   presentation: GuidedVideoPresentation,
+  containerHeight = 0,
 ): { transform: ({ translateY: number } | { scale: number })[] } | undefined {
   const scale = presentation.sourceScale ?? 1;
-  const translateY = presentation.sourceTranslateYPx ?? 0;
+  const translateY = getGuidedVideoCropTranslateY(presentation, containerHeight);
   if (scale === 1 && translateY === 0) return undefined;
   return { transform: [{ translateY }, { scale }] };
+}
+
+export function getGuidedVideoSourceBoxStyle(
+  presentation: GuidedVideoPresentation,
+): { bottom?: number } | undefined {
+  if (presentation.sourceBoxBottomPx == null) return undefined;
+  return { bottom: presentation.sourceBoxBottomPx };
 }
 
 /** Home day-card video — full-bleed 16:9 inside the wide card. */
