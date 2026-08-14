@@ -25,7 +25,6 @@ import { colors } from '../../theme/colors';
 import { font, displayFontStyle } from '../../theme/fonts';
 import { PressableScale } from '../PressableScale';
 import { SessionVideoPlayer } from './SessionVideoPlayer';
-import { useAppStore } from '../../store/useAppStore';
 
 type Props = {
   exercise: Day1SessionExercise;
@@ -47,8 +46,6 @@ export function ExercisePlayerView({
 }: Props) {
   const { t } = useTranslation();
   const { width: screenWidth } = useWindowDimensions();
-  const gender = useAppStore((state) => state.gender);
-  const avatar = useAppStore((state) => state.avatar);
   const [isPaused, setIsPaused] = useState(() => Platform.OS === 'web');
   const [restartToken, setRestartToken] = useState(0);
   const [videoProgress, setVideoProgress] = useState(0);
@@ -161,8 +158,6 @@ export function ExercisePlayerView({
               key={`${exercise.id}-${primarySource}-${restartToken}`}
               source={primarySource}
               exerciseId={exercise.id}
-              gender={gender}
-              avatar={avatar}
               isPaused={playbackPaused}
               restartToken={restartToken}
               audioUnlockToken={audioUnlockToken}

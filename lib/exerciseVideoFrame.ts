@@ -1,5 +1,3 @@
-import type { AppAvatar, AppGender } from '../store/useAppStore';
-
 /**
  * Figma guided exercise video framing.
  *
@@ -39,15 +37,6 @@ export type GuidedVideoPresentation = {
   layout: 'portrait-crop' | 'fill-frame';
   contentFit: GuidedVideoContentFit;
   objectPosition: 'center bottom' | 'center' | `${string} ${string}`;
-  /**
-   * Multiply the Figma source-box height before bottom-align clip.
-   * >1 zooms in and hides top chrome (layout clip — works on Android VideoView).
-   */
-  sourceBoxHeightScale?: number;
-  /** Horizontal bleed so rounded corners stay filled (layout clip). */
-  sourceBoxWidthScale?: number;
-  /** Hide ExoPlayer scrubber chrome that can flash over the video on Android. */
-  requiresLinearPlayback?: boolean;
 };
 
 const DEFAULT_GUIDED_VIDEO_PRESENTATION: GuidedVideoPresentation = {
@@ -63,90 +52,12 @@ const CHEST_STRETCH_VIDEO_PRESENTATION: GuidedVideoPresentation = {
   objectPosition: 'center',
 };
 
-/**
- * Wall push-up exports embed slider/arrow chrome and extra headroom (female).
- * Bottom-aligned source box + cover fills the frame on Android without transforms.
- */
-const WALL_PUSHUP_MALE_PRESENTATION: GuidedVideoPresentation = {
-  layout: 'portrait-crop',
-  contentFit: 'cover',
-  objectPosition: 'center bottom',
-  sourceBoxHeightScale: 1.14,
-  sourceBoxWidthScale: 1.08,
-  requiresLinearPlayback: true,
-};
-
-const WALL_PUSHUP_FEMALE_PRESENTATION: GuidedVideoPresentation = {
-  layout: 'portrait-crop',
-  contentFit: 'cover',
-  objectPosition: 'center bottom',
-  sourceBoxHeightScale: 1.28,
-  sourceBoxWidthScale: 1.08,
-  requiresLinearPlayback: true,
-};
-
-function isFemaleMediaTrack(
-  gender: AppGender | null,
-  avatar: AppAvatar | null,
-): boolean {
-  return avatar === 'female' || gender === 'female';
-}
-
-export function getGuidedVideoPresentation(
-  exerciseId: string,
-  gender: AppGender | null = null,
-  avatar: AppAvatar | null = null,
-): GuidedVideoPresentation {
+/** Wall push-up uses the same Figma crop as every other guided exercise. */
+export function getGuidedVideoPresentation(exerciseId: string): GuidedVideoPresentation {
   if (exerciseId === 'chest-stretch') {
     return CHEST_STRETCH_VIDEO_PRESENTATION;
   }
-  if (exerciseId === 'wall-pushup') {
-    return isFemaleMediaTrack(gender, avatar)
-      ? WALL_PUSHUP_FEMALE_PRESENTATION
-      : WALL_PUSHUP_MALE_PRESENTATION;
-  }
   return DEFAULT_GUIDED_VIDEO_PRESENTATION;
-}
-
-/** Height of the bottom-aligned source box inside the 349×444 frame (px). */
-export function getGuidedVideoSourceBoxHeight(
-  presentation: GuidedVideoPresentation,
-  frameHeight: number,
-): number {
-  const scale = presentation.sourceBoxHeightScale ?? 1;
-  return (
-    (EXERCISE_VIDEO_SOURCE_HEIGHT / EXERCISE_VIDEO_FRAME_HEIGHT) * frameHeight * scale
-  );
-}
-
-export type GuidedVideoSourceBoxLayoutStyle = {
-  position: 'absolute';
-  left: number;
-  bottom: 0;
-  width: number;
-  height: number;
-};
-
-export function getGuidedVideoSourceBoxLayoutStyle(
-  presentation: GuidedVideoPresentation,
-  frameWidth: number,
-  frameHeight: number,
-): GuidedVideoSourceBoxLayoutStyle | { width: '100%'; height: '100%' } {
-  if (presentation.layout === 'fill-frame') {
-    return { width: '100%', height: '100%' };
-  }
-
-  const widthScale = presentation.sourceBoxWidthScale ?? 1;
-  const width = frameWidth * widthScale;
-  const left = -((width - frameWidth) / 2);
-
-  return {
-    position: 'absolute',
-    left,
-    bottom: 0,
-    width,
-    height: getGuidedVideoSourceBoxHeight(presentation, frameHeight),
-  };
 }
 
 /** Home day-card video — full-bleed 16:9 inside the wide card. */

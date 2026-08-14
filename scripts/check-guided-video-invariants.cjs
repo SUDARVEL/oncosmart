@@ -7,6 +7,7 @@
  * 2. Short landscape fallbacks → videos end in a few seconds
  * 3. `cover` fit → body/feet/hands cropped vs Figma
  * 4. Early completion from fake end events
+ * 5. Per-exercise transform/scale overrides → letterboxing on Android VideoView
  */
 const fs = require('fs');
 const path = require('path');
@@ -54,12 +55,10 @@ assert(
   'Chest stretch must use full-frame dual-panel presentation',
 );
 assert(
-  frame.includes("exerciseId === 'wall-pushup'") &&
-    frame.includes('WALL_PUSHUP_MALE_PRESENTATION') &&
-    frame.includes('WALL_PUSHUP_FEMALE_PRESENTATION') &&
-    frame.includes('sourceBoxHeightScale') &&
-    frame.includes('sourceBoxWidthScale'),
-  'Wall push-up must use layout crop for male and female tracks',
+  !frame.includes('sourceBoxHeightScale') &&
+    !frame.includes('sourceBoxWidthScale') &&
+    !frame.includes('WALL_PUSHUP'),
+  'Wall push-up must use the same default Figma crop as other exercises',
 );
 
 const policy = read('lib/videoStoragePolicy.ts');
@@ -113,18 +112,21 @@ assert(
 
 const nativePlayer = read('components/exercise/SessionVideoPlayer.tsx');
 assert(
-  nativePlayer.includes('getGuidedVideoSourceBoxLayoutStyle'),
-  'Native player must use layout-based source box cropping',
+  nativePlayer.includes('aspectRatio: EXERCISE_VIDEO_SOURCE_ASPECT') &&
+    nativePlayer.includes('bottom: 0'),
+  'Native player must bottom-align the tall source inside the crop window',
 );
 assert(
-  nativePlayer.includes('bottom: 0') || nativePlayer.includes('getGuidedVideoSourceBoxLayoutStyle'),
-  'Native player must bottom-align the tall source inside the crop window',
+  nativePlayer.includes('getGuidedVideoPresentation') &&
+    !nativePlayer.includes('getGuidedVideoSourceBoxLayoutStyle'),
+  'Native player must use aspect-ratio source box (no pixel scale overrides)',
 );
 
 const webPlayer = read('components/exercise/SessionVideoPlayer.web.tsx');
 assert(
-  webPlayer.includes('getGuidedVideoSourceBoxLayoutStyle'),
-  'Web player must use layout-based source box cropping',
+  webPlayer.includes('aspectRatio: EXERCISE_VIDEO_SOURCE_ASPECT') &&
+    webPlayer.includes('bottom: 0'),
+  'Web player must bottom-align the tall source inside the crop window',
 );
 assert(
   webPlayer.includes('getGuidedVideoPresentation') &&
@@ -134,20 +136,6 @@ assert(
 assert(
   frame.includes("layout: 'fill-frame'"),
   'Chest stretch and fill-frame layouts must remain supported in framing config',
-);
-assert(
-  nativePlayer.includes('getGuidedVideoPresentation') &&
-    nativePlayer.includes('avatar'),
-  'Native player must pass avatar for per-asset video framing',
-);
-assert(
-  webPlayer.includes('getGuidedVideoSourceBoxLayoutStyle'),
-  'Web player must use layout-based source box cropping',
-);
-assert(
-  webPlayer.includes('getGuidedVideoPresentation') &&
-    webPlayer.includes('avatar'),
-  'Web player must pass avatar for per-asset video framing',
 );
 
 const completion = read('components/exercise/sessionVideoCompletion.ts');
