@@ -55,10 +55,11 @@ assert(
 );
 assert(
   frame.includes("exerciseId === 'wall-pushup'") &&
+    frame.includes('WALL_PUSHUP_MALE_PRESENTATION') &&
     frame.includes('WALL_PUSHUP_FEMALE_PRESENTATION') &&
     frame.includes('sourceBoxHeightScale') &&
-    frame.includes("avatar === 'female'"),
-  'Wall push-up must use layout crop for female avatar/gender track',
+    frame.includes('sourceBoxWidthScale'),
+  'Wall push-up must use layout crop for male and female tracks',
 );
 
 const policy = read('lib/videoStoragePolicy.ts');

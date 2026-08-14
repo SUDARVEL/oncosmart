@@ -6,6 +6,7 @@ import {
   EXERCISE_VIDEO_FRAME_BACKGROUND,
   EXERCISE_VIDEO_FRAME_BORDER_RADIUS,
   EXERCISE_VIDEO_FRAME_HEIGHT,
+  EXERCISE_VIDEO_FRAME_WIDTH,
   getGuidedVideoPresentation,
   getGuidedVideoSourceBoxLayoutStyle,
 } from '../../lib/exerciseVideoFrame';
@@ -44,11 +45,13 @@ export function SessionVideoPlayer({
   onEnded,
 }: Props) {
   const presentation = getGuidedVideoPresentation(exerciseId, gender, avatar);
-  const [frameHeight, setFrameHeight] = useState(0);
-  const effectiveFrameHeight = frameHeight || EXERCISE_VIDEO_FRAME_HEIGHT;
+  const [frameSize, setFrameSize] = useState({ width: 0, height: 0 });
+  const frameWidth = frameSize.width || EXERCISE_VIDEO_FRAME_WIDTH;
+  const frameHeight = frameSize.height || EXERCISE_VIDEO_FRAME_HEIGHT;
   const sourceBoxLayout = getGuidedVideoSourceBoxLayoutStyle(
     presentation,
-    effectiveFrameHeight,
+    frameWidth,
+    frameHeight,
   );
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const onEndedRef = useRef(onEnded);
@@ -244,9 +247,13 @@ export function SessionVideoPlayer({
     <View
       style={styles.wrap}
       onLayout={(event) => {
-        const nextHeight = event.nativeEvent.layout.height;
-        if (nextHeight > 0 && nextHeight !== frameHeight) {
-          setFrameHeight(nextHeight);
+        const { width, height } = event.nativeEvent.layout;
+        if (width > 0 && height > 0) {
+          setFrameSize((current) =>
+            current.width === width && current.height === height
+              ? current
+              : { width, height },
+          );
         }
       }}
     >

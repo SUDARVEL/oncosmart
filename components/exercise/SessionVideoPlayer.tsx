@@ -1,11 +1,13 @@
 import { useVideoPlayer, VideoView } from 'expo-video';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { Platform, StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 
 import { ensureExerciseAudioSession } from '../../lib/ensureExerciseAudioSession';
 import {
   EXERCISE_VIDEO_FRAME_BACKGROUND,
+  EXERCISE_VIDEO_FRAME_BORDER_RADIUS,
   EXERCISE_VIDEO_FRAME_HEIGHT,
+  EXERCISE_VIDEO_FRAME_WIDTH,
   getGuidedVideoPresentation,
   getGuidedVideoSourceBoxLayoutStyle,
 } from '../../lib/exerciseVideoFrame';
@@ -54,11 +56,13 @@ export function SessionVideoPlayer({
   onEnded,
 }: Props) {
   const presentation = getGuidedVideoPresentation(exerciseId, gender, avatar);
-  const [frameHeight, setFrameHeight] = useState(0);
-  const effectiveFrameHeight = frameHeight || EXERCISE_VIDEO_FRAME_HEIGHT;
+  const [frameSize, setFrameSize] = useState({ width: 0, height: 0 });
+  const frameWidth = frameSize.width || EXERCISE_VIDEO_FRAME_WIDTH;
+  const frameHeight = frameSize.height || EXERCISE_VIDEO_FRAME_HEIGHT;
   const sourceBoxLayout = getGuidedVideoSourceBoxLayoutStyle(
     presentation,
-    effectiveFrameHeight,
+    frameWidth,
+    frameHeight,
   );
   const onEndedRef = useRef(onEnded);
   const onProgressRef = useRef(onProgress);
@@ -231,9 +235,13 @@ export function SessionVideoPlayer({
     <View
       style={styles.frame}
       onLayout={(event) => {
-        const nextHeight = event.nativeEvent.layout.height;
-        if (nextHeight > 0 && nextHeight !== frameHeight) {
-          setFrameHeight(nextHeight);
+        const { width, height } = event.nativeEvent.layout;
+        if (width > 0 && height > 0) {
+          setFrameSize((current) =>
+            current.width === width && current.height === height
+              ? current
+              : { width, height },
+          );
         }
       }}
     >
@@ -244,7 +252,7 @@ export function SessionVideoPlayer({
           player={player}
           contentFit={presentation.contentFit}
           nativeControls={false}
-          surfaceType={Platform.OS === 'android' ? 'textureView' : undefined}
+          requiresLinearPlayback={presentation.requiresLinearPlayback ?? false}
         />
       </View>
     </View>
@@ -257,6 +265,7 @@ const styles = StyleSheet.create({
     height: '100%',
     backgroundColor: EXERCISE_VIDEO_FRAME_BACKGROUND,
     overflow: 'hidden',
+    borderRadius: EXERCISE_VIDEO_FRAME_BORDER_RADIUS,
   },
   video: {
     ...StyleSheet.absoluteFillObject,

@@ -41,9 +41,13 @@ export type GuidedVideoPresentation = {
   objectPosition: 'center bottom' | 'center' | `${string} ${string}`;
   /**
    * Multiply the Figma source-box height before bottom-align clip.
-   * >1 zooms in and hides top chrome (works on Android — no View transforms).
+   * >1 zooms in and hides top chrome (layout clip — works on Android VideoView).
    */
   sourceBoxHeightScale?: number;
+  /** Horizontal bleed so rounded corners stay filled (layout clip). */
+  sourceBoxWidthScale?: number;
+  /** Hide ExoPlayer scrubber chrome that can flash over the video on Android. */
+  requiresLinearPlayback?: boolean;
 };
 
 const DEFAULT_GUIDED_VIDEO_PRESENTATION: GuidedVideoPresentation = {
@@ -60,14 +64,25 @@ const CHEST_STRETCH_VIDEO_PRESENTATION: GuidedVideoPresentation = {
 };
 
 /**
- * Female wall push-up portraits (English + Tamil) have extra headroom in the
- * square export. Taller bottom-aligned source box fills the 349×444 frame.
+ * Wall push-up exports embed slider/arrow chrome and extra headroom (female).
+ * Bottom-aligned source box + cover fills the frame on Android without transforms.
  */
+const WALL_PUSHUP_MALE_PRESENTATION: GuidedVideoPresentation = {
+  layout: 'portrait-crop',
+  contentFit: 'cover',
+  objectPosition: 'center bottom',
+  sourceBoxHeightScale: 1.14,
+  sourceBoxWidthScale: 1.08,
+  requiresLinearPlayback: true,
+};
+
 const WALL_PUSHUP_FEMALE_PRESENTATION: GuidedVideoPresentation = {
   layout: 'portrait-crop',
   contentFit: 'cover',
   objectPosition: 'center bottom',
   sourceBoxHeightScale: 1.28,
+  sourceBoxWidthScale: 1.08,
+  requiresLinearPlayback: true,
 };
 
 function isFemaleMediaTrack(
@@ -85,8 +100,10 @@ export function getGuidedVideoPresentation(
   if (exerciseId === 'chest-stretch') {
     return CHEST_STRETCH_VIDEO_PRESENTATION;
   }
-  if (exerciseId === 'wall-pushup' && isFemaleMediaTrack(gender, avatar)) {
-    return WALL_PUSHUP_FEMALE_PRESENTATION;
+  if (exerciseId === 'wall-pushup') {
+    return isFemaleMediaTrack(gender, avatar)
+      ? WALL_PUSHUP_FEMALE_PRESENTATION
+      : WALL_PUSHUP_MALE_PRESENTATION;
   }
   return DEFAULT_GUIDED_VIDEO_PRESENTATION;
 }
@@ -104,27 +121,30 @@ export function getGuidedVideoSourceBoxHeight(
 
 export type GuidedVideoSourceBoxLayoutStyle = {
   position: 'absolute';
-  left: 0;
-  right: 0;
+  left: number;
   bottom: 0;
-  width: '100%';
+  width: number;
   height: number;
 };
 
 export function getGuidedVideoSourceBoxLayoutStyle(
   presentation: GuidedVideoPresentation,
+  frameWidth: number,
   frameHeight: number,
 ): GuidedVideoSourceBoxLayoutStyle | { width: '100%'; height: '100%' } {
   if (presentation.layout === 'fill-frame') {
     return { width: '100%', height: '100%' };
   }
 
+  const widthScale = presentation.sourceBoxWidthScale ?? 1;
+  const width = frameWidth * widthScale;
+  const left = -((width - frameWidth) / 2);
+
   return {
     position: 'absolute',
-    left: 0,
-    right: 0,
+    left,
     bottom: 0,
-    width: '100%',
+    width,
     height: getGuidedVideoSourceBoxHeight(presentation, frameHeight),
   };
 }
