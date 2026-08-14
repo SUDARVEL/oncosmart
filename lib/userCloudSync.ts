@@ -244,6 +244,39 @@ export async function saveCloudProfileFromStore(userId: string): Promise<boolean
   return true;
 }
 
+/**
+ * Immediately push the current store progress to Supabase.
+ * Used after admin testing mutations so progress survives app restarts.
+ */
+export async function flushProgressToCloud(userId?: string | null): Promise<boolean> {
+  const id = userId ?? useAppStore.getState().activeAuthUserId;
+  if (!id) return false;
+
+  const state = useAppStore.getState();
+  const saved = await saveCloudProfileFromStore(id);
+  if (!saved) return false;
+
+  for (const [key, at] of Object.entries(state.dayCompletedAt)) {
+    const match = /^L(\d+)D(\d+)$/.exec(key);
+    if (!match) continue;
+    const level = Number(match[1]);
+    const dayInLevel = Number(match[2]);
+    const painScore = state.painScores[`${level}:${dayInLevel}`];
+    const bpm = state.sessionBpmByKey[key];
+    await upsertSessionCompletion({
+      userId: id,
+      level,
+      dayInLevel,
+      completedAt: at,
+      painScore,
+      startBpm: bpm?.startBpm,
+      endBpm: bpm?.endBpm,
+    });
+  }
+
+  return true;
+}
+
 /** Mark that this patient changed their password (admin sees status only). */
 export async function markPasswordChanged(userId: string): Promise<void> {
   const supabase = getSupabase();

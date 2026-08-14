@@ -112,6 +112,20 @@ type AppState = AppStateSnapshot & {
 
 const INITIAL_PARQ_ANSWERS: (boolean | null)[] = Array(7).fill(null);
 
+/** Prefer the newer completion timestamp per session key when merging local + cloud. */
+function mergeDayCompletedAt(
+  local: Record<string, number>,
+  cloud?: Record<string, number>,
+): Record<string, number> {
+  const merged = { ...local };
+  if (!cloud) return merged;
+  for (const [key, at] of Object.entries(cloud)) {
+    const existing = merged[key];
+    if (existing == null || at > existing) merged[key] = at;
+  }
+  return merged;
+}
+
 export const useAppStore = create<AppState>()(
   persist(
     (set) => ({
@@ -211,9 +225,10 @@ export const useAppStore = create<AppState>()(
       restartCoachTour: () => set({ coachTourSeen: false, coachTourStep: 0 }),
       hydrateFromCloud: (payload) =>
         set((state) => {
-          const dayCompletedAt = payload.dayCompletedAt
-            ? { ...payload.dayCompletedAt }
-            : state.dayCompletedAt;
+          const dayCompletedAt = mergeDayCompletedAt(
+            state.dayCompletedAt,
+            payload.dayCompletedAt,
+          );
           const hasCompletedAnyDay = Object.keys(dayCompletedAt).length > 0;
           // Cloud + local OR any completed day ⇒ never auto-show first-run tips again.
           // Settings → Replay tips still works via restartCoachTour().
@@ -233,6 +248,7 @@ export const useAppStore = create<AppState>()(
               ? { ...payload.painScores }
               : state.painScores,
             dayCompletedAt,
+            levelsCompleted: getCompletedLevelsCount(dayCompletedAt),
           };
         }),
       markSessionCompleted: (level, dayInLevel, when) =>
