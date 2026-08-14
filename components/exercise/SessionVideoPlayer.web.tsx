@@ -5,16 +5,19 @@ import { ensureExerciseAudioSession } from '../../lib/ensureExerciseAudioSession
 import {
   EXERCISE_VIDEO_FRAME_BACKGROUND,
   EXERCISE_VIDEO_FRAME_BORDER_RADIUS,
+  EXERCISE_VIDEO_FRAME_HEIGHT,
   EXERCISE_VIDEO_SOURCE_ASPECT,
   getGuidedVideoPresentation,
   getGuidedVideoSourceBoxStyle,
   getGuidedVideoTransformStyle,
 } from '../../lib/exerciseVideoFrame';
+import type { AppGender } from '../../store/useAppStore';
 import { shouldAcceptVideoEnd } from './sessionVideoCompletion';
 
 type Props = {
   source: string;
   exerciseId?: string;
+  gender?: AppGender | null;
   isPaused: boolean;
   restartToken: number;
   seekRequest?: { fraction: number; token: number } | null;
@@ -29,6 +32,7 @@ type Props = {
 export function SessionVideoPlayer({
   source,
   exerciseId = '',
+  gender = null,
   isPaused,
   restartToken,
   seekRequest = null,
@@ -39,11 +43,12 @@ export function SessionVideoPlayer({
   onPlaybackFailed,
   onEnded,
 }: Props) {
-  const presentation = getGuidedVideoPresentation(exerciseId);
+  const presentation = getGuidedVideoPresentation(exerciseId, gender);
   const fillFrame = presentation.layout === 'fill-frame';
   const sourceBoxStyle = getGuidedVideoSourceBoxStyle(presentation);
   const [cropHeight, setCropHeight] = useState(0);
-  const cropTransform = getGuidedVideoTransformStyle(presentation, cropHeight);
+  const effectiveCropHeight = cropHeight || EXERCISE_VIDEO_FRAME_HEIGHT;
+  const cropTransform = getGuidedVideoTransformStyle(presentation, effectiveCropHeight);
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const onEndedRef = useRef(onEnded);
   const onProgressRef = useRef(onProgress);

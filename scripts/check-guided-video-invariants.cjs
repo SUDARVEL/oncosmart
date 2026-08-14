@@ -55,9 +55,11 @@ assert(
 );
 assert(
   frame.includes("exerciseId === 'wall-pushup'") &&
-    frame.includes('sourceScale') &&
-    frame.includes('sourceBoxBottomPx'),
-  'Wall push-up must use extra crop to hide top slider arrow',
+    frame.includes('WALL_PUSHUP_MALE_PRESENTATION') &&
+    frame.includes('WALL_PUSHUP_FEMALE_PRESENTATION') &&
+    frame.includes("layout: 'fill-frame'") &&
+    frame.includes('sourceScale'),
+  'Wall push-up must use gender-specific fill-frame crop',
 );
 
 const policy = read('lib/videoStoragePolicy.ts');
@@ -137,6 +139,16 @@ assert(
   nativePlayer.includes('getGuidedVideoPresentation') &&
     nativePlayer.includes('fillBox'),
   'Native player must support chest-stretch fill-frame layout',
+);
+assert(
+  nativePlayer.includes('getGuidedVideoPresentation') &&
+    nativePlayer.includes('gender'),
+  'Native player must pass gender for per-asset video framing',
+);
+assert(
+  webPlayer.includes('getGuidedVideoPresentation') &&
+    webPlayer.includes('gender'),
+  'Web player must pass gender for per-asset video framing',
 );
 
 const completion = read('components/exercise/sessionVideoCompletion.ts');

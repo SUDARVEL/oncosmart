@@ -1,3 +1,5 @@
+import type { AppGender } from '../store/useAppStore';
+
 /**
  * Figma guided exercise video framing.
  *
@@ -61,25 +63,37 @@ const CHEST_STRETCH_VIDEO_PRESENTATION: GuidedVideoPresentation = {
 };
 
 /**
- * Wall push-up portrait exports include baked-in slider chrome and extra headroom
- * (male + female, English + Tamil). Zoom, downward nudge, and source-box shift
- * keep the instructor framed like other exercises without clipping top UI.
+ * Wall push-up portrait exports include baked-in slider chrome. Female assets
+ * also have extra headroom — fill the 349×444 frame edge-to-edge with cover +
+ * per-gender zoom so male and female match other exercises (English + Tamil).
  */
-const WALL_PUSHUP_VIDEO_PRESENTATION: GuidedVideoPresentation = {
-  layout: 'portrait-crop',
+const WALL_PUSHUP_MALE_PRESENTATION: GuidedVideoPresentation = {
+  layout: 'fill-frame',
   contentFit: 'cover',
-  objectPosition: 'center 96%',
-  sourceScale: 1.2,
-  sourceTranslateYRatio: 0.11,
-  sourceBoxBottomPx: -54,
+  objectPosition: 'center bottom',
+  sourceScale: 1.14,
+  sourceTranslateYRatio: 0.06,
 };
 
-export function getGuidedVideoPresentation(exerciseId: string): GuidedVideoPresentation {
+const WALL_PUSHUP_FEMALE_PRESENTATION: GuidedVideoPresentation = {
+  layout: 'fill-frame',
+  contentFit: 'cover',
+  objectPosition: 'center bottom',
+  sourceScale: 1.38,
+  sourceTranslateYRatio: 0.04,
+};
+
+export function getGuidedVideoPresentation(
+  exerciseId: string,
+  gender: AppGender | null = null,
+): GuidedVideoPresentation {
   if (exerciseId === 'chest-stretch') {
     return CHEST_STRETCH_VIDEO_PRESENTATION;
   }
   if (exerciseId === 'wall-pushup') {
-    return WALL_PUSHUP_VIDEO_PRESENTATION;
+    return gender === 'female'
+      ? WALL_PUSHUP_FEMALE_PRESENTATION
+      : WALL_PUSHUP_MALE_PRESENTATION;
   }
   return DEFAULT_GUIDED_VIDEO_PRESENTATION;
 }
@@ -104,7 +118,8 @@ export function getGuidedVideoTransformStyle(
   const scale = presentation.sourceScale ?? 1;
   const translateY = getGuidedVideoCropTranslateY(presentation, containerHeight);
   if (scale === 1 && translateY === 0) return undefined;
-  return { transform: [{ translateY }, { scale }] };
+  // Scale first, then nudge down — keeps edges filled without white gaps.
+  return { transform: [{ scale }, { translateY }] };
 }
 
 export function getGuidedVideoSourceBoxStyle(

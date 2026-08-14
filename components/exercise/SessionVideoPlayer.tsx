@@ -5,17 +5,19 @@ import { StyleSheet, View } from 'react-native';
 import { ensureExerciseAudioSession } from '../../lib/ensureExerciseAudioSession';
 import {
   EXERCISE_VIDEO_FRAME_BACKGROUND,
+  EXERCISE_VIDEO_FRAME_HEIGHT,
   EXERCISE_VIDEO_SOURCE_ASPECT,
-  getGuidedVideoCropTranslateY,
   getGuidedVideoPresentation,
   getGuidedVideoSourceBoxStyle,
   getGuidedVideoTransformStyle,
 } from '../../lib/exerciseVideoFrame';
+import type { AppGender } from '../../store/useAppStore';
 import { shouldAcceptVideoEnd } from './sessionVideoCompletion';
 
 type Props = {
   source: string;
   exerciseId?: string;
+  gender?: AppGender | null;
   isPaused: boolean;
   restartToken: number;
   seekRequest?: { fraction: number; token: number } | null;
@@ -40,6 +42,7 @@ function applyAudiblePlayback(player: {
 export function SessionVideoPlayer({
   source,
   exerciseId = '',
+  gender = null,
   isPaused,
   restartToken,
   seekRequest = null,
@@ -50,12 +53,12 @@ export function SessionVideoPlayer({
   onPlaybackFailed,
   onEnded,
 }: Props) {
-  const presentation = getGuidedVideoPresentation(exerciseId);
+  const presentation = getGuidedVideoPresentation(exerciseId, gender);
   const fillFrame = presentation.layout === 'fill-frame';
   const sourceBoxStyle = getGuidedVideoSourceBoxStyle(presentation);
   const [cropHeight, setCropHeight] = useState(0);
-  const cropTransform = getGuidedVideoTransformStyle(presentation, cropHeight);
-  const contentPositionDy = getGuidedVideoCropTranslateY(presentation, cropHeight);
+  const effectiveCropHeight = cropHeight || EXERCISE_VIDEO_FRAME_HEIGHT;
+  const cropTransform = getGuidedVideoTransformStyle(presentation, effectiveCropHeight);
   const onEndedRef = useRef(onEnded);
   const onProgressRef = useRef(onProgress);
   const onBufferingRef = useRef(onBuffering);
@@ -240,7 +243,6 @@ export function SessionVideoPlayer({
             style={styles.video}
             player={player}
             contentFit={presentation.contentFit}
-            contentPosition={contentPositionDy > 0 ? { dy: contentPositionDy } : undefined}
             nativeControls={false}
           />
         </View>
