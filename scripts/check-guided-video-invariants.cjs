@@ -55,11 +55,10 @@ assert(
 );
 assert(
   frame.includes("exerciseId === 'wall-pushup'") &&
-    frame.includes('WALL_PUSHUP_MALE_PRESENTATION') &&
     frame.includes('WALL_PUSHUP_FEMALE_PRESENTATION') &&
-    frame.includes("layout: 'fill-frame'") &&
-    frame.includes('sourceScale'),
-  'Wall push-up must use gender-specific fill-frame crop',
+    frame.includes('sourceBoxHeightScale') &&
+    frame.includes("avatar === 'female'"),
+  'Wall push-up must use layout crop for female avatar/gender track',
 );
 
 const policy = read('lib/videoStoragePolicy.ts');
@@ -113,18 +112,18 @@ assert(
 
 const nativePlayer = read('components/exercise/SessionVideoPlayer.tsx');
 assert(
-  nativePlayer.includes('EXERCISE_VIDEO_SOURCE_ASPECT'),
-  'Native player must use Figma source aspect crop box',
+  nativePlayer.includes('getGuidedVideoSourceBoxLayoutStyle'),
+  'Native player must use layout-based source box cropping',
 );
 assert(
-  nativePlayer.includes('sourceBox'),
+  nativePlayer.includes('bottom: 0') || nativePlayer.includes('getGuidedVideoSourceBoxLayoutStyle'),
   'Native player must bottom-align the tall source inside the crop window',
 );
 
 const webPlayer = read('components/exercise/SessionVideoPlayer.web.tsx');
 assert(
-  webPlayer.includes('EXERCISE_VIDEO_SOURCE_ASPECT'),
-  'Web player must use Figma source aspect crop box',
+  webPlayer.includes('getGuidedVideoSourceBoxLayoutStyle'),
+  'Web player must use layout-based source box cropping',
 );
 assert(
   webPlayer.includes('getGuidedVideoPresentation') &&
@@ -132,23 +131,22 @@ assert(
   'Web player must apply guided presentation object position',
 );
 assert(
-  webPlayer.includes('sourceBox'),
-  'Web player must bottom-align the tall source inside the crop window',
+  frame.includes("layout: 'fill-frame'"),
+  'Chest stretch and fill-frame layouts must remain supported in framing config',
 );
 assert(
   nativePlayer.includes('getGuidedVideoPresentation') &&
-    nativePlayer.includes('fillBox'),
-  'Native player must support chest-stretch fill-frame layout',
+    nativePlayer.includes('avatar'),
+  'Native player must pass avatar for per-asset video framing',
 );
 assert(
-  nativePlayer.includes('getGuidedVideoPresentation') &&
-    nativePlayer.includes('gender'),
-  'Native player must pass gender for per-asset video framing',
+  webPlayer.includes('getGuidedVideoSourceBoxLayoutStyle'),
+  'Web player must use layout-based source box cropping',
 );
 assert(
   webPlayer.includes('getGuidedVideoPresentation') &&
-    webPlayer.includes('gender'),
-  'Web player must pass gender for per-asset video framing',
+    webPlayer.includes('avatar'),
+  'Web player must pass avatar for per-asset video framing',
 );
 
 const completion = read('components/exercise/sessionVideoCompletion.ts');

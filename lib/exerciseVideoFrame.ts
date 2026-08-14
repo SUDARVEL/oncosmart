@@ -1,4 +1,4 @@
-import type { AppGender } from '../store/useAppStore';
+import type { AppAvatar, AppGender } from '../store/useAppStore';
 
 /**
  * Figma guided exercise video framing.
@@ -39,14 +39,11 @@ export type GuidedVideoPresentation = {
   layout: 'portrait-crop' | 'fill-frame';
   contentFit: GuidedVideoContentFit;
   objectPosition: 'center bottom' | 'center' | `${string} ${string}`;
-  /** Zoom inside the crop window (>1 trims top chrome). */
-  sourceScale?: number;
-  /** Nudge video down (px) to hide baked-in top UI in specific assets. */
-  sourceTranslateYPx?: number;
-  /** Nudge video down as a fraction of the crop box height (responsive). */
-  sourceTranslateYRatio?: number;
-  /** Shift the tall source box down to crop more from the top (px, negative hides chrome). */
-  sourceBoxBottomPx?: number;
+  /**
+   * Multiply the Figma source-box height before bottom-align clip.
+   * >1 zooms in and hides top chrome (works on Android — no View transforms).
+   */
+  sourceBoxHeightScale?: number;
 };
 
 const DEFAULT_GUIDED_VIDEO_PRESENTATION: GuidedVideoPresentation = {
@@ -63,70 +60,73 @@ const CHEST_STRETCH_VIDEO_PRESENTATION: GuidedVideoPresentation = {
 };
 
 /**
- * Wall push-up portrait exports include baked-in slider chrome. Female assets
- * also have extra headroom — fill the 349×444 frame edge-to-edge with cover +
- * per-gender zoom so male and female match other exercises (English + Tamil).
+ * Female wall push-up portraits (English + Tamil) have extra headroom in the
+ * square export. Taller bottom-aligned source box fills the 349×444 frame.
  */
-const WALL_PUSHUP_MALE_PRESENTATION: GuidedVideoPresentation = {
-  layout: 'fill-frame',
+const WALL_PUSHUP_FEMALE_PRESENTATION: GuidedVideoPresentation = {
+  layout: 'portrait-crop',
   contentFit: 'cover',
   objectPosition: 'center bottom',
-  sourceScale: 1.14,
-  sourceTranslateYRatio: 0.06,
+  sourceBoxHeightScale: 1.28,
 };
 
-const WALL_PUSHUP_FEMALE_PRESENTATION: GuidedVideoPresentation = {
-  layout: 'fill-frame',
-  contentFit: 'cover',
-  objectPosition: 'center bottom',
-  sourceScale: 1.38,
-  sourceTranslateYRatio: 0.04,
-};
+function isFemaleMediaTrack(
+  gender: AppGender | null,
+  avatar: AppAvatar | null,
+): boolean {
+  return avatar === 'female' || gender === 'female';
+}
 
 export function getGuidedVideoPresentation(
   exerciseId: string,
   gender: AppGender | null = null,
+  avatar: AppAvatar | null = null,
 ): GuidedVideoPresentation {
   if (exerciseId === 'chest-stretch') {
     return CHEST_STRETCH_VIDEO_PRESENTATION;
   }
-  if (exerciseId === 'wall-pushup') {
-    return gender === 'female'
-      ? WALL_PUSHUP_FEMALE_PRESENTATION
-      : WALL_PUSHUP_MALE_PRESENTATION;
+  if (exerciseId === 'wall-pushup' && isFemaleMediaTrack(gender, avatar)) {
+    return WALL_PUSHUP_FEMALE_PRESENTATION;
   }
   return DEFAULT_GUIDED_VIDEO_PRESENTATION;
 }
 
-export function getGuidedVideoCropTranslateY(
+/** Height of the bottom-aligned source box inside the 349×444 frame (px). */
+export function getGuidedVideoSourceBoxHeight(
   presentation: GuidedVideoPresentation,
-  containerHeight = 0,
+  frameHeight: number,
 ): number {
-  if (presentation.sourceTranslateYPx != null) {
-    return presentation.sourceTranslateYPx;
-  }
-  if (presentation.sourceTranslateYRatio != null && containerHeight > 0) {
-    return containerHeight * presentation.sourceTranslateYRatio;
-  }
-  return 0;
+  const scale = presentation.sourceBoxHeightScale ?? 1;
+  return (
+    (EXERCISE_VIDEO_SOURCE_HEIGHT / EXERCISE_VIDEO_FRAME_HEIGHT) * frameHeight * scale
+  );
 }
 
-export function getGuidedVideoTransformStyle(
-  presentation: GuidedVideoPresentation,
-  containerHeight = 0,
-): { transform: ({ translateY: number } | { scale: number })[] } | undefined {
-  const scale = presentation.sourceScale ?? 1;
-  const translateY = getGuidedVideoCropTranslateY(presentation, containerHeight);
-  if (scale === 1 && translateY === 0) return undefined;
-  // Scale first, then nudge down — keeps edges filled without white gaps.
-  return { transform: [{ scale }, { translateY }] };
-}
+export type GuidedVideoSourceBoxLayoutStyle = {
+  position: 'absolute';
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: '100%';
+  height: number;
+};
 
-export function getGuidedVideoSourceBoxStyle(
+export function getGuidedVideoSourceBoxLayoutStyle(
   presentation: GuidedVideoPresentation,
-): { bottom?: number } | undefined {
-  if (presentation.sourceBoxBottomPx == null) return undefined;
-  return { bottom: presentation.sourceBoxBottomPx };
+  frameHeight: number,
+): GuidedVideoSourceBoxLayoutStyle | { width: '100%'; height: '100%' } {
+  if (presentation.layout === 'fill-frame') {
+    return { width: '100%', height: '100%' };
+  }
+
+  return {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 0,
+    width: '100%',
+    height: getGuidedVideoSourceBoxHeight(presentation, frameHeight),
+  };
 }
 
 /** Home day-card video — full-bleed 16:9 inside the wide card. */

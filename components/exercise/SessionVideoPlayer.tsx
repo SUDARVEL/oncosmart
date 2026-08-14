@@ -1,23 +1,22 @@
 import { useVideoPlayer, VideoView } from 'expo-video';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { Platform, StyleSheet, View } from 'react-native';
 
 import { ensureExerciseAudioSession } from '../../lib/ensureExerciseAudioSession';
 import {
   EXERCISE_VIDEO_FRAME_BACKGROUND,
   EXERCISE_VIDEO_FRAME_HEIGHT,
-  EXERCISE_VIDEO_SOURCE_ASPECT,
   getGuidedVideoPresentation,
-  getGuidedVideoSourceBoxStyle,
-  getGuidedVideoTransformStyle,
+  getGuidedVideoSourceBoxLayoutStyle,
 } from '../../lib/exerciseVideoFrame';
-import type { AppGender } from '../../store/useAppStore';
+import type { AppAvatar, AppGender } from '../../store/useAppStore';
 import { shouldAcceptVideoEnd } from './sessionVideoCompletion';
 
 type Props = {
   source: string;
   exerciseId?: string;
   gender?: AppGender | null;
+  avatar?: AppAvatar | null;
   isPaused: boolean;
   restartToken: number;
   seekRequest?: { fraction: number; token: number } | null;
@@ -43,6 +42,7 @@ export function SessionVideoPlayer({
   source,
   exerciseId = '',
   gender = null,
+  avatar = null,
   isPaused,
   restartToken,
   seekRequest = null,
@@ -53,12 +53,13 @@ export function SessionVideoPlayer({
   onPlaybackFailed,
   onEnded,
 }: Props) {
-  const presentation = getGuidedVideoPresentation(exerciseId, gender);
-  const fillFrame = presentation.layout === 'fill-frame';
-  const sourceBoxStyle = getGuidedVideoSourceBoxStyle(presentation);
-  const [cropHeight, setCropHeight] = useState(0);
-  const effectiveCropHeight = cropHeight || EXERCISE_VIDEO_FRAME_HEIGHT;
-  const cropTransform = getGuidedVideoTransformStyle(presentation, effectiveCropHeight);
+  const presentation = getGuidedVideoPresentation(exerciseId, gender, avatar);
+  const [frameHeight, setFrameHeight] = useState(0);
+  const effectiveFrameHeight = frameHeight || EXERCISE_VIDEO_FRAME_HEIGHT;
+  const sourceBoxLayout = getGuidedVideoSourceBoxLayoutStyle(
+    presentation,
+    effectiveFrameHeight,
+  );
   const onEndedRef = useRef(onEnded);
   const onProgressRef = useRef(onProgress);
   const onBufferingRef = useRef(onBuffering);
@@ -227,25 +228,24 @@ export function SessionVideoPlayer({
   }
 
   return (
-    <View style={styles.frame}>
-      {/* Default: 349×578 source bottom-aligned in 349×444. Chest stretch fills frame. */}
-      <View style={[fillFrame ? styles.fillBox : styles.sourceBox, sourceBoxStyle]}>
-        <View
-          style={[styles.cropInner, cropTransform]}
-          onLayout={(event) => {
-            const nextHeight = event.nativeEvent.layout.height;
-            if (nextHeight > 0 && nextHeight !== cropHeight) {
-              setCropHeight(nextHeight);
-            }
-          }}
-        >
-          <VideoView
-            style={styles.video}
-            player={player}
-            contentFit={presentation.contentFit}
-            nativeControls={false}
-          />
-        </View>
+    <View
+      style={styles.frame}
+      onLayout={(event) => {
+        const nextHeight = event.nativeEvent.layout.height;
+        if (nextHeight > 0 && nextHeight !== frameHeight) {
+          setFrameHeight(nextHeight);
+        }
+      }}
+    >
+      {/* Bottom-aligned source box clipped by 349×444 — same pipeline as other exercises. */}
+      <View style={sourceBoxLayout}>
+        <VideoView
+          style={styles.video}
+          player={player}
+          contentFit={presentation.contentFit}
+          nativeControls={false}
+          surfaceType={Platform.OS === 'android' ? 'textureView' : undefined}
+        />
       </View>
     </View>
   );
@@ -258,24 +258,8 @@ const styles = StyleSheet.create({
     backgroundColor: EXERCISE_VIDEO_FRAME_BACKGROUND,
     overflow: 'hidden',
   },
-  sourceBox: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    bottom: 0,
-    width: '100%',
-    aspectRatio: EXERCISE_VIDEO_SOURCE_ASPECT,
-  },
-  fillBox: {
-    width: '100%',
-    height: '100%',
-  },
-  cropInner: {
-    width: '100%',
-    height: '100%',
-  },
   video: {
-    width: '100%',
-    height: '100%',
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: EXERCISE_VIDEO_FRAME_BACKGROUND,
   },
 });

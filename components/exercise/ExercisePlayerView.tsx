@@ -48,6 +48,7 @@ export function ExercisePlayerView({
   const { t } = useTranslation();
   const { width: screenWidth } = useWindowDimensions();
   const gender = useAppStore((state) => state.gender);
+  const avatar = useAppStore((state) => state.avatar);
   const [isPaused, setIsPaused] = useState(() => Platform.OS === 'web');
   const [restartToken, setRestartToken] = useState(0);
   const [videoProgress, setVideoProgress] = useState(0);
@@ -161,6 +162,7 @@ export function ExercisePlayerView({
               source={primarySource}
               exerciseId={exercise.id}
               gender={gender}
+              avatar={avatar}
               isPaused={playbackPaused}
               restartToken={restartToken}
               audioUnlockToken={audioUnlockToken}
