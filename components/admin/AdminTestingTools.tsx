@@ -6,6 +6,7 @@ import {
   getActiveLevel,
   sessionKey,
 } from '../../lib/programProgress';
+import { flushProgressToCloud } from '../../lib/userCloudSync';
 import { useAppStore } from '../../store/useAppStore';
 import { colors } from '../../theme/colors';
 import { font } from '../../theme/fonts';
@@ -17,6 +18,7 @@ type Props = {
 /**
  * Admin-only (and __DEV__) progress cheats for demo / QA.
  * Unpauses before mutations because markSessionCompleted no-ops while paused.
+ * Progress is flushed to Supabase immediately so it survives app restarts.
  */
 export function AdminTestingTools({ title = 'Admin testing tools' }: Props) {
   const markSessionCompleted = useAppStore((state) => state.markSessionCompleted);
@@ -39,6 +41,10 @@ export function AdminTestingTools({ title = 'Admin testing tools' }: Props) {
     if (progressPaused) setProgressPaused(false, null, null);
   };
 
+  const persistChanges = () => {
+    void flushProgressToCloud();
+  };
+
   const backdateMs = UNLOCK_ADMIN_BACKDATE_MS;
 
   return (
@@ -56,6 +62,7 @@ export function AdminTestingTools({ title = 'Admin testing tools' }: Props) {
             if (!nextDayToSkip) return;
             ensureUnpaused();
             markSessionCompleted(activeLevel, nextDayToSkip, Date.now() - backdateMs);
+            persistChanges();
           }}
         />
         <ToolButton
@@ -71,6 +78,7 @@ export function AdminTestingTools({ title = 'Admin testing tools' }: Props) {
                 );
               }
             }
+            persistChanges();
           }}
         />
       </View>
@@ -87,12 +95,16 @@ export function AdminTestingTools({ title = 'Admin testing tools' }: Props) {
                 Date.now() - (DAYS_PER_LEVEL - day + 1) * backdateMs,
               );
             }
+            persistChanges();
           }}
         />
         <ToolButton
           label={devUnlockOverride ? 'Bypass 12h: ON' : 'Bypass 12h: OFF'}
           active={devUnlockOverride}
-          onPress={() => setDevUnlockOverride(!devUnlockOverride)}
+          onPress={() => {
+            setDevUnlockOverride(!devUnlockOverride);
+            persistChanges();
+          }}
         />
       </View>
 
@@ -100,9 +112,19 @@ export function AdminTestingTools({ title = 'Admin testing tools' }: Props) {
         <ToolButton
           label={progressPaused ? 'Remove pause / quit' : 'Not paused'}
           disabled={!progressPaused}
-          onPress={() => setProgressPaused(false, null, null)}
+          onPress={() => {
+            setProgressPaused(false, null, null);
+            persistChanges();
+          }}
         />
-        <ToolButton label="Reset progress" onPress={devResetProgress} danger />
+        <ToolButton
+          label="Reset progress"
+          onPress={() => {
+            devResetProgress();
+            persistChanges();
+          }}
+          danger
+        />
       </View>
     </View>
   );

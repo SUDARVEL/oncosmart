@@ -72,8 +72,8 @@ export default function SplashScreen() {
 
     if (isAdminSession(session)) {
       const language = useAppStore.getState().language ?? preferred;
-      useAppStore.getState().resetApp();
       if (language) useAppStore.getState().setLanguage(language);
+      // Keep AsyncStorage progress like patients — only reset on logout / account switch.
       await prepareAdminExerciseProfile(session, language);
       void syncNextExerciseNotification(useAppStore.getState().dayCompletedAt);
       router.replace('/home');
