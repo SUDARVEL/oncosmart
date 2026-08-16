@@ -18,7 +18,7 @@ import { notifyAdminsOfHold } from '../../lib/adminNotify';
 import { getSessionExerciseVideoSource } from '../../lib/getDayExercises';
 import type { QuitReason } from '../../lib/progressHold';
 import { useIsAdmin } from '../../lib/useIsAdmin';
-import { saveCloudProfileFromStore } from '../../lib/userCloudSync';
+import { saveCloudProfileFromStore, persistSessionProgress } from '../../lib/userCloudSync';
 import {
   getSessionExerciseForLevel,
   getSessionExercisesForLevel,
@@ -159,6 +159,20 @@ function GuidedSessionScreen({
       state.markSessionCompleted(level, dayInLevel);
 
       const afterState = useAppStore.getState();
+      const authUserId = afterState.activeAuthUserId;
+      const completedAt = afterState.dayCompletedAt[key];
+      if (authUserId && completedAt && startBpm > 0 && endBpm > 0) {
+        void persistSessionProgress({
+          userId: authUserId,
+          level,
+          dayInLevel,
+          completedAt,
+          startBpm,
+          endBpm,
+          painScore: afterState.painScores[`${level}:${dayInLevel}`],
+        });
+      }
+
       const after = getEarnedBadges(
         afterState.levelsCompleted,
         getCompletedSessionCount(afterState.dayCompletedAt),
@@ -176,7 +190,6 @@ function GuidedSessionScreen({
         afterState.enqueueBadgeCelebrations(newlyEarned);
       }
 
-      const completedAt = afterState.dayCompletedAt[key];
       void scheduleNextExerciseNotification({
         level,
         dayInLevel,

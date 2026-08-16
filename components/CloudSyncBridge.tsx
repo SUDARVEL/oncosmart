@@ -11,6 +11,12 @@ import { useAppStore } from '../store/useAppStore';
 
 const SAVE_DEBOUNCE_MS = 700;
 
+function parseSessionKey(key: string): { level: number; dayInLevel: number } | null {
+  const match = /^L(\d+)D(\d+)$/.exec(key);
+  if (!match) return null;
+  return { level: Number(match[1]), dayInLevel: Number(match[2]) };
+}
+
 /**
  * Keeps the signed-in user's local store and Supabase patient row in sync.
  * Mount once near the app root.
@@ -18,6 +24,7 @@ const SAVE_DEBOUNCE_MS = 700;
 export function CloudSyncBridge() {
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const lastCompletionJson = useRef<string>('');
+  const lastSyncedBpmJson = useRef<string>('');
 
   const activeAuthUserId = useAppStore((s) => s.activeAuthUserId);
   const language = useAppStore((s) => s.language);
@@ -51,6 +58,8 @@ export function CloudSyncBridge() {
       useAppStore.getState().setCloudProfileReady(true);
       if (!result.ok) return;
       const state = useAppStore.getState();
+      lastCompletionJson.current = JSON.stringify(state.dayCompletedAt);
+      lastSyncedBpmJson.current = JSON.stringify(state.sessionBpmByKey);
       void syncNextExerciseNotification(state.dayCompletedAt, {
         paused: state.progressPaused,
       });
@@ -119,20 +128,54 @@ export function CloudSyncBridge() {
 
     for (const [key, at] of Object.entries(dayCompletedAt)) {
       if (previous[key]) continue;
-      const match = /^L(\d+)D(\d+)$/.exec(key);
-      if (!match) continue;
-      const level = Number(match[1]);
-      const dayInLevel = Number(match[2]);
-      const painScore = painScores[`${level}:${dayInLevel}`];
+      const parsed = parseSessionKey(key);
+      if (!parsed) continue;
+      const painScore = painScores[`${parsed.level}:${parsed.dayInLevel}`];
       const bpm = sessionBpmByKey[key];
       void persistSessionProgress({
         userId: activeAuthUserId,
-        level,
-        dayInLevel,
+        level: parsed.level,
+        dayInLevel: parsed.dayInLevel,
         completedAt: at,
         painScore,
         startBpm: bpm?.startBpm,
         endBpm: bpm?.endBpm,
+      });
+    }
+  }, [activeAuthUserId, dayCompletedAt, painScores, sessionBpmByKey]);
+
+  // Persist BPM updates for sessions already marked complete (e.g. BPM entered after skip).
+  useEffect(() => {
+    if (!activeAuthUserId) return;
+    const json = JSON.stringify(sessionBpmByKey);
+    if (json === lastSyncedBpmJson.current) return;
+    const previous = lastSyncedBpmJson.current
+      ? (JSON.parse(lastSyncedBpmJson.current) as Record<
+          string,
+          { startBpm: number; endBpm: number }
+        >)
+      : {};
+    lastSyncedBpmJson.current = json;
+
+    for (const [key, bpm] of Object.entries(sessionBpmByKey)) {
+      if (!bpm?.startBpm || !bpm?.endBpm) continue;
+      const prev = previous[key];
+      if (prev?.startBpm === bpm.startBpm && prev?.endBpm === bpm.endBpm) continue;
+
+      const completedAt = dayCompletedAt[key];
+      if (!completedAt) continue;
+
+      const parsed = parseSessionKey(key);
+      if (!parsed) continue;
+
+      void persistSessionProgress({
+        userId: activeAuthUserId,
+        level: parsed.level,
+        dayInLevel: parsed.dayInLevel,
+        completedAt,
+        painScore: painScores[`${parsed.level}:${parsed.dayInLevel}`],
+        startBpm: bpm.startBpm,
+        endBpm: bpm.endBpm,
       });
     }
   }, [activeAuthUserId, dayCompletedAt, painScores, sessionBpmByKey]);
