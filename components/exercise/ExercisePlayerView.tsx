@@ -61,7 +61,7 @@ export function ExercisePlayerView({
   const playbackPaused = isPaused || overlayPaused;
   const primarySource = videoSources[0]?.trim() ?? '';
 
-  // Exact 349×444 aspect — scale width only on narrow screens; never clamp height.
+  // Exact 349×432 aspect (Figma node 2978:4962) — scale width only on narrow screens.
   const frameWidth = Math.min(EXERCISE_VIDEO_FRAME_WIDTH, Math.max(0, screenWidth - 32));
   const frameHeight =
     frameWidth >= EXERCISE_VIDEO_FRAME_WIDTH

@@ -2,13 +2,17 @@
  * Figma guided exercise video framing.
  *
  * Source composition (in Figma): 349 × 578
- * Visible crop window (in app UI): 349 × 444, radius 16
+ * Visible crop window (in app UI): 349 × 432, radius 16  (node 2978:4962)
  *
  * The taller source is bottom-aligned inside the crop window so empty headroom
  * is trimmed from the top — arms/feet stay visible without stretching.
  *
- * Exception: dual-panel chest stretch fills the same 349×444 frame centered
+ * Exception: dual-panel chest stretch fills the same 349×432 frame centered
  * (no bottom crop) so both stacked views stay visible.
+ *
+ * Wall push-up portrait MP4s are square (1080×1080) with baked-in margins.
+ * Fill the visible frame directly (fill-frame + cover) so Android VideoView
+ * does not letterbox inside a taller source box.
  */
 export const EXERCISE_VIDEO_SOURCE_WIDTH = 349;
 export const EXERCISE_VIDEO_SOURCE_HEIGHT = 578;
@@ -16,7 +20,8 @@ export const EXERCISE_VIDEO_SOURCE_ASPECT =
   EXERCISE_VIDEO_SOURCE_WIDTH / EXERCISE_VIDEO_SOURCE_HEIGHT;
 
 export const EXERCISE_VIDEO_FRAME_WIDTH = 349;
-export const EXERCISE_VIDEO_FRAME_HEIGHT = 444;
+/** Figma exercise player image frame height (Wall Push-up node 2978:4962). */
+export const EXERCISE_VIDEO_FRAME_HEIGHT = 432;
 export const EXERCISE_VIDEO_FRAME_ASPECT =
   EXERCISE_VIDEO_FRAME_WIDTH / EXERCISE_VIDEO_FRAME_HEIGHT;
 export const EXERCISE_VIDEO_FRAME_BACKGROUND = '#FFFFFF';
@@ -52,10 +57,22 @@ const CHEST_STRETCH_VIDEO_PRESENTATION: GuidedVideoPresentation = {
   objectPosition: 'center',
 };
 
-/** Wall push-up uses the same Figma crop as every other guided exercise. */
+/**
+ * Wall push-up square exports — fill the Figma 349×432 window edge-to-edge.
+ * Same presentation for male/female and English/Tamil (asset shape, not gender).
+ */
+const WALL_PUSHUP_VIDEO_PRESENTATION: GuidedVideoPresentation = {
+  layout: 'fill-frame',
+  contentFit: 'cover',
+  objectPosition: 'center bottom',
+};
+
 export function getGuidedVideoPresentation(exerciseId: string): GuidedVideoPresentation {
   if (exerciseId === 'chest-stretch') {
     return CHEST_STRETCH_VIDEO_PRESENTATION;
+  }
+  if (exerciseId === 'wall-pushup') {
+    return WALL_PUSHUP_VIDEO_PRESENTATION;
   }
   return DEFAULT_GUIDED_VIDEO_PRESENTATION;
 }

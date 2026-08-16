@@ -218,7 +218,7 @@ export function SessionVideoPlayer({
 
   return (
     <View style={styles.frame}>
-      {/* Default: 349×578 source bottom-aligned in 349×444. Chest stretch fills frame. */}
+      {/* Default: 349×578 source bottom-aligned in 349×432. Chest stretch / wall push-up fill frame. */}
       <View style={fillFrame ? styles.fillBox : styles.sourceBox}>
         <VideoView
           style={styles.video}

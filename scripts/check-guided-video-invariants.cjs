@@ -38,8 +38,8 @@ assert(
   'Frame width must stay 349',
 );
 assert(
-  /EXERCISE_VIDEO_FRAME_HEIGHT\s*=\s*444/.test(frame),
-  'Visible crop height must stay 444',
+  /EXERCISE_VIDEO_FRAME_HEIGHT\s*=\s*432/.test(frame),
+  'Visible crop height must stay 432 (Figma node 2978:4962)',
 );
 assert(
   /EXERCISE_VIDEO_FRAME_BORDER_RADIUS\s*=\s*16/.test(frame),
@@ -55,10 +55,14 @@ assert(
   'Chest stretch must use full-frame dual-panel presentation',
 );
 assert(
-  !frame.includes('sourceBoxHeightScale') &&
-    !frame.includes('sourceBoxWidthScale') &&
-    !frame.includes('WALL_PUSHUP'),
-  'Wall push-up must use the same default Figma crop as other exercises',
+  frame.includes("exerciseId === 'wall-pushup'") &&
+    frame.includes("layout: 'fill-frame'") &&
+    frame.includes('WALL_PUSHUP_VIDEO_PRESENTATION'),
+  'Wall push-up must fill the Figma 349×432 frame edge-to-edge',
+);
+assert(
+  !frame.includes('sourceBoxHeightScale') && !frame.includes('sourceBoxWidthScale'),
+  'Wall push-up must not use pixel scale overrides (Android letterboxing)',
 );
 
 const policy = read('lib/videoStoragePolicy.ts');
