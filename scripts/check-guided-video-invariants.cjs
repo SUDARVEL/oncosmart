@@ -61,6 +61,13 @@ assert(
   'Wall push-up must fill the Figma 349×432 frame edge-to-edge',
 );
 assert(
+  frame.includes("exerciseId === 'calf-raise'") &&
+    frame.includes('CALF_RAISE_VIDEO_FRAME_HEIGHT') &&
+    /CALF_RAISE_VIDEO_FRAME_HEIGHT\s*=\s*444/.test(frame) &&
+    frame.includes('CALF_RAISE_VIDEO_PRESENTATION'),
+  'Calf raise must fill the Figma 349×444 frame edge-to-edge',
+);
+assert(
   !frame.includes('sourceBoxHeightScale') && !frame.includes('sourceBoxWidthScale'),
   'Wall push-up must not use pixel scale overrides (Android letterboxing)',
 );

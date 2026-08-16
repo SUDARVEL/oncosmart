@@ -20,8 +20,10 @@ export const EXERCISE_VIDEO_SOURCE_ASPECT =
   EXERCISE_VIDEO_SOURCE_WIDTH / EXERCISE_VIDEO_SOURCE_HEIGHT;
 
 export const EXERCISE_VIDEO_FRAME_WIDTH = 349;
-/** Figma exercise player image frame height (Wall Push-up node 2978:4962). */
+/** Default guided player crop height (most portrait exercises). */
 export const EXERCISE_VIDEO_FRAME_HEIGHT = 432;
+/** Figma Calf Raises image frame (node 2978:4980). */
+export const CALF_RAISE_VIDEO_FRAME_HEIGHT = 444;
 export const EXERCISE_VIDEO_FRAME_ASPECT =
   EXERCISE_VIDEO_FRAME_WIDTH / EXERCISE_VIDEO_FRAME_HEIGHT;
 export const EXERCISE_VIDEO_FRAME_BACKGROUND = '#FFFFFF';
@@ -67,12 +69,36 @@ const WALL_PUSHUP_VIDEO_PRESENTATION: GuidedVideoPresentation = {
   objectPosition: 'center bottom',
 };
 
+/**
+ * Calf raise portrait MP4s include baked-in side margins (Figma node 2978:4980).
+ * Fill the 349×444 frame edge-to-edge — same for all genders/languages.
+ */
+const CALF_RAISE_VIDEO_PRESENTATION: GuidedVideoPresentation = {
+  layout: 'fill-frame',
+  contentFit: 'cover',
+  objectPosition: 'center bottom',
+};
+
+export function getGuidedVideoFrameHeight(exerciseId: string): number {
+  if (exerciseId === 'calf-raise') {
+    return CALF_RAISE_VIDEO_FRAME_HEIGHT;
+  }
+  return EXERCISE_VIDEO_FRAME_HEIGHT;
+}
+
+export function getGuidedVideoFrameAspect(exerciseId: string): number {
+  return EXERCISE_VIDEO_FRAME_WIDTH / getGuidedVideoFrameHeight(exerciseId);
+}
+
 export function getGuidedVideoPresentation(exerciseId: string): GuidedVideoPresentation {
   if (exerciseId === 'chest-stretch') {
     return CHEST_STRETCH_VIDEO_PRESENTATION;
   }
   if (exerciseId === 'wall-pushup') {
     return WALL_PUSHUP_VIDEO_PRESENTATION;
+  }
+  if (exerciseId === 'calf-raise') {
+    return CALF_RAISE_VIDEO_PRESENTATION;
   }
   return DEFAULT_GUIDED_VIDEO_PRESENTATION;
 }

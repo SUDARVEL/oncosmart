@@ -15,11 +15,11 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import type { Day1SessionExercise } from '../../lib/getDay1Session';
 import {
-  EXERCISE_VIDEO_FRAME_ASPECT,
   EXERCISE_VIDEO_FRAME_BACKGROUND,
   EXERCISE_VIDEO_FRAME_BORDER_RADIUS,
-  EXERCISE_VIDEO_FRAME_HEIGHT,
   EXERCISE_VIDEO_FRAME_WIDTH,
+  getGuidedVideoFrameAspect,
+  getGuidedVideoFrameHeight,
 } from '../../lib/exerciseVideoFrame';
 import { colors } from '../../theme/colors';
 import { font, displayFontStyle } from '../../theme/fonts';
@@ -61,12 +61,14 @@ export function ExercisePlayerView({
   const playbackPaused = isPaused || overlayPaused;
   const primarySource = videoSources[0]?.trim() ?? '';
 
-  // Exact 349×432 aspect (Figma node 2978:4962) — scale width only on narrow screens.
+  // Per-exercise Figma frame (e.g. calf raise 349×444, wall push-up 349×432).
+  const frameHeightSpec = getGuidedVideoFrameHeight(exercise.id);
+  const frameAspect = getGuidedVideoFrameAspect(exercise.id);
   const frameWidth = Math.min(EXERCISE_VIDEO_FRAME_WIDTH, Math.max(0, screenWidth - 32));
   const frameHeight =
     frameWidth >= EXERCISE_VIDEO_FRAME_WIDTH
-      ? EXERCISE_VIDEO_FRAME_HEIGHT
-      : Math.round(frameWidth / EXERCISE_VIDEO_FRAME_ASPECT);
+      ? frameHeightSpec
+      : Math.round(frameWidth / frameAspect);
 
   const title = t(`sessionFlow.exercises.${exercise.id}.title`);
   const description = t(`sessionFlow.exercises.${exercise.id}.description`);
@@ -259,7 +261,6 @@ const styles = StyleSheet.create({
   },
   videoWrap: {
     width: EXERCISE_VIDEO_FRAME_WIDTH,
-    height: EXERCISE_VIDEO_FRAME_HEIGHT,
     borderRadius: EXERCISE_VIDEO_FRAME_BORDER_RADIUS,
     overflow: 'hidden',
     backgroundColor: EXERCISE_VIDEO_FRAME_BACKGROUND,
@@ -302,11 +303,12 @@ const styles = StyleSheet.create({
   },
   exerciseTitle: {
     marginTop: 12,
-    fontSize: 22,
-    lineHeight: 26,
+    fontSize: 24,
+    lineHeight: 20,
     color: '#262526',
     textAlign: 'center',
     textTransform: 'uppercase',
+    letterSpacing: 0.1,
     ...font('semiBold'),
   },
   repRow: {
@@ -319,14 +321,14 @@ const styles = StyleSheet.create({
     minHeight: 60,
   },
   repValue: {
-    fontSize: 56,
+    fontSize: 64,
     lineHeight: 60,
     color: '#00131F',
     ...displayFontStyle(),
   },
   /** Unit (முறை / நிமி / வினாடி / REPS): Tamil-capable font so it never clips. */
   repLabel: {
-    fontSize: 30,
+    fontSize: 36,
     lineHeight: 40,
     color: '#00131F',
     ...font('bold'),
