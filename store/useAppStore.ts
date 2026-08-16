@@ -97,6 +97,10 @@ type AppState = AppStateSnapshot & {
   restartCoachTour: () => void;
   /** Replace local profile/progress with cloud data for the signed-in user. */
   hydrateFromCloud: (payload: CloudHydrateInput) => void;
+  /** Merge start/end BPM loaded from exercise_completions (cloud wins when valid). */
+  mergeSessionBpmFromCloud: (
+    entries: Record<string, { startBpm: number; endBpm: number }>,
+  ) => void;
   /** Record a session completion (level + day within level). */
   markSessionCompleted: (level: number, dayInLevel: number, when?: number) => void;
   /** @deprecated Use markSessionCompleted */
@@ -235,6 +239,16 @@ export const useAppStore = create<AppState>()(
             dayCompletedAt,
           };
         }),
+      mergeSessionBpmFromCloud: (entries) =>
+        set((state) => {
+          const sessionBpmByKey = { ...state.sessionBpmByKey };
+          for (const [key, bpm] of Object.entries(entries)) {
+            if (bpm.startBpm > 0 && bpm.endBpm > 0) {
+              sessionBpmByKey[key] = bpm;
+            }
+          }
+          return { sessionBpmByKey };
+        }),
       markSessionCompleted: (level, dayInLevel, when) =>
         set((state) => {
           // Pause Progress freezes program advancement for every avatar/gender.
@@ -286,6 +300,7 @@ export const useAppStore = create<AppState>()(
           levelsCompleted: 0,
           devUnlockOverride: false,
           painScores: {},
+          sessionBpmByKey: {},
           pendingBadgeCelebrations: [],
         }),
       resetApp: () =>
@@ -342,6 +357,7 @@ export const useAppStore = create<AppState>()(
         quitReason: state.quitReason,
         levelsCompleted: state.levelsCompleted,
         dayCompletedAt: state.dayCompletedAt,
+        sessionBpmByKey: state.sessionBpmByKey,
         activeAuthUserId: state.activeAuthUserId,
         coachTourSeen: state.coachTourSeen,
         devUnlockOverride: state.devUnlockOverride,

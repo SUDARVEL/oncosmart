@@ -170,7 +170,40 @@ export async function loadCloudProfileIntoStore(userId: string): Promise<CloudLo
     coachTourSeen: data.coach_tour_seen === true || hasCompletedAnyDay,
   });
 
+  await loadSessionBpmIntoStore(patientId);
+
   return { ok: true, onboardingComplete };
+}
+
+/** Pull session start/end BPM rows into the local store for this patient. */
+export async function loadSessionBpmIntoStore(patientId: string): Promise<void> {
+  const supabase = getSupabase();
+  if (!supabase) return;
+
+  const { data, error } = await supabase
+    .from('exercise_completions')
+    .select('session_key,start_bpm,end_bpm')
+    .eq('patient_id', patientId);
+
+  if (error) {
+    console.warn('[CloudSync] load session BPM failed', error.message);
+    return;
+  }
+
+  const entries: Record<string, { startBpm: number; endBpm: number }> = {};
+  for (const row of data ?? []) {
+    const key = typeof row.session_key === 'string' ? row.session_key : '';
+    const startBpm =
+      typeof row.start_bpm === 'number' ? row.start_bpm : Number(row.start_bpm);
+    const endBpm = typeof row.end_bpm === 'number' ? row.end_bpm : Number(row.end_bpm);
+    if (!key || !Number.isFinite(startBpm) || !Number.isFinite(endBpm)) continue;
+    if (startBpm <= 0 || endBpm <= 0) continue;
+    entries[key] = { startBpm, endBpm };
+  }
+
+  if (Object.keys(entries).length > 0) {
+    useAppStore.getState().mergeSessionBpmFromCloud(entries);
+  }
 }
 
 /** Push current local store profile/progress to Supabase for this auth user. */
@@ -295,20 +328,30 @@ export async function upsertSessionCompletion(params: {
   if (!patientId) return;
 
   const sessionKey = `L${params.level}D${params.dayInLevel}`;
-  const { error } = await supabase.from('exercise_completions').upsert(
-    {
-      patient_id: patientId,
-      day: params.dayInLevel,
-      level: params.level,
-      day_in_level: params.dayInLevel,
-      session_key: sessionKey,
-      completed_at: new Date(params.completedAt).toISOString(),
-      pain_score: params.painScore ?? null,
-      start_bpm: params.startBpm ?? null,
-      end_bpm: params.endBpm ?? null,
-    },
-    { onConflict: 'patient_id,session_key' },
-  );
+  const row: Record<string, unknown> = {
+    patient_id: patientId,
+    day: params.dayInLevel,
+    level: params.level,
+    day_in_level: params.dayInLevel,
+    session_key: sessionKey,
+    completed_at: new Date(params.completedAt).toISOString(),
+  };
+
+  if (params.painScore != null && Number.isFinite(params.painScore)) {
+    row.pain_score = params.painScore;
+  }
+
+  // Never overwrite stored BPM with null when a sync omits heart-rate values.
+  if (params.startBpm != null && params.startBpm > 0) {
+    row.start_bpm = params.startBpm;
+  }
+  if (params.endBpm != null && params.endBpm > 0) {
+    row.end_bpm = params.endBpm;
+  }
+
+  const { error } = await supabase.from('exercise_completions').upsert(row, {
+    onConflict: 'patient_id,session_key',
+  });
   if (error) {
     console.warn('[CloudSync] completion upsert failed', error.message);
   }
