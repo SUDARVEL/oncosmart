@@ -94,7 +94,12 @@ export async function registerAdminPushTokenDetailed(
     if (!granted) return { token: null, status: 'no_permission' };
 
     const token = await getExpoPushTokenSafe();
-    if (!token) return { token: null, status: 'no_token' };
+    if (!token) {
+      console.warn(
+        '[Push] Admin token unavailable — upload FCM V1 credentials in EAS and add google-services.json, then rebuild the APK.',
+      );
+      return { token: null, status: 'no_token' };
+    }
 
     const { error } = await supabase.from('admin_push_tokens').upsert(
       {
