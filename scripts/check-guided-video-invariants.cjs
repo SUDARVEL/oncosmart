@@ -148,9 +148,9 @@ assert(
 const copyBlock = read('components/exercise/ExercisePlayerCopyBlock.tsx');
 assert(
   copyBlock.includes('titleWrap') &&
-    copyBlock.includes('adjustsFontSizeToFit') &&
+    !copyBlock.includes('adjustsFontSizeToFit') &&
     copyBlock.includes('numberOfLines={2}'),
-  'ExercisePlayerCopyBlock must auto-fit long exercise titles on two lines',
+  'Exercise title must wrap naturally without adjustsFontSizeToFit (Android clips tops)',
 );
 const playerView = read('components/exercise/ExercisePlayerView.tsx');
 assert(

@@ -31,8 +31,6 @@ export function ExercisePlayerCopyBlock({
         <Text
           style={exercisePlayerCopyStyles.exerciseTitle}
           numberOfLines={2}
-          adjustsFontSizeToFit={Platform.OS !== 'web'}
-          minimumFontScale={0.82}
           {...(Platform.OS === 'android' ? { textBreakStrategy: 'simple' as const } : {})}
         >
           {title}

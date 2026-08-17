@@ -284,6 +284,7 @@ const styles = StyleSheet.create({
   videoProgressTrack: {
     height: 8,
     marginTop: 10,
+    marginBottom: 4,
     borderRadius: 999,
     borderWidth: 1,
     borderColor: '#9CC7E0',
