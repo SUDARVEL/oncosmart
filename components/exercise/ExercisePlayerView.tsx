@@ -304,7 +304,7 @@ const styles = StyleSheet.create({
   exerciseTitle: {
     marginTop: 12,
     fontSize: 24,
-    lineHeight: 20,
+    lineHeight: 28,
     color: '#262526',
     textAlign: 'center',
     textTransform: 'uppercase',
@@ -317,27 +317,27 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 8,
-    marginTop: 12,
-    minHeight: 60,
+    marginTop: 8,
+    minHeight: 72,
   },
   repValue: {
     fontSize: 64,
-    lineHeight: 60,
+    lineHeight: 72,
     color: '#00131F',
     ...displayFontStyle(),
   },
   /** Unit (முறை / நிமி / வினாடி / REPS): Tamil-capable font so it never clips. */
   repLabel: {
-    fontSize: 36,
-    lineHeight: 40,
+    fontSize: 34,
+    lineHeight: 44,
     color: '#00131F',
     ...font('bold'),
   },
   /** Figma Grey-80 description: 16 / 20 / 0.1, weight 400 */
   description: {
-    marginTop: 12,
+    marginTop: 16,
     fontSize: 16,
-    lineHeight: 20,
+    lineHeight: 22,
     letterSpacing: 0.1,
     color: '#6B7280',
     textAlign: 'center',
