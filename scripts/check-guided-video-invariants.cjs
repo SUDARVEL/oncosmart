@@ -135,9 +135,10 @@ assert(
 
 const copyStyles = read('lib/exercisePlayerCopyStyles.ts');
 assert(
-  copyStyles.includes('repSection') &&
+  copyStyles.includes('EXERCISE_COPY_HORIZONTAL_PADDING') &&
+    copyStyles.includes("width: '100%'") &&
     !copyStyles.includes("overflow: 'hidden'"),
-  'Exercise copy must use natural rep spacing without overflow clipping',
+  'Exercise copy must use full-width padded layout without clipping',
 );
 const repCounter = read('components/exercise/ExerciseRepCounter.tsx');
 assert(
@@ -146,8 +147,10 @@ assert(
 );
 const copyBlock = read('components/exercise/ExercisePlayerCopyBlock.tsx');
 assert(
-  copyBlock.includes('ExerciseRepCounter') && copyBlock.includes('exercisePlayerCopyStyles.description'),
-  'ExercisePlayerCopyBlock must wrap rep counter and description',
+  copyBlock.includes('titleWrap') &&
+    copyBlock.includes('adjustsFontSizeToFit') &&
+    copyBlock.includes('numberOfLines={2}'),
+  'ExercisePlayerCopyBlock must auto-fit long exercise titles on two lines',
 );
 const playerView = read('components/exercise/ExercisePlayerView.tsx');
 assert(
