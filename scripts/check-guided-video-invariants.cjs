@@ -135,14 +135,14 @@ assert(
 
 const copyStyles = read('lib/exercisePlayerCopyStyles.ts');
 assert(
-  copyStyles.includes('repRowClip') &&
-    copyStyles.includes('includeFontPadding: false'),
-  'Exercise copy must use clipped rep row with Android font guard',
+  copyStyles.includes('repSection') &&
+    !copyStyles.includes("overflow: 'hidden'"),
+  'Exercise copy must use natural rep spacing without overflow clipping',
 );
 const repCounter = read('components/exercise/ExerciseRepCounter.tsx');
 assert(
-  repCounter.includes('repRowClip') && repCounter.includes('repValueClip'),
-  'ExerciseRepCounter must clip value and label separately',
+  repCounter.includes('repSection') && !repCounter.includes('Clip'),
+  'ExerciseRepCounter must render reps without clip wrappers',
 );
 const copyBlock = read('components/exercise/ExercisePlayerCopyBlock.tsx');
 assert(

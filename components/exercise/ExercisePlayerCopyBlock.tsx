@@ -21,9 +21,7 @@ export function ExercisePlayerCopyBlock({
 }: Props) {
   return (
     <View style={[exercisePlayerCopyStyles.copyBlock, { width: contentWidth }]}>
-      <Text style={exercisePlayerCopyStyles.exerciseTitle} numberOfLines={3}>
-        {title}
-      </Text>
+      <Text style={exercisePlayerCopyStyles.exerciseTitle}>{title}</Text>
 
       <ExerciseRepCounter value={displayValue} unitLabel={unitLabel} />
 
