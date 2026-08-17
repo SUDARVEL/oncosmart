@@ -63,7 +63,6 @@ export function WorkoutDetailSlide({ workout, width }: Props) {
           description={description}
           displayValue={workout.displayValue}
           unitLabel={repLabel}
-          contentWidth={WORKOUT_SLIDER_MEDIA_WIDTH}
         />
       </ScrollView>
     </View>

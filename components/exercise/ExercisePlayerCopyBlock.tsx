@@ -1,4 +1,4 @@
-import { Platform, Text, View } from 'react-native';
+import { Text, View } from 'react-native';
 
 import { ExerciseRepCounter } from './ExerciseRepCounter';
 import { exercisePlayerCopyStyles } from '../../lib/exercisePlayerCopyStyles';
@@ -8,8 +8,6 @@ type Props = {
   description: string;
   displayValue: string;
   unitLabel: string;
-  /** Max width aligned with the video frame above (scroll column still uses 100% width). */
-  contentWidth?: number;
 };
 
 /** Title + rep counter + description block shared by exercise player screens. */
@@ -18,22 +16,14 @@ export function ExercisePlayerCopyBlock({
   description,
   displayValue,
   unitLabel,
-  contentWidth,
 }: Props) {
+  const displayTitle = title.toLocaleUpperCase();
+
   return (
-    <View
-      style={[
-        exercisePlayerCopyStyles.copyBlock,
-        contentWidth != null ? { maxWidth: contentWidth } : null,
-      ]}
-    >
+    <View style={exercisePlayerCopyStyles.copyBlock}>
       <View style={exercisePlayerCopyStyles.titleWrap}>
-        <Text
-          style={exercisePlayerCopyStyles.exerciseTitle}
-          numberOfLines={2}
-          {...(Platform.OS === 'android' ? { textBreakStrategy: 'simple' as const } : {})}
-        >
-          {title}
+        <Text style={exercisePlayerCopyStyles.exerciseTitle} numberOfLines={2}>
+          {displayTitle}
         </Text>
       </View>
 

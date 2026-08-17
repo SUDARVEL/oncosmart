@@ -3,8 +3,9 @@ import { AppState, type AppStateStatus } from 'react-native';
 
 import { checkForUpdateInBackground } from '../lib/appRefresh';
 
-const FOREGROUND_CHECK_DELAY_MS = 800;
-const STARTUP_CHECK_DELAY_MS = 1200;
+const FOREGROUND_CHECK_DELAY_MS = 400;
+const STARTUP_CHECK_DELAY_MS = 600;
+const RETRY_DELAYS_MS = [2500, 8000];
 
 /**
  * Checks for EAS Updates when the app opens / returns to foreground.
@@ -13,9 +14,17 @@ const STARTUP_CHECK_DELAY_MS = 1200;
 export function AppUpdateBridge() {
   const checkingRef = useRef(false);
   const appStateRef = useRef<AppStateStatus>(AppState.currentState);
+  const retryTimersRef = useRef<ReturnType<typeof setTimeout>[]>([]);
 
   useEffect(() => {
     let cancelled = false;
+
+    const clearRetryTimers = () => {
+      for (const timer of retryTimersRef.current) {
+        clearTimeout(timer);
+      }
+      retryTimersRef.current = [];
+    };
 
     const runCheck = async () => {
       if (cancelled || checkingRef.current) return;
@@ -29,8 +38,19 @@ export function AppUpdateBridge() {
       }
     };
 
+    const scheduleRetries = () => {
+      clearRetryTimers();
+      for (const delay of RETRY_DELAYS_MS) {
+        const timer = setTimeout(() => {
+          void runCheck();
+        }, delay);
+        retryTimersRef.current.push(timer);
+      }
+    };
+
     const startupTimer = setTimeout(() => {
       void runCheck();
+      scheduleRetries();
     }, STARTUP_CHECK_DELAY_MS);
 
     const sub = AppState.addEventListener('change', (next) => {
@@ -40,6 +60,7 @@ export function AppUpdateBridge() {
       if (wasBackground && next === 'active') {
         setTimeout(() => {
           void runCheck();
+          scheduleRetries();
         }, FOREGROUND_CHECK_DELAY_MS);
       }
     });
@@ -47,6 +68,7 @@ export function AppUpdateBridge() {
     return () => {
       cancelled = true;
       clearTimeout(startupTimer);
+      clearRetryTimers();
       sub.remove();
     };
   }, []);

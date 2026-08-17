@@ -135,10 +135,10 @@ assert(
 
 const copyStyles = read('lib/exercisePlayerCopyStyles.ts');
 assert(
-  copyStyles.includes('EXERCISE_COPY_HORIZONTAL_PADDING') &&
-    copyStyles.includes("width: '100%'") &&
+  copyStyles.includes("width: '100%'") &&
+    !copyStyles.includes('EXERCISE_COPY_HORIZONTAL_PADDING') &&
     !copyStyles.includes("overflow: 'hidden'"),
-  'Exercise copy must use full-width padded layout without clipping',
+  'Exercise copy must use full scroll width without inner padding or clipping',
 );
 const repCounter = read('components/exercise/ExerciseRepCounter.tsx');
 assert(
@@ -148,9 +148,11 @@ assert(
 const copyBlock = read('components/exercise/ExercisePlayerCopyBlock.tsx');
 assert(
   copyBlock.includes('titleWrap') &&
+    copyBlock.includes('toLocaleUpperCase()') &&
+    !copyBlock.includes('contentWidth') &&
     !copyBlock.includes('adjustsFontSizeToFit') &&
     copyBlock.includes('numberOfLines={2}'),
-  'Exercise title must wrap naturally without adjustsFontSizeToFit (Android clips tops)',
+  'Exercise title must wrap on two lines without width caps or adjustsFontSizeToFit',
 );
 const playerView = read('components/exercise/ExercisePlayerView.tsx');
 assert(

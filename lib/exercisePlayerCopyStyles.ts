@@ -2,45 +2,44 @@ import { Platform, StyleSheet } from 'react-native';
 
 import { displayFontStyle, font } from '../theme/fonts';
 
-/** Horizontal inset so long uppercase titles (e.g. DIAPHRAGMATIC BREATHING) never clip at edges. */
-export const EXERCISE_COPY_HORIZONTAL_PADDING = 12;
-
 /**
  * Guided exercise copy typography (Figma node 2978:4976 family).
- * Width is always 100% of the scroll column with horizontal padding — never a fixed pixel box.
+ * Copy uses the full scroll column width — never the narrower video frame width.
  */
 export const exercisePlayerCopyStyles = StyleSheet.create({
   copyBlock: {
     alignSelf: 'stretch',
     width: '100%',
-    marginTop: 8,
-    paddingHorizontal: EXERCISE_COPY_HORIZONTAL_PADDING,
+    marginTop: 12,
     alignItems: 'center',
   },
   titleWrap: {
     alignSelf: 'stretch',
     width: '100%',
-    paddingTop: 6,
-    paddingBottom: 2,
+    paddingTop: 4,
+    paddingBottom: 4,
+    overflow: 'visible',
   },
   exerciseTitle: {
     width: '100%',
-    fontSize: 20,
-    lineHeight: 26,
+    fontSize: 18,
+    lineHeight: 24,
     color: '#262526',
     textAlign: 'center',
-    textTransform: 'uppercase',
     letterSpacing: 0,
+    flexShrink: 1,
     ...font('semiBold'),
-    ...(Platform.OS === 'android' ? { includeFontPadding: true } : {}),
+    ...(Platform.OS === 'android'
+      ? { includeFontPadding: true, textBreakStrategy: 'simple' as const }
+      : {}),
   },
   repSection: {
     alignSelf: 'stretch',
     width: '100%',
     alignItems: 'center',
-    marginTop: 10,
-    marginBottom: 18,
-    paddingVertical: 4,
+    marginTop: 8,
+    marginBottom: 20,
+    paddingVertical: 2,
   },
   repRow: {
     flexDirection: 'row',
@@ -70,7 +69,7 @@ export const exercisePlayerCopyStyles = StyleSheet.create({
     ...font('bold'),
   },
   description: {
-    marginTop: 0,
+    marginTop: 4,
     width: '100%',
     fontSize: 16,
     lineHeight: 24,
