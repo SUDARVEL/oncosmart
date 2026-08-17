@@ -22,7 +22,7 @@ import {
   getGuidedVideoFrameHeight,
 } from '../../lib/exerciseVideoFrame';
 import { colors } from '../../theme/colors';
-import { exercisePlayerCopyStyles } from '../../lib/exercisePlayerCopyStyles';
+import { ExercisePlayerCopyBlock } from './ExercisePlayerCopyBlock';
 import { font } from '../../theme/fonts';
 import { PressableScale } from '../PressableScale';
 import { SessionVideoPlayer } from './SessionVideoPlayer';
@@ -193,22 +193,13 @@ export function ExercisePlayerView({
           <View style={[styles.videoProgressFill, { width: `${videoProgressPercent}%` }]} />
         </View>
 
-        <View style={[exercisePlayerCopyStyles.copyBlock, { width: frameWidth }]}>
-          <Text style={exercisePlayerCopyStyles.exerciseTitle} numberOfLines={2}>
-            {title}
-          </Text>
-
-          <View style={exercisePlayerCopyStyles.repRow}>
-            <Text style={exercisePlayerCopyStyles.repValue} numberOfLines={1}>
-              {displayValue}
-            </Text>
-            <Text style={exercisePlayerCopyStyles.repLabel} numberOfLines={1}>
-              {unitLabel}
-            </Text>
-          </View>
-
-          <Text style={exercisePlayerCopyStyles.description}>{description}</Text>
-        </View>
+        <ExercisePlayerCopyBlock
+          title={title}
+          description={description}
+          displayValue={displayValue}
+          unitLabel={unitLabel}
+          contentWidth={frameWidth}
+        />
       </ScrollView>
 
       <View style={styles.footer}>

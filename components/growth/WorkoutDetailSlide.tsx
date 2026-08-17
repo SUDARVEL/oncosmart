@@ -12,7 +12,7 @@ import {
   WORKOUT_SLIDER_MEDIA_TOP,
   WORKOUT_SLIDER_MEDIA_WIDTH,
 } from '../../lib/workoutInfoSheetLayout';
-import { exercisePlayerCopyStyles } from '../../lib/exercisePlayerCopyStyles';
+import { ExercisePlayerCopyBlock } from '../exercise/ExercisePlayerCopyBlock';
 
 type Props = {
   workout: WorkoutDetail;
@@ -58,20 +58,13 @@ export function WorkoutDetailSlide({ workout, width }: Props) {
           )}
         </View>
 
-        <View style={[exercisePlayerCopyStyles.copyBlock, { width: WORKOUT_SLIDER_MEDIA_WIDTH }]}>
-          <Text style={exercisePlayerCopyStyles.exerciseTitle}>{title}</Text>
-
-          <View style={exercisePlayerCopyStyles.repRow}>
-            <Text style={exercisePlayerCopyStyles.repValue} numberOfLines={1}>
-              {workout.displayValue}
-            </Text>
-            <Text style={exercisePlayerCopyStyles.repLabel} numberOfLines={1}>
-              {repLabel}
-            </Text>
-          </View>
-
-          <Text style={exercisePlayerCopyStyles.description}>{description}</Text>
-        </View>
+        <ExercisePlayerCopyBlock
+          title={title}
+          description={description}
+          displayValue={workout.displayValue}
+          unitLabel={repLabel}
+          contentWidth={WORKOUT_SLIDER_MEDIA_WIDTH}
+        />
       </ScrollView>
     </View>
   );

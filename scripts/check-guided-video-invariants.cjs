@@ -135,16 +135,24 @@ assert(
 
 const copyStyles = read('lib/exercisePlayerCopyStyles.ts');
 assert(
-  /EXERCISE_REP_ROW_HEIGHT\s*=\s*80/.test(copyStyles) &&
-    copyStyles.includes("overflow: 'hidden'") &&
+  copyStyles.includes('repRowClip') &&
     copyStyles.includes('includeFontPadding: false'),
-  'Exercise copy must use fixed rep row height with Android clip guard',
+  'Exercise copy must use clipped rep row with Android font guard',
+);
+const repCounter = read('components/exercise/ExerciseRepCounter.tsx');
+assert(
+  repCounter.includes('repRowClip') && repCounter.includes('repValueClip'),
+  'ExerciseRepCounter must clip value and label separately',
+);
+const copyBlock = read('components/exercise/ExercisePlayerCopyBlock.tsx');
+assert(
+  copyBlock.includes('ExerciseRepCounter') && copyBlock.includes('exercisePlayerCopyStyles.description'),
+  'ExercisePlayerCopyBlock must wrap rep counter and description',
 );
 const playerView = read('components/exercise/ExercisePlayerView.tsx');
 assert(
-  playerView.includes('exercisePlayerCopyStyles') &&
-    playerView.includes('exercisePlayerCopyStyles.copyBlock'),
-  'ExercisePlayerView must use shared exercise copy styles',
+  playerView.includes('ExercisePlayerCopyBlock'),
+  'ExercisePlayerView must use ExercisePlayerCopyBlock',
 );
 
 const webPlayer = read('components/exercise/SessionVideoPlayer.web.tsx');

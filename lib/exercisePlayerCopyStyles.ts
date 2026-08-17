@@ -1,21 +1,20 @@
 import { Platform, StyleSheet, type TextStyle } from 'react-native';
 
-import { displayFontStyle, font } from '../theme/fonts';
+import { colors } from '../theme/colors';
+import { font } from '../theme/fonts';
 
-/** Fixed rep row — Antonio 64px must not bleed into the description below. */
-export const EXERCISE_REP_ROW_HEIGHT = 80;
+/** Rep row height — Antonio 64px needs headroom on Android (glyphs draw outside line box). */
+export const EXERCISE_REP_ROW_HEIGHT = Platform.OS === 'android' ? 96 : 88;
 
-const androidTextMetrics: TextStyle =
+export const androidExerciseTextMetrics: TextStyle =
   Platform.OS === 'android' ? { includeFontPadding: false } : {};
 
-/**
- * Shared title / reps / description typography for guided exercise screens
- * and workout info slides. Keeps Android Antonio + Tamil labels from clipping.
- */
 export const exercisePlayerCopyStyles = StyleSheet.create({
   copyBlock: {
     alignSelf: 'stretch',
     alignItems: 'center',
+    flexDirection: 'column',
+    gap: 4,
   },
   exerciseTitle: {
     marginTop: 12,
@@ -25,43 +24,64 @@ export const exercisePlayerCopyStyles = StyleSheet.create({
     textAlign: 'center',
     textTransform: 'uppercase',
     letterSpacing: 0.1,
-    ...font('semiBold'),
-    ...androidTextMetrics,
-  },
-  repRow: {
-    flexDirection: 'row',
-    flexWrap: 'nowrap',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-    marginTop: 8,
-    height: EXERCISE_REP_ROW_HEIGHT,
-    overflow: 'hidden',
     alignSelf: 'stretch',
-  },
-  repValue: {
-    fontSize: 64,
-    lineHeight: EXERCISE_REP_ROW_HEIGHT,
-    color: '#00131F',
-    ...displayFontStyle(),
-    ...androidTextMetrics,
-  },
-  repLabel: {
-    fontSize: 34,
-    lineHeight: 44,
-    color: '#00131F',
-    ...font('bold'),
-    ...androidTextMetrics,
+    ...font('semiBold'),
+    ...androidExerciseTextMetrics,
   },
   description: {
-    marginTop: 20,
+    marginTop: 4,
+    paddingTop: 8,
     fontSize: 16,
     lineHeight: 22,
     letterSpacing: 0.1,
     color: '#6B7280',
     textAlign: 'center',
     alignSelf: 'stretch',
+    backgroundColor: colors.background,
+    zIndex: 2,
     ...font('regular'),
-    ...androidTextMetrics,
+    ...androidExerciseTextMetrics,
+  },
+  repSection: {
+    alignSelf: 'stretch',
+    marginTop: 8,
+    marginBottom: 12,
+  },
+  repRowClip: {
+    height: EXERCISE_REP_ROW_HEIGHT,
+    overflow: 'hidden',
+    alignSelf: 'stretch',
+  },
+  repRow: {
+    height: EXERCISE_REP_ROW_HEIGHT,
+    flexDirection: 'row',
+    alignItems: 'baseline',
+    justifyContent: 'center',
+    gap: 8,
+    paddingBottom: Platform.OS === 'android' ? 10 : 8,
+  },
+  repValueClip: {
+    height: EXERCISE_REP_ROW_HEIGHT,
+    maxWidth: '72%',
+    overflow: 'hidden',
+    justifyContent: 'flex-end',
+  },
+  repValue: {
+    fontSize: Platform.OS === 'android' ? 58 : 64,
+    lineHeight: Platform.OS === 'android' ? 68 : 72,
+    color: '#00131F',
+    textAlign: 'center',
+    ...androidExerciseTextMetrics,
+  },
+  repLabelClip: {
+    overflow: 'hidden',
+    justifyContent: 'flex-end',
+  },
+  repLabel: {
+    fontSize: 32,
+    lineHeight: 40,
+    color: '#00131F',
+    ...font('bold'),
+    ...androidExerciseTextMetrics,
   },
 });
