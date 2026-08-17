@@ -1,3 +1,4 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Notifications from 'expo-notifications';
 import { Platform } from 'react-native';
 
@@ -14,7 +15,28 @@ export const NEXT_EXERCISE_NOTIFICATION_ID = 'next-exercise-ready';
 export const DAY_COMPLETED_NOTIFICATION_ID = 'day-completed';
 export const EXERCISE_REMINDER_CHANNEL_ID = 'exercise-reminders';
 
+const NOTIFIED_UNLOCK_AT_KEY = 'oncosmart.notifications.notifiedUnlockAt';
+
 let handlerConfigured = false;
+
+async function getNotifiedUnlockAt(): Promise<number | null> {
+  try {
+    const raw = await AsyncStorage.getItem(NOTIFIED_UNLOCK_AT_KEY);
+    if (!raw) return null;
+    const value = Number(raw);
+    return Number.isFinite(value) ? value : null;
+  } catch {
+    return null;
+  }
+}
+
+async function setNotifiedUnlockAt(unlockAt: number): Promise<void> {
+  try {
+    await AsyncStorage.setItem(NOTIFIED_UNLOCK_AT_KEY, String(unlockAt));
+  } catch {
+    // ignore
+  }
+}
 
 function ensureNotificationHandler() {
   if (handlerConfigured) return;
@@ -90,10 +112,16 @@ export async function cancelNextExerciseNotification(): Promise<void> {
 }
 
 function unlockTrigger(unlockAt: number): Notifications.NotificationTriggerInput {
-  const seconds = Math.max(1, Math.ceil((unlockAt - Date.now()) / 1000));
+  if (Platform.OS === 'android') {
+    // Wall-clock DATE + SCHEDULE_EXACT_ALARM (app.json) — fires when app is closed.
+    return {
+      type: Notifications.SchedulableTriggerInputTypes.DATE,
+      date: unlockAt,
+      channelId: EXERCISE_REMINDER_CHANNEL_ID,
+    };
+  }
 
-  // TIME_INTERVAL is more reliable than DATE on many Android OEMs for
-  // “fire once after N seconds”, and still survives app backgrounding.
+  const seconds = Math.max(1, Math.ceil((unlockAt - Date.now()) / 1000));
   return {
     type: Notifications.SchedulableTriggerInputTypes.TIME_INTERVAL,
     seconds,
@@ -199,11 +227,11 @@ export async function scheduleNextExerciseNotification(params: {
   const completedAt = params.completedAt ?? Date.now();
   const unlockAt = completedAt + UNLOCK_DELAY_MS;
 
-  // Device clock: only schedule future unlocks.
-  if (unlockAt <= Date.now() + 5_000) {
-    await cancelNextExerciseNotification();
-    return;
-  }
+  const title = i18n.t('notifications.nextExerciseTitle');
+  const body = i18n.t('notifications.nextExerciseBody', {
+    level: next.level,
+    day: next.dayInLevel,
+  });
 
   const allowed = await ensureNotificationPermissions();
   if (!allowed) {
@@ -213,11 +241,29 @@ export async function scheduleNextExerciseNotification(params: {
 
   await cancelNextExerciseNotification();
 
-  const title = i18n.t('notifications.nextExerciseTitle');
-  const body = i18n.t('notifications.nextExerciseBody', {
-    level: next.level,
-    day: next.dayInLevel,
-  });
+  // Unlock already passed — show once (OS missed alarm or user opened late).
+  if (unlockAt <= Date.now() + 5_000) {
+    const alreadyNotified = await getNotifiedUnlockAt();
+    if (alreadyNotified === unlockAt) return;
+
+    try {
+      await presentNow({
+        identifier: NEXT_EXERCISE_NOTIFICATION_ID,
+        title,
+        body,
+        data: {
+          type: 'next-exercise-ready',
+          level: next.level,
+          dayInLevel: next.dayInLevel,
+          unlockAt,
+        },
+      });
+      await setNotifiedUnlockAt(unlockAt);
+    } catch (error) {
+      console.warn('[notifications] missed unlock present failed', error);
+    }
+    return;
+  }
 
   try {
     await Notifications.scheduleNotificationAsync({

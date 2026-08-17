@@ -53,7 +53,8 @@
         "expo-notifications",
         {
           "color": "#005F99",
-          "defaultChannel": "exercise-reminders"
+          "defaultChannel": "exercise-reminders",
+          "enableBackgroundRemoteNotifications": true
         }
       ],
       "expo-asset",
