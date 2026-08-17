@@ -133,6 +133,20 @@ assert(
   'Native player must use aspect-ratio source box (no pixel scale overrides)',
 );
 
+const copyStyles = read('lib/exercisePlayerCopyStyles.ts');
+assert(
+  /EXERCISE_REP_ROW_HEIGHT\s*=\s*80/.test(copyStyles) &&
+    copyStyles.includes("overflow: 'hidden'") &&
+    copyStyles.includes('includeFontPadding: false'),
+  'Exercise copy must use fixed rep row height with Android clip guard',
+);
+const playerView = read('components/exercise/ExercisePlayerView.tsx');
+assert(
+  playerView.includes('exercisePlayerCopyStyles') &&
+    playerView.includes('exercisePlayerCopyStyles.copyBlock'),
+  'ExercisePlayerView must use shared exercise copy styles',
+);
+
 const webPlayer = read('components/exercise/SessionVideoPlayer.web.tsx');
 assert(
   webPlayer.includes('aspectRatio: EXERCISE_VIDEO_SOURCE_ASPECT') &&

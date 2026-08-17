@@ -22,7 +22,8 @@ import {
   getGuidedVideoFrameHeight,
 } from '../../lib/exerciseVideoFrame';
 import { colors } from '../../theme/colors';
-import { font, displayFontStyle } from '../../theme/fonts';
+import { exercisePlayerCopyStyles } from '../../lib/exercisePlayerCopyStyles';
+import { font } from '../../theme/fonts';
 import { PressableScale } from '../PressableScale';
 import { SessionVideoPlayer } from './SessionVideoPlayer';
 
@@ -35,7 +36,7 @@ type Props = {
   overlayPaused?: boolean;
 };
 
-const FOOTER_HEIGHT = 72;
+const FOOTER_HEIGHT = 80;
 
 export function ExercisePlayerView({
   exercise,
@@ -139,7 +140,7 @@ export function ExercisePlayerView({
 
       <ScrollView
         style={styles.scroll}
-        contentContainerStyle={[styles.scrollContent, { paddingBottom: FOOTER_HEIGHT + 8 }]}
+        contentContainerStyle={[styles.scrollContent, { paddingBottom: FOOTER_HEIGHT + 16 }]}
         showsVerticalScrollIndicator={false}
         bounces={false}
       >
@@ -192,20 +193,22 @@ export function ExercisePlayerView({
           <View style={[styles.videoProgressFill, { width: `${videoProgressPercent}%` }]} />
         </View>
 
-        <Text style={[styles.exerciseTitle, { maxWidth: frameWidth }]} numberOfLines={2}>
-          {title}
-        </Text>
+        <View style={[exercisePlayerCopyStyles.copyBlock, { width: frameWidth }]}>
+          <Text style={exercisePlayerCopyStyles.exerciseTitle} numberOfLines={2}>
+            {title}
+          </Text>
 
-        <View style={styles.repRow}>
-          <Text style={styles.repValue} numberOfLines={1}>
-            {displayValue}
-          </Text>
-          <Text style={styles.repLabel} numberOfLines={1}>
-            {unitLabel}
-          </Text>
+          <View style={exercisePlayerCopyStyles.repRow}>
+            <Text style={exercisePlayerCopyStyles.repValue} numberOfLines={1}>
+              {displayValue}
+            </Text>
+            <Text style={exercisePlayerCopyStyles.repLabel} numberOfLines={1}>
+              {unitLabel}
+            </Text>
+          </View>
+
+          <Text style={exercisePlayerCopyStyles.description}>{description}</Text>
         </View>
-
-        <Text style={[styles.description, { maxWidth: frameWidth }]}>{description}</Text>
       </ScrollView>
 
       <View style={styles.footer}>
@@ -300,48 +303,6 @@ const styles = StyleSheet.create({
     height: '100%',
     borderRadius: 999,
     backgroundColor: '#0074B8',
-  },
-  exerciseTitle: {
-    marginTop: 12,
-    fontSize: 24,
-    lineHeight: 28,
-    color: '#262526',
-    textAlign: 'center',
-    textTransform: 'uppercase',
-    letterSpacing: 0.1,
-    ...font('semiBold'),
-  },
-  repRow: {
-    flexDirection: 'row',
-    flexWrap: 'nowrap',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-    marginTop: 8,
-    minHeight: 72,
-  },
-  repValue: {
-    fontSize: 64,
-    lineHeight: 72,
-    color: '#00131F',
-    ...displayFontStyle(),
-  },
-  /** Unit (முறை / நிமி / வினாடி / REPS): Tamil-capable font so it never clips. */
-  repLabel: {
-    fontSize: 34,
-    lineHeight: 44,
-    color: '#00131F',
-    ...font('bold'),
-  },
-  /** Figma Grey-80 description: 16 / 20 / 0.1, weight 400 */
-  description: {
-    marginTop: 16,
-    fontSize: 16,
-    lineHeight: 22,
-    letterSpacing: 0.1,
-    color: '#6B7280',
-    textAlign: 'center',
-    ...font('regular'),
   },
   footer: {
     flexDirection: 'row',

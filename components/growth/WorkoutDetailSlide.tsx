@@ -12,7 +12,7 @@ import {
   WORKOUT_SLIDER_MEDIA_TOP,
   WORKOUT_SLIDER_MEDIA_WIDTH,
 } from '../../lib/workoutInfoSheetLayout';
-import { displayFontStyle, font } from '../../theme/fonts';
+import { exercisePlayerCopyStyles } from '../../lib/exercisePlayerCopyStyles';
 
 type Props = {
   workout: WorkoutDetail;
@@ -58,18 +58,20 @@ export function WorkoutDetailSlide({ workout, width }: Props) {
           )}
         </View>
 
-        <Text style={styles.exerciseTitle}>{title}</Text>
+        <View style={[exercisePlayerCopyStyles.copyBlock, { width: WORKOUT_SLIDER_MEDIA_WIDTH }]}>
+          <Text style={exercisePlayerCopyStyles.exerciseTitle}>{title}</Text>
 
-        <View style={styles.repRow}>
-          <Text style={styles.repValue} numberOfLines={1}>
-            {workout.displayValue}
-          </Text>
-          <Text style={styles.repLabel} numberOfLines={1}>
-            {repLabel}
-          </Text>
+          <View style={exercisePlayerCopyStyles.repRow}>
+            <Text style={exercisePlayerCopyStyles.repValue} numberOfLines={1}>
+              {workout.displayValue}
+            </Text>
+            <Text style={exercisePlayerCopyStyles.repLabel} numberOfLines={1}>
+              {repLabel}
+            </Text>
+          </View>
+
+          <Text style={exercisePlayerCopyStyles.description}>{description}</Text>
         </View>
-
-        <Text style={styles.description}>{description}</Text>
       </ScrollView>
     </View>
   );
@@ -107,54 +109,5 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
     backgroundColor: '#F3F4F6',
-  },
-  /** Figma: 24 semiBold, #262526 */
-  exerciseTitle: {
-    marginTop: 14,
-    width: WORKOUT_SLIDER_MEDIA_WIDTH,
-    fontSize: 24,
-    lineHeight: 28,
-    color: '#262526',
-    textAlign: 'center',
-    textTransform: 'uppercase',
-    ...font('semiBold'),
-  },
-  repRow: {
-    flexDirection: 'row',
-    flexWrap: 'nowrap',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-    marginTop: 8,
-    minHeight: 72,
-  },
-  /** Figma Antonio Bold 64 / #00131F */
-  repValue: {
-    fontSize: 64,
-    lineHeight: 72,
-    color: '#00131F',
-    ...displayFontStyle(),
-  },
-  /**
-   * Unit (முறை / நிமி / வினாடி / REPS): use the Tamil-capable font, not Antonio
-   * (which lacks Tamil glyphs and clips the label). Taller line height keeps
-   * descenders like "றை" fully visible on one line.
-   */
-  repLabel: {
-    fontSize: 34,
-    lineHeight: 44,
-    color: '#00131F',
-    ...font('bold'),
-  },
-  /** Figma Grey-80 description: 16 / 20 / 0.1, weight 400 */
-  description: {
-    marginTop: 12,
-    width: WORKOUT_SLIDER_MEDIA_WIDTH,
-    fontSize: 16,
-    lineHeight: 20,
-    letterSpacing: 0.1,
-    color: '#6B7280',
-    textAlign: 'center',
-    ...font('regular'),
   },
 });
