@@ -5,15 +5,28 @@ import {
   parseLevelFromStoragePath,
   type PathwayProfile,
 } from './cancerPathway';
+import {
+  getPathwayExerciseSequence,
+  getPathwayLevelRepDefault,
+  storageSlugMatchesProgramKey,
+  type PathwayExerciseKey,
+} from './cancerPathwayPrograms';
 import { comparePathwayFiles, parsePathwayFilename } from './pathwayFilenameParser';
 import { resolvePathwayExerciseCopy } from './pathwayExerciseContent';
-import type { GuidedSessionExercise } from './getDay1Session';
+import type { GuidedSessionExercise, SessionDisplayLabel, SessionRepType } from './getDay1Session';
 import { getPublicVideoUrl } from './supabaseStorage';
 
 const REST_SECONDS = 20;
 
 let cachedPaths: string[] | null = null;
 let loadPromise: Promise<string[]> | null = null;
+
+type ParsedPathwayClip = {
+  objectPath: string;
+  fileMeta: ReturnType<typeof parsePathwayFilename>;
+  copy: ReturnType<typeof resolvePathwayExerciseCopy>;
+  publicUrl: string;
+};
 
 function loadBundledPathwayPaths(): string[] {
   try {
@@ -87,39 +100,132 @@ function objectPathsForProfileLevel(
   });
 }
 
+function parseClips(objectPaths: string[]): ParsedPathwayClip[] {
+  return objectPaths.map((objectPath) => {
+    const fileName = objectPath.split('/').pop() ?? objectPath;
+    const fileMeta = parsePathwayFilename(fileName);
+    const copy = resolvePathwayExerciseCopy(fileMeta.rawLabel);
+    const publicUrl = getPublicVideoUrl(objectPath) ?? '';
+    return { objectPath, fileMeta, copy, publicUrl };
+  });
+}
+
+function sideRank(slug: string): number {
+  if (slug.endsWith('-left')) return 0;
+  if (slug.endsWith('-right')) return 1;
+  return 2;
+}
+
+function sortClipsForStep(a: ParsedPathwayClip, b: ParsedPathwayClip): number {
+  const side = sideRank(a.copy.slug) - sideRank(b.copy.slug);
+  if (side !== 0) return side;
+  return comparePathwayFiles(a.fileMeta, b.fileMeta);
+}
+
+/**
+ * Order storage clips by the ONCOSMART pathway tables.
+ * Left/right files for one diagram step stay as consecutive steps.
+ * Unmatched clips (storage extras) append at the end in numeric order.
+ */
+function orderClipsByPathwayProgram(
+  clips: ParsedPathwayClip[],
+  cancerType: PathwayProfile['cancerType'],
+  level: number,
+): ParsedPathwayClip[] {
+  const program = getPathwayExerciseSequence(cancerType, level);
+  if (program.length === 0) {
+    return [...clips].sort((a, b) => comparePathwayFiles(a.fileMeta, b.fileMeta));
+  }
+
+  const remaining = [...clips];
+  const ordered: ParsedPathwayClip[] = [];
+
+  for (const step of program) {
+    const matches = remaining
+      .filter((clip) => storageSlugMatchesProgramKey(clip.copy.slug, step as PathwayExerciseKey))
+      .sort(sortClipsForStep);
+
+    if (matches.length === 0) continue;
+
+    // One program step consumes the next sort-order group only
+    // (e.g. opening DBE ≠ closing DBE; wall-climb left+right stay together).
+    const nextOrder = matches[0]!.fileMeta.sortOrder;
+    const group = matches
+      .filter((clip) => clip.fileMeta.sortOrder === nextOrder)
+      .sort(sortClipsForStep);
+
+    for (const match of group) {
+      ordered.push(match);
+      const index = remaining.indexOf(match);
+      if (index >= 0) remaining.splice(index, 1);
+    }
+  }
+
+  remaining.sort((a, b) => comparePathwayFiles(a.fileMeta, b.fileMeta));
+  return [...ordered, ...remaining];
+}
+
+function applyLevelRepDefaults(
+  clip: ParsedPathwayClip,
+  level: number,
+): {
+  repType: SessionRepType;
+  repValue: number;
+  displayValue: string;
+  displayLabel: SessionDisplayLabel;
+} {
+  // Spot marching / timed clips keep filename duration.
+  if (clip.fileMeta.displayLabel === 'MINS' || clip.fileMeta.displayLabel === 'SECS') {
+    return {
+      repType: clip.fileMeta.repType,
+      repValue: clip.fileMeta.repValue,
+      displayValue: clip.fileMeta.displayValue,
+      displayLabel: clip.fileMeta.displayLabel,
+    };
+  }
+
+  // Prefer explicit rep count from filename when present.
+  if (clip.fileMeta.displayLabel === 'REPS' && clip.fileMeta.repValue > 0) {
+    return {
+      repType: clip.fileMeta.repType,
+      repValue: clip.fileMeta.repValue,
+      displayValue: clip.fileMeta.displayValue,
+      displayLabel: clip.fileMeta.displayLabel,
+    };
+  }
+
+  const defaults = getPathwayLevelRepDefault(level);
+  const padded = defaults.reps < 10 ? `0${defaults.reps}` : String(defaults.reps);
+  return {
+    repType: 'reps',
+    repValue: defaults.reps,
+    displayValue: padded,
+    displayLabel: 'REPS',
+  };
+}
+
 export function buildGuidedExercisesFromPaths(
   objectPaths: string[],
   level: number,
   profile: PathwayProfile,
 ): GuidedSessionExercise[] {
-  const parsed = objectPaths.map((objectPath) => {
-    const fileName = objectPath.split('/').pop() ?? objectPath;
-    const fileMeta = parsePathwayFilename(fileName);
-    const copy = resolvePathwayExerciseCopy(fileMeta.rawLabel);
-    const publicUrl = getPublicVideoUrl(objectPath) ?? '';
+  const clips = orderClipsByPathwayProgram(parseClips(objectPaths), profile.cancerType, level);
 
+  return clips.map((entry, index) => {
+    const reps = applyLevelRepDefaults(entry, level);
     return {
-      objectPath,
-      fileMeta,
-      copy,
-      publicUrl,
+      id: `pathway-${profile.cancerType}-L${level}-s${index}-${entry.copy.slug}`,
+      title: entry.copy.title,
+      description: entry.copy.description,
+      storageObjectPath: entry.objectPath,
+      videoUrl: entry.publicUrl,
+      repType: reps.repType,
+      repValue: reps.repValue,
+      displayValue: reps.displayValue,
+      displayLabel: reps.displayLabel,
+      portraitVideo: entry.objectPath,
     };
   });
-
-  parsed.sort((a, b) => comparePathwayFiles(a.fileMeta, b.fileMeta));
-
-  return parsed.map((entry, index) => ({
-    id: `pathway-${profile.cancerType}-L${level}-s${index}-${entry.copy.slug}`,
-    title: entry.copy.title,
-    description: entry.copy.description,
-    storageObjectPath: entry.objectPath,
-    videoUrl: entry.publicUrl,
-    repType: entry.fileMeta.repType,
-    repValue: entry.fileMeta.repValue,
-    displayValue: entry.fileMeta.displayValue,
-    displayLabel: entry.fileMeta.displayLabel,
-    portraitVideo: entry.objectPath,
-  }));
 }
 
 export async function getPathwaySessionExercises(
