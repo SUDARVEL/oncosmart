@@ -26,6 +26,7 @@ export function WorkoutsSection({ firstCardAnchorRef }: WorkoutsSectionProps = {
   const language = useAppStore((state) => state.language);
   const gender = useAppStore((state) => state.gender);
   const avatar = useAppStore((state) => state.avatar);
+  const cancerType = useAppStore((state) => state.cancerType);
   const dayCompletedAt = useAppStore((state) => state.dayCompletedAt);
   const setProgressPaused = useAppStore((state) => state.setProgressPaused);
   const [activeLevel, setActiveLevel] = useState<WorkoutLevel>(1);
@@ -39,11 +40,11 @@ export function WorkoutsSection({ firstCardAnchorRef }: WorkoutsSectionProps = {
 
   const workouts = useMemo(
     () => getLevelWorkouts(activeLevel, gender, avatar),
-    [activeLevel, avatar, gender],
+    [activeLevel, avatar, cancerType, gender, language],
   );
   const workoutDetails = useMemo(
     () => getWorkoutDetailsForLevel(activeLevel, language, gender, avatar),
-    [activeLevel, avatar, gender, language],
+    [activeLevel, avatar, cancerType, gender, language],
   );
 
   const openWorkout = (exerciseId: string) => {

@@ -110,11 +110,24 @@ type AppState = AppStateSnapshot & {
   dismissBadgeCelebration: () => void;
   /** Dev-only: wipe day progress without touching onboarding profile. */
   devResetProgress: () => void;
+  /** Wipe session completions, pain scores, and BPM history (keeps profile). */
+  resetExerciseProgress: () => void;
   /** Clear local session cache (logout). Cloud rows stay for next login. */
   resetApp: () => void;
 };
 
 const INITIAL_PARQ_ANSWERS: (boolean | null)[] = Array(7).fill(null);
+
+function createExerciseProgressResetState() {
+  return {
+    dayCompletedAt: {} as Record<string, number>,
+    levelsCompleted: 0,
+    devUnlockOverride: false,
+    painScores: {} as Record<string, number>,
+    sessionBpmByKey: {} as Record<string, { startBpm: number; endBpm: number }>,
+    pendingBadgeCelebrations: [] as BadgeKey[],
+  };
+}
 
 /** Prefer the newer completion timestamp per session key when merging local + cloud. */
 function mergeDayCompletedAt(
@@ -310,15 +323,8 @@ export const useAppStore = create<AppState>()(
         set((state) => ({
           pendingBadgeCelebrations: state.pendingBadgeCelebrations.slice(1),
         })),
-      devResetProgress: () =>
-        set({
-          dayCompletedAt: {},
-          levelsCompleted: 0,
-          devUnlockOverride: false,
-          painScores: {},
-          sessionBpmByKey: {},
-          pendingBadgeCelebrations: [],
-        }),
+      devResetProgress: () => set(createExerciseProgressResetState()),
+      resetExerciseProgress: () => set(createExerciseProgressResetState()),
       resetApp: () =>
         set({
           language: null,

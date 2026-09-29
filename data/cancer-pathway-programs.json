@@ -1,0 +1,141 @@
+{
+  "version": 1,
+  "source": "ONCOSMART exercise pathway tables (Breast / Thorax / Abdomen / Head & Neck)",
+  "levelRepDefaults": {
+    "1": { "reps": 5, "sets": 1 },
+    "2": { "reps": 5, "sets": 1 },
+    "3": { "reps": 10, "sets": 1 },
+    "4": { "reps": 15, "sets": 1 }
+  },
+  "pathways": {
+    "breast": {
+      "label": "Breast Cancer",
+      "levels": {
+        "1": [
+          "diaphragmatic-breathing",
+          "ankle-pumps",
+          "thoracic-expansion",
+          "chest-stretch",
+          "arm-circles",
+          "biceps-curls",
+          "wall-climbing",
+          "triceps-stretch",
+          "spot-marching",
+          "diaphragmatic-breathing"
+        ],
+        "2": [
+          "diaphragmatic-breathing",
+          "ankle-pumps",
+          "thoracic-expansion",
+          "chest-stretch",
+          "arm-circles",
+          "biceps-curls",
+          "shoulder-shrugging",
+          "wall-climbing",
+          "wall-slides",
+          "wall-pushup",
+          "triceps-stretch",
+          "spot-marching",
+          "diaphragmatic-breathing"
+        ]
+      }
+    },
+    "thorax": {
+      "label": "Thorax Cancer",
+      "levels": {
+        "1": [
+          "diaphragmatic-breathing",
+          "ankle-pumps",
+          "thoracic-expansion",
+          "arm-circles",
+          "shoulder-shrugging",
+          "wall-climbing",
+          "triceps-stretch",
+          "chest-stretch",
+          "spot-marching",
+          "diaphragmatic-breathing"
+        ],
+        "2": [
+          "diaphragmatic-breathing",
+          "ankle-pumps",
+          "thoracic-expansion",
+          "arm-circles",
+          "shoulder-shrugging",
+          "wall-climbing",
+          "wall-pushup",
+          "seated-knee-extension",
+          "standing-hamstring-curls",
+          "hamstring-stretch",
+          "quadriceps-stretch",
+          "triceps-stretch",
+          "chest-stretch",
+          "spot-marching",
+          "diaphragmatic-breathing"
+        ]
+      }
+    },
+    "abdomen": {
+      "label": "Abdomen Cancer",
+      "levels": {
+        "1": [
+          "diaphragmatic-breathing",
+          "ankle-pumps",
+          "thoracic-expansion",
+          "arm-rotation",
+          "biceps-curls",
+          "seated-knee-extension",
+          "straight-leg-raise",
+          "hamstring-stretch",
+          "quadriceps-stretch",
+          "triceps-stretch",
+          "spot-marching",
+          "diaphragmatic-breathing"
+        ],
+        "2": [
+          "diaphragmatic-breathing",
+          "ankle-pumps",
+          "thoracic-expansion",
+          "arm-rotation",
+          "biceps-curls",
+          "seated-knee-extension",
+          "straight-leg-raise",
+          "hamstring-stretch",
+          "calf-raise",
+          "hamstring-stretch",
+          "quadriceps-stretch",
+          "calf-stretch",
+          "triceps-stretch",
+          "spot-marching",
+          "diaphragmatic-breathing"
+        ]
+      }
+    },
+    "head-neck": {
+      "label": "Head & Neck Cancer",
+      "levels": {
+        "1": [
+          "diaphragmatic-breathing",
+          "thoracic-expansion",
+          "arm-rotation",
+          "neck-flexion-extension",
+          "jaw-opening-closing",
+          "jaw-side-to-side",
+          "neck-stretch",
+          "diaphragmatic-breathing"
+        ],
+        "2": [
+          "diaphragmatic-breathing",
+          "thoracic-expansion",
+          "arm-rotation",
+          "neck-flexion-extension",
+          "jaw-opening-closing",
+          "jaw-side-to-side",
+          "shoulder-shrugging",
+          "wall-slides",
+          "neck-stretch",
+          "diaphragmatic-breathing"
+        ]
+      }
+    }
+  }
+}

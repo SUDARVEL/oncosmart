@@ -9,8 +9,17 @@ import { BottomTabBar } from '../../components/BottomTabBar';
 import { ChatFab } from '../../components/ChatFab';
 import { CoachMarkOverlay } from '../../components/coach/CoachMarkOverlay';
 import { ScreenHeader } from '../../components/ScreenHeader';
+import {
+  CancerTypeBottomSheet,
+  selectedCancerSlugFromStore,
+} from '../../components/settings/CancerTypeBottomSheet';
 import { LanguageBottomSheet } from '../../components/settings/LanguageBottomSheet';
 import { ProfileBottomSheet } from '../../components/settings/ProfileBottomSheet';
+import { ResetPathwayProgressModal } from '../../components/settings/ResetPathwayProgressModal';
+import { applyCancerTypeChange } from '../../lib/applyCancerTypeChange';
+import { formatCancerTypeForDisplay } from '../../lib/cancerPathway';
+import type { CancerTypeSlug } from '../../lib/cancerPathway';
+import { getCompletedSessionCount } from '../../lib/programProgress';
 import { SettingsRow } from '../../components/settings/SettingsRow';
 import { AdminTestingTools } from '../../components/admin/AdminTestingTools';
 import { useAndroidBack } from '../../hooks/useAndroidBack';
@@ -32,12 +41,18 @@ export default function SettingsScreen() {
   const isAdmin = useIsAdmin();
   const language = useAppStore((state) => state.language);
   const setLanguage = useAppStore((state) => state.setLanguage);
+  const cancerType = useAppStore((state) => state.cancerType);
+  const dayCompletedAt = useAppStore((state) => state.dayCompletedAt);
   const username = useAppStore((state) => state.username);
   const setUsername = useAppStore((state) => state.setUsername);
   const resetApp = useAppStore((state) => state.resetApp);
   const restartCoachTour = useAppStore((state) => state.restartCoachTour);
   const [languageSheetOpen, setLanguageSheetOpen] = useState(false);
   const [profileSheetOpen, setProfileSheetOpen] = useState(false);
+  const [cancerSheetOpen, setCancerSheetOpen] = useState(false);
+  const [resetPathwayModalOpen, setResetPathwayModalOpen] = useState(false);
+  const [pendingCancerSlug, setPendingCancerSlug] = useState<CancerTypeSlug | null>(null);
+  const [pathwayChangeBusy, setPathwayChangeBusy] = useState(false);
   const {
     active: coachActive,
     step: coachStep,
@@ -55,6 +70,8 @@ export default function SettingsScreen() {
   const languageLabel =
     selectedLanguage === 'ta' ? t('language.tamil') : t('language.english');
   const profileLabel = username.trim() || t('settings.myProfileDescription');
+  const cancerPathwayLabel = formatCancerTypeForDisplay(cancerType, t);
+  const selectedCancerSlug = selectedCancerSlugFromStore(cancerType);
   const appVersion =
     Constants.expoConfig?.version ??
     Constants.nativeAppVersion ??
@@ -70,6 +87,33 @@ export default function SettingsScreen() {
   const handleProfileSave = (nextUsername: string) => {
     setUsername(nextUsername);
     setProfileSheetOpen(false);
+  };
+
+  const commitCancerPathwayChange = (slug: CancerTypeSlug) => {
+    setPathwayChangeBusy(true);
+    void applyCancerTypeChange(slug)
+      .catch((error) => {
+        console.warn('[Settings] cancer pathway change failed', error);
+      })
+      .finally(() => {
+        setPathwayChangeBusy(false);
+        setResetPathwayModalOpen(false);
+        setPendingCancerSlug(null);
+      });
+  };
+
+  const handleCancerPathwaySelect = (slug: CancerTypeSlug) => {
+    setCancerSheetOpen(false);
+    if (selectedCancerSlug === slug) return;
+
+    const hasProgress = getCompletedSessionCount(dayCompletedAt) > 0;
+    if (hasProgress) {
+      setPendingCancerSlug(slug);
+      setResetPathwayModalOpen(true);
+      return;
+    }
+
+    commitCancerPathwayChange(slug);
   };
 
   const handleTabPress = (tab: 'home' | 'growth' | 'settings') => {
@@ -156,6 +200,12 @@ export default function SettingsScreen() {
             onPress={() => router.push('/onboarding/avatar?from=settings')}
           />
           <SettingsRow
+            title={t('settings.cancerPathway')}
+            description={cancerPathwayLabel}
+            showChevron
+            onPress={() => setCancerSheetOpen(true)}
+          />
+          <SettingsRow
             title={t('settings.language')}
             description={languageLabel}
             showChevron
@@ -220,6 +270,27 @@ export default function SettingsScreen() {
         selected={selectedLanguage}
         onClose={() => setLanguageSheetOpen(false)}
         onSelect={handleLanguageSelect}
+      />
+
+      <CancerTypeBottomSheet
+        visible={cancerSheetOpen}
+        selected={selectedCancerSlug}
+        onClose={() => setCancerSheetOpen(false)}
+        onSelect={handleCancerPathwaySelect}
+      />
+
+      <ResetPathwayProgressModal
+        visible={resetPathwayModalOpen}
+        busy={pathwayChangeBusy}
+        onCancel={() => {
+          if (pathwayChangeBusy) return;
+          setResetPathwayModalOpen(false);
+          setPendingCancerSlug(null);
+        }}
+        onConfirm={() => {
+          if (!pendingCancerSlug || pathwayChangeBusy) return;
+          commitCancerPathwayChange(pendingCancerSlug);
+        }}
       />
 
       <ChatFab bottom={96} />

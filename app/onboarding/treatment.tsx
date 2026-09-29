@@ -12,9 +12,9 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { AppTextInput } from '../../components/AppTextInput';
 import { PrimaryButton } from '../../components/PrimaryButton';
 import { ScreenHeader } from '../../components/ScreenHeader';
+import { normalizeCancerTypeSlug } from '../../lib/cancerPathway';
 import { TreatmentType, useAppStore } from '../../store/useAppStore';
 import { colors } from '../../theme/colors';
 import { font } from '../../theme/fonts';
@@ -35,7 +35,6 @@ type ChoiceChipProps = {
   label: string;
   selected: boolean;
   onPress: () => void;
-  /** Shorter surgery yes/no chips (Figma ~36–40). */
   compact?: boolean;
 };
 
@@ -62,27 +61,24 @@ function ChoiceChip({ label, selected, onPress, compact = false }: ChoiceChipPro
   );
 }
 
-/** Figma Treatment Details (2914:13055) — after gender, before avatar. */
+/** Treatment + surgery — cancer pathway is chosen on the previous screen. */
 export default function TreatmentScreen() {
   const { t } = useTranslation();
   const router = useRouter();
-  const savedCancerType = useAppStore((state) => state.cancerType);
+  const cancerType = useAppStore((state) => state.cancerType);
   const savedTreatment = useAppStore((state) => state.treatmentUndergoing);
   const savedSurgery = useAppStore((state) => state.underwentSurgery);
-  const setCancerType = useAppStore((state) => state.setCancerType);
   const setTreatmentUndergoing = useAppStore((state) => state.setTreatmentUndergoing);
   const setUnderwentSurgery = useAppStore((state) => state.setUnderwentSurgery);
 
-  const [cancerType, setCancerTypeLocal] = useState(savedCancerType);
   const [treatment, setTreatmentLocal] = useState<TreatmentType | null>(savedTreatment);
   const [surgery, setSurgeryLocal] = useState<boolean | null>(savedSurgery);
 
-  const trimmedCancer = cancerType.trim();
-  const canContinue = trimmedCancer.length > 0 && treatment != null && surgery != null;
+  const hasCancerPathway = normalizeCancerTypeSlug(cancerType) != null;
+  const canContinue = hasCancerPathway && treatment != null && surgery != null;
 
   const handleContinue = () => {
     if (!canContinue || treatment == null || surgery == null) return;
-    setCancerType(trimmedCancer);
     setTreatmentUndergoing(treatment);
     setUnderwentSurgery(surgery);
     router.push('/onboarding/avatar');
@@ -104,18 +100,9 @@ export default function TreatmentScreen() {
           showsVerticalScrollIndicator={false}
         >
           <View style={styles.form}>
-            <View style={styles.section}>
-              <Text style={styles.label}>{t('treatment.cancerTypeLabel')}</Text>
-              <AppTextInput
-                value={cancerType}
-                onChangeText={setCancerTypeLocal}
-                placeholder={t('treatment.cancerTypePlaceholder')}
-                autoCapitalize="sentences"
-                autoCorrect
-                returnKeyType="done"
-                accessibilityLabel={t('treatment.cancerTypeLabel')}
-              />
-            </View>
+            {!hasCancerPathway ? (
+              <Text style={styles.warning}>{t('treatment.cancerPathwayRequired')}</Text>
+            ) : null}
 
             <View style={styles.section}>
               <Text style={styles.label}>{t('treatment.treatmentLabel')}</Text>
@@ -201,6 +188,11 @@ const styles = StyleSheet.create({
     color: '#00131F',
     letterSpacing: 0,
   },
+  warning: {
+    ...uiText(14, 'regular'),
+    color: '#B45309',
+    lineHeight: 20,
+  },
   chipRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',
@@ -221,7 +213,7 @@ const styles = StyleSheet.create({
   },
   chipFlex: {
     flexGrow: 1,
-    flexBasis: 0,
+    flexBasis: '45%',
   },
   chipSelected: {
     backgroundColor: colors.optionBgSelected,

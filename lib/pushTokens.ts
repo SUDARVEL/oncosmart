@@ -96,7 +96,7 @@ export async function registerAdminPushTokenDetailed(
     const token = await getExpoPushTokenSafe();
     if (!token) {
       console.warn(
-        '[Push] Admin token unavailable — add google-services.json + FCM V1 in EAS, then rebuild APK.',
+        '[Push] Admin token unavailable — upload FCM V1 credentials in EAS and add google-services.json, then rebuild the APK.',
       );
       return { token: null, status: 'no_token' };
     }

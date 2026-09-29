@@ -71,8 +71,15 @@ export function ExercisePlayerView({
       ? frameHeightSpec
       : Math.round(frameWidth / frameAspect);
 
-  const title = t(`sessionFlow.exercises.${exercise.id}.title`);
-  const description = t(`sessionFlow.exercises.${exercise.id}.description`);
+  const title =
+    exercise.title?.trim() ||
+    t(`sessionFlow.exercises.${exercise.id}.title`, { defaultValue: 'Exercise' });
+  const description =
+    exercise.description?.trim() ||
+    t(`sessionFlow.exercises.${exercise.id}.description`, {
+      defaultValue:
+        'Follow the instructor in the video. Move slowly, stay within comfort, and pause if you feel unwell.',
+    });
 
   // Figma rep/duration values are static patient info only.
   // Playback always runs the full video at its own length — never cut to this number.

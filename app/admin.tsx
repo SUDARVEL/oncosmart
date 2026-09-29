@@ -27,6 +27,7 @@ import {
   fetchAdminPatientProgress,
   type AdminPatientProgress,
 } from '../lib/adminProgress';
+import { formatCancerTypeForDisplay } from '../lib/cancerPathway';
 import { signOut } from '../lib/auth';
 import { useAppStore } from '../store/useAppStore';
 import { colors } from '../theme/colors';
@@ -265,7 +266,7 @@ function PatientCard({
           <Text style={styles.completedTitle}>{t('admin.cancerSectionTitle')}</Text>
           <Text style={styles.detailLine}>
             {t('admin.cancerType')}:{' '}
-            {patient.cancerType.trim() ? patient.cancerType : t('admin.pauseReasonNone')}
+            {formatCancerTypeForDisplay(patient.cancerType, t)}
           </Text>
           <Text style={styles.detailLine}>
             {t('admin.treatmentUndergoing')}:{' '}

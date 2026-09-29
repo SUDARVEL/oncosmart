@@ -51,6 +51,9 @@
     "ios": "expo start --ios",
     "web": "expo start --web",
     "check:videos": "node scripts/check-guided-video-invariants.cjs",
+    "check:pathway": "node scripts/validate-pathway-sessions.mjs",
+    "check:pathway-programs": "npx tsx scripts/validate-pathway-program-order.ts",
+    "generate:pathway-manifest": "node scripts/generate-pathway-manifest.mjs",
     "build:android:preview": "npx eas-cli build --platform android --profile preview",
     "build:ios:preview": "npx eas-cli build --platform ios --profile preview",
     "build:android:prod": "npx eas-cli build --platform android --profile production"

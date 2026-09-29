@@ -25,6 +25,7 @@ import {
   getSessionRestSecondsForLevel,
   hasGuidedSession,
   isSessionCompleteForLevel,
+  isExerciseInLevel,
 } from '../../lib/getDay1Session';
 import {
   getEarnedBadges,
@@ -41,7 +42,6 @@ import {
   isValidGuidedPlaybackUrl,
   sanitizePublicVideoUrl,
 } from '../../lib/videoStoragePolicy';
-import { isExerciseInLevel } from '../../lib/levelExercisePrograms';
 import {
   DAYS_PER_LEVEL,
   getCompletedSessionCount,
@@ -209,6 +209,12 @@ function GuidedSessionScreen({
   const videoSources = useMemo(() => {
     if (!sessionExercise) return [];
 
+    if (sessionExercise.videoUrl?.trim()) {
+      const pathwayUrl = sanitizePublicVideoUrl(sessionExercise.videoUrl.trim());
+      if (isValidGuidedPlaybackUrl(pathwayUrl)) return [pathwayUrl];
+      return [sessionExercise.videoUrl.trim()];
+    }
+
     const portrait = resolveExerciseGuidedPortraitUrl(
       sessionExercise.id,
       gender,
@@ -219,7 +225,6 @@ function GuidedSessionScreen({
       return [portrait];
     }
 
-    // Legacy catalog fallback — sanitize bucket + reject landscape previews.
     const catalogFallback = getSessionExerciseVideoSource(
       level,
       sessionExercise.id,

@@ -1,8 +1,8 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ExerciseSessionCard } from '../../../components/exercise/ExerciseSessionCard';
@@ -11,8 +11,9 @@ import { ResumeProgressModal } from '../../../components/growth/ResumeProgressMo
 import { ReadyToBeginModal } from '../../../components/pain/ReadyToBeginModal';
 import { ChatFab } from '../../../components/ChatFab';
 import { useExercisePauseGuard } from '../../../hooks/useExercisePauseGuard';
-import { getDayExercises, getLevelSession } from '../../../lib/getDayExercises';
-import { hasGuidedSession } from '../../../lib/getDay1Session';
+import { clearLevelExercisesCache, getDayExercises, getLevelSession } from '../../../lib/getDayExercises';
+import { hasGuidedSession, warmPathwaySessionsFromStore } from '../../../lib/getDay1Session';
+import { normalizeCancerTypeSlug } from '../../../lib/cancerPathway';
 import { getModerateHeartRateUpperLimit } from '../../../lib/moderateHeartRateLimit';
 import { syncNextExerciseNotification } from '../../../lib/nextExerciseNotification';
 import { useAppStore } from '../../../store/useAppStore';
@@ -29,6 +30,8 @@ export default function ExerciseSessionsScreen() {
   const language = useAppStore((state) => state.language);
   const gender = useAppStore((state) => state.gender);
   const avatar = useAppStore((state) => state.avatar);
+  const cancerType = useAppStore((state) => state.cancerType);
+  const [pathwayLoaded, setPathwayLoaded] = useState(() => !normalizeCancerTypeSlug(cancerType));
   const age = useAppStore((state) => state.age);
   const ageRange = useAppStore((state) => state.ageRange);
   const dayCompletedAt = useAppStore((state) => state.dayCompletedAt);
@@ -40,11 +43,31 @@ export default function ExerciseSessionsScreen() {
     runIfProgressActive,
   } = useExercisePauseGuard();
 
+  useEffect(() => {
+    const slug = normalizeCancerTypeSlug(cancerType);
+    if (!slug) {
+      setPathwayLoaded(true);
+      return;
+    }
+
+    let cancelled = false;
+    setPathwayLoaded(false);
+    void warmPathwaySessionsFromStore().then(() => {
+      if (cancelled) return;
+      clearLevelExercisesCache();
+      setPathwayLoaded(true);
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [avatar, cancerType, gender, language, level]);
+
   const session = getLevelSession(level);
-  const exercises = useMemo(
-    () => getDayExercises(level, language, gender, avatar),
-    [avatar, gender, language, level],
-  );
+  const exercises = useMemo(() => {
+    if (!pathwayLoaded) return [];
+    return getDayExercises(level, language, gender, avatar);
+  }, [avatar, gender, language, level, pathwayLoaded]);
   const [showReadyModal, setShowReadyModal] = useState(false);
   const [showPulseModal, setShowPulseModal] = useState(false);
 
@@ -91,6 +114,13 @@ export default function ExerciseSessionsScreen() {
           <Text style={styles.subtitle}>{t('daySession.subtitle')}</Text>
         </View>
       </View>
+
+      {!pathwayLoaded ? (
+        <View style={styles.loadingWrap}>
+          <ActivityIndicator size="large" color={colors.buttonPrimary} />
+          <Text style={styles.loadingText}>{t('daySession.loadingExercises')}</Text>
+        </View>
+      ) : null}
 
       <ScrollView
         style={styles.scroll}
@@ -212,6 +242,16 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingBottom: 24,
     gap: 16,
+  },
+  loadingWrap: {
+    paddingVertical: 24,
+    alignItems: 'center',
+    gap: 12,
+  },
+  loadingText: {
+    fontSize: 14,
+    color: colors.textMuted,
+    ...font('regular'),
   },
   footer: {
     backgroundColor: '#F9FAFB',
