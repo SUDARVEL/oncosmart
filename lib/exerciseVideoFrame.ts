@@ -90,7 +90,20 @@ export function getGuidedVideoFrameAspect(exerciseId: string): number {
   return EXERCISE_VIDEO_FRAME_WIDTH / getGuidedVideoFrameHeight(exerciseId);
 }
 
+/**
+ * Supabase pathway MP4s are full-body portrait clips. Do not use the legacy
+ * Figma top-crop (center-bottom cover) — that trims the face / head.
+ */
+const PATHWAY_VIDEO_PRESENTATION: GuidedVideoPresentation = {
+  layout: 'fill-frame',
+  contentFit: 'contain',
+  objectPosition: 'center',
+};
+
 export function getGuidedVideoPresentation(exerciseId: string): GuidedVideoPresentation {
+  if (exerciseId.startsWith('pathway-')) {
+    return PATHWAY_VIDEO_PRESENTATION;
+  }
   if (exerciseId === 'chest-stretch') {
     return CHEST_STRETCH_VIDEO_PRESENTATION;
   }
