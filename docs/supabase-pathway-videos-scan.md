@@ -66,13 +66,20 @@ Optional: one-time script queries `storage.objects` and commits a JSON manifest 
 | `Male - Tamil/` | **`Thorax Cancer - Male - Tamil`** vs English **`Thoraxic Cancer`** | Alias both spellings |
 | Various | Left/right pairs (e.g. two `7.Wall Climb…`, two `8.Triceps…`) | Keep as two steps or merge in UI — product decision |
 
-## App gap today
+## App status (wired)
 
-The app still resolves guided videos from **legacy maps** (`lib/exercisePortraitVideos.ts`, `data/day-exercises.json` paths like `Male Potrait Videos english CM/…`). Those paths have **no MP4s** in storage anymore — playback should switch to the pathway folders above.
+Guided sessions resolve from these pathway folders at runtime via `list_pathway_video_paths()` (+ bundled `data/pathway-videos.json` fallback).
 
-## What you need to do
+- Onboarding / Settings: cancer type slug (`breast` | `thorax` | `abdomen` | `head-neck`)
+- Root from gender/avatar + language
+- Level folder → files sorted by numeric prefix
+- Left/right same order number = **two consecutive steps**
+- Changing cancer pathway in Settings resets progress (with confirm)
 
-1. **Optional:** Fix the one misnamed Female English thorax folder (cleaner than aliases only).
-2. Confirm **left/right duplicate files** = two exercises in a row vs one exercise with side label.
-3. Answer product rules (7 days per level, reset on cancer type change) so code can wire selection logic.
-4. Ask for **Agent implementation**: pathway resolver + storage-backed session builder (no manual link paste).
+Validate: `npm run check:pathway`  
+Refresh offline manifest: `npm run generate:pathway-manifest`
+
+## Optional storage cleanup
+
+1. Rename Female English thorax folder (`Thoraxic Cancer - Male - English` → Female).
+2. Normalize double spaces / typo folder names (aliases already handle these in code).

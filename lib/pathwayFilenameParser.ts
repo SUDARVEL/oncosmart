@@ -33,7 +33,8 @@ export function parsePathwayFilename(fileName: string): ParsedPathwayFile {
     };
   }
 
-  const repsMatch = /(\d+)\s*reps/i.exec(rawLabel) ?? /(\d+)\s*eps/i.exec(rawLabel);
+  // Handles "5 Reps", "5Reps", and typos glued to words like "Englush15Reps".
+  const repsMatch = /(\d+)\s*reps\b/i.exec(rawLabel) ?? /(\d+)\s*eps\b/i.exec(rawLabel);
   if (repsMatch) {
     const count = Number(repsMatch[1]);
     const safe = Number.isFinite(count) && count > 0 ? count : 5;
