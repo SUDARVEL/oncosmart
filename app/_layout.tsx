@@ -29,6 +29,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { AdminAlertBridge } from '../components/AdminAlertBridge';
 import { AppUpdateBridge } from '../components/AppUpdateBridge';
 import { CloudSyncBridge } from '../components/CloudSyncBridge';
+import { PathwayVideoBridge } from '../components/PathwayVideoBridge';
 import { isSupabaseConfigured } from '../lib/env';
 import { ensureExerciseAudioSession } from '../lib/ensureExerciseAudioSession';
 import { prepareNotifications } from '../lib/nextExerciseNotification';
@@ -113,6 +114,7 @@ export default function RootLayout() {
     <SafeAreaProvider>
       <StatusBar style="dark" />
       <CloudSyncBridge />
+      <PathwayVideoBridge />
       <AdminAlertBridge />
       <AppUpdateBridge />
       <Stack screenOptions={{ headerShown: false, animation: 'fade' }}>

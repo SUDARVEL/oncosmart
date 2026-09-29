@@ -3,7 +3,14 @@ import type { ImageSource } from 'expo-image';
 import { getDay1Thumbnail } from '../components/exercise/day1Thumbnails';
 import dayExercisesData from '../data/day-exercises.json';
 import type { AppAvatar, AppGender, AppLanguage } from '../store/useAppStore';
+import { useAppStore } from '../store/useAppStore';
+import { normalizeCancerTypeSlug } from './cancerPathway';
 import { getFigmaRepBadge } from './exerciseRepConfig';
+import {
+  getPathwayProfileFromStore,
+  getSessionExercisesForLevel,
+  type GuidedSessionExercise,
+} from './getDay1Session';
 import { getLevelExerciseProgram } from './levelExercisePrograms';
 import { getVideoVariant, type VideoVariant } from './getExerciseVideo';
 import {
@@ -32,14 +39,10 @@ export type LevelSession = {
 };
 
 export type ResolvedDayExercise = DayExercise & {
-  /** Resolved playback URL — only fetch during guided session or single-exercise preview. */
   videoSource: string | null;
   playbackSource: string | null;
-  /** Static preview for session list cards (used when no landscape loop video). */
   previewPhoto: ImageSource | null;
-  /** Muted looping landscape clip for session list cards (GIF-like). */
   previewVideo: string | null;
-  /** @deprecated Use previewPhoto */
   thumbnail: ImageSource | null;
 };
 
@@ -54,11 +57,77 @@ function exercisesCacheKey(
   language: AppLanguage | null,
   gender: AppGender | null,
   avatar: AppAvatar | null,
+  cancerType: string,
 ): string {
-  return `${level}|${language ?? ''}|${gender ?? ''}|${avatar ?? ''}`;
+  return `${level}|${language ?? ''}|${gender ?? ''}|${avatar ?? ''}|${cancerType}`;
+}
+
+function repLabelFromGuided(exercise: GuidedSessionExercise): string {
+  if (exercise.displayLabel === 'MINS') return `${exercise.displayValue} min`;
+  if (exercise.displayLabel === 'SECS') return `${exercise.displayValue} sec`;
+  return `x${Number.parseInt(exercise.displayValue, 10) || exercise.repValue}`;
+}
+
+function catalogSlugFromPathwayId(exerciseId: string): string | null {
+  const match = /-s\d+-(.+)$/.exec(exerciseId);
+  return match?.[1] ?? null;
+}
+
+function pathwayToResolved(
+  exercise: GuidedSessionExercise,
+  gender: AppGender | null,
+  avatar: AppAvatar | null,
+): ResolvedDayExercise {
+  const slug = catalogSlugFromPathwayId(exercise.id);
+  const catalogEntry = slug ? catalog[slug] : undefined;
+  const name = exercise.title ?? catalogEntry?.name ?? 'Exercise';
+  const repLabel = repLabelFromGuided(exercise);
+  const videoSource = exercise.videoUrl ?? null;
+  const previewVideo =
+    slug && !slug.includes('stretch') ? getSessionLandscapeVideoUrl(slug, gender, avatar) : null;
+  const thumbnail = slug ? getDay1Thumbnail(slug) : null;
+  const previewPhoto =
+    (slug ? resolveSessionLandscapePhotoSource(slug, gender, avatar) : null) ??
+    (slug ? resolveSessionCardPhotoSource(slug, gender, avatar) : null);
+
+  return {
+    id: exercise.id,
+    name,
+    repLabel,
+    videos: catalogEntry?.videos ?? {
+      'male-en': '',
+      'male-ta': '',
+      'female-en': '',
+      'female-ta': '',
+    },
+    videoSource,
+    playbackSource: videoSource,
+    previewPhoto: previewPhoto ?? thumbnail,
+    previewVideo,
+    thumbnail,
+  };
 }
 
 export function getLevelSession(level: number): LevelSession | null {
+  const profile = getPathwayProfileFromStore();
+  const pathway = getSessionExercisesForLevel(level, profile);
+  if (pathway.length > 0) {
+    return {
+      level,
+      exercises: pathway.map((entry) => ({
+        id: entry.id,
+        name: entry.title ?? entry.id,
+        repLabel: repLabelFromGuided(entry),
+        videos: {
+          'male-en': '',
+          'male-ta': '',
+          'female-en': '',
+          'female-ta': '',
+        },
+      })),
+    };
+  }
+
   const program = getLevelExerciseProgram(level);
   if (!program) return null;
 
@@ -74,7 +143,6 @@ export function getLevelSession(level: number): LevelSession | null {
   return { level, exercises };
 }
 
-/** @deprecated Use getLevelSession(level) */
 export function getDaySession(day: number): LevelSession | null {
   return getLevelSession(day);
 }
@@ -86,14 +154,12 @@ function resolveExplicitExerciseVideo(
   avatar: AppAvatar | null,
   language: AppLanguage | null,
 ): string | null {
-  // Guided playback always prefers the portrait instructor map (EN / TA by gender).
   const portraitUrl = getExercisePortraitVideoUrl(exercise.id, gender, avatar, language);
   if (portraitUrl) return portraitUrl;
 
   const preferred = exercise.videos[variant]?.trim();
   if (preferred) return resolveVideoUrl(preferred);
 
-  // Tamil → English portrait fallback when a Tamil file is absent.
   if (variant === 'female-ta' || variant === 'male-ta') {
     const enUrl = getExercisePortraitVideoUrl(exercise.id, gender, avatar, 'en');
     if (enUrl) return enUrl;
@@ -109,9 +175,18 @@ export function getLevelExercises(
   gender: AppGender | null,
   avatar: AppAvatar | null,
 ): ResolvedDayExercise[] {
-  const cacheKey = exercisesCacheKey(level, language, gender, avatar);
+  const cancerSlug = normalizeCancerTypeSlug(useAppStore.getState().cancerType) ?? '';
+  const cacheKey = exercisesCacheKey(level, language, gender, avatar, cancerSlug);
   const cached = levelExercisesCache.get(cacheKey);
   if (cached) return cached;
+
+  const profile = getPathwayProfileFromStore();
+  const pathway = getSessionExercisesForLevel(level, profile);
+  if (pathway.length > 0) {
+    const resolved = pathway.map((entry) => pathwayToResolved(entry, gender, avatar));
+    levelExercisesCache.set(cacheKey, resolved);
+    return resolved;
+  }
 
   const session = getLevelSession(level);
   if (!session) return [];
@@ -126,13 +201,14 @@ export function getLevelExercises(
       avatar,
       language,
     );
-    const previewVideo = exercise.id.includes('stretch')
+    const slug = catalogSlugFromPathwayId(exercise.id) ?? exercise.id;
+    const previewVideo = slug.includes('stretch')
       ? null
-      : getSessionLandscapeVideoUrl(exercise.id, gender, avatar);
-    const thumbnail = getDay1Thumbnail(exercise.id);
+      : getSessionLandscapeVideoUrl(slug, gender, avatar);
+    const thumbnail = getDay1Thumbnail(slug);
     const previewPhoto =
-      resolveSessionLandscapePhotoSource(exercise.id, gender, avatar) ??
-      resolveSessionCardPhotoSource(exercise.id, gender, avatar);
+      resolveSessionLandscapePhotoSource(slug, gender, avatar) ??
+      resolveSessionCardPhotoSource(slug, gender, avatar);
 
     return {
       ...exercise,
@@ -148,7 +224,10 @@ export function getLevelExercises(
   return resolved;
 }
 
-/** @deprecated Use getLevelExercises(level, ...) */
+export function clearLevelExercisesCache(): void {
+  levelExercisesCache.clear();
+}
+
 export function getDayExercises(
   day: number,
   language: AppLanguage | null,
@@ -165,6 +244,15 @@ export function getSessionExerciseVideoSource(
   gender: AppGender | null,
   avatar: AppAvatar | null,
 ): string | null {
+  const profile = getPathwayProfileFromStore();
+  const pathwayEntry = getSessionExercisesForLevel(level, profile).find(
+    (entry) => entry.id === exerciseId,
+  );
+  if (pathwayEntry?.videoUrl) {
+    const sanitized = sanitizePublicVideoUrl(pathwayEntry.videoUrl);
+    return isValidGuidedPlaybackUrl(sanitized) ? sanitized : pathwayEntry.videoUrl;
+  }
+
   const session = getLevelSession(level);
   if (!session) return null;
 
@@ -172,18 +260,11 @@ export function getSessionExerciseVideoSource(
   if (!exercise) return null;
 
   const variant = getVideoVariant(language, gender, avatar);
-  const explicit = resolveExplicitExerciseVideo(
-    exercise,
-    variant,
-    gender,
-    avatar,
-    language,
-  );
+  const explicit = resolveExplicitExerciseVideo(exercise, variant, gender, avatar, language);
   const resolved = resolveExercisePlaybackUrl(explicit, exercise.name, variant);
   if (!resolved) return null;
 
   const sanitized = sanitizePublicVideoUrl(resolved);
-  // Guided / single-exercise playback must never use short landscape previews.
   return isValidGuidedPlaybackUrl(sanitized) ? sanitized : null;
 }
 

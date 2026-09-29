@@ -67,7 +67,7 @@ export function WorkoutRowCard({
       pressedOpacity={0.94}
       onPress={onPress}
       accessibilityRole="button"
-      accessibilityLabel={t(workout.titleKey)}
+      accessibilityLabel={workout.title?.trim() || t(workout.titleKey)}
     >
       <View style={styles.photoWrap}>
         {showPhoto && isSvg && remoteUri ? (
@@ -92,8 +92,12 @@ export function WorkoutRowCard({
         ) : null}
       </View>
       <View style={styles.textWrap}>
-        <Text style={styles.title}>{t(workout.titleKey)}</Text>
-        <Text style={styles.description}>{t(workout.descriptionKey)}</Text>
+        <Text style={styles.title}>
+          {workout.title?.trim() || t(workout.titleKey)}
+        </Text>
+        <Text style={styles.description}>
+          {workout.description?.trim() || t(workout.descriptionKey)}
+        </Text>
       </View>
     </PressableScale>
     </View>

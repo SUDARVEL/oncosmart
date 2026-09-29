@@ -1,5 +1,5 @@
 import { useRouter } from 'expo-router';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   KeyboardAvoidingView,
@@ -12,9 +12,14 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { AppTextInput } from '../../components/AppTextInput';
 import { PrimaryButton } from '../../components/PrimaryButton';
 import { ScreenHeader } from '../../components/ScreenHeader';
+import {
+  CANCER_TYPE_I18N_KEYS,
+  CANCER_TYPE_SLUGS,
+  normalizeCancerTypeSlug,
+  type CancerTypeSlug,
+} from '../../lib/cancerPathway';
 import { TreatmentType, useAppStore } from '../../store/useAppStore';
 import { colors } from '../../theme/colors';
 import { font } from '../../theme/fonts';
@@ -73,16 +78,20 @@ export default function TreatmentScreen() {
   const setTreatmentUndergoing = useAppStore((state) => state.setTreatmentUndergoing);
   const setUnderwentSurgery = useAppStore((state) => state.setUnderwentSurgery);
 
-  const [cancerType, setCancerTypeLocal] = useState(savedCancerType);
+  const initialCancerSlug = useMemo(
+    () => normalizeCancerTypeSlug(savedCancerType),
+    [savedCancerType],
+  );
+
+  const [cancerSlug, setCancerSlugLocal] = useState<CancerTypeSlug | null>(initialCancerSlug);
   const [treatment, setTreatmentLocal] = useState<TreatmentType | null>(savedTreatment);
   const [surgery, setSurgeryLocal] = useState<boolean | null>(savedSurgery);
 
-  const trimmedCancer = cancerType.trim();
-  const canContinue = trimmedCancer.length > 0 && treatment != null && surgery != null;
+  const canContinue = cancerSlug != null && treatment != null && surgery != null;
 
   const handleContinue = () => {
-    if (!canContinue || treatment == null || surgery == null) return;
-    setCancerType(trimmedCancer);
+    if (!canContinue || treatment == null || surgery == null || cancerSlug == null) return;
+    setCancerType(cancerSlug);
     setTreatmentUndergoing(treatment);
     setUnderwentSurgery(surgery);
     router.push('/onboarding/avatar');
@@ -106,15 +115,16 @@ export default function TreatmentScreen() {
           <View style={styles.form}>
             <View style={styles.section}>
               <Text style={styles.label}>{t('treatment.cancerTypeLabel')}</Text>
-              <AppTextInput
-                value={cancerType}
-                onChangeText={setCancerTypeLocal}
-                placeholder={t('treatment.cancerTypePlaceholder')}
-                autoCapitalize="sentences"
-                autoCorrect
-                returnKeyType="done"
-                accessibilityLabel={t('treatment.cancerTypeLabel')}
-              />
+              <View style={styles.chipRow}>
+                {CANCER_TYPE_SLUGS.map((slug) => (
+                  <ChoiceChip
+                    key={slug}
+                    label={t(CANCER_TYPE_I18N_KEYS[slug])}
+                    selected={cancerSlug === slug}
+                    onPress={() => setCancerSlugLocal(slug)}
+                  />
+                ))}
+              </View>
             </View>
 
             <View style={styles.section}>
@@ -221,7 +231,7 @@ const styles = StyleSheet.create({
   },
   chipFlex: {
     flexGrow: 1,
-    flexBasis: 0,
+    flexBasis: '45%',
   },
   chipSelected: {
     backgroundColor: colors.optionBgSelected,

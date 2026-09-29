@@ -1,5 +1,6 @@
 import type { Session } from '@supabase/supabase-js';
 
+import { normalizeCancerTypeSlug } from './cancerPathway';
 import { computeOnboardingComplete, loadCloudProfileIntoStore, saveCloudProfileFromStore } from './userCloudSync';
 import { useAppStore } from '../store/useAppStore';
 
@@ -34,7 +35,7 @@ export async function prepareAdminExerciseProfile(
   if (!state.gender) state.setGender('prefer_not_to_say');
   if (!state.avatar) state.setAvatar('male');
   if (state.age == null && !state.ageRange) state.setAge(35);
-  if (!state.cancerType.trim()) state.setCancerType('demo');
+  if (!normalizeCancerTypeSlug(state.cancerType)) state.setCancerType('breast');
   if (state.treatmentUndergoing == null) state.setTreatmentUndergoing('none');
   if (state.underwentSurgery == null) state.setUnderwentSurgery(false);
   if (state.parqCleared == null) {
