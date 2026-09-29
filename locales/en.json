@@ -44,14 +44,21 @@
     "preferNot": "Preferred not to say",
     "continue": "Continue"
   },
+  "cancerPathway": {
+    "header": "Cancer Pathway",
+    "title": "Select your cancer type",
+    "subtitle": "Your exercise plan and videos are chosen from this pathway, matched to your gender and language.",
+    "continue": "Continue"
+  },
   "treatment": {
     "header": "Treatment Details",
     "cancerTypeLabel": "Cancer Type",
     "cancerTypePlaceholder": "e.g. breast cancer",
-    "cancerTypeBreast": "Breast",
-    "cancerTypeThorax": "Thorax",
-    "cancerTypeAbdomen": "Abdomen",
-    "cancerTypeHeadNeck": "Head & Neck",
+    "cancerTypeBreast": "Breast Cancer",
+    "cancerTypeThorax": "Thorax Cancer",
+    "cancerTypeAbdomen": "Abdomen Cancer",
+    "cancerTypeHeadNeck": "Head & Neck Cancer",
+    "cancerPathwayRequired": "Please go back and select a cancer pathway first.",
     "treatmentLabel": "Ongoing Treatment",
     "chemotherapy": "Chemotherapy",
     "radiation": "Radiation Therapy",

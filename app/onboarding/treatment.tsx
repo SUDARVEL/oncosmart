@@ -1,5 +1,5 @@
 import { useRouter } from 'expo-router';
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   KeyboardAvoidingView,
@@ -14,12 +14,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { PrimaryButton } from '../../components/PrimaryButton';
 import { ScreenHeader } from '../../components/ScreenHeader';
-import {
-  CANCER_TYPE_I18N_KEYS,
-  CANCER_TYPE_SLUGS,
-  normalizeCancerTypeSlug,
-  type CancerTypeSlug,
-} from '../../lib/cancerPathway';
+import { normalizeCancerTypeSlug } from '../../lib/cancerPathway';
 import { TreatmentType, useAppStore } from '../../store/useAppStore';
 import { colors } from '../../theme/colors';
 import { font } from '../../theme/fonts';
@@ -40,7 +35,6 @@ type ChoiceChipProps = {
   label: string;
   selected: boolean;
   onPress: () => void;
-  /** Shorter surgery yes/no chips (Figma ~36–40). */
   compact?: boolean;
 };
 
@@ -67,31 +61,24 @@ function ChoiceChip({ label, selected, onPress, compact = false }: ChoiceChipPro
   );
 }
 
-/** Figma Treatment Details (2914:13055) — after gender, before avatar. */
+/** Treatment + surgery — cancer pathway is chosen on the previous screen. */
 export default function TreatmentScreen() {
   const { t } = useTranslation();
   const router = useRouter();
-  const savedCancerType = useAppStore((state) => state.cancerType);
+  const cancerType = useAppStore((state) => state.cancerType);
   const savedTreatment = useAppStore((state) => state.treatmentUndergoing);
   const savedSurgery = useAppStore((state) => state.underwentSurgery);
-  const setCancerType = useAppStore((state) => state.setCancerType);
   const setTreatmentUndergoing = useAppStore((state) => state.setTreatmentUndergoing);
   const setUnderwentSurgery = useAppStore((state) => state.setUnderwentSurgery);
 
-  const initialCancerSlug = useMemo(
-    () => normalizeCancerTypeSlug(savedCancerType),
-    [savedCancerType],
-  );
-
-  const [cancerSlug, setCancerSlugLocal] = useState<CancerTypeSlug | null>(initialCancerSlug);
   const [treatment, setTreatmentLocal] = useState<TreatmentType | null>(savedTreatment);
   const [surgery, setSurgeryLocal] = useState<boolean | null>(savedSurgery);
 
-  const canContinue = cancerSlug != null && treatment != null && surgery != null;
+  const hasCancerPathway = normalizeCancerTypeSlug(cancerType) != null;
+  const canContinue = hasCancerPathway && treatment != null && surgery != null;
 
   const handleContinue = () => {
-    if (!canContinue || treatment == null || surgery == null || cancerSlug == null) return;
-    setCancerType(cancerSlug);
+    if (!canContinue || treatment == null || surgery == null) return;
     setTreatmentUndergoing(treatment);
     setUnderwentSurgery(surgery);
     router.push('/onboarding/avatar');
@@ -113,19 +100,9 @@ export default function TreatmentScreen() {
           showsVerticalScrollIndicator={false}
         >
           <View style={styles.form}>
-            <View style={styles.section}>
-              <Text style={styles.label}>{t('treatment.cancerTypeLabel')}</Text>
-              <View style={styles.chipRow}>
-                {CANCER_TYPE_SLUGS.map((slug) => (
-                  <ChoiceChip
-                    key={slug}
-                    label={t(CANCER_TYPE_I18N_KEYS[slug])}
-                    selected={cancerSlug === slug}
-                    onPress={() => setCancerSlugLocal(slug)}
-                  />
-                ))}
-              </View>
-            </View>
+            {!hasCancerPathway ? (
+              <Text style={styles.warning}>{t('treatment.cancerPathwayRequired')}</Text>
+            ) : null}
 
             <View style={styles.section}>
               <Text style={styles.label}>{t('treatment.treatmentLabel')}</Text>
@@ -210,6 +187,11 @@ const styles = StyleSheet.create({
     ...uiText(15, 'medium'),
     color: '#00131F',
     letterSpacing: 0,
+  },
+  warning: {
+    ...uiText(14, 'regular'),
+    color: '#B45309',
+    lineHeight: 20,
   },
   chipRow: {
     flexDirection: 'row',
