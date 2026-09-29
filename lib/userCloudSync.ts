@@ -1,3 +1,4 @@
+import { normalizeCancerTypeSlug } from './cancerPathway';
 import { getCompletedLevelsCount } from './programProgress';
 import {
   asPauseReason,
@@ -42,6 +43,7 @@ export function computeOnboardingComplete(state: {
   avatar: AppAvatar | null;
   age: number | null;
   ageRange: AgeRange | null;
+  cancerType?: string | null;
   parqCleared: boolean | null;
 }): boolean {
   return Boolean(
@@ -50,6 +52,7 @@ export function computeOnboardingComplete(state: {
       state.gender &&
       state.avatar &&
       (state.age != null || state.ageRange) &&
+      normalizeCancerTypeSlug(state.cancerType) &&
       state.parqCleared !== null,
   );
 }
