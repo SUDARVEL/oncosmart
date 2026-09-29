@@ -61,6 +61,13 @@ assert(
   'Wall push-up must fill the Figma 349×432 frame edge-to-edge',
 );
 assert(
+  frame.includes("exerciseId === 'calf-raise'") &&
+    frame.includes('CALF_RAISE_VIDEO_FRAME_HEIGHT') &&
+    /CALF_RAISE_VIDEO_FRAME_HEIGHT\s*=\s*444/.test(frame) &&
+    frame.includes('CALF_RAISE_VIDEO_PRESENTATION'),
+  'Calf raise must fill the Figma 349×444 frame edge-to-edge',
+);
+assert(
   !frame.includes('sourceBoxHeightScale') && !frame.includes('sourceBoxWidthScale'),
   'Wall push-up must not use pixel scale overrides (Android letterboxing)',
 );
@@ -124,6 +131,33 @@ assert(
   nativePlayer.includes('getGuidedVideoPresentation') &&
     !nativePlayer.includes('getGuidedVideoSourceBoxLayoutStyle'),
   'Native player must use aspect-ratio source box (no pixel scale overrides)',
+);
+
+const copyStyles = read('lib/exercisePlayerCopyStyles.ts');
+assert(
+  copyStyles.includes("width: '100%'") &&
+    !copyStyles.includes('EXERCISE_COPY_HORIZONTAL_PADDING') &&
+    !copyStyles.includes("overflow: 'hidden'"),
+  'Exercise copy must use full scroll width without inner padding or clipping',
+);
+const repCounter = read('components/exercise/ExerciseRepCounter.tsx');
+assert(
+  repCounter.includes('repSection') && !repCounter.includes('Clip'),
+  'ExerciseRepCounter must render reps without clip wrappers',
+);
+const copyBlock = read('components/exercise/ExercisePlayerCopyBlock.tsx');
+assert(
+  copyBlock.includes('titleWrap') &&
+    copyBlock.includes('toLocaleUpperCase()') &&
+    !copyBlock.includes('contentWidth') &&
+    !copyBlock.includes('adjustsFontSizeToFit') &&
+    copyBlock.includes('numberOfLines={2}'),
+  'Exercise title must wrap on two lines without width caps or adjustsFontSizeToFit',
+);
+const playerView = read('components/exercise/ExercisePlayerView.tsx');
+assert(
+  playerView.includes('ExercisePlayerCopyBlock'),
+  'ExercisePlayerView must use ExercisePlayerCopyBlock',
 );
 
 const webPlayer = read('components/exercise/SessionVideoPlayer.web.tsx');

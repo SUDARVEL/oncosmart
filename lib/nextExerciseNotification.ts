@@ -241,7 +241,11 @@ export async function scheduleNextExerciseNotification(params: {
 
   await cancelNextExerciseNotification();
 
+<<<<<<< HEAD
   // Unlock time already passed (OS missed the alarm or user opened late) — notify once.
+=======
+  // Unlock already passed — show once (OS missed alarm or user opened late).
+>>>>>>> origin/master
   if (unlockAt <= Date.now() + 5_000) {
     const alreadyNotified = await getNotifiedUnlockAt();
     if (alreadyNotified === unlockAt) return;

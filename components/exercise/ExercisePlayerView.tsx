@@ -15,14 +15,15 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import type { Day1SessionExercise } from '../../lib/getDay1Session';
 import {
-  EXERCISE_VIDEO_FRAME_ASPECT,
   EXERCISE_VIDEO_FRAME_BACKGROUND,
   EXERCISE_VIDEO_FRAME_BORDER_RADIUS,
-  EXERCISE_VIDEO_FRAME_HEIGHT,
   EXERCISE_VIDEO_FRAME_WIDTH,
+  getGuidedVideoFrameAspect,
+  getGuidedVideoFrameHeight,
 } from '../../lib/exerciseVideoFrame';
 import { colors } from '../../theme/colors';
-import { font, displayFontStyle } from '../../theme/fonts';
+import { ExercisePlayerCopyBlock } from './ExercisePlayerCopyBlock';
+import { font } from '../../theme/fonts';
 import { PressableScale } from '../PressableScale';
 import { SessionVideoPlayer } from './SessionVideoPlayer';
 
@@ -35,7 +36,7 @@ type Props = {
   overlayPaused?: boolean;
 };
 
-const FOOTER_HEIGHT = 72;
+const FOOTER_HEIGHT = 80;
 
 export function ExercisePlayerView({
   exercise,
@@ -61,12 +62,14 @@ export function ExercisePlayerView({
   const playbackPaused = isPaused || overlayPaused;
   const primarySource = videoSources[0]?.trim() ?? '';
 
-  // Exact 349×432 aspect (Figma node 2978:4962) — scale width only on narrow screens.
+  // Per-exercise Figma frame (e.g. calf raise 349×444, wall push-up 349×432).
+  const frameHeightSpec = getGuidedVideoFrameHeight(exercise.id);
+  const frameAspect = getGuidedVideoFrameAspect(exercise.id);
   const frameWidth = Math.min(EXERCISE_VIDEO_FRAME_WIDTH, Math.max(0, screenWidth - 32));
   const frameHeight =
     frameWidth >= EXERCISE_VIDEO_FRAME_WIDTH
-      ? EXERCISE_VIDEO_FRAME_HEIGHT
-      : Math.round(frameWidth / EXERCISE_VIDEO_FRAME_ASPECT);
+      ? frameHeightSpec
+      : Math.round(frameWidth / frameAspect);
 
   const title =
     exercise.title?.trim() ||
@@ -144,7 +147,7 @@ export function ExercisePlayerView({
 
       <ScrollView
         style={styles.scroll}
-        contentContainerStyle={[styles.scrollContent, { paddingBottom: FOOTER_HEIGHT + 8 }]}
+        contentContainerStyle={[styles.scrollContent, { paddingBottom: FOOTER_HEIGHT + 16 }]}
         showsVerticalScrollIndicator={false}
         bounces={false}
       >
@@ -197,20 +200,12 @@ export function ExercisePlayerView({
           <View style={[styles.videoProgressFill, { width: `${videoProgressPercent}%` }]} />
         </View>
 
-        <Text style={[styles.exerciseTitle, { maxWidth: frameWidth }]} numberOfLines={2}>
-          {title}
-        </Text>
-
-        <View style={styles.repRow}>
-          <Text style={styles.repValue} numberOfLines={1}>
-            {displayValue}
-          </Text>
-          <Text style={styles.repLabel} numberOfLines={1}>
-            {unitLabel}
-          </Text>
-        </View>
-
-        <Text style={[styles.description, { maxWidth: frameWidth }]}>{description}</Text>
+        <ExercisePlayerCopyBlock
+          title={title}
+          description={description}
+          displayValue={displayValue}
+          unitLabel={unitLabel}
+        />
       </ScrollView>
 
       <View style={styles.footer}>
@@ -266,7 +261,6 @@ const styles = StyleSheet.create({
   },
   videoWrap: {
     width: EXERCISE_VIDEO_FRAME_WIDTH,
-    height: EXERCISE_VIDEO_FRAME_HEIGHT,
     borderRadius: EXERCISE_VIDEO_FRAME_BORDER_RADIUS,
     overflow: 'hidden',
     backgroundColor: EXERCISE_VIDEO_FRAME_BACKGROUND,
@@ -296,6 +290,7 @@ const styles = StyleSheet.create({
   videoProgressTrack: {
     height: 8,
     marginTop: 10,
+    marginBottom: 10,
     borderRadius: 999,
     borderWidth: 1,
     borderColor: '#9CC7E0',
@@ -306,47 +301,6 @@ const styles = StyleSheet.create({
     height: '100%',
     borderRadius: 999,
     backgroundColor: '#0074B8',
-  },
-  exerciseTitle: {
-    marginTop: 12,
-    fontSize: 22,
-    lineHeight: 26,
-    color: '#262526',
-    textAlign: 'center',
-    textTransform: 'uppercase',
-    ...font('semiBold'),
-  },
-  repRow: {
-    flexDirection: 'row',
-    flexWrap: 'nowrap',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-    marginTop: 12,
-    minHeight: 60,
-  },
-  repValue: {
-    fontSize: 56,
-    lineHeight: 60,
-    color: '#00131F',
-    ...displayFontStyle(),
-  },
-  /** Unit (முறை / நிமி / வினாடி / REPS): Tamil-capable font so it never clips. */
-  repLabel: {
-    fontSize: 30,
-    lineHeight: 40,
-    color: '#00131F',
-    ...font('bold'),
-  },
-  /** Figma Grey-80 description: 16 / 20 / 0.1, weight 400 */
-  description: {
-    marginTop: 12,
-    fontSize: 16,
-    lineHeight: 20,
-    letterSpacing: 0.1,
-    color: '#6B7280',
-    textAlign: 'center',
-    ...font('regular'),
   },
   footer: {
     flexDirection: 'row',
