@@ -230,7 +230,7 @@ export function SessionVideoPlayer({
 
   return (
     <View style={styles.wrap}>
-      {/* Figma 349×444: portrait-crop fill width, pin bottom, clip headroom. */}
+      {/* Figma 349×444: contain — full 9:16 person visible, never crop face/body. */}
       <View style={fillFrame ? styles.fillBox : styles.sourceBox}>
         {createElement('video', {
           key: `${source}-${restartToken}`,

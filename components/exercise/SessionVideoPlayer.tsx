@@ -218,10 +218,7 @@ export function SessionVideoPlayer({
 
   return (
     <View style={styles.frame}>
-      {/*
-        Figma 349×444: portrait-crop boxes the ~349×623 source at full width,
-        pins to bottom, clips headroom — fills frame, keeps shoes/legs.
-      */}
+      {/* Figma 349×444: contain — full 9:16 person visible, never crop face/body. */}
       <View style={fillFrame ? styles.fillBox : styles.sourceBox} collapsable={false}>
         <VideoView
           style={styles.video}
