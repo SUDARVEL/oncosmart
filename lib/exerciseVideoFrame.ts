@@ -4,25 +4,8 @@
  * Exact window:
  *   width: 349px; height: 444px; border-radius: 16px; flex-shrink: 0;
  *
- * Fit policy (per exercise slug):
- * - Default `cover` (Figma zoom): scale to frame width, center, clip empty
- *   studio above/below. Use when the figure already fits in that crop.
- * - `fill` (stretch): only when cover would hide shoes/legs/head — standing
- *   full-height takes. Slight aspect stretch keeps the whole body visible.
- *
- * Analysis (9:16 → cover in 349×444 crops ~88px top+bottom / ~14% each end):
- *
- * COVER (natural width fit — body stays in crop):
- *   diaphragmatic-breathing, ankle-pumps, thoracic-expansion, arm-circles,
- *   arm-rotation, shoulder-shrugging, biceps-curls, chest-stretch,
- *   triceps-stretch, neck-stretch, neck-flexion-extension,
- *   jaw-opening-closing, jaw-side-to-side, seated-knee-extension,
- *   knee-to-chest, static-quadriceps, straight-leg-raise
- *
- * STRETCH (standing / full-height — cover hid shoes/legs):
- *   calf-raise, calf-stretch, wall-pushup, wall-slides, wall-climbing,
- *   spot-marching, sit-to-stand, hamstring-stretch, standing-hamstring-curls,
- *   quadriceps-stretch
+ * Stretch (`fill`) every clip to the full W×H. Cover/zoom kept cutting
+ * shoes/legs on real pathway takes — stretch never crops body parts.
  */
 
 export const EXERCISE_SCREEN_DESIGN_WIDTH = 390;
@@ -63,36 +46,12 @@ export type GuidedVideoPresentation = {
   objectPosition: 'center bottom' | 'center' | `${string} ${string}`;
 };
 
-/** Figma zoom — width-fit cover. Body already fits the 349×444 crop. */
-const COVER_PRESENTATION: GuidedVideoPresentation = {
-  layout: 'fill-frame',
-  contentFit: 'cover',
-  objectPosition: 'center',
-};
-
-/** Stretch only when cover would hide shoes/legs. */
+/** Stretch every clip into 349×444 — never crop head/legs/shoes. */
 const STRETCH_PRESENTATION: GuidedVideoPresentation = {
   layout: 'fill-frame',
   contentFit: 'fill',
   objectPosition: 'center',
 };
-
-/**
- * Standing / full-height slugs where cover crops feet. Left/right variants
- * match via base slug (e.g. quadriceps-stretch-left → quadriceps-stretch).
- */
-export const GUIDED_VIDEO_STRETCH_SLUGS: ReadonlySet<string> = new Set([
-  'calf-raise',
-  'calf-stretch',
-  'wall-pushup',
-  'wall-slides',
-  'wall-climbing',
-  'spot-marching',
-  'sit-to-stand',
-  'hamstring-stretch',
-  'standing-hamstring-curls',
-  'quadriceps-stretch',
-]);
 
 export function isPathwayExerciseId(exerciseId: string): boolean {
   return exerciseId.startsWith('pathway-');
@@ -110,13 +69,6 @@ export function getGuidedExerciseBaseSlug(exerciseId: string): string {
   return slug.replace(/-(left|right)$/i, '');
 }
 
-/** True when this clip must stretch-fill so shoes/legs are not cropped. */
-export function guidedVideoNeedsStretch(exerciseId: string): boolean {
-  const slug = getGuidedExerciseCatalogSlug(exerciseId);
-  const base = getGuidedExerciseBaseSlug(exerciseId);
-  return GUIDED_VIDEO_STRETCH_SLUGS.has(base) || GUIDED_VIDEO_STRETCH_SLUGS.has(slug);
-}
-
 /** Legacy `diaphragmatic-breathing` or pathway `…-sN-diaphragmatic-breathing`. */
 export function isDiaphragmaticBreathingExercise(exerciseId: string): boolean {
   const base = getGuidedExerciseBaseSlug(exerciseId);
@@ -132,11 +84,8 @@ export function getGuidedVideoFrameAspect(_exerciseId: string): number {
   return EXERCISE_VIDEO_FRAME_ASPECT;
 }
 
-export function getGuidedVideoPresentation(exerciseId: string): GuidedVideoPresentation {
-  if (guidedVideoNeedsStretch(exerciseId)) {
-    return STRETCH_PRESENTATION;
-  }
-  return COVER_PRESENTATION;
+export function getGuidedVideoPresentation(_exerciseId: string): GuidedVideoPresentation {
+  return STRETCH_PRESENTATION;
 }
 
 export function getExerciseScreenScale(screenWidth: number): number {
