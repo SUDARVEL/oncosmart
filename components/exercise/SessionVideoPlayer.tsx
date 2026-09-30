@@ -218,7 +218,10 @@ export function SessionVideoPlayer({
 
   return (
     <View style={styles.frame}>
-      {/* Figma 349×444: contain keeps full person visible (source ~349×623). */}
+      {/*
+        Figma 349×444: portrait-crop boxes the ~349×623 source at full width,
+        pins to bottom, clips headroom — fills frame, keeps shoes/legs.
+      */}
       <View style={fillFrame ? styles.fillBox : styles.sourceBox} collapsable={false}>
         <VideoView
           style={styles.video}
@@ -239,8 +242,8 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   sourceBox: {
-    // Legacy crop: taller than the visible frame, pinned to bottom so empty
-    // headroom is trimmed. Pathway videos use fillBox instead (349×620).
+    // Taller than the visible 349×444 frame, full width, pinned to bottom so
+    // empty studio headroom is clipped and feet stay in view.
     position: 'absolute',
     left: 0,
     right: 0,

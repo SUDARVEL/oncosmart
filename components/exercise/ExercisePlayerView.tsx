@@ -15,6 +15,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import type { Day1SessionExercise } from '../../lib/getDay1Session';
 import {
+  EXERCISE_ACTION_BUTTON_GAP,
   EXERCISE_SCREEN_DESIGN_WIDTH,
   EXERCISE_SCREEN_HEADER_HEIGHT,
   EXERCISE_VIDEO_FRAME_BACKGROUND,
@@ -38,7 +39,8 @@ type Props = {
 
 /**
  * Figma 4319:5797 — 390×844 artboard, video 349×444 @ x=20.5.
- * Portrait MP4s use contain so the full person (including shoes) stays visible.
+ * Portrait MP4s fill the frame width (bottom-pinned crop) so the full person
+ * stays visible with no side letterbox — matching the Figma comps.
  */
 export function ExercisePlayerView({
   exercise,
@@ -217,14 +219,14 @@ export function ExercisePlayerView({
             unitLabel={unitLabel}
           />
 
-          {/* Figma buttons: Pause + Restart with ~12px gap (not flush) */}
+          {/* Figma: Pause + Restart with clear horizontal gap */}
           <View
             style={[
               styles.actions,
               {
                 width: contentWidth,
                 marginTop: Math.round(16 * scale),
-                gap: Math.round(12 * scale),
+                gap: Math.round(EXERCISE_ACTION_BUTTON_GAP * scale),
               },
             ]}
           >
@@ -240,7 +242,13 @@ export function ExercisePlayerView({
             </PressableScale>
 
             <PressableScale
-              style={[styles.restartButton, { width: Math.round(101 * scale) }]}
+              style={[
+                styles.restartButton,
+                {
+                  minWidth: Math.round(108 * scale),
+                  paddingHorizontal: Math.round(10 * scale),
+                },
+              ]}
               onPress={handleRestart}
               accessibilityRole="button"
             >
