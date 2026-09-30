@@ -216,7 +216,7 @@ export function SessionVideoPlayer({
 
   return (
     <View style={styles.frame} collapsable={false}>
-      {/* Uniform for every exercise: cover fills 349×444, trims empty studio space. */}
+      {/* Frame is 9:16 — contain keeps full person (head→shoes) for every clip. */}
       <VideoView
         style={styles.video}
         player={player}

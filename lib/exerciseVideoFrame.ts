@@ -1,10 +1,11 @@
 /**
- * Guided exercise video framing — Figma 4319:5797.
+ * Guided exercise video framing.
  *
- * Screen 390×844, video window **349 × 444**, radius 8, no stroke.
- * All pathway MP4s (9:16 and otherwise) use the **same** presentation:
- * `cover` + center — zoom to fill the window so empty studio space is gone
- * and every exercise looks consistent edge-to-edge.
+ * Real pathway MP4s are **9:16**. To keep head, body, legs, and shoes visible
+ * for every exercise (no crop), the player window matches that aspect at full
+ * content width **349 × 9:16**. Same fit for all videos.
+ *
+ * Radius 8, no stroke border.
  */
 
 export const EXERCISE_SCREEN_DESIGN_WIDTH = 390;
@@ -16,19 +17,23 @@ export const EXERCISE_CONTENT_LEFT_INSET = 20.5;
 export const EXERCISE_VIDEO_TO_COPY_GAP = 24;
 export const EXERCISE_ACTION_BUTTON_GAP = 16;
 
+/** Native pathway clips are 9:16 (1080×1920 / 2160×3840). */
 export const EXERCISE_VIDEO_SOURCE_WIDTH = 9;
 export const EXERCISE_VIDEO_SOURCE_HEIGHT = 16;
 export const EXERCISE_VIDEO_SOURCE_ASPECT =
   EXERCISE_VIDEO_SOURCE_WIDTH / EXERCISE_VIDEO_SOURCE_HEIGHT;
 
-/** Figma video window. */
+/** Content / video width. */
 export const EXERCISE_VIDEO_FRAME_WIDTH = 349;
-export const EXERCISE_VIDEO_FRAME_HEIGHT = 444;
+/** Full-body height: round(349 × 16 / 9) = 620. */
+export const EXERCISE_VIDEO_FRAME_HEIGHT = Math.round(
+  (EXERCISE_VIDEO_FRAME_WIDTH * EXERCISE_VIDEO_SOURCE_HEIGHT) /
+    EXERCISE_VIDEO_SOURCE_WIDTH,
+);
 export const CALF_RAISE_VIDEO_FRAME_HEIGHT = EXERCISE_VIDEO_FRAME_HEIGHT;
 export const LEGACY_EXERCISE_VIDEO_FRAME_HEIGHT = 432;
 
-export const EXERCISE_VIDEO_FRAME_ASPECT =
-  EXERCISE_VIDEO_FRAME_WIDTH / EXERCISE_VIDEO_FRAME_HEIGHT;
+export const EXERCISE_VIDEO_FRAME_ASPECT = EXERCISE_VIDEO_SOURCE_ASPECT;
 export const EXERCISE_VIDEO_FRAME_BACKGROUND = '#FFFFFF';
 export const EXERCISE_VIDEO_FRAME_BORDER_RADIUS = 8;
 
@@ -40,10 +45,13 @@ export type GuidedVideoPresentation = {
   objectPosition: 'center bottom' | 'center' | `${string} ${string}`;
 };
 
-/** Same for every guided exercise — fill 349×444, crop empty margins. */
+/**
+ * Same for every guided exercise:
+ * frame matches 9:16 → contain shows the full person with no crop.
+ */
 const UNIFORM_VIDEO_PRESENTATION: GuidedVideoPresentation = {
   layout: 'fill-frame',
-  contentFit: 'cover',
+  contentFit: 'contain',
   objectPosition: 'center',
 };
 
@@ -68,6 +76,7 @@ export function getExerciseScreenScale(screenWidth: number): number {
   return Math.min(1, screenWidth / EXERCISE_SCREEN_DESIGN_WIDTH);
 }
 
+/** 349 × 9:16 scaled to the device. */
 export function getScaledVideoFrameSize(screenWidth: number): {
   width: number;
   height: number;
@@ -76,11 +85,12 @@ export function getScaledVideoFrameSize(screenWidth: number): {
   contentLeftInset: number;
 } {
   const scale = getExerciseScreenScale(screenWidth);
+  const width = Math.round(EXERCISE_VIDEO_FRAME_WIDTH * scale);
   return {
     scale,
-    width: Math.round(EXERCISE_VIDEO_FRAME_WIDTH * scale),
-    height: Math.round(EXERCISE_VIDEO_FRAME_HEIGHT * scale),
-    contentWidth: Math.round(EXERCISE_VIDEO_FRAME_WIDTH * scale),
+    width,
+    height: Math.round(width / EXERCISE_VIDEO_SOURCE_ASPECT),
+    contentWidth: width,
     contentLeftInset: Math.round(EXERCISE_CONTENT_LEFT_INSET * scale),
   };
 }
