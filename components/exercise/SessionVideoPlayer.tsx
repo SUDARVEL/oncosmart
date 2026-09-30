@@ -1,11 +1,12 @@
 import { useVideoPlayer, VideoView } from 'expo-video';
-import { useCallback, useEffect, useRef } from 'react';
-import { Platform, StyleSheet, View } from 'react-native';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { Platform, StyleSheet, View, type LayoutChangeEvent } from 'react-native';
 
 import { ensureExerciseAudioSession } from '../../lib/ensureExerciseAudioSession';
 import {
   EXERCISE_VIDEO_FRAME_BACKGROUND,
-  getGuidedVideoPresentation,
+  EXERCISE_VIDEO_SOURCE_ASPECT,
+  getContainedVideoBox,
 } from '../../lib/exerciseVideoFrame';
 import { shouldAcceptVideoEnd } from './sessionVideoCompletion';
 
@@ -35,7 +36,6 @@ function applyAudiblePlayback(player: {
 
 export function SessionVideoPlayer({
   source,
-  exerciseId = '',
   isPaused,
   restartToken,
   seekRequest = null,
@@ -46,7 +46,7 @@ export function SessionVideoPlayer({
   onPlaybackFailed,
   onEnded,
 }: Props) {
-  const presentation = getGuidedVideoPresentation(exerciseId);
+  const [frameSize, setFrameSize] = useState({ width: 0, height: 0 });
   const onEndedRef = useRef(onEnded);
   const onProgressRef = useRef(onProgress);
   const onBufferingRef = useRef(onBuffering);
@@ -210,20 +210,40 @@ export function SessionVideoPlayer({
     };
   }, [onPlaybackFailed, player, startPlayback]);
 
+  const handleFrameLayout = useCallback((event: LayoutChangeEvent) => {
+    const { width, height } = event.nativeEvent.layout;
+    setFrameSize((prev) =>
+      prev.width === width && prev.height === height ? prev : { width, height },
+    );
+  }, []);
+
+  // Explicit 9:16 box inside fixed 349×444 — guarantees no crop on Android.
+  const letterbox = getContainedVideoBox(
+    frameSize.width,
+    frameSize.height,
+    EXERCISE_VIDEO_SOURCE_ASPECT,
+  );
+
   if (!source?.trim()) {
     return <View style={styles.frame} />;
   }
 
   return (
-    <View style={styles.frame} collapsable={false}>
-      {/* Frame is 9:16 — contain keeps full person (head→shoes) for every clip. */}
-      <VideoView
-        style={styles.video}
-        player={player}
-        contentFit={presentation.contentFit}
-        nativeControls={false}
-        {...(Platform.OS === 'android' ? { surfaceType: 'textureView' as const } : {})}
-      />
+    <View style={styles.frame} onLayout={handleFrameLayout}>
+      {letterbox.width > 0 && letterbox.height > 0 ? (
+        <View
+          style={[styles.letterbox, { width: letterbox.width, height: letterbox.height }]}
+          collapsable={false}
+        >
+          <VideoView
+            style={styles.video}
+            player={player}
+            contentFit="fill"
+            nativeControls={false}
+            {...(Platform.OS === 'android' ? { surfaceType: 'textureView' as const } : {})}
+          />
+        </View>
+      ) : null}
     </View>
   );
 }
@@ -234,6 +254,12 @@ const styles = StyleSheet.create({
     height: '100%',
     backgroundColor: EXERCISE_VIDEO_FRAME_BACKGROUND,
     overflow: 'hidden',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  letterbox: {
+    overflow: 'hidden',
+    backgroundColor: EXERCISE_VIDEO_FRAME_BACKGROUND,
   },
   video: {
     width: '100%',

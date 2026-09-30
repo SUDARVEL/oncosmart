@@ -38,8 +38,8 @@ type Props = {
 };
 
 /**
- * Figma 4319:5797 layout — video 349 × 9:16 so every clip shows full body
- * (head, legs, shoes) with no crop. Same fit for all exercises.
+ * Figma 4319:5797 — video window exactly 349×444, radius 16, flexShrink 0.
+ * 9:16 clips are contained inside (never expand the frame, never crop body).
  */
 export function ExercisePlayerView({
   exercise,
@@ -299,6 +299,7 @@ const styles = StyleSheet.create({
   videoWrap: {
     overflow: 'hidden',
     backgroundColor: EXERCISE_VIDEO_FRAME_BACKGROUND,
+    // Figma: flex-shrink: 0; box-sizing: border-box (RN default)
     flexShrink: 0,
   },
   videoLoaderOverlay: {
