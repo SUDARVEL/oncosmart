@@ -230,7 +230,7 @@ export function SessionVideoPlayer({
 
   return (
     <View style={styles.wrap}>
-      {/* Default: 349×578 source bottom-aligned in crop window. Fill-frame for chest stretch / wall push-up / calf raise. */}
+      {/* Pathway: fill 349×620 frame. Legacy: taller source bottom-aligned in crop. */}
       <View style={fillFrame ? styles.fillBox : styles.sourceBox}>
         {createElement('video', {
           key: `${source}-${restartToken}`,

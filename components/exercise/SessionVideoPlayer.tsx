@@ -218,8 +218,8 @@ export function SessionVideoPlayer({
 
   return (
     <View style={styles.frame}>
-      {/* Default: 349×578 source bottom-aligned in crop window. Fill-frame for chest stretch / wall push-up / calf raise. */}
-      <View style={fillFrame ? styles.fillBox : styles.sourceBox}>
+      {/* Pathway: fill 349×620 frame. Legacy: taller source bottom-aligned in crop. */}
+      <View style={fillFrame ? styles.fillBox : styles.sourceBox} collapsable={false}>
         <VideoView
           style={styles.video}
           player={player}
@@ -239,6 +239,8 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   sourceBox: {
+    // Legacy crop: taller than the visible frame, pinned to bottom so empty
+    // headroom is trimmed. Pathway videos use fillBox instead (349×620).
     position: 'absolute',
     left: 0,
     right: 0,

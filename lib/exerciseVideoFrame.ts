@@ -1,40 +1,37 @@
 /**
- * Figma guided exercise video framing.
+ * Guided exercise video framing.
  *
- * Source composition (in Figma): 349 × 578
- * Visible crop window (in app UI): 349 × 432, radius 16  (node 2978:4962)
- *
- * The taller source is bottom-aligned inside the crop window so empty headroom
- * is trimmed from the top — arms/feet stay visible without stretching.
- *
- * Exception: dual-panel chest stretch fills the same 349×432 frame centered
- * (no bottom crop) so both stacked views stay visible.
- *
- * Wall push-up portrait MP4s are square (1080×1080) with baked-in margins.
- * Fill the visible frame directly (fill-frame + cover) so Android VideoView
- * does not letterbox inside a taller source box.
+ * Pathway / original portrait exports: **349 × 620** (full body, no crop).
+ * Legacy Figma crop window (older assets): 349 × 432 with top trim.
  */
+
 export const EXERCISE_VIDEO_SOURCE_WIDTH = 349;
-export const EXERCISE_VIDEO_SOURCE_HEIGHT = 578;
+/** Original pathway portrait export height. */
+export const EXERCISE_VIDEO_SOURCE_HEIGHT = 620;
 export const EXERCISE_VIDEO_SOURCE_ASPECT =
   EXERCISE_VIDEO_SOURCE_WIDTH / EXERCISE_VIDEO_SOURCE_HEIGHT;
 
 export const EXERCISE_VIDEO_FRAME_WIDTH = 349;
-/** Default guided player crop height (most portrait exercises). */
-export const EXERCISE_VIDEO_FRAME_HEIGHT = 432;
+/**
+ * Default visible frame for pathway / full-body portrait videos.
+ * Matches original export 349 × 620 so face, arms, and feet stay in frame.
+ */
+export const EXERCISE_VIDEO_FRAME_HEIGHT = 620;
+/** Legacy Figma crop height (pre-pathway assets). */
+export const LEGACY_EXERCISE_VIDEO_FRAME_HEIGHT = 432;
 /** Figma Calf Raises image frame (node 2978:4980). */
 export const CALF_RAISE_VIDEO_FRAME_HEIGHT = 444;
 export const EXERCISE_VIDEO_FRAME_ASPECT =
   EXERCISE_VIDEO_FRAME_WIDTH / EXERCISE_VIDEO_FRAME_HEIGHT;
-export const EXERCISE_VIDEO_FRAME_BACKGROUND = '#FFFFFF';
+export const EXERCISE_VIDEO_FRAME_BACKGROUND = '#F3F4F6';
 export const EXERCISE_VIDEO_FRAME_BORDER_RADIUS = 16;
 
 /**
- * Fill the tall source box (no letterbox), then the outer 349×444 window crops
+ * Fill the tall source box (no letterbox), then the outer window crops
  * overflow. Prefer cover so slight source aspect differences still fill cleanly.
  */
 export const EXERCISE_VIDEO_CONTENT_FIT = 'cover' as const;
-/** Anchor media to the bottom of the crop window (Figma cropper). */
+/** Anchor media to the bottom of the crop window (legacy Figma cropper). */
 export const EXERCISE_VIDEO_OBJECT_POSITION = 'center bottom' as const;
 
 export type GuidedVideoContentFit = 'contain' | 'cover' | 'fill';
@@ -60,7 +57,7 @@ const CHEST_STRETCH_VIDEO_PRESENTATION: GuidedVideoPresentation = {
 };
 
 /**
- * Wall push-up square exports — fill the Figma 349×432 window edge-to-edge.
+ * Wall push-up square exports — fill the frame edge-to-edge.
  * Same presentation for male/female and English/Tamil (asset shape, not gender).
  */
 const WALL_PUSHUP_VIDEO_PRESENTATION: GuidedVideoPresentation = {
@@ -79,29 +76,36 @@ const CALF_RAISE_VIDEO_PRESENTATION: GuidedVideoPresentation = {
   objectPosition: 'center bottom',
 };
 
+/**
+ * Pathway Supabase MP4s are native 349×620 full-body portraits.
+ * Exact frame aspect + cover = no letterbox and no face/feet crop.
+ */
+const PATHWAY_VIDEO_PRESENTATION: GuidedVideoPresentation = {
+  layout: 'fill-frame',
+  contentFit: 'cover',
+  objectPosition: 'center',
+};
+
+export function isPathwayExerciseId(exerciseId: string): boolean {
+  return exerciseId.startsWith('pathway-');
+}
+
 export function getGuidedVideoFrameHeight(exerciseId: string): number {
+  if (isPathwayExerciseId(exerciseId)) {
+    return EXERCISE_VIDEO_FRAME_HEIGHT;
+  }
   if (exerciseId === 'calf-raise') {
     return CALF_RAISE_VIDEO_FRAME_HEIGHT;
   }
-  return EXERCISE_VIDEO_FRAME_HEIGHT;
+  return LEGACY_EXERCISE_VIDEO_FRAME_HEIGHT;
 }
 
 export function getGuidedVideoFrameAspect(exerciseId: string): number {
   return EXERCISE_VIDEO_FRAME_WIDTH / getGuidedVideoFrameHeight(exerciseId);
 }
 
-/**
- * Supabase pathway MP4s are full-body portrait clips. Do not use the legacy
- * Figma top-crop (center-bottom cover) — that trims the face / head.
- */
-const PATHWAY_VIDEO_PRESENTATION: GuidedVideoPresentation = {
-  layout: 'fill-frame',
-  contentFit: 'contain',
-  objectPosition: 'center',
-};
-
 export function getGuidedVideoPresentation(exerciseId: string): GuidedVideoPresentation {
-  if (exerciseId.startsWith('pathway-')) {
+  if (isPathwayExerciseId(exerciseId)) {
     return PATHWAY_VIDEO_PRESENTATION;
   }
   if (exerciseId === 'chest-stretch') {
