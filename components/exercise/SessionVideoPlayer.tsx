@@ -218,7 +218,7 @@ export function SessionVideoPlayer({
 
   return (
     <View style={styles.frame}>
-      {/* Figma 349×444: fill-frame + contain so 349×623 source never crops. */}
+      {/* Figma 349×445: fill-frame + contain so taller sources never crop/stretch. */}
       <View style={fillFrame ? styles.fillBox : styles.sourceBox} collapsable={false}>
         <VideoView
           style={styles.video}
