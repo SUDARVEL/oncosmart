@@ -1,12 +1,10 @@
 import { useVideoPlayer, VideoView } from 'expo-video';
-import { useCallback, useEffect, useRef, useState } from 'react';
-import { Platform, StyleSheet, View, type LayoutChangeEvent } from 'react-native';
+import { useCallback, useEffect, useRef } from 'react';
+import { Platform, StyleSheet, View } from 'react-native';
 
 import { ensureExerciseAudioSession } from '../../lib/ensureExerciseAudioSession';
 import {
   EXERCISE_VIDEO_FRAME_BACKGROUND,
-  EXERCISE_VIDEO_SOURCE_ASPECT,
-  getContainedVideoBox,
   getGuidedVideoPresentation,
 } from '../../lib/exerciseVideoFrame';
 import { shouldAcceptVideoEnd } from './sessionVideoCompletion';
@@ -14,6 +12,10 @@ import { shouldAcceptVideoEnd } from './sessionVideoCompletion';
 type Props = {
   source: string;
   exerciseId?: string;
+  /** Exact Figma media width in px (scaled). Required so layout never waits on onLayout. */
+  frameWidth: number;
+  /** Exact Figma media height in px (scaled). */
+  frameHeight: number;
   isPaused: boolean;
   restartToken: number;
   seekRequest?: { fraction: number; token: number } | null;
@@ -38,6 +40,8 @@ function applyAudiblePlayback(player: {
 export function SessionVideoPlayer({
   source,
   exerciseId = '',
+  frameWidth,
+  frameHeight,
   isPaused,
   restartToken,
   seekRequest = null,
@@ -49,7 +53,6 @@ export function SessionVideoPlayer({
   onEnded,
 }: Props) {
   const presentation = getGuidedVideoPresentation(exerciseId);
-  const [frameSize, setFrameSize] = useState({ width: 0, height: 0 });
   const onEndedRef = useRef(onEnded);
   const onProgressRef = useRef(onProgress);
   const onBufferingRef = useRef(onBuffering);
@@ -213,62 +216,32 @@ export function SessionVideoPlayer({
     };
   }, [onPlaybackFailed, player, startPlayback]);
 
-  const handleFrameLayout = useCallback((event: LayoutChangeEvent) => {
-    const { width, height } = event.nativeEvent.layout;
-    setFrameSize((prev) =>
-      prev.width === width && prev.height === height ? prev : { width, height },
-    );
-  }, []);
+  const width = Math.max(0, Math.round(frameWidth));
+  const height = Math.max(0, Math.round(frameHeight));
 
-  /**
-   * Pad to fit inside fixed 349×444: size an explicit source-aspect box and
-   * fill the rest with studio bg (#E0E0E0). Never crop face/body/legs.
-   */
-  const fitted = getContainedVideoBox(
-    frameSize.width,
-    frameSize.height,
-    EXERCISE_VIDEO_SOURCE_ASPECT,
-  );
-
-  if (!source?.trim()) {
-    return <View style={styles.frame} />;
+  if (!source?.trim() || width <= 0 || height <= 0) {
+    return <View style={[styles.frame, { width, height }]} />;
   }
 
+  // Stretch to exact 349×444 — full figure always visible.
   return (
-    <View style={styles.frame} onLayout={handleFrameLayout}>
-      {fitted.width > 0 && fitted.height > 0 ? (
-        <View
-          style={[styles.fittedBox, { width: fitted.width, height: fitted.height }]}
-          collapsable={false}
-        >
-          <VideoView
-            style={styles.video}
-            player={player}
-            contentFit={presentation.contentFit === 'contain' ? 'fill' : presentation.contentFit}
-            nativeControls={false}
-            {...(Platform.OS === 'android' ? { surfaceType: 'textureView' as const } : {})}
-          />
-        </View>
-      ) : null}
+    <View style={[styles.frame, { width, height }]} collapsable={false}>
+      <VideoView
+        style={{ width, height }}
+        player={player}
+        contentFit={presentation.contentFit}
+        nativeControls={false}
+        {...(Platform.OS === 'android' ? { surfaceType: 'textureView' as const } : {})}
+      />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   frame: {
-    width: '100%',
-    height: '100%',
     backgroundColor: EXERCISE_VIDEO_FRAME_BACKGROUND,
     overflow: 'hidden',
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  fittedBox: {
-    overflow: 'hidden',
-    backgroundColor: EXERCISE_VIDEO_FRAME_BACKGROUND,
-  },
-  video: {
-    width: '100%',
-    height: '100%',
   },
 });

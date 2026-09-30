@@ -1,12 +1,11 @@
 /**
- * Guided exercise video framing — Figma `0126.mp4` / 4319:5797.
+ * Guided exercise video framing — Figma 349×444.
  *
- * Exact window (do not expand):
+ * Exact window:
  *   width: 349px; height: 444px; border-radius: 16px; flex-shrink: 0;
  *
- * Videos are taller (9:16). Always `contain` inside 349×444 so nothing is cut.
- * Extra space is filled with the studio wall colour sampled from the MP4s
- * (#E0E0E0) — same for every clip.
+ * Stretch (`fill`) every clip to the full W×H. Cover/zoom kept cutting
+ * shoes/legs on real pathway takes — stretch never crops body parts.
  */
 
 export const EXERCISE_SCREEN_DESIGN_WIDTH = 390;
@@ -14,6 +13,8 @@ export const EXERCISE_SCREEN_DESIGN_HEIGHT = 844;
 export const EXERCISE_SCREEN_HEADER_TOP = 13;
 export const EXERCISE_SCREEN_HEADER_HEIGHT = 40;
 export const EXERCISE_CONTENT_LEFT_INSET = 20.5;
+/** Figma Frame 634958 — text + actions + media column */
+export const EXERCISE_CONTENT_COLUMN_WIDTH = 349;
 export const EXERCISE_VIDEO_TO_COPY_GAP = 24;
 export const EXERCISE_ACTION_BUTTON_GAP = 16;
 
@@ -22,7 +23,7 @@ export const EXERCISE_VIDEO_SOURCE_HEIGHT = 16;
 export const EXERCISE_VIDEO_SOURCE_ASPECT =
   EXERCISE_VIDEO_SOURCE_WIDTH / EXERCISE_VIDEO_SOURCE_HEIGHT;
 
-/** Figma exact — never expand. */
+/** Figma guided player media — 349×444. */
 export const EXERCISE_VIDEO_FRAME_WIDTH = 349;
 export const EXERCISE_VIDEO_FRAME_HEIGHT = 444;
 export const CALF_RAISE_VIDEO_FRAME_HEIGHT = EXERCISE_VIDEO_FRAME_HEIGHT;
@@ -31,8 +32,8 @@ export const LEGACY_EXERCISE_VIDEO_FRAME_HEIGHT = 432;
 export const EXERCISE_VIDEO_FRAME_ASPECT =
   EXERCISE_VIDEO_FRAME_WIDTH / EXERCISE_VIDEO_FRAME_HEIGHT;
 /**
- * Studio wall from pathway MP4s (avg ~#E0E0E0). Used as contain padding so
- * letterbox bars match the video instead of looking like a cut/white gap.
+ * Studio wall from pathway MP4s (avg ~#E0E0E0). Shows while loading /
+ * under letterbox if any.
  */
 export const EXERCISE_VIDEO_FRAME_BACKGROUND = '#E0E0E0';
 export const EXERCISE_VIDEO_FRAME_BORDER_RADIUS = 16;
@@ -45,15 +46,34 @@ export type GuidedVideoPresentation = {
   objectPosition: 'center bottom' | 'center' | `${string} ${string}`;
 };
 
-/** Contain in 349×444 for every exercise — pad with studio bg, never crop. */
-const UNIFORM_VIDEO_PRESENTATION: GuidedVideoPresentation = {
+/** Stretch every clip into 349×444 — never crop head/legs/shoes. */
+const STRETCH_PRESENTATION: GuidedVideoPresentation = {
   layout: 'fill-frame',
-  contentFit: 'contain',
+  contentFit: 'fill',
   objectPosition: 'center',
 };
 
 export function isPathwayExerciseId(exerciseId: string): boolean {
   return exerciseId.startsWith('pathway-');
+}
+
+/** Pathway `…-sN-<slug>` → `<slug>`; otherwise the id itself. */
+export function getGuidedExerciseCatalogSlug(exerciseId: string): string {
+  if (!exerciseId) return '';
+  const pathway = /-s\d+-(.+)$/.exec(exerciseId);
+  return pathway?.[1] ?? exerciseId;
+}
+
+export function getGuidedExerciseBaseSlug(exerciseId: string): string {
+  const slug = getGuidedExerciseCatalogSlug(exerciseId);
+  return slug.replace(/-(left|right)$/i, '');
+}
+
+/** Legacy `diaphragmatic-breathing` or pathway `…-sN-diaphragmatic-breathing`. */
+export function isDiaphragmaticBreathingExercise(exerciseId: string): boolean {
+  const base = getGuidedExerciseBaseSlug(exerciseId);
+  if (base === 'diaphragmatic-breathing') return true;
+  return /\bdbe\b/i.test(exerciseId);
 }
 
 export function getGuidedVideoFrameHeight(_exerciseId: string): number {
@@ -65,7 +85,7 @@ export function getGuidedVideoFrameAspect(_exerciseId: string): number {
 }
 
 export function getGuidedVideoPresentation(_exerciseId: string): GuidedVideoPresentation {
-  return UNIFORM_VIDEO_PRESENTATION;
+  return STRETCH_PRESENTATION;
 }
 
 export function getExerciseScreenScale(screenWidth: number): number {
@@ -85,9 +105,37 @@ export function getScaledVideoFrameSize(screenWidth: number): {
     scale,
     width: Math.round(EXERCISE_VIDEO_FRAME_WIDTH * scale),
     height: Math.round(EXERCISE_VIDEO_FRAME_HEIGHT * scale),
-    contentWidth: Math.round(EXERCISE_VIDEO_FRAME_WIDTH * scale),
+    contentWidth: Math.round(EXERCISE_CONTENT_COLUMN_WIDTH * scale),
     contentLeftInset: Math.round(EXERCISE_CONTENT_LEFT_INSET * scale),
   };
+}
+
+/**
+ * Size of the 9:16 source when zoomed to cover `frameWidth`×`frameHeight`
+ * (Figma: scale to fill width; height overflows and is clipped).
+ */
+export function getCoverVideoBox(
+  frameWidth: number,
+  frameHeight: number,
+  sourceAspect: number = EXERCISE_VIDEO_SOURCE_ASPECT,
+): { width: number; height: number } {
+  if (
+    !Number.isFinite(frameWidth) ||
+    !Number.isFinite(frameHeight) ||
+    frameWidth <= 0 ||
+    frameHeight <= 0 ||
+    !Number.isFinite(sourceAspect) ||
+    sourceAspect <= 0
+  ) {
+    return { width: 0, height: 0 };
+  }
+  const frameAspect = frameWidth / frameHeight;
+  if (sourceAspect >= frameAspect) {
+    const height = frameHeight;
+    return { width: Math.round(height * sourceAspect), height };
+  }
+  const width = frameWidth;
+  return { width, height: Math.round(width / sourceAspect) };
 }
 
 export function getContainedVideoBox(

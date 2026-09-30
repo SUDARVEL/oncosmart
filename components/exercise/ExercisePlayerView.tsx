@@ -38,8 +38,8 @@ type Props = {
 };
 
 /**
- * Figma 349×444 (radius 16). Contain every clip; pad leftover space with
- * studio grey (#E0E0E0) so nothing is cut — same for all videos.
+ * Figma 349×444 (radius 16). Stretch every clip to fill W×H so head/legs/
+ * shoes are never cropped.
  */
 export function ExercisePlayerView({
   exercise,
@@ -154,7 +154,7 @@ export function ExercisePlayerView({
         showsVerticalScrollIndicator={false}
         bounces={false}
       >
-        {/* Figma 4319:5800 — 349-wide column */}
+        {/* Figma 4319:5800 — 349×444 media + copy column */}
         <View style={[styles.contentColumn, { width: contentWidth }]}>
           <Pressable
             style={[
@@ -174,6 +174,8 @@ export function ExercisePlayerView({
                 key={`${exercise.id}-${primarySource}-${restartToken}`}
                 source={primarySource}
                 exerciseId={exercise.id}
+                frameWidth={frameWidth}
+                frameHeight={frameHeight}
                 isPaused={playbackPaused}
                 restartToken={restartToken}
                 audioUnlockToken={audioUnlockToken}
