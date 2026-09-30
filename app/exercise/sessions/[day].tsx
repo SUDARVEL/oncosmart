@@ -175,7 +175,7 @@ export default function ExerciseSessionsScreen() {
         }}
       />
 
-      <ChatFab bottom={168} />
+      <ChatFab bottom={220} />
 
       <ResumeProgressModal
         visible={showResumeModal}

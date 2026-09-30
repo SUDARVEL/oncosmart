@@ -1,11 +1,11 @@
-import { createElement, useCallback, useEffect, useRef } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { createElement, useCallback, useEffect, useRef, useState } from 'react';
+import { StyleSheet, View, type LayoutChangeEvent } from 'react-native';
 
 import { ensureExerciseAudioSession } from '../../lib/ensureExerciseAudioSession';
 import {
   EXERCISE_VIDEO_FRAME_BACKGROUND,
   EXERCISE_VIDEO_SOURCE_ASPECT,
-  getGuidedVideoPresentation,
+  getContainedVideoBox,
 } from '../../lib/exerciseVideoFrame';
 import { shouldAcceptVideoEnd } from './sessionVideoCompletion';
 
@@ -36,9 +36,8 @@ export function SessionVideoPlayer({
   onPlaybackFailed,
   onEnded,
 }: Props) {
-  const presentation = getGuidedVideoPresentation(exerciseId);
-  const fillFrame = presentation.layout === 'fill-frame';
   const videoRef = useRef<HTMLVideoElement | null>(null);
+  const [frameSize, setFrameSize] = useState({ width: 0, height: 0 });
   const onEndedRef = useRef(onEnded);
   const onProgressRef = useRef(onProgress);
   const onBufferingRef = useRef(onBuffering);
@@ -224,38 +223,51 @@ export function SessionVideoPlayer({
     onPlaybackFailedRef.current?.();
   };
 
+  const handleFrameLayout = useCallback((event: LayoutChangeEvent) => {
+    const { width, height } = event.nativeEvent.layout;
+    setFrameSize((prev) =>
+      prev.width === width && prev.height === height ? prev : { width, height },
+    );
+  }, []);
+
+  const letterbox = getContainedVideoBox(
+    frameSize.width,
+    frameSize.height,
+    EXERCISE_VIDEO_SOURCE_ASPECT,
+  );
+
   if (!source?.trim()) {
     return <View style={styles.wrap} />;
   }
 
   return (
-    <View style={styles.wrap}>
-      {/* Figma 349×444: contain — full 9:16 person visible, never crop face/body. */}
-      <View style={fillFrame ? styles.fillBox : styles.sourceBox}>
-        {createElement('video', {
-          key: `${source}-${restartToken}`,
-          ref: videoRef,
-          src: source,
-          playsInline: true,
-          preload: 'auto',
-          controls: false,
-          muted: false,
-          defaultMuted: false,
-          style: {
-            ...styles.video,
-            objectFit: presentation.contentFit,
-            objectPosition: presentation.objectPosition,
-          },
-          onLoadStart: handleWaiting,
-          onWaiting: handleWaiting,
-          onCanPlay: handleCanPlay,
-          onPlaying: handlePlaying,
-          onLoadedMetadata: handleLoadedMetadata,
-          onTimeUpdate: handleTimeUpdate,
-          onEnded: handleEnded,
-          onError: handleError,
-        })}
-      </View>
+    <View style={styles.wrap} onLayout={handleFrameLayout}>
+      {letterbox.width > 0 && letterbox.height > 0
+        ? createElement('video', {
+            key: `${source}-${restartToken}`,
+            ref: videoRef,
+            src: source,
+            playsInline: true,
+            preload: 'auto',
+            controls: false,
+            muted: false,
+            defaultMuted: false,
+            style: {
+              width: letterbox.width,
+              height: letterbox.height,
+              objectFit: 'fill',
+              backgroundColor: EXERCISE_VIDEO_FRAME_BACKGROUND,
+            },
+            onLoadStart: handleWaiting,
+            onWaiting: handleWaiting,
+            onCanPlay: handleCanPlay,
+            onPlaying: handlePlaying,
+            onLoadedMetadata: handleLoadedMetadata,
+            onTimeUpdate: handleTimeUpdate,
+            onEnded: handleEnded,
+            onError: handleError,
+          })
+        : null}
     </View>
   );
 }
@@ -266,22 +278,7 @@ const styles = StyleSheet.create({
     height: '100%',
     backgroundColor: EXERCISE_VIDEO_FRAME_BACKGROUND,
     overflow: 'hidden',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  sourceBox: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    bottom: 0,
-    width: '100%',
-    aspectRatio: EXERCISE_VIDEO_SOURCE_ASPECT,
-  },
-  fillBox: {
-    width: '100%',
-    height: '100%',
-  },
-  video: {
-    width: '100%',
-    height: '100%',
-    backgroundColor: EXERCISE_VIDEO_FRAME_BACKGROUND,
-  } as object,
 });

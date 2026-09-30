@@ -95,7 +95,7 @@ function LegacyExercisePreview() {
         onComplete={() => router.back()}
         onBackPress={() => router.back()}
       />
-      <ChatFab bottom={168} />
+      <ChatFab bottom={220} />
     </>
   );
 }
@@ -353,7 +353,7 @@ function GuidedSessionScreen({
             finalizeSession(endBpm);
           }}
         />
-        <ChatFab bottom={168} />
+        <ChatFab bottom={220} />
       </>
     );
   }
@@ -396,7 +396,7 @@ function GuidedSessionScreen({
           finalizeSession(endBpm);
         }}
       />
-      <ChatFab bottom={168} />
+      <ChatFab bottom={220} />
     </>
   );
 }
