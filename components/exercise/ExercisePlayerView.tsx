@@ -19,7 +19,9 @@ import {
   EXERCISE_SCREEN_DESIGN_WIDTH,
   EXERCISE_SCREEN_HEADER_HEIGHT,
   EXERCISE_VIDEO_FRAME_BACKGROUND,
+  EXERCISE_VIDEO_FRAME_BORDER_COLOR,
   EXERCISE_VIDEO_FRAME_BORDER_RADIUS,
+  EXERCISE_VIDEO_FRAME_BORDER_WIDTH,
   EXERCISE_VIDEO_TO_COPY_GAP,
   getScaledVideoFrameSize,
 } from '../../lib/exerciseVideoFrame';
@@ -39,8 +41,7 @@ type Props = {
 
 /**
  * Figma 4319:5797 — 390×844 artboard, video 349×444 @ x=20.5.
- * Portrait MP4s fill the frame width (bottom-pinned crop) so the full person
- * stays visible with no side letterbox — matching the Figma comps.
+ * 9:16 MP4s use contain so head, body, and shoes are never cropped.
  */
 export function ExercisePlayerView({
   exercise,
@@ -164,6 +165,8 @@ export function ExercisePlayerView({
                 width: frameWidth,
                 height: frameHeight,
                 borderRadius: EXERCISE_VIDEO_FRAME_BORDER_RADIUS,
+                borderWidth: EXERCISE_VIDEO_FRAME_BORDER_WIDTH,
+                borderColor: EXERCISE_VIDEO_FRAME_BORDER_COLOR,
               },
             ]}
             onPress={unlockAudio}
@@ -219,19 +222,21 @@ export function ExercisePlayerView({
             unitLabel={unitLabel}
           />
 
-          {/* Figma: Pause + Restart with clear horizontal gap */}
+          {/* Pause + Restart — explicit margin so gap never collapses */}
           <View
             style={[
               styles.actions,
               {
                 width: contentWidth,
                 marginTop: Math.round(16 * scale),
-                gap: Math.round(EXERCISE_ACTION_BUTTON_GAP * scale),
               },
             ]}
           >
             <PressableScale
-              style={styles.pauseButton}
+              style={[
+                styles.pauseButton,
+                { marginRight: Math.round(EXERCISE_ACTION_BUTTON_GAP * scale) },
+              ]}
               onPress={handlePauseToggle}
               accessibilityRole="button"
             >
@@ -245,8 +250,8 @@ export function ExercisePlayerView({
               style={[
                 styles.restartButton,
                 {
-                  minWidth: Math.round(108 * scale),
-                  paddingHorizontal: Math.round(10 * scale),
+                  minWidth: Math.round(112 * scale),
+                  paddingHorizontal: Math.round(12 * scale),
                 },
               ]}
               onPress={handleRestart}
