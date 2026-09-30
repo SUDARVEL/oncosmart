@@ -1,12 +1,12 @@
 /**
- * Guided exercise video framing — Figma player window 349×444.
+ * Guided exercise video framing — Figma zoom-to-fit in 349×444.
  *
  * Exact window:
  *   width: 349px; height: 444px; border-radius: 16px; flex-shrink: 0;
  *
- * Default: `contain` inside 349×444 so nothing is cut (studio grey pads gaps).
- * Diaphragmatic breathing (DB / DBE) only: `fill` stretches to the frame so the
- * clip covers 349×444 without cropping the body.
+ * Same as Figma: scale the clip to fill W×H (`cover` / zoom). The taller 9:16
+ * source overflows top/bottom and is clipped by the frame — empty studio is
+ * cropped, the figure stays fully visible and centered. Same for every exercise.
  */
 
 export const EXERCISE_SCREEN_DESIGN_WIDTH = 390;
@@ -24,7 +24,7 @@ export const EXERCISE_VIDEO_SOURCE_HEIGHT = 16;
 export const EXERCISE_VIDEO_SOURCE_ASPECT =
   EXERCISE_VIDEO_SOURCE_WIDTH / EXERCISE_VIDEO_SOURCE_HEIGHT;
 
-/** Figma guided player media — 349×444. */
+/** Figma guided player media — 349×444 (zoom-fit window). */
 export const EXERCISE_VIDEO_FRAME_WIDTH = 349;
 export const EXERCISE_VIDEO_FRAME_HEIGHT = 444;
 export const CALF_RAISE_VIDEO_FRAME_HEIGHT = EXERCISE_VIDEO_FRAME_HEIGHT;
@@ -33,8 +33,8 @@ export const LEGACY_EXERCISE_VIDEO_FRAME_HEIGHT = 432;
 export const EXERCISE_VIDEO_FRAME_ASPECT =
   EXERCISE_VIDEO_FRAME_WIDTH / EXERCISE_VIDEO_FRAME_HEIGHT;
 /**
- * Studio wall from pathway MP4s (avg ~#E0E0E0). Used as contain padding so
- * letterbox bars match the video instead of looking like a cut/white gap.
+ * Studio wall from pathway MP4s (avg ~#E0E0E0). Shows while loading before
+ * the zoomed clip paints edge-to-edge.
  */
 export const EXERCISE_VIDEO_FRAME_BACKGROUND = '#E0E0E0';
 export const EXERCISE_VIDEO_FRAME_BORDER_RADIUS = 16;
@@ -47,20 +47,13 @@ export type GuidedVideoPresentation = {
   objectPosition: 'center bottom' | 'center' | `${string} ${string}`;
 };
 
-/** Default — never crop face/body/legs. */
-const CONTAIN_PRESENTATION: GuidedVideoPresentation = {
-  layout: 'fill-frame',
-  contentFit: 'contain',
-  objectPosition: 'center',
-};
-
 /**
- * DB only — stretch into 349×444 (no crop). Slight aspect stretch is OK so the
- * seated breathing clip fills the Figma window edge-to-edge.
+ * Figma zoom: cover the 349×444 window (scale to width, clip overflow height).
+ * Center so head→feet stay in the visible crop — same for every clip.
  */
-const DB_STRETCH_PRESENTATION: GuidedVideoPresentation = {
+const FIGMA_ZOOM_PRESENTATION: GuidedVideoPresentation = {
   layout: 'fill-frame',
-  contentFit: 'fill',
+  contentFit: 'cover',
   objectPosition: 'center',
 };
 
@@ -84,11 +77,8 @@ export function getGuidedVideoFrameAspect(_exerciseId: string): number {
   return EXERCISE_VIDEO_FRAME_ASPECT;
 }
 
-export function getGuidedVideoPresentation(exerciseId: string): GuidedVideoPresentation {
-  if (isDiaphragmaticBreathingExercise(exerciseId)) {
-    return DB_STRETCH_PRESENTATION;
-  }
-  return CONTAIN_PRESENTATION;
+export function getGuidedVideoPresentation(_exerciseId: string): GuidedVideoPresentation {
+  return FIGMA_ZOOM_PRESENTATION;
 }
 
 export function getExerciseScreenScale(screenWidth: number): number {
@@ -111,6 +101,36 @@ export function getScaledVideoFrameSize(screenWidth: number): {
     contentWidth: Math.round(EXERCISE_CONTENT_COLUMN_WIDTH * scale),
     contentLeftInset: Math.round(EXERCISE_CONTENT_LEFT_INSET * scale),
   };
+}
+
+/**
+ * Size of the 9:16 source when zoomed to cover `frameWidth`×`frameHeight`
+ * (Figma: scale to fill width; height overflows and is clipped).
+ */
+export function getCoverVideoBox(
+  frameWidth: number,
+  frameHeight: number,
+  sourceAspect: number = EXERCISE_VIDEO_SOURCE_ASPECT,
+): { width: number; height: number } {
+  if (
+    !Number.isFinite(frameWidth) ||
+    !Number.isFinite(frameHeight) ||
+    frameWidth <= 0 ||
+    frameHeight <= 0 ||
+    !Number.isFinite(sourceAspect) ||
+    sourceAspect <= 0
+  ) {
+    return { width: 0, height: 0 };
+  }
+  const frameAspect = frameWidth / frameHeight;
+  if (sourceAspect >= frameAspect) {
+    // Source wider than frame — height-fill, width overflows
+    const height = frameHeight;
+    return { width: Math.round(height * sourceAspect), height };
+  }
+  // Source taller (9:16 in 349×444) — width-fill, height overflows (Figma zoom)
+  const width = frameWidth;
+  return { width, height: Math.round(width / sourceAspect) };
 }
 
 export function getContainedVideoBox(

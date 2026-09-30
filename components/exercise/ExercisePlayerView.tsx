@@ -38,8 +38,8 @@ type Props = {
 };
 
 /**
- * Figma 349×444 (radius 16). DB/DBE stretches (`fill`) to cover the window
- * without cropping; every other clip uses contain + studio-grey pad.
+ * Figma 349×444 (radius 16). Zoom like Figma: scale clip to fill W×H (cover),
+ * center the figure, clip overflow — same framing for every exercise.
  */
 export function ExercisePlayerView({
   exercise,

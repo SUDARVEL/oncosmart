@@ -6,7 +6,7 @@ import { ensureExerciseAudioSession } from '../../lib/ensureExerciseAudioSession
 import {
   EXERCISE_VIDEO_FRAME_BACKGROUND,
   EXERCISE_VIDEO_SOURCE_ASPECT,
-  getContainedVideoBox,
+  getCoverVideoBox,
   getGuidedVideoPresentation,
 } from '../../lib/exerciseVideoFrame';
 import { shouldAcceptVideoEnd } from './sessionVideoCompletion';
@@ -222,17 +222,10 @@ export function SessionVideoPlayer({
   const height = Math.max(0, Math.round(frameHeight));
 
   /**
-   * DB: stretch (`fill`) across the full 349×444 — no crop.
-   * Others: contain in an explicit 9:16 box; studio grey pads the rest.
+   * Figma zoom: size a 9:16 box that covers the 349×444 window (width-fill,
+   * taller than the frame). Center it; overflow clips — same as Figma.
    */
-  const stretchToFrame = presentation.contentFit === 'fill' || presentation.contentFit === 'cover';
-  const fitted = stretchToFrame
-    ? { width, height }
-    : getContainedVideoBox(width, height, EXERCISE_VIDEO_SOURCE_ASPECT);
-  const videoContentFit = stretchToFrame
-    ? presentation.contentFit
-    : // fill the pre-sized source-aspect box so letterbox colour is studio grey
-      'fill';
+  const zoomed = getCoverVideoBox(width, height, EXERCISE_VIDEO_SOURCE_ASPECT);
 
   if (!source?.trim() || width <= 0 || height <= 0) {
     return <View style={[styles.frame, { width, height }]} />;
@@ -240,15 +233,15 @@ export function SessionVideoPlayer({
 
   return (
     <View style={[styles.frame, { width, height }]} collapsable={false}>
-      {fitted.width > 0 && fitted.height > 0 ? (
+      {zoomed.width > 0 && zoomed.height > 0 ? (
         <View
-          style={[styles.fittedBox, { width: fitted.width, height: fitted.height }]}
+          style={[styles.zoomBox, { width: zoomed.width, height: zoomed.height }]}
           collapsable={false}
         >
           <VideoView
-            style={{ width: fitted.width, height: fitted.height }}
+            style={{ width: zoomed.width, height: zoomed.height }}
             player={player}
-            contentFit={videoContentFit}
+            contentFit="fill"
             nativeControls={false}
             {...(Platform.OS === 'android' ? { surfaceType: 'textureView' as const } : {})}
           />
@@ -265,7 +258,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  fittedBox: {
+  zoomBox: {
     overflow: 'hidden',
     backgroundColor: EXERCISE_VIDEO_FRAME_BACKGROUND,
   },

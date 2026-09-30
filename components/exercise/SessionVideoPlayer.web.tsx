@@ -5,7 +5,7 @@ import { ensureExerciseAudioSession } from '../../lib/ensureExerciseAudioSession
 import {
   EXERCISE_VIDEO_FRAME_BACKGROUND,
   EXERCISE_VIDEO_SOURCE_ASPECT,
-  getContainedVideoBox,
+  getCoverVideoBox,
   getGuidedVideoPresentation,
 } from '../../lib/exerciseVideoFrame';
 import { shouldAcceptVideoEnd } from './sessionVideoCompletion';
@@ -180,15 +180,7 @@ export function SessionVideoPlayer({
 
   const width = Math.max(0, Math.round(frameWidth));
   const height = Math.max(0, Math.round(frameHeight));
-  const stretchToFrame = presentation.contentFit === 'fill' || presentation.contentFit === 'cover';
-  const fitted = stretchToFrame
-    ? { width, height }
-    : getContainedVideoBox(width, height, EXERCISE_VIDEO_SOURCE_ASPECT);
-  const objectFit = stretchToFrame
-    ? presentation.contentFit === 'cover'
-      ? 'cover'
-      : 'fill'
-    : 'fill';
+  const zoomed = getCoverVideoBox(width, height, EXERCISE_VIDEO_SOURCE_ASPECT);
 
   if (!source?.trim() || width <= 0 || height <= 0) {
     return <View style={[styles.wrap, { width, height }]} />;
@@ -196,7 +188,7 @@ export function SessionVideoPlayer({
 
   return (
     <View style={[styles.wrap, { width, height }]}>
-      {fitted.width > 0 && fitted.height > 0
+      {zoomed.width > 0 && zoomed.height > 0
         ? createElement('video', {
             key: `${source}-${restartToken}`,
             ref: videoRef,
@@ -207,9 +199,9 @@ export function SessionVideoPlayer({
             muted: false,
             defaultMuted: false,
             style: {
-              width: fitted.width,
-              height: fitted.height,
-              objectFit,
+              width: zoomed.width,
+              height: zoomed.height,
+              objectFit: 'fill',
               objectPosition: presentation.objectPosition,
               backgroundColor: EXERCISE_VIDEO_FRAME_BACKGROUND,
             },
