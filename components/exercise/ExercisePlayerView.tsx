@@ -38,8 +38,8 @@ type Props = {
 };
 
 /**
- * Figma 4319:5797 — 390-wide artboard, video 349 × 9:16 @ x=20.5.
- * Frame matches source aspect so the clip fills edge-to-edge (no grey rim).
+ * Figma 4319:5797 — 390×844 artboard, video 349×444 @ x=20.5.
+ * 9:16 clips are contained with natural gaps — full person, no crop, no stroke.
  */
 export function ExercisePlayerView({
   exercise,
@@ -300,7 +300,7 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     backgroundColor: EXERCISE_VIDEO_FRAME_BACKGROUND,
     flexShrink: 0,
-    // No borderWidth / borderColor — grey stroke rim removed.
+    // Radius only — never add borderWidth (no stroked outline).
   },
   videoLoaderOverlay: {
     ...StyleSheet.absoluteFillObject,

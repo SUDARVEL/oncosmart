@@ -1,9 +1,12 @@
 /**
  * Guided exercise video framing — Figma node 4319:5797 (390×844 screen).
  *
- * Content column width **349** (left inset 20.5). Pathway MP4s are **9:16**.
- * The video window uses the same **9:16** aspect at full 349 width so the clip
- * fills edge-to-edge (no grey letterbox rim, no body crop). Radius 8, no stroke.
+ * Video window: **349 × 444**, radius 8, left inset 20.5. No stroke border.
+ * Pathway MP4s are **9:16** (taller than 349×444).
+ *
+ * Best fit: letterbox a 9:16 box centered in the frame (CSS contain) so the
+ * full person stays visible with natural head/foot gaps. Frame fill matches
+ * studio grey so side gaps blend — never a stroked outline, never crop body.
  */
 
 export const EXERCISE_SCREEN_DESIGN_WIDTH = 390;
@@ -13,7 +16,7 @@ export const EXERCISE_SCREEN_HEADER_TOP = 13;
 export const EXERCISE_SCREEN_HEADER_HEIGHT = 40;
 /** Content column left inset: (390 − 349) / 2 */
 export const EXERCISE_CONTENT_LEFT_INSET = 20.5;
-/** Gap between video and copy block. */
+/** Gap between video (444) and copy block start (y=468) → 24px */
 export const EXERCISE_VIDEO_TO_COPY_GAP = 24;
 /** Clear separation between Pause and Restart. */
 export const EXERCISE_ACTION_BUTTON_GAP = 20;
@@ -24,23 +27,17 @@ export const EXERCISE_VIDEO_SOURCE_HEIGHT = 16;
 export const EXERCISE_VIDEO_SOURCE_ASPECT =
   EXERCISE_VIDEO_SOURCE_WIDTH / EXERCISE_VIDEO_SOURCE_HEIGHT;
 
-/** Video window width matches Figma content column. */
+/** Figma video window (4319:5801). */
 export const EXERCISE_VIDEO_FRAME_WIDTH = 349;
-/**
- * Height matches source 9:16 at full width so the person fills the rounded
- * rect with no grey side bars and no crop: round(349 × 16 / 9) = 620.
- */
-export const EXERCISE_VIDEO_FRAME_HEIGHT = Math.round(
-  (EXERCISE_VIDEO_FRAME_WIDTH * EXERCISE_VIDEO_SOURCE_HEIGHT) /
-    EXERCISE_VIDEO_SOURCE_WIDTH,
-);
+export const EXERCISE_VIDEO_FRAME_HEIGHT = 444;
 export const CALF_RAISE_VIDEO_FRAME_HEIGHT = EXERCISE_VIDEO_FRAME_HEIGHT;
 export const LEGACY_EXERCISE_VIDEO_FRAME_HEIGHT = 432;
 
-export const EXERCISE_VIDEO_FRAME_ASPECT = EXERCISE_VIDEO_SOURCE_ASPECT;
-/** White — never show a grey card/rim around the video. */
-export const EXERCISE_VIDEO_FRAME_BACKGROUND = '#FFFFFF';
-/** Corner radius only — no stroke/border. */
+export const EXERCISE_VIDEO_FRAME_ASPECT =
+  EXERCISE_VIDEO_FRAME_WIDTH / EXERCISE_VIDEO_FRAME_HEIGHT;
+/** Studio wash — blends with clip letterbox gaps (not a stroke border). */
+export const EXERCISE_VIDEO_FRAME_BACKGROUND = '#E8E8E8';
+/** Corner radius only — no borderWidth / borderColor. */
 export const EXERCISE_VIDEO_FRAME_BORDER_RADIUS = 8;
 
 export type GuidedVideoContentFit = 'contain' | 'cover' | 'fill';
@@ -51,7 +48,7 @@ export type GuidedVideoPresentation = {
   objectPosition: 'center bottom' | 'center' | `${string} ${string}`;
 };
 
-/** Frame matches 9:16 — fill the window; contain as a safety for odd assets. */
+/** Contain 9:16 inside 349×444 — full figure, gaps OK. */
 const FIGMA_VIDEO_PRESENTATION: GuidedVideoPresentation = {
   layout: 'fill-frame',
   contentFit: 'contain',
@@ -80,7 +77,7 @@ export function getExerciseScreenScale(screenWidth: number): number {
   return Math.min(1, screenWidth / EXERCISE_SCREEN_DESIGN_WIDTH);
 }
 
-/** Design video frame scaled to the device (349 × 9:16). */
+/** Design video 349×444 scaled to the device. */
 export function getScaledVideoFrameSize(screenWidth: number): {
   width: number;
   height: number;
@@ -89,12 +86,11 @@ export function getScaledVideoFrameSize(screenWidth: number): {
   contentLeftInset: number;
 } {
   const scale = getExerciseScreenScale(screenWidth);
-  const width = Math.round(EXERCISE_VIDEO_FRAME_WIDTH * scale);
   return {
     scale,
-    width,
-    height: Math.round(width / EXERCISE_VIDEO_SOURCE_ASPECT),
-    contentWidth: width,
+    width: Math.round(EXERCISE_VIDEO_FRAME_WIDTH * scale),
+    height: Math.round(EXERCISE_VIDEO_FRAME_HEIGHT * scale),
+    contentWidth: Math.round(EXERCISE_VIDEO_FRAME_WIDTH * scale),
     contentLeftInset: Math.round(EXERCISE_CONTENT_LEFT_INSET * scale),
   };
 }
