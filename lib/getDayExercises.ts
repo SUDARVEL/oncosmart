@@ -119,6 +119,10 @@ function pathwayToResolved(
     ? resolveCardLandscapePreview(slug, gender, avatar)
     : { previewVideo: null, previewPhoto: null };
 
+  // When Phase II has no landscape asset (e.g. neck-flexion-extension), loop the
+  // guided pathway clip on the card so it never stays a grey placeholder.
+  const previewVideo = card.previewVideo ?? (!card.previewPhoto ? videoSource : null);
+
   return {
     id: exercise.id,
     name,
@@ -132,7 +136,7 @@ function pathwayToResolved(
     videoSource,
     playbackSource: videoSource,
     previewPhoto: card.previewPhoto ?? thumbnail,
-    previewVideo: card.previewVideo,
+    previewVideo,
     thumbnail,
   };
 }
@@ -233,13 +237,15 @@ export function getLevelExercises(
     const slug = catalogSlugFromPathwayId(exercise.id) ?? exercise.id;
     const thumbnail = getDay1Thumbnail(slug);
     const card = resolveCardLandscapePreview(slug, gender, avatar);
+    const playbackSource = resolveExercisePlaybackUrl(videoSource, exercise.name, variant);
+    const previewVideo = card.previewVideo ?? (!card.previewPhoto ? playbackSource : null);
 
     return {
       ...exercise,
       videoSource,
-      playbackSource: resolveExercisePlaybackUrl(videoSource, exercise.name, variant),
+      playbackSource,
       previewPhoto: card.previewPhoto ?? thumbnail,
-      previewVideo: card.previewVideo,
+      previewVideo,
       thumbnail,
     };
   });
