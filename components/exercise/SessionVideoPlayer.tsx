@@ -1,13 +1,9 @@
 import { useVideoPlayer, VideoView } from 'expo-video';
-import { useCallback, useEffect, useRef, useState } from 'react';
-import { Platform, StyleSheet, View, type LayoutChangeEvent } from 'react-native';
+import { useCallback, useEffect, useRef } from 'react';
+import { Platform, StyleSheet, View } from 'react-native';
 
 import { ensureExerciseAudioSession } from '../../lib/ensureExerciseAudioSession';
-import {
-  EXERCISE_VIDEO_FRAME_BACKGROUND,
-  EXERCISE_VIDEO_SOURCE_ASPECT,
-  getContainedVideoBox,
-} from '../../lib/exerciseVideoFrame';
+import { EXERCISE_VIDEO_FRAME_BACKGROUND } from '../../lib/exerciseVideoFrame';
 import { shouldAcceptVideoEnd } from './sessionVideoCompletion';
 
 type Props = {
@@ -36,7 +32,6 @@ function applyAudiblePlayback(player: {
 
 export function SessionVideoPlayer({
   source,
-  exerciseId = '',
   isPaused,
   restartToken,
   seekRequest = null,
@@ -47,7 +42,6 @@ export function SessionVideoPlayer({
   onPlaybackFailed,
   onEnded,
 }: Props) {
-  const [frameSize, setFrameSize] = useState({ width: 0, height: 0 });
   const onEndedRef = useRef(onEnded);
   const onProgressRef = useRef(onProgress);
   const onBufferingRef = useRef(onBuffering);
@@ -211,44 +205,23 @@ export function SessionVideoPlayer({
     };
   }, [onPlaybackFailed, player, startPlayback]);
 
-  const handleFrameLayout = useCallback((event: LayoutChangeEvent) => {
-    const { width, height } = event.nativeEvent.layout;
-    setFrameSize((prev) =>
-      prev.width === width && prev.height === height ? prev : { width, height },
-    );
-  }, []);
-
-  const letterbox = getContainedVideoBox(
-    frameSize.width,
-    frameSize.height,
-    EXERCISE_VIDEO_SOURCE_ASPECT,
-  );
-
   if (!source?.trim()) {
     return <View style={styles.frame} />;
   }
 
   return (
-    <View style={styles.frame} onLayout={handleFrameLayout}>
+    <View style={styles.frame} collapsable={false}>
       {/*
-        Explicit 9:16 box centered in the Figma 349×444 frame.
-        Do not rely on native contentFit alone — Android SurfaceView can ignore it
-        and zoom/crop the head. Box matches source aspect so fill is safe.
+        Parent frame is already 9:16 at full width — fill it edge-to-edge.
+        contain keeps odd non-9:16 assets from cropping; no grey letterbox rim.
       */}
-      {letterbox.width > 0 && letterbox.height > 0 ? (
-        <View
-          style={[styles.letterbox, { width: letterbox.width, height: letterbox.height }]}
-          collapsable={false}
-        >
-          <VideoView
-            style={styles.video}
-            player={player}
-            contentFit="fill"
-            nativeControls={false}
-            {...(Platform.OS === 'android' ? { surfaceType: 'textureView' as const } : {})}
-          />
-        </View>
-      ) : null}
+      <VideoView
+        style={styles.video}
+        player={player}
+        contentFit="contain"
+        nativeControls={false}
+        {...(Platform.OS === 'android' ? { surfaceType: 'textureView' as const } : {})}
+      />
     </View>
   );
 }
@@ -259,12 +232,6 @@ const styles = StyleSheet.create({
     height: '100%',
     backgroundColor: EXERCISE_VIDEO_FRAME_BACKGROUND,
     overflow: 'hidden',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  letterbox: {
-    overflow: 'hidden',
-    backgroundColor: EXERCISE_VIDEO_FRAME_BACKGROUND,
   },
   video: {
     width: '100%',

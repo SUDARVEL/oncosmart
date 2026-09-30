@@ -1,12 +1,8 @@
-import { createElement, useCallback, useEffect, useRef, useState } from 'react';
-import { StyleSheet, View, type LayoutChangeEvent } from 'react-native';
+import { createElement, useCallback, useEffect, useRef } from 'react';
+import { StyleSheet, View } from 'react-native';
 
 import { ensureExerciseAudioSession } from '../../lib/ensureExerciseAudioSession';
-import {
-  EXERCISE_VIDEO_FRAME_BACKGROUND,
-  EXERCISE_VIDEO_SOURCE_ASPECT,
-  getContainedVideoBox,
-} from '../../lib/exerciseVideoFrame';
+import { EXERCISE_VIDEO_FRAME_BACKGROUND } from '../../lib/exerciseVideoFrame';
 import { shouldAcceptVideoEnd } from './sessionVideoCompletion';
 
 type Props = {
@@ -25,7 +21,6 @@ type Props = {
 
 export function SessionVideoPlayer({
   source,
-  exerciseId = '',
   isPaused,
   restartToken,
   seekRequest = null,
@@ -37,7 +32,6 @@ export function SessionVideoPlayer({
   onEnded,
 }: Props) {
   const videoRef = useRef<HTMLVideoElement | null>(null);
-  const [frameSize, setFrameSize] = useState({ width: 0, height: 0 });
   const onEndedRef = useRef(onEnded);
   const onProgressRef = useRef(onProgress);
   const onBufferingRef = useRef(onBuffering);
@@ -49,7 +43,6 @@ export function SessionVideoPlayer({
   const isPausedRef = useRef(isPaused);
   const lastSeekTokenRef = useRef<number | null>(null);
   const lastAudioUnlockTokenRef = useRef(0);
-  const needsAudioUnlockRef = useRef(false);
 
   onEndedRef.current = onEnded;
   onProgressRef.current = onProgress;
@@ -66,51 +59,18 @@ export function SessionVideoPlayer({
     onBufferingRef.current?.(true);
   }, []);
 
-  const forceUnmute = useCallback((video: HTMLVideoElement) => {
-    video.muted = false;
-    video.volume = 1;
-    video.defaultMuted = false;
-    needsAudioUnlockRef.current = false;
-  }, []);
-
-  const playWithSound = useCallback(
-    async (video: HTMLVideoElement) => {
-      if (isPausedRef.current || completedRef.current) return;
-
-      await ensureExerciseAudioSession();
-      video.volume = 1;
-      video.defaultMuted = false;
-      video.muted = false;
-
-      try {
-        await video.play();
-        forceUnmute(video);
-      } catch {
-        needsAudioUnlockRef.current = true;
-        video.muted = true;
-        try {
-          await video.play();
-        } catch {
-          // Browser still blocking — user must tap Resume.
-        }
-      }
-    },
-    [forceUnmute],
-  );
-
-  const unlockAndPlay = useCallback(async () => {
+  const startPlayback = useCallback(async () => {
     const video = videoRef.current;
     if (!video || isPausedRef.current || completedRef.current) return;
-
     await ensureExerciseAudioSession();
-    forceUnmute(video);
+    video.muted = false;
+    video.volume = 1;
     try {
       await video.play();
-      forceUnmute(video);
     } catch {
-      // Ignore — user gesture may still be required.
+      // Autoplay may be blocked until a user gesture unlocks audio.
     }
-  }, [forceUnmute]);
+  }, []);
 
   useEffect(() => {
     resetPlaybackState();
@@ -119,20 +79,30 @@ export function SessionVideoPlayer({
   useEffect(() => {
     const video = videoRef.current;
     if (!video) return;
-
     if (isPaused) {
       video.pause();
       return;
     }
-
-    void playWithSound(video);
-  }, [isPaused, playWithSound]);
+    void startPlayback();
+  }, [isPaused, startPlayback, source, restartToken]);
 
   useEffect(() => {
     if (!audioUnlockToken || audioUnlockToken === lastAudioUnlockTokenRef.current) return;
     lastAudioUnlockTokenRef.current = audioUnlockToken;
-    void unlockAndPlay();
-  }, [audioUnlockToken, unlockAndPlay]);
+    void startPlayback();
+  }, [audioUnlockToken, startPlayback]);
+
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+    resetPlaybackState();
+    video.currentTime = 0;
+    if (!isPausedRef.current) {
+      void startPlayback();
+    } else {
+      video.pause();
+    }
+  }, [resetPlaybackState, restartToken, startPlayback, source]);
 
   useEffect(() => {
     if (!seekRequest) return;
@@ -141,80 +111,70 @@ export function SessionVideoPlayer({
 
     const video = videoRef.current;
     if (!video) return;
-
     const duration = durationRef.current > 0 ? durationRef.current : video.duration;
     if (!Number.isFinite(duration) || duration <= 0) return;
 
+    const nextTime = Math.min(Math.max(seekRequest.fraction, 0), 1) * duration;
     completedRef.current = false;
-    video.currentTime = Math.min(Math.max(seekRequest.fraction, 0), 1) * duration;
-    onProgressRef.current?.(Math.min(video.currentTime / duration, 1));
-    void unlockAndPlay();
-  }, [seekRequest, unlockAndPlay]);
-
-  const handleLoadedMetadata = (event: Event) => {
-    const video = event.currentTarget as HTMLVideoElement;
-    if (video.duration > 0 && Number.isFinite(video.duration)) {
-      durationRef.current = video.duration;
-      onDurationRef.current?.(video.duration);
-    }
-    if (!isPausedRef.current) {
-      void playWithSound(video);
-    }
-  };
+    video.currentTime = nextTime;
+    onProgressRef.current?.(Math.min(nextTime / duration, 1));
+  }, [seekRequest]);
 
   const handleWaiting = () => {
-    if (!completedRef.current) {
-      onBufferingRef.current?.(true);
-    }
+    onBufferingRef.current?.(true);
+  };
+
+  const handleCanPlay = () => {
+    onBufferingRef.current?.(false);
   };
 
   const handlePlaying = () => {
     onBufferingRef.current?.(false);
+  };
+
+  const handleLoadedMetadata = () => {
     const video = videoRef.current;
-    if (video && !needsAudioUnlockRef.current) {
-      forceUnmute(video);
+    if (!video) return;
+    if (Number.isFinite(video.duration) && video.duration > 0) {
+      durationRef.current = video.duration;
+      onDurationRef.current?.(video.duration);
     }
-  };
-
-  const handleCanPlay = (event: Event) => {
     onBufferingRef.current?.(false);
-    const video = event.currentTarget as HTMLVideoElement;
-    if (!isPausedRef.current && video.paused) {
-      void playWithSound(video);
+    if (!isPausedRef.current && !completedRef.current) {
+      void startPlayback();
     }
   };
 
-  const handleTimeUpdate = (event: Event) => {
+  const handleTimeUpdate = () => {
     if (completedRef.current) return;
+    const video = videoRef.current;
+    if (!video) return;
 
-    const video = event.currentTarget as HTMLVideoElement;
     if (video.currentTime > 0.5) {
       hasStartedRef.current = true;
     }
 
-    if (video.duration > 0 && Number.isFinite(video.duration)) {
+    if (Number.isFinite(video.duration) && video.duration > 0) {
       durationRef.current = video.duration;
+      onDurationRef.current?.(video.duration);
+      onProgressRef.current?.(Math.min(video.currentTime / video.duration, 1));
     }
-
     onBufferingRef.current?.(false);
-    if (durationRef.current > 0) {
-      onProgressRef.current?.(Math.min(video.currentTime / durationRef.current, 1));
-    }
   };
 
-  const handleEnded = (event: Event) => {
-    const video = event.currentTarget as HTMLVideoElement;
+  const handleEnded = () => {
     if (completedRef.current) return;
+    const video = videoRef.current;
+    const duration = durationRef.current > 0 ? durationRef.current : (video?.duration ?? 0);
+    const currentTime = video?.currentTime ?? 0;
 
-    const duration = durationRef.current > 0 ? durationRef.current : video.duration;
-    if (!shouldAcceptVideoEnd(video.currentTime, duration, hasStartedRef.current)) {
+    if (!shouldAcceptVideoEnd(currentTime, duration, hasStartedRef.current)) {
       return;
     }
 
     completedRef.current = true;
     onProgressRef.current?.(1);
-    onBufferingRef.current?.(false);
-    video.pause();
+    video?.pause();
     onEndedRef.current();
   };
 
@@ -223,51 +183,36 @@ export function SessionVideoPlayer({
     onPlaybackFailedRef.current?.();
   };
 
-  const handleFrameLayout = useCallback((event: LayoutChangeEvent) => {
-    const { width, height } = event.nativeEvent.layout;
-    setFrameSize((prev) =>
-      prev.width === width && prev.height === height ? prev : { width, height },
-    );
-  }, []);
-
-  const letterbox = getContainedVideoBox(
-    frameSize.width,
-    frameSize.height,
-    EXERCISE_VIDEO_SOURCE_ASPECT,
-  );
-
   if (!source?.trim()) {
     return <View style={styles.wrap} />;
   }
 
   return (
-    <View style={styles.wrap} onLayout={handleFrameLayout}>
-      {letterbox.width > 0 && letterbox.height > 0
-        ? createElement('video', {
-            key: `${source}-${restartToken}`,
-            ref: videoRef,
-            src: source,
-            playsInline: true,
-            preload: 'auto',
-            controls: false,
-            muted: false,
-            defaultMuted: false,
-            style: {
-              width: letterbox.width,
-              height: letterbox.height,
-              objectFit: 'fill',
-              backgroundColor: EXERCISE_VIDEO_FRAME_BACKGROUND,
-            },
-            onLoadStart: handleWaiting,
-            onWaiting: handleWaiting,
-            onCanPlay: handleCanPlay,
-            onPlaying: handlePlaying,
-            onLoadedMetadata: handleLoadedMetadata,
-            onTimeUpdate: handleTimeUpdate,
-            onEnded: handleEnded,
-            onError: handleError,
-          })
-        : null}
+    <View style={styles.wrap}>
+      {createElement('video', {
+        key: `${source}-${restartToken}`,
+        ref: videoRef,
+        src: source,
+        playsInline: true,
+        preload: 'auto',
+        controls: false,
+        muted: false,
+        defaultMuted: false,
+        style: {
+          width: '100%',
+          height: '100%',
+          objectFit: 'contain',
+          backgroundColor: EXERCISE_VIDEO_FRAME_BACKGROUND,
+        },
+        onLoadStart: handleWaiting,
+        onWaiting: handleWaiting,
+        onCanPlay: handleCanPlay,
+        onPlaying: handlePlaying,
+        onLoadedMetadata: handleLoadedMetadata,
+        onTimeUpdate: handleTimeUpdate,
+        onEnded: handleEnded,
+        onError: handleError,
+      })}
     </View>
   );
 }
@@ -278,7 +223,5 @@ const styles = StyleSheet.create({
     height: '100%',
     backgroundColor: EXERCISE_VIDEO_FRAME_BACKGROUND,
     overflow: 'hidden',
-    alignItems: 'center',
-    justifyContent: 'center',
   },
 });
