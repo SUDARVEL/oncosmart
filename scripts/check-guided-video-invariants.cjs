@@ -3,7 +3,7 @@
  * Run: npm run check:videos
  *
  * Figma source of truth for the player media window:
- *   349×444, radius 16. Zoom/cover like Figma (scale to fill W×H, center).
+ *   349×444, radius 16. Stretch-fill so no body parts are cropped.
  *
  * Also guards past production bugs:
  * 1. Wrong Supabase bucket (`exercise-videos`) → "Video not available"
@@ -48,8 +48,8 @@ assert(
   'Frame radius must stay 16',
 );
 assert(
-  /contentFit:\s*'cover'/.test(frame) && frame.includes('getCoverVideoBox'),
-  'Guided videos must Figma-zoom (cover) inside 349×444',
+  /contentFit:\s*'fill'/.test(frame),
+  'Guided videos must stretch-fill 349×444 (never crop body)',
 );
 assert(
   frame.includes("layout: 'fill-frame'"),
@@ -113,9 +113,8 @@ const nativePlayer = read('components/exercise/SessionVideoPlayer.tsx');
 assert(
   nativePlayer.includes('frameWidth') &&
     nativePlayer.includes('frameHeight') &&
-    nativePlayer.includes('getCoverVideoBox') &&
-    nativePlayer.includes('contentFit="fill"'),
-  'Native player must take explicit Figma frame size and zoom with cover box',
+    nativePlayer.includes('contentFit={presentation.contentFit}'),
+  'Native player must take explicit Figma frame size and stretch-fill',
 );
 assert(
   nativePlayer.includes('getGuidedVideoPresentation') &&

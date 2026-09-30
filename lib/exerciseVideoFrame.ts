@@ -1,12 +1,12 @@
 /**
- * Guided exercise video framing — Figma zoom-to-fit in 349×444.
+ * Guided exercise video framing — Figma 349×444, never hide body parts.
  *
  * Exact window:
  *   width: 349px; height: 444px; border-radius: 16px; flex-shrink: 0;
  *
- * Same as Figma: scale the clip to fill W×H (`cover` / zoom). The taller 9:16
- * source overflows top/bottom and is clipped by the frame — empty studio is
- * cropped, the figure stays fully visible and centered. Same for every exercise.
+ * Stretch (`fill`) every clip to the full W×H. Cover/zoom was cropping shoes
+ * and legs on taller standing takes — fill keeps head→feet visible while still
+ * covering the frame (slight aspect stretch is OK).
  */
 
 export const EXERCISE_SCREEN_DESIGN_WIDTH = 390;
@@ -48,12 +48,11 @@ export type GuidedVideoPresentation = {
 };
 
 /**
- * Figma zoom: cover the 349×444 window (scale to width, clip overflow height).
- * Center so head→feet stay in the visible crop — same for every clip.
+ * Stretch into 349×444 — fills the frame, never crops head/legs/shoes.
  */
-const FIGMA_ZOOM_PRESENTATION: GuidedVideoPresentation = {
+const NO_CROP_STRETCH_PRESENTATION: GuidedVideoPresentation = {
   layout: 'fill-frame',
-  contentFit: 'cover',
+  contentFit: 'fill',
   objectPosition: 'center',
 };
 
@@ -78,7 +77,7 @@ export function getGuidedVideoFrameAspect(_exerciseId: string): number {
 }
 
 export function getGuidedVideoPresentation(_exerciseId: string): GuidedVideoPresentation {
-  return FIGMA_ZOOM_PRESENTATION;
+  return NO_CROP_STRETCH_PRESENTATION;
 }
 
 export function getExerciseScreenScale(screenWidth: number): number {

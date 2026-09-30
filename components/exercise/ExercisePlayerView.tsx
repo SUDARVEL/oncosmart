@@ -38,8 +38,8 @@ type Props = {
 };
 
 /**
- * Figma 349×444 (radius 16). Zoom like Figma: scale clip to fill W×H (cover),
- * center the figure, clip overflow — same framing for every exercise.
+ * Figma 349×444 (radius 16). Stretch every clip to fill W×H (`fill`) so
+ * head/legs/shoes are never cropped — same for every exercise.
  */
 export function ExercisePlayerView({
   exercise,

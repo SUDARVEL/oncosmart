@@ -5,8 +5,6 @@ import { Platform, StyleSheet, View } from 'react-native';
 import { ensureExerciseAudioSession } from '../../lib/ensureExerciseAudioSession';
 import {
   EXERCISE_VIDEO_FRAME_BACKGROUND,
-  EXERCISE_VIDEO_SOURCE_ASPECT,
-  getCoverVideoBox,
   getGuidedVideoPresentation,
 } from '../../lib/exerciseVideoFrame';
 import { shouldAcceptVideoEnd } from './sessionVideoCompletion';
@@ -221,32 +219,20 @@ export function SessionVideoPlayer({
   const width = Math.max(0, Math.round(frameWidth));
   const height = Math.max(0, Math.round(frameHeight));
 
-  /**
-   * Figma zoom: size a 9:16 box that covers the 349×444 window (width-fill,
-   * taller than the frame). Center it; overflow clips — same as Figma.
-   */
-  const zoomed = getCoverVideoBox(width, height, EXERCISE_VIDEO_SOURCE_ASPECT);
-
   if (!source?.trim() || width <= 0 || height <= 0) {
     return <View style={[styles.frame, { width, height }]} />;
   }
 
+  // Stretch to exact 349×444 — full figure always visible (no cover crop).
   return (
     <View style={[styles.frame, { width, height }]} collapsable={false}>
-      {zoomed.width > 0 && zoomed.height > 0 ? (
-        <View
-          style={[styles.zoomBox, { width: zoomed.width, height: zoomed.height }]}
-          collapsable={false}
-        >
-          <VideoView
-            style={{ width: zoomed.width, height: zoomed.height }}
-            player={player}
-            contentFit="fill"
-            nativeControls={false}
-            {...(Platform.OS === 'android' ? { surfaceType: 'textureView' as const } : {})}
-          />
-        </View>
-      ) : null}
+      <VideoView
+        style={{ width, height }}
+        player={player}
+        contentFit={presentation.contentFit}
+        nativeControls={false}
+        {...(Platform.OS === 'android' ? { surfaceType: 'textureView' as const } : {})}
+      />
     </View>
   );
 }
@@ -257,9 +243,5 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  zoomBox: {
-    overflow: 'hidden',
-    backgroundColor: EXERCISE_VIDEO_FRAME_BACKGROUND,
   },
 });
