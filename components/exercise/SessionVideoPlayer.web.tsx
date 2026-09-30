@@ -230,7 +230,7 @@ export function SessionVideoPlayer({
 
   return (
     <View style={styles.wrap}>
-      {/* Figma 349×444: cover fills portrait window (source ~349×623). */}
+      {/* Figma 349×444: contain keeps full person visible (source ~349×623). */}
       <View style={fillFrame ? styles.fillBox : styles.sourceBox}>
         {createElement('video', {
           key: `${source}-${restartToken}`,

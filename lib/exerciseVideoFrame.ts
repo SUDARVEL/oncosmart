@@ -1,12 +1,12 @@
 /**
  * Guided exercise video framing — Figma node 4319:5797 (390×844 screen).
  *
- * Video layer (4319:5801): **349 × 444**, radius 8, left inset 20.5.
- * Source portrait exports: **349 × 623** (taller).
+ * Video layer (4319:5801): **349 × 444**, left inset 20.5.
+ * Source portrait exports: **349 × 623** (taller than the window).
  *
- * Fill the 349×444 window with `cover` + center so the clip keeps portrait
- * orientation and fills the frame (same as Figma). Empty headroom is trimmed;
- * the subject stays framed like the design comps.
+ * Use `contain` + center so the full figure (head → shoes) stays visible
+ * inside the 349×444 frame with no crop or stretch. Side letterbox uses the
+ * frame background (#E8E8E8).
  */
 
 export const EXERCISE_SCREEN_DESIGN_WIDTH = 390;
@@ -46,11 +46,11 @@ export type GuidedVideoPresentation = {
 
 /**
  * Portrait source (349×623) → Figma window (349×444):
- * cover fills width, trims equal top/bottom headroom — matches Figma comps.
+ * contain fits the full clip (shoes included); never crop or stretch.
  */
 const FIGMA_VIDEO_PRESENTATION: GuidedVideoPresentation = {
   layout: 'fill-frame',
-  contentFit: 'cover',
+  contentFit: 'contain',
   objectPosition: 'center',
 };
 
