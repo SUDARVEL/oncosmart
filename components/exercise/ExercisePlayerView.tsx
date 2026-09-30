@@ -19,7 +19,6 @@ import {
   EXERCISE_VIDEO_FRAME_BORDER_RADIUS,
   EXERCISE_VIDEO_FRAME_WIDTH,
   getGuidedVideoFrameAspect,
-  getGuidedVideoFrameHeight,
 } from '../../lib/exerciseVideoFrame';
 import { colors } from '../../theme/colors';
 import { ExercisePlayerCopyBlock } from './ExercisePlayerCopyBlock';
@@ -62,9 +61,8 @@ export function ExercisePlayerView({
   const playbackPaused = isPaused || overlayPaused;
   const primarySource = videoSources[0]?.trim() ?? '';
 
-  // Pathway videos: exact 349×620 aspect (scaled to screen width − 32).
-  // Legacy assets keep shorter crop heights from getGuidedVideoFrameHeight.
-  const frameHeightSpec = getGuidedVideoFrameHeight(exercise.id);
+  // Figma video area 349×444 (node 2622:2437), scaled to screen width − 32.
+  // Source MP4s are taller (~349×623) and fit with contain — no crop.
   const frameAspect = getGuidedVideoFrameAspect(exercise.id);
   const frameWidth = Math.min(EXERCISE_VIDEO_FRAME_WIDTH, Math.max(0, screenWidth - 32));
   const frameHeight = Math.round(frameWidth / frameAspect);
@@ -258,12 +256,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   videoWrap: {
+    // Figma: width 349, height 444, flex-shrink 0, radius 16
     width: EXERCISE_VIDEO_FRAME_WIDTH,
     borderRadius: EXERCISE_VIDEO_FRAME_BORDER_RADIUS,
     overflow: 'hidden',
     backgroundColor: EXERCISE_VIDEO_FRAME_BACKGROUND,
     flexShrink: 0,
-    // Keep Android VideoView clipped to the 349×620 (scaled) frame.
     alignSelf: 'center',
   },
   videoLoaderOverlay: {

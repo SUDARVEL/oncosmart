@@ -218,7 +218,7 @@ export function SessionVideoPlayer({
 
   return (
     <View style={styles.frame}>
-      {/* Pathway: fill 349×620 frame. Legacy: taller source bottom-aligned in crop. */}
+      {/* Figma 349×444: fill-frame + contain so 349×623 source never crops. */}
       <View style={fillFrame ? styles.fillBox : styles.sourceBox} collapsable={false}>
         <VideoView
           style={styles.video}

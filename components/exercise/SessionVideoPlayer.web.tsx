@@ -230,7 +230,7 @@ export function SessionVideoPlayer({
 
   return (
     <View style={styles.wrap}>
-      {/* Pathway: fill 349×620 frame. Legacy: taller source bottom-aligned in crop. */}
+      {/* Figma 349×444: fill-frame + contain so taller source never crops. */}
       <View style={fillFrame ? styles.fillBox : styles.sourceBox}>
         {createElement('video', {
           key: `${source}-${restartToken}`,
