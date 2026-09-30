@@ -9,6 +9,7 @@ import {
   getFemaleTamilPortraitVideoPath,
 } from './exerciseFemaleVideos';
 import { getMaleTamilPortraitVideoPath } from './exerciseMaleTamilVideos';
+import { getPhase2LandscapeVideoUrl } from './phase2LandscapeMedia';
 
 const SUPABASE_PUBLIC_BASE =
   'https://soyaeuffzytrjojifvdz.supabase.co/storage/v1/object/public/Oncosmart%20Videos%20and%20Assets';
@@ -110,6 +111,10 @@ export function getSessionLandscapeVideoUrl(
   gender: AppGender | null,
   avatar: AppAvatar | null = null,
 ): string | null {
+  // Prefer Oncosmart Phase II Landscape (1920×1080 card assets).
+  const phase2 = getPhase2LandscapeVideoUrl(exerciseId, gender, avatar);
+  if (phase2) return phase2;
+
   if (isFemaleMediaTrack(gender, avatar)) {
     const path = getFemaleLandscapeVideoPath(exerciseId);
     return path ? publicUrlForObjectPath(path) : null;

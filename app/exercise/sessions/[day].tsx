@@ -1,11 +1,20 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import {
+  ActivityIndicator,
+  FlatList,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+  type ViewToken,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ExerciseSessionCard } from '../../../components/exercise/ExerciseSessionCard';
+import type { ResolvedDayExercise } from '../../../lib/getDayExercises';
 import { PulseOximeterModal } from '../../../components/exercise/PulseOximeterModal';
 import { ResumeProgressModal } from '../../../components/growth/ResumeProgressModal';
 import { ReadyToBeginModal } from '../../../components/pain/ReadyToBeginModal';
@@ -69,6 +78,34 @@ export default function ExerciseSessionsScreen() {
   }, [avatar, gender, language, level, pathwayLoaded]);
   const [showReadyModal, setShowReadyModal] = useState(false);
   const [showPulseModal, setShowPulseModal] = useState(false);
+  /** Only mount looping preview videos for on-screen cards (avoids blank players). */
+  const [activePreviewIds, setActivePreviewIds] = useState<Set<string>>(() => new Set());
+
+  // Seed first paint so cards are not grey while waiting for FlatList viewability.
+  useEffect(() => {
+    if (exercises.length === 0) {
+      setActivePreviewIds(new Set());
+      return;
+    }
+    setActivePreviewIds(new Set(exercises.slice(0, 4).map((exercise) => exercise.id)));
+  }, [exercises]);
+
+  const onViewableItemsChanged = useCallback(
+    ({ viewableItems }: { viewableItems: ViewToken[] }) => {
+      const next = new Set<string>();
+      for (const token of viewableItems) {
+        const id = (token.item as ResolvedDayExercise | undefined)?.id;
+        if (id) next.add(id);
+      }
+      if (next.size > 0) setActivePreviewIds(next);
+    },
+    [],
+  );
+
+  const viewabilityConfig = useMemo(
+    () => ({ itemVisiblePercentThreshold: 25, minimumViewTime: 40 }),
+    [],
+  );
 
   const beginSession = (startBpm: number) => {
     runIfProgressActive(() => {
@@ -121,22 +158,29 @@ export default function ExerciseSessionsScreen() {
         </View>
       ) : null}
 
-      <ScrollView
+      <FlatList
         style={styles.scroll}
         contentContainerStyle={styles.scrollContent}
+        data={exercises}
+        keyExtractor={(exercise) => exercise.id}
         showsVerticalScrollIndicator={false}
-      >
-        {exercises.map((exercise) => (
+        initialNumToRender={4}
+        maxToRenderPerBatch={4}
+        windowSize={5}
+        removeClippedSubviews
+        onViewableItemsChanged={onViewableItemsChanged}
+        viewabilityConfig={viewabilityConfig}
+        renderItem={({ item: exercise }) => (
           <ExerciseSessionCard
-            key={exercise.id}
             exerciseId={exercise.id}
             name={exercise.name}
             repLabel={exercise.repLabel}
             previewPhoto={exercise.previewPhoto}
             previewVideo={exercise.previewVideo}
+            isActive={activePreviewIds.has(exercise.id)}
           />
-        ))}
-      </ScrollView>
+        )}
+      />
 
       <SafeAreaView style={styles.footer} edges={['bottom']}>
         <Pressable

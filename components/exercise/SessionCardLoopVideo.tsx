@@ -1,10 +1,10 @@
 /**
- * Muted looping landscape preview for Welcome-to-Day session cards (GIF-like).
- * Fixed 257×112 — fill stretches to the frame (no letterbox bars, no crop).
+ * Muted looping landscape preview for Welcome-to-Day session cards.
+ * Reports playback failure so the card can show a still fallback.
  */
 import { useVideoPlayer, VideoView } from 'expo-video';
 import { useEffect } from 'react';
-import { StyleSheet } from 'react-native';
+import { Platform, StyleSheet } from 'react-native';
 
 import {
   SESSION_EXERCISE_CARD_PREVIEW_HEIGHT,
@@ -13,13 +13,13 @@ import {
 
 type Props = {
   uri: string;
+  onFailed?: () => void;
 };
 
-export function SessionCardLoopVideo({ uri }: Props) {
+export function SessionCardLoopVideo({ uri, onFailed }: Props) {
   const player = useVideoPlayer(uri, (instance) => {
     instance.loop = true;
     instance.muted = true;
-    // Never steal audio focus from the guided session player.
     instance.audioMixingMode = 'mixWithOthers';
     instance.play();
   });
@@ -31,12 +31,22 @@ export function SessionCardLoopVideo({ uri }: Props) {
     player.play();
   }, [player, uri]);
 
+  useEffect(() => {
+    const sub = player.addListener('statusChange', (payload) => {
+      if (payload.status === 'error') {
+        onFailed?.();
+      }
+    });
+    return () => sub.remove();
+  }, [onFailed, player]);
+
   return (
     <VideoView
       style={styles.video}
       player={player}
-      contentFit="fill"
+      contentFit="cover"
       nativeControls={false}
+      {...(Platform.OS === 'android' ? { surfaceType: 'textureView' as const } : {})}
     />
   );
 }

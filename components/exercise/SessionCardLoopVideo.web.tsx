@@ -1,9 +1,8 @@
 /**
  * Web: muted looping landscape preview for session cards.
- * Fixed 257×112 — fill stretches to the frame (no letterbox bars, no crop).
  */
-import { createElement, useState } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { createElement } from 'react';
+import { StyleSheet } from 'react-native';
 
 import {
   SESSION_EXERCISE_CARD_PREVIEW_HEIGHT,
@@ -12,15 +11,10 @@ import {
 
 type Props = {
   uri: string;
+  onFailed?: () => void;
 };
 
-export function SessionCardLoopVideo({ uri }: Props) {
-  const [failed, setFailed] = useState(false);
-
-  if (failed) {
-    return <View style={styles.video} />;
-  }
-
+export function SessionCardLoopVideo({ uri, onFailed }: Props) {
   return createElement('video', {
     key: uri,
     src: uri,
@@ -30,7 +24,7 @@ export function SessionCardLoopVideo({ uri }: Props) {
     playsInline: true,
     preload: 'metadata',
     style: styles.video,
-    onError: () => setFailed(true),
+    onError: () => onFailed?.(),
   });
 }
 
@@ -39,7 +33,8 @@ const styles = StyleSheet.create({
     width: SESSION_EXERCISE_CARD_PREVIEW_WIDTH,
     height: SESSION_EXERCISE_CARD_PREVIEW_HEIGHT,
     borderRadius: 8,
-    objectFit: 'fill',
+    objectFit: 'cover',
+    objectPosition: 'center',
     display: 'block',
   } as object,
 });

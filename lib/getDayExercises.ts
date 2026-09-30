@@ -17,14 +17,45 @@ import {
   getExercisePortraitVideoUrl,
   getSessionLandscapeVideoUrl,
 } from './exerciseMediaUrls';
+import { resolvePhase2CardLandscapePreview } from './phase2LandscapeMedia';
 import {
   guessSupabaseExerciseVideoUrl,
   resolveExercisePlaybackUrl,
 } from './resolveExercisePreview';
-import { resolveSessionCardPhotoSource } from './resolveSessionCardPhoto';
-import { resolveSessionLandscapePhotoSource } from './sessionLandscapePhotos';
 import { resolveVideoUrl } from './resolveVideoUrl';
 import { isValidGuidedPlaybackUrl, sanitizePublicVideoUrl } from './videoStoragePolicy';
+
+/**
+ * Card preview: Phase II Landscape first, then legacy video.
+ *
+ * Only attach Phase II stills as remote posters. Legacy slider/landscape photo
+ * folders currently return HTTP 400 — those broken URIs were blanking cards
+ * (poster looked "present", video stayed unmounted / failed → grey box).
+ * Callers may still apply bundled thumbnails via `previewPhoto ?? thumbnail`.
+ */
+function resolveCardLandscapePreview(
+  slug: string,
+  gender: AppGender | null,
+  avatar: AppAvatar | null,
+): { previewVideo: string | null; previewPhoto: ImageSource | null } {
+  const phase2 = resolvePhase2CardLandscapePreview(slug, gender, avatar);
+  const phase2Poster = phase2.previewPhotoUrl
+    ? { uri: phase2.previewPhotoUrl }
+    : null;
+
+  if (phase2.previewVideo) {
+    return { previewVideo: phase2.previewVideo, previewPhoto: phase2Poster };
+  }
+  if (phase2Poster) {
+    // Phase II still (DBE / stretches) — do not fall back to old landscape MP4.
+    return { previewVideo: null, previewPhoto: phase2Poster };
+  }
+
+  const legacyVideo = slug.includes('stretch')
+    ? null
+    : getSessionLandscapeVideoUrl(slug, gender, avatar);
+  return { previewVideo: legacyVideo, previewPhoto: null };
+}
 
 export type DayExercise = {
   id: string;
@@ -83,12 +114,14 @@ function pathwayToResolved(
   const name = exercise.title ?? catalogEntry?.name ?? 'Exercise';
   const repLabel = repLabelFromGuided(exercise);
   const videoSource = exercise.videoUrl ?? null;
-  const previewVideo =
-    slug && !slug.includes('stretch') ? getSessionLandscapeVideoUrl(slug, gender, avatar) : null;
   const thumbnail = slug ? getDay1Thumbnail(slug) : null;
-  const previewPhoto =
-    (slug ? resolveSessionLandscapePhotoSource(slug, gender, avatar) : null) ??
-    (slug ? resolveSessionCardPhotoSource(slug, gender, avatar) : null);
+  const card = slug
+    ? resolveCardLandscapePreview(slug, gender, avatar)
+    : { previewVideo: null, previewPhoto: null };
+
+  // When Phase II has no landscape asset (e.g. neck-flexion-extension), loop the
+  // guided pathway clip on the card so it never stays a grey placeholder.
+  const previewVideo = card.previewVideo ?? (!card.previewPhoto ? videoSource : null);
 
   return {
     id: exercise.id,
@@ -102,7 +135,7 @@ function pathwayToResolved(
     },
     videoSource,
     playbackSource: videoSource,
-    previewPhoto: previewPhoto ?? thumbnail,
+    previewPhoto: card.previewPhoto ?? thumbnail,
     previewVideo,
     thumbnail,
   };
@@ -202,19 +235,16 @@ export function getLevelExercises(
       language,
     );
     const slug = catalogSlugFromPathwayId(exercise.id) ?? exercise.id;
-    const previewVideo = slug.includes('stretch')
-      ? null
-      : getSessionLandscapeVideoUrl(slug, gender, avatar);
     const thumbnail = getDay1Thumbnail(slug);
-    const previewPhoto =
-      resolveSessionLandscapePhotoSource(slug, gender, avatar) ??
-      resolveSessionCardPhotoSource(slug, gender, avatar);
+    const card = resolveCardLandscapePreview(slug, gender, avatar);
+    const playbackSource = resolveExercisePlaybackUrl(videoSource, exercise.name, variant);
+    const previewVideo = card.previewVideo ?? (!card.previewPhoto ? playbackSource : null);
 
     return {
       ...exercise,
       videoSource,
-      playbackSource: resolveExercisePlaybackUrl(videoSource, exercise.name, variant),
-      previewPhoto: previewPhoto ?? thumbnail,
+      playbackSource,
+      previewPhoto: card.previewPhoto ?? thumbnail,
       previewVideo,
       thumbnail,
     };

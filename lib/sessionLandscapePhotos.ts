@@ -3,6 +3,7 @@ import type { ImageSource } from 'expo-image';
 import type { AppAvatar, AppGender } from '../store/useAppStore';
 import { FEMALE_LANDSCAPE_FOLDER } from './exerciseFemaleVideos';
 import { isFemaleMediaTrack } from './exerciseMediaUrls';
+import { getPhase2LandscapePhotoUrl } from './phase2LandscapeMedia';
 
 const SUPABASE_PUBLIC_BASE =
   'https://soyaeuffzytrjojifvdz.supabase.co/storage/v1/object/public/Oncosmart%20Videos%20and%20Assets';
@@ -70,6 +71,10 @@ export function getSessionLandscapePhotoUrl(
   gender: AppGender | null,
   avatar: AppAvatar | null = null,
 ): string | null {
+  // Prefer Oncosmart Phase II Landscape stills (stretches, DBE, wall climb…).
+  const phase2 = getPhase2LandscapePhotoUrl(exerciseId, gender, avatar);
+  if (phase2) return phase2;
+
   const isFemale = isFemaleMediaTrack(gender, avatar);
   const file = isFemale
     ? FEMALE_LANDSCAPE_PHOTO_FILES[exerciseId]
