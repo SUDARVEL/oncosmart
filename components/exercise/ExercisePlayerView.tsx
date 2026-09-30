@@ -15,10 +15,14 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import type { Day1SessionExercise } from '../../lib/getDay1Session';
 import {
+  EXERCISE_SCREEN_DESIGN_WIDTH,
+  EXERCISE_SCREEN_GAP,
+  EXERCISE_SCREEN_PADDING_BOTTOM,
+  EXERCISE_SCREEN_PADDING_TOP,
   EXERCISE_VIDEO_FRAME_BACKGROUND,
   EXERCISE_VIDEO_FRAME_BORDER_RADIUS,
-  EXERCISE_VIDEO_FRAME_WIDTH,
-  getGuidedVideoFrameAspect,
+  getExerciseScreenScale,
+  getScaledVideoFrameSize,
 } from '../../lib/exerciseVideoFrame';
 import { colors } from '../../theme/colors';
 import { ExercisePlayerCopyBlock } from './ExercisePlayerCopyBlock';
@@ -34,8 +38,6 @@ type Props = {
   /** Keep video paused while an overlay (e.g. quit reason modal) is open. */
   overlayPaused?: boolean;
 };
-
-const FOOTER_HEIGHT = 80;
 
 export function ExercisePlayerView({
   exercise,
@@ -61,11 +63,11 @@ export function ExercisePlayerView({
   const playbackPaused = isPaused || overlayPaused;
   const primarySource = videoSources[0]?.trim() ?? '';
 
-  // Figma video area 349×444 (node 2622:2437), scaled to screen width − 32.
-  // Source MP4s are taller (~349×623) and fit with contain — no crop.
-  const frameAspect = getGuidedVideoFrameAspect(exercise.id);
-  const frameWidth = Math.min(EXERCISE_VIDEO_FRAME_WIDTH, Math.max(0, screenWidth - 32));
-  const frameHeight = Math.round(frameWidth / frameAspect);
+  // Figma screen 390×844 — scale down on narrower phones, never upscale.
+  // Video window 349×445; source ~349×623 fits with contain (no crop/stretch).
+  const scale = getExerciseScreenScale(screenWidth);
+  const { width: frameWidth, height: frameHeight } = getScaledVideoFrameSize(screenWidth);
+  const contentWidth = Math.round(EXERCISE_SCREEN_DESIGN_WIDTH * scale);
 
   const title =
     exercise.title?.trim() ||
@@ -77,8 +79,6 @@ export function ExercisePlayerView({
         'Follow the instructor in the video. Move slowly, stay within comfort, and pause if you feel unwell.',
     });
 
-  // Figma rep/duration values are static patient info only.
-  // Playback always runs the full video at its own length — never cut to this number.
   const displayValue = exercise.displayValue;
   const displayLabel = exercise.displayLabel;
   const unitLabel =
@@ -143,7 +143,15 @@ export function ExercisePlayerView({
 
       <ScrollView
         style={styles.scroll}
-        contentContainerStyle={[styles.scrollContent, { paddingBottom: FOOTER_HEIGHT + 16 }]}
+        contentContainerStyle={[
+          styles.scrollContent,
+          {
+            width: contentWidth,
+            paddingTop: Math.round(EXERCISE_SCREEN_PADDING_TOP * scale),
+            paddingBottom: Math.round(EXERCISE_SCREEN_PADDING_BOTTOM * scale),
+            gap: Math.round(EXERCISE_SCREEN_GAP * scale),
+          },
+        ]}
         showsVerticalScrollIndicator={false}
         bounces={false}
       >
@@ -153,6 +161,7 @@ export function ExercisePlayerView({
             {
               width: frameWidth,
               height: frameHeight,
+              borderRadius: EXERCISE_VIDEO_FRAME_BORDER_RADIUS,
             },
           ]}
           onPress={unlockAudio}
@@ -176,7 +185,7 @@ export function ExercisePlayerView({
           ) : null}
           {isBuffering && !playbackFailed ? (
             <View style={styles.videoLoaderOverlay} pointerEvents="none">
-              <ActivityIndicator size="large" color="#FFFFFF" />
+              <ActivityIndicator size="large" color="#005F99" />
             </View>
           ) : null}
           {playbackFailed ? (
@@ -202,31 +211,31 @@ export function ExercisePlayerView({
           displayValue={displayValue}
           unitLabel={unitLabel}
         />
+
+        <View style={[styles.actions, { width: frameWidth }]}>
+          <PressableScale
+            style={styles.pauseButton}
+            onPress={handlePauseToggle}
+            accessibilityRole="button"
+          >
+            <Ionicons name={playbackPaused ? 'play' : 'pause'} size={22} color="#FFFFFF" />
+            <Text style={styles.pauseButtonText} numberOfLines={1}>
+              {playbackPaused ? t('sessionFlow.resume') : t('sessionFlow.pause')}
+            </Text>
+          </PressableScale>
+
+          <PressableScale
+            style={styles.restartButton}
+            onPress={handleRestart}
+            accessibilityRole="button"
+          >
+            <Ionicons name="refresh" size={20} color="#374151" />
+            <Text style={styles.restartButtonText} numberOfLines={1}>
+              {t('sessionFlow.restart')}
+            </Text>
+          </PressableScale>
+        </View>
       </ScrollView>
-
-      <View style={styles.footer}>
-        <PressableScale
-          style={styles.pauseButton}
-          onPress={handlePauseToggle}
-          accessibilityRole="button"
-        >
-          <Ionicons name={playbackPaused ? 'play' : 'pause'} size={24} color="#FFFFFF" />
-          <Text style={styles.pauseButtonText} numberOfLines={1}>
-            {playbackPaused ? t('sessionFlow.resume') : t('sessionFlow.pause')}
-          </Text>
-        </PressableScale>
-
-        <PressableScale
-          style={styles.restartButton}
-          onPress={handleRestart}
-          accessibilityRole="button"
-        >
-          <Ionicons name="refresh" size={22} color="#374151" />
-          <Text style={styles.restartButtonText} numberOfLines={1}>
-            {t('sessionFlow.restart')}
-          </Text>
-        </PressableScale>
-      </View>
     </SafeAreaView>
   );
 }
@@ -240,7 +249,6 @@ const styles = StyleSheet.create({
     height: 40,
     justifyContent: 'center',
     paddingHorizontal: 8,
-    marginTop: 8,
   },
   backButton: {
     width: 40,
@@ -251,18 +259,21 @@ const styles = StyleSheet.create({
   scroll: {
     flex: 1,
   },
+  /**
+   * Figma exercise column:
+   * display:flex; width:390; flex-direction:column; align-items:center;
+   * padding:13px 0 65px; gap:11px;
+   */
   scrollContent: {
-    paddingHorizontal: 16,
+    alignSelf: 'center',
     alignItems: 'center',
+    flexGrow: 1,
   },
   videoWrap: {
-    // Video area: width 349, height 444, flex-shrink 0, radius 8
-    width: EXERCISE_VIDEO_FRAME_WIDTH,
-    borderRadius: EXERCISE_VIDEO_FRAME_BORDER_RADIUS,
+    // 349×445 @ design, radius 8 — source 349×623 fits with contain
     overflow: 'hidden',
     backgroundColor: EXERCISE_VIDEO_FRAME_BACKGROUND,
     flexShrink: 0,
-    alignSelf: 'center',
   },
   videoLoaderOverlay: {
     ...StyleSheet.absoluteFillObject,
@@ -286,48 +297,40 @@ const styles = StyleSheet.create({
     ...font('medium'),
   },
   videoProgressTrack: {
-    height: 8,
-    marginTop: 10,
-    marginBottom: 10,
+    height: 6,
     borderRadius: 999,
     borderWidth: 1,
     borderColor: '#9CC7E0',
     backgroundColor: '#E5EEF5',
     overflow: 'hidden',
+    flexShrink: 0,
   },
   videoProgressFill: {
     height: '100%',
     borderRadius: 999,
     backgroundColor: '#0074B8',
   },
-  footer: {
+  actions: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 9,
-    paddingHorizontal: 16,
-    paddingBottom: 12,
-    paddingTop: 10,
-    backgroundColor: colors.background,
-    borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: '#E5E7EB',
-    zIndex: 2,
+    marginTop: 4,
+    flexShrink: 0,
   },
-  /** Figma primary action ~220×48 */
+  /** Figma primary Pause — pill */
   pauseButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 4,
+    gap: 6,
     flexGrow: 1,
     flexShrink: 1,
     minWidth: 0,
     height: 48,
-    borderRadius: 8,
+    borderRadius: 999,
     backgroundColor: '#005F99',
-    paddingLeft: 12,
-    paddingRight: 16,
-    paddingVertical: 8,
+    paddingHorizontal: 16,
   },
   pauseButtonText: {
     flexShrink: 1,
@@ -337,7 +340,6 @@ const styles = StyleSheet.create({
     textTransform: 'capitalize',
     ...font('medium'),
   },
-  /** Figma restart ~132×48 — wide enough for மீண்டும் தொடங்கு on one line */
   restartButton: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -345,14 +347,12 @@ const styles = StyleSheet.create({
     gap: 4,
     flexGrow: 0,
     flexShrink: 0,
-    minWidth: 132,
+    minWidth: 120,
     height: 48,
-    borderRadius: 8,
+    borderRadius: 999,
     borderWidth: 1,
     borderColor: '#D1D5DB',
-    paddingLeft: 10,
-    paddingRight: 12,
-    paddingVertical: 8,
+    paddingHorizontal: 12,
   },
   restartButtonText: {
     flexShrink: 0,

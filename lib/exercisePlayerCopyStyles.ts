@@ -10,8 +10,9 @@ export const exercisePlayerCopyStyles = StyleSheet.create({
   copyBlock: {
     alignSelf: 'stretch',
     width: '100%',
-    marginTop: 12,
+    marginTop: 0,
     alignItems: 'center',
+    gap: 0,
   },
   titleWrap: {
     alignSelf: 'stretch',
@@ -37,9 +38,9 @@ export const exercisePlayerCopyStyles = StyleSheet.create({
     alignSelf: 'stretch',
     width: '100%',
     alignItems: 'center',
-    marginTop: 8,
-    marginBottom: 20,
-    paddingVertical: 2,
+    marginTop: 4,
+    marginBottom: 8,
+    paddingVertical: 0,
   },
   repRow: {
     flexDirection: 'row',
