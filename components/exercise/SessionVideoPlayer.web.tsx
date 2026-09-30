@@ -2,7 +2,10 @@ import { createElement, useCallback, useEffect, useRef } from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import { ensureExerciseAudioSession } from '../../lib/ensureExerciseAudioSession';
-import { EXERCISE_VIDEO_FRAME_BACKGROUND } from '../../lib/exerciseVideoFrame';
+import {
+  EXERCISE_VIDEO_FRAME_BACKGROUND,
+  getGuidedVideoPresentation,
+} from '../../lib/exerciseVideoFrame';
 import { shouldAcceptVideoEnd } from './sessionVideoCompletion';
 
 type Props = {
@@ -21,6 +24,7 @@ type Props = {
 
 export function SessionVideoPlayer({
   source,
+  exerciseId = '',
   isPaused,
   restartToken,
   seekRequest = null,
@@ -31,6 +35,7 @@ export function SessionVideoPlayer({
   onPlaybackFailed,
   onEnded,
 }: Props) {
+  const presentation = getGuidedVideoPresentation(exerciseId);
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const onEndedRef = useRef(onEnded);
   const onProgressRef = useRef(onProgress);
@@ -185,7 +190,8 @@ export function SessionVideoPlayer({
         style: {
           width: '100%',
           height: '100%',
-          objectFit: 'contain',
+          objectFit: presentation.contentFit,
+          objectPosition: presentation.objectPosition,
           backgroundColor: EXERCISE_VIDEO_FRAME_BACKGROUND,
         },
         onLoadStart: handleWaiting,
