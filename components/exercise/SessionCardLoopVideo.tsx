@@ -1,7 +1,6 @@
 /**
  * Muted looping landscape preview for Welcome-to-Day session cards.
- * Fixed 257×112 — cover places true 16:9 Phase II assets in the stage
- * (fills width, slight studio crop top/bottom — no side letterbox tabs).
+ * Reports playback failure so the card can show a still fallback.
  */
 import { useVideoPlayer, VideoView } from 'expo-video';
 import { useEffect } from 'react';
@@ -14,13 +13,13 @@ import {
 
 type Props = {
   uri: string;
+  onFailed?: () => void;
 };
 
-export function SessionCardLoopVideo({ uri }: Props) {
+export function SessionCardLoopVideo({ uri, onFailed }: Props) {
   const player = useVideoPlayer(uri, (instance) => {
     instance.loop = true;
     instance.muted = true;
-    // Never steal audio focus from the guided session player.
     instance.audioMixingMode = 'mixWithOthers';
     instance.play();
   });
@@ -31,6 +30,15 @@ export function SessionCardLoopVideo({ uri }: Props) {
     player.audioMixingMode = 'mixWithOthers';
     player.play();
   }, [player, uri]);
+
+  useEffect(() => {
+    const sub = player.addListener('statusChange', (payload) => {
+      if (payload.status === 'error') {
+        onFailed?.();
+      }
+    });
+    return () => sub.remove();
+  }, [onFailed, player]);
 
   return (
     <VideoView

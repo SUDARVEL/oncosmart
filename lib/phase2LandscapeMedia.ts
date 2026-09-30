@@ -44,11 +44,34 @@ function publicUrlForObjectPath(objectPath: string): string {
   return url;
 }
 
+/** Lookup keys for a pathway/catalog slug (aliases + left/right variants). */
+function phase2SlugCandidates(exerciseId: string): string[] {
+  const id = exerciseId.trim().toLowerCase();
+  const base = id.replace(/-(left|right)$/i, '');
+  const candidates = [id];
+  if (base !== id) candidates.push(base);
+
+  // Program diagram uses arm-rotation; Phase II storage uses arm-circles.
+  if (base === 'arm-rotation') candidates.push('arm-circles');
+  if (base === 'arm-circles') candidates.push('arm-rotation');
+
+  // When the id has no side but assets are split left/right, try both.
+  if (base === id) {
+    candidates.push(`${base}-left`, `${base}-right`);
+  }
+
+  return [...new Set(candidates)];
+}
+
 function phase2RelPath(
   map: Partial<Record<string, string>>,
   exerciseId: string,
 ): string | null {
-  return map[exerciseId] ?? null;
+  for (const key of phase2SlugCandidates(exerciseId)) {
+    const rel = map[key];
+    if (rel) return rel;
+  }
+  return null;
 }
 
 export function getPhase2LandscapeVideoUrl(

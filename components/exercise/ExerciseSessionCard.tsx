@@ -1,4 +1,5 @@
 import type { ImageSource } from 'expo-image';
+import { useEffect, useState } from 'react';
 import { Platform, StyleSheet, Text, View } from 'react-native';
 
 import { CachedMediaImage } from '../CachedMediaImage';
@@ -16,6 +17,8 @@ type Props = {
   previewPhoto: ImageSource | null;
   previewVideo: string | null;
   exerciseId: string;
+  /** Only mount the looping video when the card is on-screen (avoids blank players). */
+  isActive?: boolean;
 };
 
 function formatRepBadge(repLabel: string): string {
@@ -27,8 +30,8 @@ function formatRepBadge(repLabel: string): string {
 }
 
 /**
- * Figma day-session card — one continuous landscape grey stage (257×112).
- * Phase II assets are 1920×1080; cover fills the stage (no side letterbox).
+ * Figma day-session card — 257×112 landscape stage.
+ * Still poster underneath when available; looping video only for on-screen cards.
  */
 export function ExerciseSessionCard({
   name,
@@ -36,25 +39,45 @@ export function ExerciseSessionCard({
   previewPhoto,
   previewVideo,
   exerciseId,
+  isActive = true,
 }: Props) {
+  const [videoFailed, setVideoFailed] = useState(false);
+  const [photoFailed, setPhotoFailed] = useState(false);
+
+  useEffect(() => {
+    setVideoFailed(false);
+    setPhotoFailed(false);
+  }, [previewVideo, previewPhoto, exerciseId]);
+
+  const hasPoster = Boolean(previewPhoto) && !photoFailed;
+  // Cap concurrent expo-video players: only mount when the card is viewable.
+  const showVideo = Boolean(previewVideo) && !videoFailed && isActive;
+
   return (
     <View style={styles.card} accessibilityRole="text">
       <View style={styles.body}>
         <View style={styles.previewStage}>
-          {previewVideo ? (
-            <SessionCardLoopVideo uri={previewVideo} />
-          ) : previewPhoto ? (
+          {hasPoster ? (
             <CachedMediaImage
-              source={previewPhoto}
+              source={previewPhoto!}
               style={styles.previewMedia}
               contentFit="cover"
               contentPosition="center"
               recyclingKey={`session-card-${exerciseId}`}
               cachePolicy="memory-disk"
+              onError={() => setPhotoFailed(true)}
             />
           ) : (
             <View style={styles.previewPlaceholder} />
           )}
+          {showVideo ? (
+            <View style={styles.videoOverlay} pointerEvents="none">
+              <SessionCardLoopVideo
+                uri={previewVideo!}
+                onFailed={() => setVideoFailed(true)}
+              />
+            </View>
+          ) : null}
         </View>
 
         <Text style={styles.title} numberOfLines={2}>
@@ -106,7 +129,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  /** Single continuous landscape stage — Figma 257×112, radius 8. */
   previewStage: {
     width: SESSION_EXERCISE_CARD_PREVIEW_WIDTH,
     height: SESSION_EXERCISE_CARD_PREVIEW_HEIGHT,
@@ -115,11 +137,13 @@ const styles = StyleSheet.create({
     backgroundColor: '#D1D5DB',
   },
   previewMedia: {
-    width: '100%',
-    height: '100%',
+    ...StyleSheet.absoluteFillObject,
+  },
+  videoOverlay: {
+    ...StyleSheet.absoluteFillObject,
   },
   previewPlaceholder: {
-    flex: 1,
+    ...StyleSheet.absoluteFillObject,
     backgroundColor: '#D1D5DB',
   },
   title: {

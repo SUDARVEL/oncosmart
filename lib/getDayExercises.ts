@@ -22,39 +22,39 @@ import {
   guessSupabaseExerciseVideoUrl,
   resolveExercisePlaybackUrl,
 } from './resolveExercisePreview';
-import { resolveSessionCardPhotoSource } from './resolveSessionCardPhoto';
-import { resolveSessionLandscapePhotoSource } from './sessionLandscapePhotos';
 import { resolveVideoUrl } from './resolveVideoUrl';
 import { isValidGuidedPlaybackUrl, sanitizePublicVideoUrl } from './videoStoragePolicy';
 
-/** Card preview: Phase II Landscape first, then legacy landscape folders. */
+/**
+ * Card preview: Phase II Landscape first, then legacy video.
+ *
+ * Only attach Phase II stills as remote posters. Legacy slider/landscape photo
+ * folders currently return HTTP 400 — those broken URIs were blanking cards
+ * (poster looked "present", video stayed unmounted / failed → grey box).
+ * Callers may still apply bundled thumbnails via `previewPhoto ?? thumbnail`.
+ */
 function resolveCardLandscapePreview(
   slug: string,
   gender: AppGender | null,
   avatar: AppAvatar | null,
 ): { previewVideo: string | null; previewPhoto: ImageSource | null } {
   const phase2 = resolvePhase2CardLandscapePreview(slug, gender, avatar);
+  const phase2Poster = phase2.previewPhotoUrl
+    ? { uri: phase2.previewPhotoUrl }
+    : null;
+
   if (phase2.previewVideo) {
-    return {
-      previewVideo: phase2.previewVideo,
-      previewPhoto: phase2.previewPhotoUrl ? { uri: phase2.previewPhotoUrl } : null,
-    };
+    return { previewVideo: phase2.previewVideo, previewPhoto: phase2Poster };
   }
-  if (phase2.previewPhotoUrl) {
-    // Phase II still (e.g. DBE / stretches) — do not fall back to old landscape MP4.
-    return {
-      previewVideo: null,
-      previewPhoto: { uri: phase2.previewPhotoUrl },
-    };
+  if (phase2Poster) {
+    // Phase II still (DBE / stretches) — do not fall back to old landscape MP4.
+    return { previewVideo: null, previewPhoto: phase2Poster };
   }
 
   const legacyVideo = slug.includes('stretch')
     ? null
     : getSessionLandscapeVideoUrl(slug, gender, avatar);
-  const legacyPhoto =
-    resolveSessionLandscapePhotoSource(slug, gender, avatar) ??
-    resolveSessionCardPhotoSource(slug, gender, avatar);
-  return { previewVideo: legacyVideo, previewPhoto: legacyPhoto };
+  return { previewVideo: legacyVideo, previewPhoto: null };
 }
 
 export type DayExercise = {
