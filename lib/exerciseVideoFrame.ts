@@ -1,42 +1,40 @@
 /**
- * Guided exercise video framing — ONCOSMART Figma.
+ * Guided exercise video framing — Figma node 4319:5797 (390×844 screen).
  *
- * Screen column (iPhone design): 390 × 844, padding 13/65, gap 11, centered.
- * Video layer (e.g. node 4319:5766): **349 × 445**, radius 8.
- * Source portrait exports: **349 × 623** (taller than the frame).
+ * Video layer (4319:5801): **349 × 444**, radius 8, left inset 20.5.
+ * Source portrait exports: **349 × 623** (taller).
  *
- * Always `contain` + center so the full person is visible (no crop / no stretch).
+ * Fill the 349×444 window with `cover` + center so the clip keeps portrait
+ * orientation and fills the frame (same as Figma). Empty headroom is trimmed;
+ * the subject stays framed like the design comps.
  */
 
-/** Figma artboard width for the exercise screen. */
 export const EXERCISE_SCREEN_DESIGN_WIDTH = 390;
-/** Figma artboard height for the exercise screen. */
 export const EXERCISE_SCREEN_DESIGN_HEIGHT = 844;
-export const EXERCISE_SCREEN_PADDING_TOP = 13;
-export const EXERCISE_SCREEN_PADDING_BOTTOM = 65;
-export const EXERCISE_SCREEN_GAP = 11;
+/** Back-row top offset in Figma. */
+export const EXERCISE_SCREEN_HEADER_TOP = 13;
+export const EXERCISE_SCREEN_HEADER_HEIGHT = 40;
+/** Content column left inset: (390 − 349) / 2 */
+export const EXERCISE_CONTENT_LEFT_INSET = 20.5;
+/** Gap between video (444) and copy block start (y=468) → 24px */
+export const EXERCISE_VIDEO_TO_COPY_GAP = 24;
 
 export const EXERCISE_VIDEO_SOURCE_WIDTH = 349;
-/** Original portrait export height (pathway / instructor MP4s). */
 export const EXERCISE_VIDEO_SOURCE_HEIGHT = 623;
 export const EXERCISE_VIDEO_SOURCE_ASPECT =
   EXERCISE_VIDEO_SOURCE_WIDTH / EXERCISE_VIDEO_SOURCE_HEIGHT;
 
-/** Figma video window width (node 4319:5766). */
+/** Figma video window (4319:5801). */
 export const EXERCISE_VIDEO_FRAME_WIDTH = 349;
-/** Figma video window height (node 4319:5766 ≈ 445). */
-export const EXERCISE_VIDEO_FRAME_HEIGHT = 445;
-/** @deprecated Alias — same as EXERCISE_VIDEO_FRAME_HEIGHT. */
+export const EXERCISE_VIDEO_FRAME_HEIGHT = 444;
 export const CALF_RAISE_VIDEO_FRAME_HEIGHT = EXERCISE_VIDEO_FRAME_HEIGHT;
 export const LEGACY_EXERCISE_VIDEO_FRAME_HEIGHT = 432;
 
 export const EXERCISE_VIDEO_FRAME_ASPECT =
   EXERCISE_VIDEO_FRAME_WIDTH / EXERCISE_VIDEO_FRAME_HEIGHT;
-export const EXERCISE_VIDEO_FRAME_BACKGROUND = '#FFFFFF';
-export const EXERCISE_VIDEO_FRAME_BORDER_RADIUS = 8;
-
-export const EXERCISE_VIDEO_CONTENT_FIT = 'contain' as const;
-export const EXERCISE_VIDEO_OBJECT_POSITION = 'center' as const;
+export const EXERCISE_VIDEO_FRAME_BACKGROUND = '#E8E8E8';
+/** Figma 4319:5801 — rounded-[16px] */
+export const EXERCISE_VIDEO_FRAME_BORDER_RADIUS = 16;
 
 export type GuidedVideoContentFit = 'contain' | 'cover' | 'fill';
 
@@ -46,10 +44,13 @@ export type GuidedVideoPresentation = {
   objectPosition: 'center bottom' | 'center' | `${string} ${string}`;
 };
 
-/** Fit entire source inside the 349×445 window — never crop or stretch. */
+/**
+ * Portrait source (349×623) → Figma window (349×444):
+ * cover fills width, trims equal top/bottom headroom — matches Figma comps.
+ */
 const FIGMA_VIDEO_PRESENTATION: GuidedVideoPresentation = {
   layout: 'fill-frame',
-  contentFit: 'contain',
+  contentFit: 'cover',
   objectPosition: 'center',
 };
 
@@ -69,28 +70,30 @@ export function getGuidedVideoPresentation(_exerciseId: string): GuidedVideoPres
   return FIGMA_VIDEO_PRESENTATION;
 }
 
-/**
- * Scale Figma 390-wide layout to the device. Never upscale past 1×.
- * Returns the factor to multiply design px values.
- */
+/** Scale Figma 390-wide layout to the device. Never upscale past 1×. */
 export function getExerciseScreenScale(screenWidth: number): number {
   if (!Number.isFinite(screenWidth) || screenWidth <= 0) return 1;
   return Math.min(1, screenWidth / EXERCISE_SCREEN_DESIGN_WIDTH);
 }
 
-/** Design video width scaled to the device (fits the 390 column). */
+/** Design video 349×444 scaled to the device. */
 export function getScaledVideoFrameSize(screenWidth: number): {
   width: number;
   height: number;
   scale: number;
+  contentWidth: number;
+  contentLeftInset: number;
 } {
   const scale = getExerciseScreenScale(screenWidth);
-  const width = Math.round(EXERCISE_VIDEO_FRAME_WIDTH * scale);
-  const height = Math.round(EXERCISE_VIDEO_FRAME_HEIGHT * scale);
-  return { width, height, scale };
+  return {
+    scale,
+    width: Math.round(EXERCISE_VIDEO_FRAME_WIDTH * scale),
+    height: Math.round(EXERCISE_VIDEO_FRAME_HEIGHT * scale),
+    contentWidth: Math.round(EXERCISE_VIDEO_FRAME_WIDTH * scale),
+    contentLeftInset: Math.round(EXERCISE_CONTENT_LEFT_INSET * scale),
+  };
 }
 
-/** Home day-card video — full-bleed 16:9 inside the wide card. */
 export const HOME_DAY_CARD_PREVIEW_WIDTH = 343;
 export const HOME_DAY_CARD_PREVIEW_HEIGHT = 193;
 export const HOME_DAY_CARD_PREVIEW_ASPECT =
