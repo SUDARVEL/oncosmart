@@ -132,7 +132,7 @@ export function SessionVideoPlayer({
     );
   }, []);
 
-  const letterbox = getContainedVideoBox(
+  const fitted = getContainedVideoBox(
     frameSize.width,
     frameSize.height,
     EXERCISE_VIDEO_SOURCE_ASPECT,
@@ -191,7 +191,7 @@ export function SessionVideoPlayer({
 
   return (
     <View style={styles.wrap} onLayout={handleFrameLayout}>
-      {letterbox.width > 0 && letterbox.height > 0
+      {fitted.width > 0 && fitted.height > 0
         ? createElement('video', {
             key: `${source}-${restartToken}`,
             ref: videoRef,
@@ -202,8 +202,8 @@ export function SessionVideoPlayer({
             muted: false,
             defaultMuted: false,
             style: {
-              width: letterbox.width,
-              height: letterbox.height,
+              width: fitted.width,
+              height: fitted.height,
               objectFit: 'fill',
               backgroundColor: EXERCISE_VIDEO_FRAME_BACKGROUND,
             },

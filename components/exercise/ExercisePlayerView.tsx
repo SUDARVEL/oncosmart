@@ -38,8 +38,8 @@ type Props = {
 };
 
 /**
- * Figma 4319:5797 — video window exactly 349×444, radius 16, flexShrink 0.
- * 9:16 clips are contained inside (never expand the frame, never crop body).
+ * Figma 349×444 (radius 16). Contain every clip; pad leftover space with
+ * studio grey (#E0E0E0) so nothing is cut — same for all videos.
  */
 export function ExercisePlayerView({
   exercise,
