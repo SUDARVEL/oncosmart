@@ -9,7 +9,6 @@ import { ExerciseSessionCard } from '../../../components/exercise/ExerciseSessio
 import { PulseOximeterModal } from '../../../components/exercise/PulseOximeterModal';
 import { ResumeProgressModal } from '../../../components/growth/ResumeProgressModal';
 import { ReadyToBeginModal } from '../../../components/pain/ReadyToBeginModal';
-import { ChatFab } from '../../../components/ChatFab';
 import { useExercisePauseGuard } from '../../../hooks/useExercisePauseGuard';
 import { clearLevelExercisesCache, getDayExercises, getLevelSession } from '../../../lib/getDayExercises';
 import { hasGuidedSession, warmPathwaySessionsFromStore } from '../../../lib/getDay1Session';
@@ -175,8 +174,7 @@ export default function ExerciseSessionsScreen() {
         }}
       />
 
-      <ChatFab bottom={220} />
-
+      
       <ResumeProgressModal
         visible={showResumeModal}
         onClose={() => {

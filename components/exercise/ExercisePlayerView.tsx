@@ -38,8 +38,8 @@ type Props = {
 };
 
 /**
- * Figma 4319:5797 — 390×844 artboard, video 349×444 @ x=20.5.
- * 9:16 clips are contained with natural gaps — full person, no crop, no stroke.
+ * Figma 4319:5797 — 390-wide layout, video 349 × 9:16 (matches real MP4s).
+ * Fills edge-to-edge: full person, no grey letterbox card, no stroke.
  */
 export function ExercisePlayerView({
   exercise,
@@ -300,7 +300,6 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     backgroundColor: EXERCISE_VIDEO_FRAME_BACKGROUND,
     flexShrink: 0,
-    // Radius only — never add borderWidth (no stroked outline).
   },
   videoLoaderOverlay: {
     ...StyleSheet.absoluteFillObject,

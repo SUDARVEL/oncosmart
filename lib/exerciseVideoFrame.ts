@@ -1,43 +1,45 @@
 /**
- * Guided exercise video framing — Figma node 4319:5797 (390×844 screen).
+ * Guided exercise video framing.
  *
- * Video window: **349 × 444**, radius 8, left inset 20.5. No stroke border.
- * Pathway MP4s are **9:16** (taller than 349×444).
+ * Figma screen: 390×844, content width 349, radius 8, no stroke.
+ * Real pathway MP4s: **9:16** (1080×1920).
  *
- * Best fit: letterbox a 9:16 box centered in the frame (CSS contain) so the
- * full person stays visible with natural head/foot gaps. Frame fill matches
- * studio grey so side gaps blend — never a stroked outline, never crop body.
+ * Window is **349 × 9:16** so the clip fills the rounded rect edge-to-edge:
+ * - no grey letterbox “card/border”
+ * - no head / body / shoe crop
+ * - video’s own studio grey + white floor create the look (like Figma)
  */
 
 export const EXERCISE_SCREEN_DESIGN_WIDTH = 390;
 export const EXERCISE_SCREEN_DESIGN_HEIGHT = 844;
-/** Back-row top offset in Figma. */
 export const EXERCISE_SCREEN_HEADER_TOP = 13;
 export const EXERCISE_SCREEN_HEADER_HEIGHT = 40;
 /** Content column left inset: (390 − 349) / 2 */
 export const EXERCISE_CONTENT_LEFT_INSET = 20.5;
-/** Gap between video (444) and copy block start (y=468) → 24px */
 export const EXERCISE_VIDEO_TO_COPY_GAP = 24;
-/** Clear separation between Pause and Restart. */
-export const EXERCISE_ACTION_BUTTON_GAP = 20;
+/** Figma Pause→Restart gap ≈ 13; use 16 for clear separation. */
+export const EXERCISE_ACTION_BUTTON_GAP = 16;
 
-/** Native pathway clips are 9:16 (1080×1920 / 2160×3840). */
+/** Native pathway clips are 9:16. */
 export const EXERCISE_VIDEO_SOURCE_WIDTH = 9;
 export const EXERCISE_VIDEO_SOURCE_HEIGHT = 16;
 export const EXERCISE_VIDEO_SOURCE_ASPECT =
   EXERCISE_VIDEO_SOURCE_WIDTH / EXERCISE_VIDEO_SOURCE_HEIGHT;
 
-/** Figma video window (4319:5801). */
+/** Content column / video width. */
 export const EXERCISE_VIDEO_FRAME_WIDTH = 349;
-export const EXERCISE_VIDEO_FRAME_HEIGHT = 444;
+/** Exact 9:16 height at 349 width → round(349 × 16 / 9) = 620. */
+export const EXERCISE_VIDEO_FRAME_HEIGHT = Math.round(
+  (EXERCISE_VIDEO_FRAME_WIDTH * EXERCISE_VIDEO_SOURCE_HEIGHT) /
+    EXERCISE_VIDEO_SOURCE_WIDTH,
+);
 export const CALF_RAISE_VIDEO_FRAME_HEIGHT = EXERCISE_VIDEO_FRAME_HEIGHT;
 export const LEGACY_EXERCISE_VIDEO_FRAME_HEIGHT = 432;
 
-export const EXERCISE_VIDEO_FRAME_ASPECT =
-  EXERCISE_VIDEO_FRAME_WIDTH / EXERCISE_VIDEO_FRAME_HEIGHT;
-/** Studio wash — blends with clip letterbox gaps (not a stroke border). */
-export const EXERCISE_VIDEO_FRAME_BACKGROUND = '#E8E8E8';
-/** Corner radius only — no borderWidth / borderColor. */
+export const EXERCISE_VIDEO_FRAME_ASPECT = EXERCISE_VIDEO_SOURCE_ASPECT;
+/** Page white — never a grey letterbox card around the video. */
+export const EXERCISE_VIDEO_FRAME_BACKGROUND = '#FFFFFF';
+/** Radius only — never borderWidth. */
 export const EXERCISE_VIDEO_FRAME_BORDER_RADIUS = 8;
 
 export type GuidedVideoContentFit = 'contain' | 'cover' | 'fill';
@@ -48,7 +50,6 @@ export type GuidedVideoPresentation = {
   objectPosition: 'center bottom' | 'center' | `${string} ${string}`;
 };
 
-/** Contain 9:16 inside 349×444 — full figure, gaps OK. */
 const FIGMA_VIDEO_PRESENTATION: GuidedVideoPresentation = {
   layout: 'fill-frame',
   contentFit: 'contain',
@@ -71,13 +72,12 @@ export function getGuidedVideoPresentation(_exerciseId: string): GuidedVideoPres
   return FIGMA_VIDEO_PRESENTATION;
 }
 
-/** Scale Figma 390-wide layout to the device. Never upscale past 1×. */
 export function getExerciseScreenScale(screenWidth: number): number {
   if (!Number.isFinite(screenWidth) || screenWidth <= 0) return 1;
   return Math.min(1, screenWidth / EXERCISE_SCREEN_DESIGN_WIDTH);
 }
 
-/** Design video 349×444 scaled to the device. */
+/** 349 × 9:16 scaled to the device. */
 export function getScaledVideoFrameSize(screenWidth: number): {
   width: number;
   height: number;
@@ -86,18 +86,16 @@ export function getScaledVideoFrameSize(screenWidth: number): {
   contentLeftInset: number;
 } {
   const scale = getExerciseScreenScale(screenWidth);
+  const width = Math.round(EXERCISE_VIDEO_FRAME_WIDTH * scale);
   return {
     scale,
-    width: Math.round(EXERCISE_VIDEO_FRAME_WIDTH * scale),
-    height: Math.round(EXERCISE_VIDEO_FRAME_HEIGHT * scale),
-    contentWidth: Math.round(EXERCISE_VIDEO_FRAME_WIDTH * scale),
+    width,
+    height: Math.round(width / EXERCISE_VIDEO_SOURCE_ASPECT),
+    contentWidth: width,
     contentLeftInset: Math.round(EXERCISE_CONTENT_LEFT_INSET * scale),
   };
 }
 
-/**
- * Size a source-aspect rectangle that fits entirely inside the frame (CSS contain).
- */
 export function getContainedVideoBox(
   frameWidth: number,
   frameHeight: number,

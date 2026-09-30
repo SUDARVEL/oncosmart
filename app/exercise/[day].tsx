@@ -12,7 +12,6 @@ import {
   type StopReason,
 } from '../../components/exercise/WhyDidYouStopModal';
 import { ResumeProgressModal } from '../../components/growth/ResumeProgressModal';
-import { ChatFab } from '../../components/ChatFab';
 import { useExercisePauseGuard } from '../../hooks/useExercisePauseGuard';
 import { notifyAdminsOfHold } from '../../lib/adminNotify';
 import { getSessionExerciseVideoSource } from '../../lib/getDayExercises';
@@ -95,8 +94,7 @@ function LegacyExercisePreview() {
         onComplete={() => router.back()}
         onBackPress={() => router.back()}
       />
-      <ChatFab bottom={220} />
-    </>
+          </>
   );
 }
 
@@ -353,8 +351,7 @@ function GuidedSessionScreen({
             finalizeSession(endBpm);
           }}
         />
-        <ChatFab bottom={220} />
-      </>
+              </>
     );
   }
 
@@ -396,8 +393,7 @@ function GuidedSessionScreen({
           finalizeSession(endBpm);
         }}
       />
-      <ChatFab bottom={220} />
-    </>
+          </>
   );
 }
 
