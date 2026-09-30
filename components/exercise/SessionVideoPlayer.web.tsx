@@ -1,12 +1,8 @@
-import { createElement, useCallback, useEffect, useRef, useState } from 'react';
-import { StyleSheet, View, type LayoutChangeEvent } from 'react-native';
+import { createElement, useCallback, useEffect, useRef } from 'react';
+import { StyleSheet, View } from 'react-native';
 
 import { ensureExerciseAudioSession } from '../../lib/ensureExerciseAudioSession';
-import {
-  EXERCISE_VIDEO_FRAME_BACKGROUND,
-  EXERCISE_VIDEO_SOURCE_ASPECT,
-  getContainedVideoBox,
-} from '../../lib/exerciseVideoFrame';
+import { EXERCISE_VIDEO_FRAME_BACKGROUND } from '../../lib/exerciseVideoFrame';
 import { shouldAcceptVideoEnd } from './sessionVideoCompletion';
 
 type Props = {
@@ -36,7 +32,6 @@ export function SessionVideoPlayer({
   onEnded,
 }: Props) {
   const videoRef = useRef<HTMLVideoElement | null>(null);
-  const [frameSize, setFrameSize] = useState({ width: 0, height: 0 });
   const onEndedRef = useRef(onEnded);
   const onProgressRef = useRef(onProgress);
   const onBufferingRef = useRef(onBuffering);
@@ -125,30 +120,9 @@ export function SessionVideoPlayer({
     onProgressRef.current?.(Math.min(nextTime / duration, 1));
   }, [seekRequest]);
 
-  const handleFrameLayout = useCallback((event: LayoutChangeEvent) => {
-    const { width, height } = event.nativeEvent.layout;
-    setFrameSize((prev) =>
-      prev.width === width && prev.height === height ? prev : { width, height },
-    );
-  }, []);
-
-  const letterbox = getContainedVideoBox(
-    frameSize.width,
-    frameSize.height,
-    EXERCISE_VIDEO_SOURCE_ASPECT,
-  );
-
-  const handleWaiting = () => {
-    onBufferingRef.current?.(true);
-  };
-
-  const handleCanPlay = () => {
-    onBufferingRef.current?.(false);
-  };
-
-  const handlePlaying = () => {
-    onBufferingRef.current?.(false);
-  };
+  const handleWaiting = () => onBufferingRef.current?.(true);
+  const handleCanPlay = () => onBufferingRef.current?.(false);
+  const handlePlaying = () => onBufferingRef.current?.(false);
 
   const handleLoadedMetadata = () => {
     const video = videoRef.current;
@@ -167,11 +141,7 @@ export function SessionVideoPlayer({
     if (completedRef.current) return;
     const video = videoRef.current;
     if (!video) return;
-
-    if (video.currentTime > 0.5) {
-      hasStartedRef.current = true;
-    }
-
+    if (video.currentTime > 0.5) hasStartedRef.current = true;
     if (Number.isFinite(video.duration) && video.duration > 0) {
       durationRef.current = video.duration;
       onDurationRef.current?.(video.duration);
@@ -185,11 +155,7 @@ export function SessionVideoPlayer({
     const video = videoRef.current;
     const duration = durationRef.current > 0 ? durationRef.current : (video?.duration ?? 0);
     const currentTime = video?.currentTime ?? 0;
-
-    if (!shouldAcceptVideoEnd(currentTime, duration, hasStartedRef.current)) {
-      return;
-    }
-
+    if (!shouldAcceptVideoEnd(currentTime, duration, hasStartedRef.current)) return;
     completedRef.current = true;
     onProgressRef.current?.(1);
     video?.pause();
@@ -206,33 +172,31 @@ export function SessionVideoPlayer({
   }
 
   return (
-    <View style={styles.wrap} onLayout={handleFrameLayout}>
-      {letterbox.width > 0 && letterbox.height > 0
-        ? createElement('video', {
-            key: `${source}-${restartToken}`,
-            ref: videoRef,
-            src: source,
-            playsInline: true,
-            preload: 'auto',
-            controls: false,
-            muted: false,
-            defaultMuted: false,
-            style: {
-              width: letterbox.width,
-              height: letterbox.height,
-              objectFit: 'fill',
-              backgroundColor: EXERCISE_VIDEO_FRAME_BACKGROUND,
-            },
-            onLoadStart: handleWaiting,
-            onWaiting: handleWaiting,
-            onCanPlay: handleCanPlay,
-            onPlaying: handlePlaying,
-            onLoadedMetadata: handleLoadedMetadata,
-            onTimeUpdate: handleTimeUpdate,
-            onEnded: handleEnded,
-            onError: handleError,
-          })
-        : null}
+    <View style={styles.wrap}>
+      {createElement('video', {
+        key: `${source}-${restartToken}`,
+        ref: videoRef,
+        src: source,
+        playsInline: true,
+        preload: 'auto',
+        controls: false,
+        muted: false,
+        defaultMuted: false,
+        style: {
+          width: '100%',
+          height: '100%',
+          objectFit: 'contain',
+          backgroundColor: EXERCISE_VIDEO_FRAME_BACKGROUND,
+        },
+        onLoadStart: handleWaiting,
+        onWaiting: handleWaiting,
+        onCanPlay: handleCanPlay,
+        onPlaying: handlePlaying,
+        onLoadedMetadata: handleLoadedMetadata,
+        onTimeUpdate: handleTimeUpdate,
+        onEnded: handleEnded,
+        onError: handleError,
+      })}
     </View>
   );
 }
@@ -243,7 +207,5 @@ const styles = StyleSheet.create({
     height: '100%',
     backgroundColor: EXERCISE_VIDEO_FRAME_BACKGROUND,
     overflow: 'hidden',
-    alignItems: 'center',
-    justifyContent: 'center',
   },
 });
