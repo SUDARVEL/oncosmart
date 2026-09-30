@@ -7,6 +7,7 @@ import {
   EXERCISE_VIDEO_FRAME_BACKGROUND,
   EXERCISE_VIDEO_SOURCE_ASPECT,
   getContainedVideoBox,
+  getGuidedVideoPresentation,
 } from '../../lib/exerciseVideoFrame';
 import { shouldAcceptVideoEnd } from './sessionVideoCompletion';
 
@@ -36,6 +37,7 @@ function applyAudiblePlayback(player: {
 
 export function SessionVideoPlayer({
   source,
+  exerciseId = '',
   isPaused,
   restartToken,
   seekRequest = null,
@@ -46,6 +48,7 @@ export function SessionVideoPlayer({
   onPlaybackFailed,
   onEnded,
 }: Props) {
+  const presentation = getGuidedVideoPresentation(exerciseId);
   const [frameSize, setFrameSize] = useState({ width: 0, height: 0 });
   const onEndedRef = useRef(onEnded);
   const onProgressRef = useRef(onProgress);
@@ -217,8 +220,11 @@ export function SessionVideoPlayer({
     );
   }, []);
 
-  // Explicit 9:16 box inside fixed 349×444 — guarantees no crop on Android.
-  const letterbox = getContainedVideoBox(
+  /**
+   * Pad to fit inside fixed 349×444: size an explicit source-aspect box and
+   * fill the rest with studio bg (#E0E0E0). Never crop face/body/legs.
+   */
+  const fitted = getContainedVideoBox(
     frameSize.width,
     frameSize.height,
     EXERCISE_VIDEO_SOURCE_ASPECT,
@@ -230,15 +236,15 @@ export function SessionVideoPlayer({
 
   return (
     <View style={styles.frame} onLayout={handleFrameLayout}>
-      {letterbox.width > 0 && letterbox.height > 0 ? (
+      {fitted.width > 0 && fitted.height > 0 ? (
         <View
-          style={[styles.letterbox, { width: letterbox.width, height: letterbox.height }]}
+          style={[styles.fittedBox, { width: fitted.width, height: fitted.height }]}
           collapsable={false}
         >
           <VideoView
             style={styles.video}
             player={player}
-            contentFit="fill"
+            contentFit={presentation.contentFit === 'contain' ? 'fill' : presentation.contentFit}
             nativeControls={false}
             {...(Platform.OS === 'android' ? { surfaceType: 'textureView' as const } : {})}
           />
@@ -257,7 +263,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  letterbox: {
+  fittedBox: {
     overflow: 'hidden',
     backgroundColor: EXERCISE_VIDEO_FRAME_BACKGROUND,
   },

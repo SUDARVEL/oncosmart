@@ -1,33 +1,28 @@
 /**
- * Guided exercise video framing — Figma layer `0126.mp4` / node 4319:5797.
+ * Guided exercise video framing — Figma `0126.mp4` / 4319:5797.
  *
- * Exact Figma window (do not expand):
- *   width: 349px;
- *   height: 444px;
- *   border-radius: 16px;
- *   flex-shrink: 0;
- *   box-sizing: border-box;
+ * Exact window (do not expand):
+ *   width: 349px; height: 444px; border-radius: 16px; flex-shrink: 0;
  *
- * Pathway MP4s are 9:16 (taller). Fit with contain centered inside 349×444 so
- * every video shows the full person — no face/body/leg crop, no larger frame.
+ * Videos are taller (9:16). Always `contain` inside 349×444 so nothing is cut.
+ * Extra space is filled with the studio wall colour sampled from the MP4s
+ * (#E0E0E0) — same for every clip.
  */
 
 export const EXERCISE_SCREEN_DESIGN_WIDTH = 390;
 export const EXERCISE_SCREEN_DESIGN_HEIGHT = 844;
 export const EXERCISE_SCREEN_HEADER_TOP = 13;
 export const EXERCISE_SCREEN_HEADER_HEIGHT = 40;
-/** Content column left inset: (390 − 349) / 2 */
 export const EXERCISE_CONTENT_LEFT_INSET = 20.5;
 export const EXERCISE_VIDEO_TO_COPY_GAP = 24;
 export const EXERCISE_ACTION_BUTTON_GAP = 16;
 
-/** Native pathway clips are 9:16. */
 export const EXERCISE_VIDEO_SOURCE_WIDTH = 9;
 export const EXERCISE_VIDEO_SOURCE_HEIGHT = 16;
 export const EXERCISE_VIDEO_SOURCE_ASPECT =
   EXERCISE_VIDEO_SOURCE_WIDTH / EXERCISE_VIDEO_SOURCE_HEIGHT;
 
-/** Figma exact video window — do not change. */
+/** Figma exact — never expand. */
 export const EXERCISE_VIDEO_FRAME_WIDTH = 349;
 export const EXERCISE_VIDEO_FRAME_HEIGHT = 444;
 export const CALF_RAISE_VIDEO_FRAME_HEIGHT = EXERCISE_VIDEO_FRAME_HEIGHT;
@@ -35,9 +30,11 @@ export const LEGACY_EXERCISE_VIDEO_FRAME_HEIGHT = 432;
 
 export const EXERCISE_VIDEO_FRAME_ASPECT =
   EXERCISE_VIDEO_FRAME_WIDTH / EXERCISE_VIDEO_FRAME_HEIGHT;
-/** White letterbox — no grey card/rim. */
-export const EXERCISE_VIDEO_FRAME_BACKGROUND = '#FFFFFF';
-/** Figma: border-radius: 16px */
+/**
+ * Studio wall from pathway MP4s (avg ~#E0E0E0). Used as contain padding so
+ * letterbox bars match the video instead of looking like a cut/white gap.
+ */
+export const EXERCISE_VIDEO_FRAME_BACKGROUND = '#E0E0E0';
 export const EXERCISE_VIDEO_FRAME_BORDER_RADIUS = 16;
 
 export type GuidedVideoContentFit = 'contain' | 'cover' | 'fill';
@@ -48,7 +45,7 @@ export type GuidedVideoPresentation = {
   objectPosition: 'center bottom' | 'center' | `${string} ${string}`;
 };
 
-/** Same for every guided exercise — contain inside 349×444, never crop. */
+/** Contain in 349×444 for every exercise — pad with studio bg, never crop. */
 const UNIFORM_VIDEO_PRESENTATION: GuidedVideoPresentation = {
   layout: 'fill-frame',
   contentFit: 'contain',
@@ -76,7 +73,6 @@ export function getExerciseScreenScale(screenWidth: number): number {
   return Math.min(1, screenWidth / EXERCISE_SCREEN_DESIGN_WIDTH);
 }
 
-/** Design video 349×444 scaled to the device — never larger than design. */
 export function getScaledVideoFrameSize(screenWidth: number): {
   width: number;
   height: number;
@@ -94,7 +90,6 @@ export function getScaledVideoFrameSize(screenWidth: number): {
   };
 }
 
-/** CSS contain: source-aspect box that fits entirely inside the frame. */
 export function getContainedVideoBox(
   frameWidth: number,
   frameHeight: number,
