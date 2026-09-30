@@ -353,7 +353,7 @@ function GuidedSessionScreen({
             finalizeSession(endBpm);
           }}
         />
-        <ChatFab bottom={88} />
+        <ChatFab bottom={168} />
       </>
     );
   }
