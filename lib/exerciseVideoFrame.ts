@@ -1,12 +1,13 @@
 /**
  * Guided exercise video framing — Figma node 4319:5797 (390×844 screen).
  *
- * Video layer (4319:5801): **349 × 444**, left inset 20.5.
+ * Video layer (4319:5801): **349 × 444**, radius 8, left inset 20.5.
  * Source portrait exports: **349 × 623** (taller than the window).
  *
- * Use `contain` + center so the full figure (head → shoes) stays visible
- * inside the 349×444 frame with no crop or stretch. Side letterbox uses the
- * frame background (#E8E8E8).
+ * Presentation: size the video to source aspect at full frame width, pin it to
+ * the bottom of the 349×444 window, and clip overflow. That fills width/height
+ * like Figma (no side letterbox), keeps shoes/legs visible, and only trims
+ * empty studio headroom above the subject.
  */
 
 export const EXERCISE_SCREEN_DESIGN_WIDTH = 390;
@@ -18,6 +19,8 @@ export const EXERCISE_SCREEN_HEADER_HEIGHT = 40;
 export const EXERCISE_CONTENT_LEFT_INSET = 20.5;
 /** Gap between video (444) and copy block start (y=468) → 24px */
 export const EXERCISE_VIDEO_TO_COPY_GAP = 24;
+/** Gap between Pause and Restart (Figma ≈ 13px; use 16 for clear separation). */
+export const EXERCISE_ACTION_BUTTON_GAP = 16;
 
 export const EXERCISE_VIDEO_SOURCE_WIDTH = 349;
 export const EXERCISE_VIDEO_SOURCE_HEIGHT = 623;
@@ -33,8 +36,8 @@ export const LEGACY_EXERCISE_VIDEO_FRAME_HEIGHT = 432;
 export const EXERCISE_VIDEO_FRAME_ASPECT =
   EXERCISE_VIDEO_FRAME_WIDTH / EXERCISE_VIDEO_FRAME_HEIGHT;
 export const EXERCISE_VIDEO_FRAME_BACKGROUND = '#E8E8E8';
-/** Figma 4319:5801 — rounded-[16px] */
-export const EXERCISE_VIDEO_FRAME_BORDER_RADIUS = 16;
+/** Match product comps / prior 8px radius request. */
+export const EXERCISE_VIDEO_FRAME_BORDER_RADIUS = 8;
 
 export type GuidedVideoContentFit = 'contain' | 'cover' | 'fill';
 
@@ -46,12 +49,13 @@ export type GuidedVideoPresentation = {
 
 /**
  * Portrait source (349×623) → Figma window (349×444):
- * contain fits the full clip (shoes included); never crop or stretch.
+ * taller source box, bottom-aligned, clipped — full width, full figure.
  */
 const FIGMA_VIDEO_PRESENTATION: GuidedVideoPresentation = {
-  layout: 'fill-frame',
-  contentFit: 'contain',
-  objectPosition: 'center',
+  layout: 'portrait-crop',
+  // Box matches source aspect → cover fills without stretch; frame clips top.
+  contentFit: 'cover',
+  objectPosition: 'center bottom',
 };
 
 export function isPathwayExerciseId(exerciseId: string): boolean {
