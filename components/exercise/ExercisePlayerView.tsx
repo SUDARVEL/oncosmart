@@ -38,8 +38,8 @@ type Props = {
 };
 
 /**
- * Figma 349×444 (radius 16). Stretch every clip to fill W×H (`fill`) so
- * head/legs/shoes are never cropped — same for every exercise.
+ * Figma 349×444 (radius 16). Default: cover/zoom when the figure fits.
+ * Standing full-height clips stretch-fill so shoes/legs are never cropped.
  */
 export function ExercisePlayerView({
   exercise,

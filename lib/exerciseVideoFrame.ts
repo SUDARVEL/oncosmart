@@ -1,12 +1,28 @@
 /**
- * Guided exercise video framing — Figma 349×444, never hide body parts.
+ * Guided exercise video framing — Figma 349×444.
  *
  * Exact window:
  *   width: 349px; height: 444px; border-radius: 16px; flex-shrink: 0;
  *
- * Stretch (`fill`) every clip to the full W×H. Cover/zoom was cropping shoes
- * and legs on taller standing takes — fill keeps head→feet visible while still
- * covering the frame (slight aspect stretch is OK).
+ * Fit policy (per exercise slug):
+ * - Default `cover` (Figma zoom): scale to frame width, center, clip empty
+ *   studio above/below. Use when the figure already fits in that crop.
+ * - `fill` (stretch): only when cover would hide shoes/legs/head — standing
+ *   full-height takes. Slight aspect stretch keeps the whole body visible.
+ *
+ * Analysis (9:16 → cover in 349×444 crops ~88px top+bottom / ~14% each end):
+ *
+ * COVER (natural width fit — body stays in crop):
+ *   diaphragmatic-breathing, ankle-pumps, thoracic-expansion, arm-circles,
+ *   arm-rotation, shoulder-shrugging, biceps-curls, chest-stretch,
+ *   triceps-stretch, neck-stretch, neck-flexion-extension,
+ *   jaw-opening-closing, jaw-side-to-side, seated-knee-extension,
+ *   knee-to-chest, static-quadriceps, straight-leg-raise
+ *
+ * STRETCH (standing / full-height — cover hid shoes/legs):
+ *   calf-raise, calf-stretch, wall-pushup, wall-slides, wall-climbing,
+ *   spot-marching, sit-to-stand, hamstring-stretch, standing-hamstring-curls,
+ *   quadriceps-stretch
  */
 
 export const EXERCISE_SCREEN_DESIGN_WIDTH = 390;
@@ -24,7 +40,7 @@ export const EXERCISE_VIDEO_SOURCE_HEIGHT = 16;
 export const EXERCISE_VIDEO_SOURCE_ASPECT =
   EXERCISE_VIDEO_SOURCE_WIDTH / EXERCISE_VIDEO_SOURCE_HEIGHT;
 
-/** Figma guided player media — 349×444 (zoom-fit window). */
+/** Figma guided player media — 349×444. */
 export const EXERCISE_VIDEO_FRAME_WIDTH = 349;
 export const EXERCISE_VIDEO_FRAME_HEIGHT = 444;
 export const CALF_RAISE_VIDEO_FRAME_HEIGHT = EXERCISE_VIDEO_FRAME_HEIGHT;
@@ -33,8 +49,8 @@ export const LEGACY_EXERCISE_VIDEO_FRAME_HEIGHT = 432;
 export const EXERCISE_VIDEO_FRAME_ASPECT =
   EXERCISE_VIDEO_FRAME_WIDTH / EXERCISE_VIDEO_FRAME_HEIGHT;
 /**
- * Studio wall from pathway MP4s (avg ~#E0E0E0). Shows while loading before
- * the zoomed clip paints edge-to-edge.
+ * Studio wall from pathway MP4s (avg ~#E0E0E0). Shows while loading /
+ * under letterbox if any.
  */
 export const EXERCISE_VIDEO_FRAME_BACKGROUND = '#E0E0E0';
 export const EXERCISE_VIDEO_FRAME_BORDER_RADIUS = 16;
@@ -47,24 +63,64 @@ export type GuidedVideoPresentation = {
   objectPosition: 'center bottom' | 'center' | `${string} ${string}`;
 };
 
-/**
- * Stretch into 349×444 — fills the frame, never crops head/legs/shoes.
- */
-const NO_CROP_STRETCH_PRESENTATION: GuidedVideoPresentation = {
+/** Figma zoom — width-fit cover. Body already fits the 349×444 crop. */
+const COVER_PRESENTATION: GuidedVideoPresentation = {
+  layout: 'fill-frame',
+  contentFit: 'cover',
+  objectPosition: 'center',
+};
+
+/** Stretch only when cover would hide shoes/legs. */
+const STRETCH_PRESENTATION: GuidedVideoPresentation = {
   layout: 'fill-frame',
   contentFit: 'fill',
   objectPosition: 'center',
 };
 
+/**
+ * Standing / full-height slugs where cover crops feet. Left/right variants
+ * match via base slug (e.g. quadriceps-stretch-left → quadriceps-stretch).
+ */
+export const GUIDED_VIDEO_STRETCH_SLUGS: ReadonlySet<string> = new Set([
+  'calf-raise',
+  'calf-stretch',
+  'wall-pushup',
+  'wall-slides',
+  'wall-climbing',
+  'spot-marching',
+  'sit-to-stand',
+  'hamstring-stretch',
+  'standing-hamstring-curls',
+  'quadriceps-stretch',
+]);
+
 export function isPathwayExerciseId(exerciseId: string): boolean {
   return exerciseId.startsWith('pathway-');
 }
 
+/** Pathway `…-sN-<slug>` → `<slug>`; otherwise the id itself. */
+export function getGuidedExerciseCatalogSlug(exerciseId: string): string {
+  if (!exerciseId) return '';
+  const pathway = /-s\d+-(.+)$/.exec(exerciseId);
+  return pathway?.[1] ?? exerciseId;
+}
+
+export function getGuidedExerciseBaseSlug(exerciseId: string): string {
+  const slug = getGuidedExerciseCatalogSlug(exerciseId);
+  return slug.replace(/-(left|right)$/i, '');
+}
+
+/** True when this clip must stretch-fill so shoes/legs are not cropped. */
+export function guidedVideoNeedsStretch(exerciseId: string): boolean {
+  const slug = getGuidedExerciseCatalogSlug(exerciseId);
+  const base = getGuidedExerciseBaseSlug(exerciseId);
+  return GUIDED_VIDEO_STRETCH_SLUGS.has(base) || GUIDED_VIDEO_STRETCH_SLUGS.has(slug);
+}
+
 /** Legacy `diaphragmatic-breathing` or pathway `…-sN-diaphragmatic-breathing`. */
 export function isDiaphragmaticBreathingExercise(exerciseId: string): boolean {
-  if (!exerciseId) return false;
-  if (exerciseId === 'diaphragmatic-breathing') return true;
-  if (exerciseId.endsWith('-diaphragmatic-breathing')) return true;
+  const base = getGuidedExerciseBaseSlug(exerciseId);
+  if (base === 'diaphragmatic-breathing') return true;
   return /\bdbe\b/i.test(exerciseId);
 }
 
@@ -76,8 +132,11 @@ export function getGuidedVideoFrameAspect(_exerciseId: string): number {
   return EXERCISE_VIDEO_FRAME_ASPECT;
 }
 
-export function getGuidedVideoPresentation(_exerciseId: string): GuidedVideoPresentation {
-  return NO_CROP_STRETCH_PRESENTATION;
+export function getGuidedVideoPresentation(exerciseId: string): GuidedVideoPresentation {
+  if (guidedVideoNeedsStretch(exerciseId)) {
+    return STRETCH_PRESENTATION;
+  }
+  return COVER_PRESENTATION;
 }
 
 export function getExerciseScreenScale(screenWidth: number): number {
@@ -123,11 +182,9 @@ export function getCoverVideoBox(
   }
   const frameAspect = frameWidth / frameHeight;
   if (sourceAspect >= frameAspect) {
-    // Source wider than frame — height-fill, width overflows
     const height = frameHeight;
     return { width: Math.round(height * sourceAspect), height };
   }
-  // Source taller (9:16 in 349×444) — width-fill, height overflows (Figma zoom)
   const width = frameWidth;
   return { width, height: Math.round(width / sourceAspect) };
 }

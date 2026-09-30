@@ -4,6 +4,8 @@ import { StyleSheet, View } from 'react-native';
 import { ensureExerciseAudioSession } from '../../lib/ensureExerciseAudioSession';
 import {
   EXERCISE_VIDEO_FRAME_BACKGROUND,
+  EXERCISE_VIDEO_SOURCE_ASPECT,
+  getCoverVideoBox,
   getGuidedVideoPresentation,
 } from '../../lib/exerciseVideoFrame';
 import { shouldAcceptVideoEnd } from './sessionVideoCompletion';
@@ -178,12 +180,10 @@ export function SessionVideoPlayer({
 
   const width = Math.max(0, Math.round(frameWidth));
   const height = Math.max(0, Math.round(frameHeight));
-  const objectFit =
-    presentation.contentFit === 'cover'
-      ? 'cover'
-      : presentation.contentFit === 'contain'
-        ? 'contain'
-        : 'fill';
+  const stretch = presentation.contentFit === 'fill';
+  const videoBox = stretch
+    ? { width, height }
+    : getCoverVideoBox(width, height, EXERCISE_VIDEO_SOURCE_ASPECT);
 
   if (!source?.trim() || width <= 0 || height <= 0) {
     return <View style={[styles.wrap, { width, height }]} />;
@@ -191,31 +191,33 @@ export function SessionVideoPlayer({
 
   return (
     <View style={[styles.wrap, { width, height }]}>
-      {createElement('video', {
-        key: `${source}-${restartToken}`,
-        ref: videoRef,
-        src: source,
-        playsInline: true,
-        preload: 'auto',
-        controls: false,
-        muted: false,
-        defaultMuted: false,
-        style: {
-          width,
-          height,
-          objectFit,
-          objectPosition: presentation.objectPosition,
-          backgroundColor: EXERCISE_VIDEO_FRAME_BACKGROUND,
-        },
-        onLoadStart: handleWaiting,
-        onWaiting: handleWaiting,
-        onCanPlay: handleCanPlay,
-        onPlaying: handlePlaying,
-        onLoadedMetadata: handleLoadedMetadata,
-        onTimeUpdate: handleTimeUpdate,
-        onEnded: handleEnded,
-        onError: handleError,
-      })}
+      {videoBox.width > 0 && videoBox.height > 0
+        ? createElement('video', {
+            key: `${source}-${restartToken}`,
+            ref: videoRef,
+            src: source,
+            playsInline: true,
+            preload: 'auto',
+            controls: false,
+            muted: false,
+            defaultMuted: false,
+            style: {
+              width: videoBox.width,
+              height: videoBox.height,
+              objectFit: 'fill',
+              objectPosition: presentation.objectPosition,
+              backgroundColor: EXERCISE_VIDEO_FRAME_BACKGROUND,
+            },
+            onLoadStart: handleWaiting,
+            onWaiting: handleWaiting,
+            onCanPlay: handleCanPlay,
+            onPlaying: handlePlaying,
+            onLoadedMetadata: handleLoadedMetadata,
+            onTimeUpdate: handleTimeUpdate,
+            onEnded: handleEnded,
+            onError: handleError,
+          })
+        : null}
     </View>
   );
 }
