@@ -37,9 +37,8 @@ export const EXERCISE_VIDEO_FRAME_ASPECT =
   EXERCISE_VIDEO_FRAME_WIDTH / EXERCISE_VIDEO_FRAME_HEIGHT;
 /** Matches studio wash so contain letterbox blends with the clip. */
 export const EXERCISE_VIDEO_FRAME_BACKGROUND = '#E8E8E8';
+/** Corner radius only — no stroke/border around the video frame. */
 export const EXERCISE_VIDEO_FRAME_BORDER_RADIUS = 8;
-export const EXERCISE_VIDEO_FRAME_BORDER_COLOR = '#D1D5DB';
-export const EXERCISE_VIDEO_FRAME_BORDER_WIDTH = 1;
 
 export type GuidedVideoContentFit = 'contain' | 'cover' | 'fill';
 

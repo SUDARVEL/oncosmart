@@ -19,9 +19,7 @@ import {
   EXERCISE_SCREEN_DESIGN_WIDTH,
   EXERCISE_SCREEN_HEADER_HEIGHT,
   EXERCISE_VIDEO_FRAME_BACKGROUND,
-  EXERCISE_VIDEO_FRAME_BORDER_COLOR,
   EXERCISE_VIDEO_FRAME_BORDER_RADIUS,
-  EXERCISE_VIDEO_FRAME_BORDER_WIDTH,
   EXERCISE_VIDEO_TO_COPY_GAP,
   getScaledVideoFrameSize,
 } from '../../lib/exerciseVideoFrame';
@@ -165,8 +163,6 @@ export function ExercisePlayerView({
                 width: frameWidth,
                 height: frameHeight,
                 borderRadius: EXERCISE_VIDEO_FRAME_BORDER_RADIUS,
-                borderWidth: EXERCISE_VIDEO_FRAME_BORDER_WIDTH,
-                borderColor: EXERCISE_VIDEO_FRAME_BORDER_COLOR,
               },
             ]}
             onPress={unlockAudio}
