@@ -222,7 +222,7 @@ export function ExercisePlayerView({
             unitLabel={unitLabel}
           />
 
-          {/* Pause + Restart — explicit margin so gap never collapses */}
+          {/* Pause + Restart — hard spacer View so gap cannot collapse */}
           <View
             style={[
               styles.actions,
@@ -233,10 +233,7 @@ export function ExercisePlayerView({
             ]}
           >
             <PressableScale
-              style={[
-                styles.pauseButton,
-                { marginRight: Math.round(EXERCISE_ACTION_BUTTON_GAP * scale) },
-              ]}
+              style={styles.pauseButton}
               onPress={handlePauseToggle}
               accessibilityRole="button"
             >
@@ -245,6 +242,12 @@ export function ExercisePlayerView({
                 {playbackPaused ? t('sessionFlow.resume') : t('sessionFlow.pause')}
               </Text>
             </PressableScale>
+
+            <View
+              style={{ width: Math.round(EXERCISE_ACTION_BUTTON_GAP * scale) }}
+              accessibilityElementsHidden
+              importantForAccessibility="no-hide-descendants"
+            />
 
             <PressableScale
               style={[

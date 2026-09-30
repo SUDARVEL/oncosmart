@@ -4,9 +4,9 @@
  * Video layer (4319:5801): **349 × 444**, radius 8, left inset 20.5.
  * Real pathway MP4s are **9:16** (e.g. 1080×1920) — taller than the window.
  *
- * Always use `contain` inside the 349×444 frame so the **entire person**
- * (head → shoes) stays visible. Never cover/crop the subject. Side letterbox
- * uses the frame background; only unused frame chrome is empty — not the body.
+ * Letterbox an explicit **9:16** box inside 349×444 (CSS contain math) so the
+ * entire person (head → shoes) stays visible. Native contentFit alone is not
+ * trusted on Android SurfaceView (it can zoom and crop the head).
  */
 
 export const EXERCISE_SCREEN_DESIGN_WIDTH = 390;
@@ -96,6 +96,34 @@ export function getScaledVideoFrameSize(screenWidth: number): {
     contentWidth: Math.round(EXERCISE_VIDEO_FRAME_WIDTH * scale),
     contentLeftInset: Math.round(EXERCISE_CONTENT_LEFT_INSET * scale),
   };
+}
+
+/**
+ * Size a source-aspect rectangle that fits entirely inside the frame (CSS contain).
+ * Used to letterbox 9:16 clips inside 349×444 without relying on native contentFit.
+ */
+export function getContainedVideoBox(
+  frameWidth: number,
+  frameHeight: number,
+  sourceAspect: number = EXERCISE_VIDEO_SOURCE_ASPECT,
+): { width: number; height: number } {
+  if (
+    !Number.isFinite(frameWidth) ||
+    !Number.isFinite(frameHeight) ||
+    frameWidth <= 0 ||
+    frameHeight <= 0 ||
+    !Number.isFinite(sourceAspect) ||
+    sourceAspect <= 0
+  ) {
+    return { width: 0, height: 0 };
+  }
+  const frameAspect = frameWidth / frameHeight;
+  if (sourceAspect >= frameAspect) {
+    const width = frameWidth;
+    return { width, height: Math.round(width / sourceAspect) };
+  }
+  const height = frameHeight;
+  return { width: Math.round(height * sourceAspect), height };
 }
 
 export const HOME_DAY_CARD_PREVIEW_WIDTH = 343;
