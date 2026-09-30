@@ -16,12 +16,10 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import type { Day1SessionExercise } from '../../lib/getDay1Session';
 import {
   EXERCISE_SCREEN_DESIGN_WIDTH,
-  EXERCISE_SCREEN_GAP,
-  EXERCISE_SCREEN_PADDING_BOTTOM,
-  EXERCISE_SCREEN_PADDING_TOP,
+  EXERCISE_SCREEN_HEADER_HEIGHT,
   EXERCISE_VIDEO_FRAME_BACKGROUND,
   EXERCISE_VIDEO_FRAME_BORDER_RADIUS,
-  getExerciseScreenScale,
+  EXERCISE_VIDEO_TO_COPY_GAP,
   getScaledVideoFrameSize,
 } from '../../lib/exerciseVideoFrame';
 import { colors } from '../../theme/colors';
@@ -35,10 +33,13 @@ type Props = {
   videoSources: string[];
   onComplete: () => void;
   onBackPress: () => void;
-  /** Keep video paused while an overlay (e.g. quit reason modal) is open. */
   overlayPaused?: boolean;
 };
 
+/**
+ * Figma 4319:5797 — 390×844 artboard, video 349×444 @ x=20.5.
+ * Portrait MP4s (349×623) cover the video window (no letterbox / wrong aspect).
+ */
 export function ExercisePlayerView({
   exercise,
   videoSources,
@@ -63,11 +64,9 @@ export function ExercisePlayerView({
   const playbackPaused = isPaused || overlayPaused;
   const primarySource = videoSources[0]?.trim() ?? '';
 
-  // Figma screen 390×844 — scale down on narrower phones, never upscale.
-  // Video window 349×445; source ~349×623 fits with contain (no crop/stretch).
-  const scale = getExerciseScreenScale(screenWidth);
-  const { width: frameWidth, height: frameHeight } = getScaledVideoFrameSize(screenWidth);
-  const contentWidth = Math.round(EXERCISE_SCREEN_DESIGN_WIDTH * scale);
+  const { width: frameWidth, height: frameHeight, scale, contentWidth } =
+    getScaledVideoFrameSize(screenWidth);
+  const screenColumnWidth = Math.round(EXERCISE_SCREEN_DESIGN_WIDTH * scale);
 
   const title =
     exercise.title?.trim() ||
@@ -135,7 +134,8 @@ export function ExercisePlayerView({
 
   return (
     <SafeAreaView style={styles.screen} edges={['top', 'bottom']}>
-      <View style={styles.header}>
+      {/* Figma Frame 11 — 390×40 @ y=13 */}
+      <View style={[styles.header, { height: Math.round(EXERCISE_SCREEN_HEADER_HEIGHT * scale) }]}>
         <Pressable onPress={handleBackPress} style={styles.backButton} accessibilityRole="button">
           <Ionicons name="arrow-back" size={24} color={colors.textPrimary} />
         </Pressable>
@@ -146,94 +146,101 @@ export function ExercisePlayerView({
         contentContainerStyle={[
           styles.scrollContent,
           {
-            width: contentWidth,
-            paddingTop: Math.round(EXERCISE_SCREEN_PADDING_TOP * scale),
-            paddingBottom: Math.round(EXERCISE_SCREEN_PADDING_BOTTOM * scale),
-            gap: Math.round(EXERCISE_SCREEN_GAP * scale),
+            width: screenColumnWidth,
+            paddingBottom: Math.round(24 * scale),
           },
         ]}
         showsVerticalScrollIndicator={false}
         bounces={false}
       >
-        <Pressable
-          style={[
-            styles.videoWrap,
-            {
-              width: frameWidth,
-              height: frameHeight,
-              borderRadius: EXERCISE_VIDEO_FRAME_BORDER_RADIUS,
-            },
-          ]}
-          onPress={unlockAudio}
-          accessibilityRole="button"
-          accessibilityLabel="Unlock video sound"
-        >
-          {primarySource ? (
-            <SessionVideoPlayer
-              key={`${exercise.id}-${primarySource}-${restartToken}`}
-              source={primarySource}
-              exerciseId={exercise.id}
-              isPaused={playbackPaused}
-              restartToken={restartToken}
-              audioUnlockToken={audioUnlockToken}
-              onProgress={setVideoProgress}
-              onBuffering={setIsBuffering}
-              onDuration={() => {}}
-              onPlaybackFailed={() => setPlaybackFailed(true)}
-              onEnded={handleVideoEnded}
-            />
-          ) : null}
-          {isBuffering && !playbackFailed ? (
-            <View style={styles.videoLoaderOverlay} pointerEvents="none">
-              <ActivityIndicator size="large" color="#005F99" />
-            </View>
-          ) : null}
-          {playbackFailed ? (
-            <View style={styles.videoErrorOverlay} pointerEvents="none">
-              <Ionicons name="videocam-off-outline" size={40} color="#FFFFFF" />
-              <Text style={styles.videoErrorText}>{t('sessionFlow.videoUnavailable')}</Text>
-            </View>
-          ) : null}
-        </Pressable>
-
-        <View
-          style={[styles.videoProgressTrack, { width: frameWidth }]}
-          accessibilityRole="progressbar"
-          accessibilityLabel="Video progress"
-          accessibilityValue={{ min: 0, max: 100, now: videoProgressPercent }}
-        >
-          <View style={[styles.videoProgressFill, { width: `${videoProgressPercent}%` }]} />
-        </View>
-
-        <ExercisePlayerCopyBlock
-          title={title}
-          description={description}
-          displayValue={displayValue}
-          unitLabel={unitLabel}
-        />
-
-        <View style={[styles.actions, { width: frameWidth }]}>
-          <PressableScale
-            style={styles.pauseButton}
-            onPress={handlePauseToggle}
+        {/* Figma 4319:5800 — 349-wide column */}
+        <View style={[styles.contentColumn, { width: contentWidth }]}>
+          <Pressable
+            style={[
+              styles.videoWrap,
+              {
+                width: frameWidth,
+                height: frameHeight,
+                borderRadius: EXERCISE_VIDEO_FRAME_BORDER_RADIUS,
+              },
+            ]}
+            onPress={unlockAudio}
             accessibilityRole="button"
+            accessibilityLabel="Unlock video sound"
           >
-            <Ionicons name={playbackPaused ? 'play' : 'pause'} size={22} color="#FFFFFF" />
-            <Text style={styles.pauseButtonText} numberOfLines={1}>
-              {playbackPaused ? t('sessionFlow.resume') : t('sessionFlow.pause')}
-            </Text>
-          </PressableScale>
+            {primarySource ? (
+              <SessionVideoPlayer
+                key={`${exercise.id}-${primarySource}-${restartToken}`}
+                source={primarySource}
+                exerciseId={exercise.id}
+                isPaused={playbackPaused}
+                restartToken={restartToken}
+                audioUnlockToken={audioUnlockToken}
+                onProgress={setVideoProgress}
+                onBuffering={setIsBuffering}
+                onDuration={() => {}}
+                onPlaybackFailed={() => setPlaybackFailed(true)}
+                onEnded={handleVideoEnded}
+              />
+            ) : null}
+            {isBuffering && !playbackFailed ? (
+              <View style={styles.videoLoaderOverlay} pointerEvents="none">
+                <ActivityIndicator size="large" color="#005F99" />
+              </View>
+            ) : null}
+            {playbackFailed ? (
+              <View style={styles.videoErrorOverlay} pointerEvents="none">
+                <Ionicons name="videocam-off-outline" size={40} color="#FFFFFF" />
+                <Text style={styles.videoErrorText}>{t('sessionFlow.videoUnavailable')}</Text>
+              </View>
+            ) : null}
+          </Pressable>
 
-          <PressableScale
-            style={styles.restartButton}
-            onPress={handleRestart}
-            accessibilityRole="button"
+          <View
+            style={[
+              styles.videoProgressTrack,
+              { width: frameWidth, marginTop: Math.round(8 * scale) },
+            ]}
+            accessibilityRole="progressbar"
+            accessibilityLabel="Video progress"
+            accessibilityValue={{ min: 0, max: 100, now: videoProgressPercent }}
           >
-            <Ionicons name="refresh" size={20} color="#374151" />
-            <Text style={styles.restartButtonText} numberOfLines={1}>
-              {t('sessionFlow.restart')}
-            </Text>
-          </PressableScale>
+            <View style={[styles.videoProgressFill, { width: `${videoProgressPercent}%` }]} />
+          </View>
+
+          <View style={{ height: Math.round(EXERCISE_VIDEO_TO_COPY_GAP * scale) - 8 }} />
+
+          <ExercisePlayerCopyBlock
+            title={title}
+            description={description}
+            displayValue={displayValue}
+            unitLabel={unitLabel}
+          />
+
+          {/* Figma buttons: Pause 248×48 + Restart 101×48, radius 8 */}
+          <View style={[styles.actions, { width: contentWidth, marginTop: Math.round(16 * scale) }]}>
+            <PressableScale
+              style={[styles.pauseButton, { width: Math.round(248 * scale) }]}
+              onPress={handlePauseToggle}
+              accessibilityRole="button"
+            >
+              <Ionicons name={playbackPaused ? 'play' : 'pause'} size={24} color="#FFFFFF" />
+              <Text style={styles.pauseButtonText} numberOfLines={1}>
+                {playbackPaused ? t('sessionFlow.resume') : t('sessionFlow.pause')}
+              </Text>
+            </PressableScale>
+
+            <PressableScale
+              style={[styles.restartButton, { width: Math.round(101 * scale) }]}
+              onPress={handleRestart}
+              accessibilityRole="button"
+            >
+              <Ionicons name="refresh" size={22} color="#374151" />
+              <Text style={styles.restartButtonText} numberOfLines={1}>
+                {t('sessionFlow.restart')}
+              </Text>
+            </PressableScale>
+          </View>
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -243,12 +250,13 @@ export function ExercisePlayerView({
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: colors.background,
+    backgroundColor: '#FFFFFF',
+    // Figma artboard is border-box 390×844
   },
   header: {
-    height: 40,
+    width: '100%',
     justifyContent: 'center',
-    paddingHorizontal: 8,
+    paddingHorizontal: 16,
   },
   backButton: {
     width: 40,
@@ -259,18 +267,15 @@ const styles = StyleSheet.create({
   scroll: {
     flex: 1,
   },
-  /**
-   * Figma exercise column:
-   * display:flex; width:390; flex-direction:column; align-items:center;
-   * padding:13px 0 65px; gap:11px;
-   */
   scrollContent: {
     alignSelf: 'center',
     alignItems: 'center',
     flexGrow: 1,
   },
+  contentColumn: {
+    alignItems: 'center',
+  },
   videoWrap: {
-    // 349×445 @ design, radius 8 — source 349×623 fits with contain
     overflow: 'hidden',
     backgroundColor: EXERCISE_VIDEO_FRAME_BACKGROUND,
     flexShrink: 0,
@@ -313,27 +318,21 @@ const styles = StyleSheet.create({
   actions: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    gap: 9,
-    marginTop: 4,
+    justifyContent: 'space-between',
     flexShrink: 0,
   },
-  /** Figma primary Pause — pill */
   pauseButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 6,
-    flexGrow: 1,
-    flexShrink: 1,
-    minWidth: 0,
+    gap: 4,
     height: 48,
-    borderRadius: 999,
+    borderRadius: 8,
     backgroundColor: '#005F99',
-    paddingHorizontal: 16,
+    paddingLeft: 12,
+    paddingRight: 16,
   },
   pauseButtonText: {
-    flexShrink: 1,
     fontSize: 14,
     lineHeight: 18,
     color: '#FFFFFF',
@@ -344,19 +343,15 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 4,
-    flexGrow: 0,
-    flexShrink: 0,
-    minWidth: 120,
+    gap: 2,
     height: 48,
-    borderRadius: 999,
+    borderRadius: 8,
     borderWidth: 1,
     borderColor: '#D1D5DB',
-    paddingHorizontal: 12,
+    backgroundColor: '#FFFFFF',
   },
   restartButtonText: {
-    flexShrink: 0,
-    fontSize: 13,
+    fontSize: 14,
     lineHeight: 18,
     color: '#374151',
     textTransform: 'capitalize',
