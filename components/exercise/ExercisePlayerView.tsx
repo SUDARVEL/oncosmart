@@ -38,8 +38,8 @@ type Props = {
 };
 
 /**
- * Figma 4319:5797 — 390×844, video 349×444 @ x=20.5.
- * Every clip uses cover so empty studio space is zoomed out — same for all.
+ * Figma 4319:5797 layout — video 349 × 9:16 so every clip shows full body
+ * (head, legs, shoes) with no crop. Same fit for all exercises.
  */
 export function ExercisePlayerView({
   exercise,
