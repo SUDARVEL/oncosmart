@@ -256,7 +256,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   videoWrap: {
-    // Figma: width 349, height 444, flex-shrink 0, radius 16
+    // Video area: width 349, height 444, flex-shrink 0, radius 8
     width: EXERCISE_VIDEO_FRAME_WIDTH,
     borderRadius: EXERCISE_VIDEO_FRAME_BORDER_RADIUS,
     overflow: 'hidden',

@@ -1,7 +1,7 @@
 /**
  * Guided exercise video framing — Figma node 2622:2437 (ONCOSMART).
  *
- * Visible video area: **349 × 444**, radius 16.
+ * Visible video area: **349 × 444**, radius 8.
  * Source portrait exports: **349 × 623** (taller than the frame).
  *
  * Fit with `contain` + center so the full person is visible (no crop).
@@ -27,7 +27,7 @@ export const EXERCISE_VIDEO_FRAME_ASPECT =
   EXERCISE_VIDEO_FRAME_WIDTH / EXERCISE_VIDEO_FRAME_HEIGHT;
 /** Match Figma empty / letterbox area around contained video. */
 export const EXERCISE_VIDEO_FRAME_BACKGROUND = '#FFFFFF';
-export const EXERCISE_VIDEO_FRAME_BORDER_RADIUS = 16;
+export const EXERCISE_VIDEO_FRAME_BORDER_RADIUS = 8;
 
 export const EXERCISE_VIDEO_CONTENT_FIT = 'contain' as const;
 export const EXERCISE_VIDEO_OBJECT_POSITION = 'center' as const;
