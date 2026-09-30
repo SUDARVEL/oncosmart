@@ -27,9 +27,8 @@ function formatRepBadge(repLabel: string): string {
 }
 
 /**
- * Figma day-session card — one continuous landscape grey stage (257×112)
- * with the character filling the frame. Use cover so portrait/mismatched
- * assets never leave side letterbox “tabs”.
+ * Figma day-session card — one continuous landscape grey stage (257×112).
+ * Phase II assets are 1920×1080; cover fills the stage (no side letterbox).
  */
 export function ExerciseSessionCard({
   name,

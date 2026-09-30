@@ -1,6 +1,6 @@
 /**
  * Web: muted looping landscape preview for session cards.
- * Fixed 257×112 — fill stretches to the frame (no letterbox bars, no crop).
+ * Fixed 257×112 — object-fit cover for Phase II 16:9 assets.
  */
 import { createElement, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
@@ -39,7 +39,8 @@ const styles = StyleSheet.create({
     width: SESSION_EXERCISE_CARD_PREVIEW_WIDTH,
     height: SESSION_EXERCISE_CARD_PREVIEW_HEIGHT,
     borderRadius: 8,
-    objectFit: 'fill',
+    objectFit: 'cover',
+    objectPosition: 'center',
     display: 'block',
   } as object,
 });

@@ -17,6 +17,7 @@ import {
   getExercisePortraitVideoUrl,
   getSessionLandscapeVideoUrl,
 } from './exerciseMediaUrls';
+import { resolvePhase2CardLandscapePreview } from './phase2LandscapeMedia';
 import {
   guessSupabaseExerciseVideoUrl,
   resolveExercisePlaybackUrl,
@@ -25,6 +26,36 @@ import { resolveSessionCardPhotoSource } from './resolveSessionCardPhoto';
 import { resolveSessionLandscapePhotoSource } from './sessionLandscapePhotos';
 import { resolveVideoUrl } from './resolveVideoUrl';
 import { isValidGuidedPlaybackUrl, sanitizePublicVideoUrl } from './videoStoragePolicy';
+
+/** Card preview: Phase II Landscape first, then legacy landscape folders. */
+function resolveCardLandscapePreview(
+  slug: string,
+  gender: AppGender | null,
+  avatar: AppAvatar | null,
+): { previewVideo: string | null; previewPhoto: ImageSource | null } {
+  const phase2 = resolvePhase2CardLandscapePreview(slug, gender, avatar);
+  if (phase2.previewVideo) {
+    return {
+      previewVideo: phase2.previewVideo,
+      previewPhoto: phase2.previewPhotoUrl ? { uri: phase2.previewPhotoUrl } : null,
+    };
+  }
+  if (phase2.previewPhotoUrl) {
+    // Phase II still (e.g. DBE / stretches) — do not fall back to old landscape MP4.
+    return {
+      previewVideo: null,
+      previewPhoto: { uri: phase2.previewPhotoUrl },
+    };
+  }
+
+  const legacyVideo = slug.includes('stretch')
+    ? null
+    : getSessionLandscapeVideoUrl(slug, gender, avatar);
+  const legacyPhoto =
+    resolveSessionLandscapePhotoSource(slug, gender, avatar) ??
+    resolveSessionCardPhotoSource(slug, gender, avatar);
+  return { previewVideo: legacyVideo, previewPhoto: legacyPhoto };
+}
 
 export type DayExercise = {
   id: string;
@@ -83,12 +114,10 @@ function pathwayToResolved(
   const name = exercise.title ?? catalogEntry?.name ?? 'Exercise';
   const repLabel = repLabelFromGuided(exercise);
   const videoSource = exercise.videoUrl ?? null;
-  const previewVideo =
-    slug && !slug.includes('stretch') ? getSessionLandscapeVideoUrl(slug, gender, avatar) : null;
   const thumbnail = slug ? getDay1Thumbnail(slug) : null;
-  const previewPhoto =
-    (slug ? resolveSessionLandscapePhotoSource(slug, gender, avatar) : null) ??
-    (slug ? resolveSessionCardPhotoSource(slug, gender, avatar) : null);
+  const card = slug
+    ? resolveCardLandscapePreview(slug, gender, avatar)
+    : { previewVideo: null, previewPhoto: null };
 
   return {
     id: exercise.id,
@@ -102,8 +131,8 @@ function pathwayToResolved(
     },
     videoSource,
     playbackSource: videoSource,
-    previewPhoto: previewPhoto ?? thumbnail,
-    previewVideo,
+    previewPhoto: card.previewPhoto ?? thumbnail,
+    previewVideo: card.previewVideo,
     thumbnail,
   };
 }
@@ -202,20 +231,15 @@ export function getLevelExercises(
       language,
     );
     const slug = catalogSlugFromPathwayId(exercise.id) ?? exercise.id;
-    const previewVideo = slug.includes('stretch')
-      ? null
-      : getSessionLandscapeVideoUrl(slug, gender, avatar);
     const thumbnail = getDay1Thumbnail(slug);
-    const previewPhoto =
-      resolveSessionLandscapePhotoSource(slug, gender, avatar) ??
-      resolveSessionCardPhotoSource(slug, gender, avatar);
+    const card = resolveCardLandscapePreview(slug, gender, avatar);
 
     return {
       ...exercise,
       videoSource,
       playbackSource: resolveExercisePlaybackUrl(videoSource, exercise.name, variant),
-      previewPhoto: previewPhoto ?? thumbnail,
-      previewVideo,
+      previewPhoto: card.previewPhoto ?? thumbnail,
+      previewVideo: card.previewVideo,
       thumbnail,
     };
   });
