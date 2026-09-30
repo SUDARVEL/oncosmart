@@ -1,12 +1,9 @@
 /**
  * Guided exercise video framing — Figma node 4319:5797 (390×844 screen).
  *
- * Video layer (4319:5801): **349 × 444**, radius 8, left inset 20.5.
- * Real pathway MP4s are **9:16** (e.g. 1080×1920) — taller than the window.
- *
- * Letterbox an explicit **9:16** box inside 349×444 (CSS contain math) so the
- * entire person (head → shoes) stays visible. Native contentFit alone is not
- * trusted on Android SurfaceView (it can zoom and crop the head).
+ * Content column width **349** (left inset 20.5). Pathway MP4s are **9:16**.
+ * The video window uses the same **9:16** aspect at full 349 width so the clip
+ * fills edge-to-edge (no grey letterbox rim, no body crop). Radius 8, no stroke.
  */
 
 export const EXERCISE_SCREEN_DESIGN_WIDTH = 390;
@@ -16,7 +13,7 @@ export const EXERCISE_SCREEN_HEADER_TOP = 13;
 export const EXERCISE_SCREEN_HEADER_HEIGHT = 40;
 /** Content column left inset: (390 − 349) / 2 */
 export const EXERCISE_CONTENT_LEFT_INSET = 20.5;
-/** Gap between video (444) and copy block start (y=468) → 24px */
+/** Gap between video and copy block. */
 export const EXERCISE_VIDEO_TO_COPY_GAP = 24;
 /** Clear separation between Pause and Restart. */
 export const EXERCISE_ACTION_BUTTON_GAP = 20;
@@ -27,17 +24,23 @@ export const EXERCISE_VIDEO_SOURCE_HEIGHT = 16;
 export const EXERCISE_VIDEO_SOURCE_ASPECT =
   EXERCISE_VIDEO_SOURCE_WIDTH / EXERCISE_VIDEO_SOURCE_HEIGHT;
 
-/** Figma video window (4319:5801). */
+/** Video window width matches Figma content column. */
 export const EXERCISE_VIDEO_FRAME_WIDTH = 349;
-export const EXERCISE_VIDEO_FRAME_HEIGHT = 444;
+/**
+ * Height matches source 9:16 at full width so the person fills the rounded
+ * rect with no grey side bars and no crop: round(349 × 16 / 9) = 620.
+ */
+export const EXERCISE_VIDEO_FRAME_HEIGHT = Math.round(
+  (EXERCISE_VIDEO_FRAME_WIDTH * EXERCISE_VIDEO_SOURCE_HEIGHT) /
+    EXERCISE_VIDEO_SOURCE_WIDTH,
+);
 export const CALF_RAISE_VIDEO_FRAME_HEIGHT = EXERCISE_VIDEO_FRAME_HEIGHT;
 export const LEGACY_EXERCISE_VIDEO_FRAME_HEIGHT = 432;
 
-export const EXERCISE_VIDEO_FRAME_ASPECT =
-  EXERCISE_VIDEO_FRAME_WIDTH / EXERCISE_VIDEO_FRAME_HEIGHT;
-/** Matches studio wash so contain letterbox blends with the clip. */
-export const EXERCISE_VIDEO_FRAME_BACKGROUND = '#E8E8E8';
-/** Corner radius only — no stroke/border around the video frame. */
+export const EXERCISE_VIDEO_FRAME_ASPECT = EXERCISE_VIDEO_SOURCE_ASPECT;
+/** White — never show a grey card/rim around the video. */
+export const EXERCISE_VIDEO_FRAME_BACKGROUND = '#FFFFFF';
+/** Corner radius only — no stroke/border. */
 export const EXERCISE_VIDEO_FRAME_BORDER_RADIUS = 8;
 
 export type GuidedVideoContentFit = 'contain' | 'cover' | 'fill';
@@ -48,9 +51,7 @@ export type GuidedVideoPresentation = {
   objectPosition: 'center bottom' | 'center' | `${string} ${string}`;
 };
 
-/**
- * 9:16 source → 349×444 window: contain shows the full figure, never crops.
- */
+/** Frame matches 9:16 — fill the window; contain as a safety for odd assets. */
 const FIGMA_VIDEO_PRESENTATION: GuidedVideoPresentation = {
   layout: 'fill-frame',
   contentFit: 'contain',
@@ -79,7 +80,7 @@ export function getExerciseScreenScale(screenWidth: number): number {
   return Math.min(1, screenWidth / EXERCISE_SCREEN_DESIGN_WIDTH);
 }
 
-/** Design video 349×444 scaled to the device. */
+/** Design video frame scaled to the device (349 × 9:16). */
 export function getScaledVideoFrameSize(screenWidth: number): {
   width: number;
   height: number;
@@ -88,18 +89,18 @@ export function getScaledVideoFrameSize(screenWidth: number): {
   contentLeftInset: number;
 } {
   const scale = getExerciseScreenScale(screenWidth);
+  const width = Math.round(EXERCISE_VIDEO_FRAME_WIDTH * scale);
   return {
     scale,
-    width: Math.round(EXERCISE_VIDEO_FRAME_WIDTH * scale),
-    height: Math.round(EXERCISE_VIDEO_FRAME_HEIGHT * scale),
-    contentWidth: Math.round(EXERCISE_VIDEO_FRAME_WIDTH * scale),
+    width,
+    height: Math.round(width / EXERCISE_VIDEO_SOURCE_ASPECT),
+    contentWidth: width,
     contentLeftInset: Math.round(EXERCISE_CONTENT_LEFT_INSET * scale),
   };
 }
 
 /**
  * Size a source-aspect rectangle that fits entirely inside the frame (CSS contain).
- * Used to letterbox 9:16 clips inside 349×444 without relying on native contentFit.
  */
 export function getContainedVideoBox(
   frameWidth: number,
