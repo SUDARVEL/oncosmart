@@ -62,14 +62,12 @@ export function ExercisePlayerView({
   const playbackPaused = isPaused || overlayPaused;
   const primarySource = videoSources[0]?.trim() ?? '';
 
-  // Per-exercise Figma frame (e.g. calf raise 349×444, wall push-up 349×432).
+  // Pathway videos: exact 349×620 aspect (scaled to screen width − 32).
+  // Legacy assets keep shorter crop heights from getGuidedVideoFrameHeight.
   const frameHeightSpec = getGuidedVideoFrameHeight(exercise.id);
   const frameAspect = getGuidedVideoFrameAspect(exercise.id);
   const frameWidth = Math.min(EXERCISE_VIDEO_FRAME_WIDTH, Math.max(0, screenWidth - 32));
-  const frameHeight =
-    frameWidth >= EXERCISE_VIDEO_FRAME_WIDTH
-      ? frameHeightSpec
-      : Math.round(frameWidth / frameAspect);
+  const frameHeight = Math.round(frameWidth / frameAspect);
 
   const title =
     exercise.title?.trim() ||
@@ -265,6 +263,8 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     backgroundColor: EXERCISE_VIDEO_FRAME_BACKGROUND,
     flexShrink: 0,
+    // Keep Android VideoView clipped to the 349×620 (scaled) frame.
+    alignSelf: 'center',
   },
   videoLoaderOverlay: {
     ...StyleSheet.absoluteFillObject,
