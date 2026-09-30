@@ -1,12 +1,11 @@
 /**
- * Guided exercise video framing — Figma `0126.mp4` / 4319:5797.
+ * Guided exercise video framing — Figma `0126.mp4` / 4319:5797 / media 4322:5851.
  *
- * Exact window (do not expand):
- *   width: 349px; height: 444px; border-radius: 16px; flex-shrink: 0;
+ * Exact media window (do not invent different sizes):
+ *   width: 341px; height: 444px; border-radius: 21px; flex-shrink: 0;
  *
- * Videos are taller (9:16). Always `contain` inside 349×444 so nothing is cut.
- * Extra space is filled with the studio wall colour sampled from the MP4s
- * (#E0E0E0) — same for every clip.
+ * Figma fills that rounded rect with the clip (full figure, studio wall + white
+ * floor baked into the video). Content column around it stays 349 wide.
  */
 
 export const EXERCISE_SCREEN_DESIGN_WIDTH = 390;
@@ -14,6 +13,8 @@ export const EXERCISE_SCREEN_DESIGN_HEIGHT = 844;
 export const EXERCISE_SCREEN_HEADER_TOP = 13;
 export const EXERCISE_SCREEN_HEADER_HEIGHT = 40;
 export const EXERCISE_CONTENT_LEFT_INSET = 20.5;
+/** Figma Frame 634958 — text + actions column */
+export const EXERCISE_CONTENT_COLUMN_WIDTH = 349;
 export const EXERCISE_VIDEO_TO_COPY_GAP = 24;
 export const EXERCISE_ACTION_BUTTON_GAP = 16;
 
@@ -22,8 +23,8 @@ export const EXERCISE_VIDEO_SOURCE_HEIGHT = 16;
 export const EXERCISE_VIDEO_SOURCE_ASPECT =
   EXERCISE_VIDEO_SOURCE_WIDTH / EXERCISE_VIDEO_SOURCE_HEIGHT;
 
-/** Figma exact — never expand. */
-export const EXERCISE_VIDEO_FRAME_WIDTH = 349;
+/** Figma media node 4322:5851 — exact. */
+export const EXERCISE_VIDEO_FRAME_WIDTH = 341;
 export const EXERCISE_VIDEO_FRAME_HEIGHT = 444;
 export const CALF_RAISE_VIDEO_FRAME_HEIGHT = EXERCISE_VIDEO_FRAME_HEIGHT;
 export const LEGACY_EXERCISE_VIDEO_FRAME_HEIGHT = 432;
@@ -31,11 +32,12 @@ export const LEGACY_EXERCISE_VIDEO_FRAME_HEIGHT = 432;
 export const EXERCISE_VIDEO_FRAME_ASPECT =
   EXERCISE_VIDEO_FRAME_WIDTH / EXERCISE_VIDEO_FRAME_HEIGHT;
 /**
- * Studio wall from pathway MP4s (avg ~#E0E0E0). Used as contain padding so
- * letterbox bars match the video instead of looking like a cut/white gap.
+ * Studio wall from pathway MP4s (avg ~#E0E0E0). Shows while loading; the clip
+ * itself paints the grey panel + white floor once playing.
  */
 export const EXERCISE_VIDEO_FRAME_BACKGROUND = '#E0E0E0';
-export const EXERCISE_VIDEO_FRAME_BORDER_RADIUS = 16;
+/** Figma rounded-[21px] on media 4322:5851 */
+export const EXERCISE_VIDEO_FRAME_BORDER_RADIUS = 21;
 
 export type GuidedVideoContentFit = 'contain' | 'cover' | 'fill';
 
@@ -45,10 +47,13 @@ export type GuidedVideoPresentation = {
   objectPosition: 'center bottom' | 'center' | `${string} ${string}`;
 };
 
-/** Contain in 349×444 for every exercise — pad with studio bg, never crop. */
+/**
+ * Fill the 341×444 Figma window the same way the design places the media —
+ * no letterbox bars that break the white-floor blend.
+ */
 const UNIFORM_VIDEO_PRESENTATION: GuidedVideoPresentation = {
   layout: 'fill-frame',
-  contentFit: 'contain',
+  contentFit: 'cover',
   objectPosition: 'center',
 };
 
@@ -85,7 +90,7 @@ export function getScaledVideoFrameSize(screenWidth: number): {
     scale,
     width: Math.round(EXERCISE_VIDEO_FRAME_WIDTH * scale),
     height: Math.round(EXERCISE_VIDEO_FRAME_HEIGHT * scale),
-    contentWidth: Math.round(EXERCISE_VIDEO_FRAME_WIDTH * scale),
+    contentWidth: Math.round(EXERCISE_CONTENT_COLUMN_WIDTH * scale),
     contentLeftInset: Math.round(EXERCISE_CONTENT_LEFT_INSET * scale),
   };
 }

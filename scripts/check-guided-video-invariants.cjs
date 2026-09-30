@@ -2,12 +2,14 @@
  * Regression guard for guided exercise video playback.
  * Run: npm run check:videos
  *
- * Prevents these past production bugs from returning:
+ * Figma source of truth for the player media window:
+ *   ONCOSMART / 4319:5797 / media 4322:5851 → 341×444, radius 21, fill frame.
+ *
+ * Also guards past production bugs:
  * 1. Wrong Supabase bucket (`exercise-videos`) → "Video not available"
  * 2. Short landscape fallbacks → videos end in a few seconds
- * 3. `cover` fit → body/feet/hands cropped vs Figma
- * 4. Early completion from fake end events
- * 5. Per-exercise transform/scale overrides → letterboxing on Android VideoView
+ * 3. Early completion from fake end events
+ * 4. Per-exercise transform/scale overrides → letterboxing on Android VideoView
  */
 const fs = require('fs');
 const path = require('path');
@@ -30,46 +32,32 @@ function assert(condition, message) {
 
 const frame = read('lib/exerciseVideoFrame.ts');
 assert(
-  /EXERCISE_VIDEO_SOURCE_HEIGHT\s*=\s*578/.test(frame),
-  'Figma source composition height must stay 578',
+  /EXERCISE_VIDEO_FRAME_WIDTH\s*=\s*341/.test(frame),
+  'Frame width must stay 341 (Figma media 4322:5851)',
 );
 assert(
-  /EXERCISE_VIDEO_FRAME_WIDTH\s*=\s*349/.test(frame),
-  'Frame width must stay 349',
+  /EXERCISE_VIDEO_FRAME_HEIGHT\s*=\s*444/.test(frame),
+  'Frame height must stay 444 (Figma media 4322:5851)',
 );
 assert(
-  /EXERCISE_VIDEO_FRAME_HEIGHT\s*=\s*432/.test(frame),
-  'Visible crop height must stay 432 (Figma node 2978:4962)',
+  /EXERCISE_CONTENT_COLUMN_WIDTH\s*=\s*349/.test(frame),
+  'Content column must stay 349 (Figma Frame 634958)',
 );
 assert(
-  /EXERCISE_VIDEO_FRAME_BORDER_RADIUS\s*=\s*16/.test(frame),
-  'Frame radius must stay 16',
+  /EXERCISE_VIDEO_FRAME_BORDER_RADIUS\s*=\s*21/.test(frame),
+  'Frame radius must stay 21 (Figma rounded-[21px])',
 );
 assert(
-  /EXERCISE_VIDEO_OBJECT_POSITION\s*=\s*'center bottom'/.test(frame),
-  'Crop must be bottom-anchored like Figma',
+  /contentFit:\s*'cover'/.test(frame),
+  'Guided videos must cover-fill the 341×444 Figma window',
 );
 assert(
-  frame.includes("exerciseId === 'chest-stretch'") &&
-    frame.includes("layout: 'fill-frame'"),
-  'Chest stretch must use full-frame dual-panel presentation',
-);
-assert(
-  frame.includes("exerciseId === 'wall-pushup'") &&
-    frame.includes("layout: 'fill-frame'") &&
-    frame.includes('WALL_PUSHUP_VIDEO_PRESENTATION'),
-  'Wall push-up must fill the Figma 349×432 frame edge-to-edge',
-);
-assert(
-  frame.includes("exerciseId === 'calf-raise'") &&
-    frame.includes('CALF_RAISE_VIDEO_FRAME_HEIGHT') &&
-    /CALF_RAISE_VIDEO_FRAME_HEIGHT\s*=\s*444/.test(frame) &&
-    frame.includes('CALF_RAISE_VIDEO_PRESENTATION'),
-  'Calf raise must fill the Figma 349×444 frame edge-to-edge',
+  frame.includes("layout: 'fill-frame'"),
+  'Fill-frame layout must remain supported in framing config',
 );
 assert(
   !frame.includes('sourceBoxHeightScale') && !frame.includes('sourceBoxWidthScale'),
-  'Wall push-up must not use pixel scale overrides (Android letterboxing)',
+  'Must not use pixel scale overrides (Android letterboxing)',
 );
 
 const policy = read('lib/videoStoragePolicy.ts');
@@ -123,14 +111,15 @@ assert(
 
 const nativePlayer = read('components/exercise/SessionVideoPlayer.tsx');
 assert(
-  nativePlayer.includes('aspectRatio: EXERCISE_VIDEO_SOURCE_ASPECT') &&
-    nativePlayer.includes('bottom: 0'),
-  'Native player must bottom-align the tall source inside the crop window',
+  nativePlayer.includes('frameWidth') &&
+    nativePlayer.includes('frameHeight') &&
+    nativePlayer.includes('contentFit={presentation.contentFit}'),
+  'Native player must take explicit Figma frame size and apply presentation contentFit',
 );
 assert(
   nativePlayer.includes('getGuidedVideoPresentation') &&
     !nativePlayer.includes('getGuidedVideoSourceBoxLayoutStyle'),
-  'Native player must use aspect-ratio source box (no pixel scale overrides)',
+  'Native player must use guided presentation (no pixel scale overrides)',
 );
 
 const copyStyles = read('lib/exercisePlayerCopyStyles.ts');
@@ -159,21 +148,23 @@ assert(
   playerView.includes('ExercisePlayerCopyBlock'),
   'ExercisePlayerView must use ExercisePlayerCopyBlock',
 );
+assert(
+  playerView.includes('frameWidth={frameWidth}') &&
+    playerView.includes('frameHeight={frameHeight}'),
+  'ExercisePlayerView must pass exact scaled Figma frame size into SessionVideoPlayer',
+);
 
 const webPlayer = read('components/exercise/SessionVideoPlayer.web.tsx');
 assert(
-  webPlayer.includes('aspectRatio: EXERCISE_VIDEO_SOURCE_ASPECT') &&
-    webPlayer.includes('bottom: 0'),
-  'Web player must bottom-align the tall source inside the crop window',
+  webPlayer.includes('frameWidth') &&
+    webPlayer.includes('frameHeight') &&
+    webPlayer.includes('objectFit'),
+  'Web player must take explicit Figma frame size and set objectFit',
 );
 assert(
   webPlayer.includes('getGuidedVideoPresentation') &&
     webPlayer.includes('presentation.objectPosition'),
   'Web player must apply guided presentation object position',
-);
-assert(
-  frame.includes("layout: 'fill-frame'"),
-  'Chest stretch and fill-frame layouts must remain supported in framing config',
 );
 
 const completion = read('components/exercise/sessionVideoCompletion.ts');
