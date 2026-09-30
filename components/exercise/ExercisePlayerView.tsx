@@ -38,7 +38,7 @@ type Props = {
 
 /**
  * Figma 4319:5797 — 390×844 artboard, video 349×444 @ x=20.5.
- * Portrait MP4s (349×623) cover the video window (no letterbox / wrong aspect).
+ * Portrait MP4s use contain so the full person (including shoes) stays visible.
  */
 export function ExercisePlayerView({
   exercise,
@@ -217,10 +217,19 @@ export function ExercisePlayerView({
             unitLabel={unitLabel}
           />
 
-          {/* Figma buttons: Pause 248×48 + Restart 101×48, radius 8 */}
-          <View style={[styles.actions, { width: contentWidth, marginTop: Math.round(16 * scale) }]}>
+          {/* Figma buttons: Pause + Restart with ~12px gap (not flush) */}
+          <View
+            style={[
+              styles.actions,
+              {
+                width: contentWidth,
+                marginTop: Math.round(16 * scale),
+                gap: Math.round(12 * scale),
+              },
+            ]}
+          >
             <PressableScale
-              style={[styles.pauseButton, { width: Math.round(248 * scale) }]}
+              style={styles.pauseButton}
               onPress={handlePauseToggle}
               accessibilityRole="button"
             >
@@ -318,10 +327,11 @@ const styles = StyleSheet.create({
   actions: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
+    justifyContent: 'flex-start',
     flexShrink: 0,
   },
   pauseButton: {
+    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
