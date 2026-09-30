@@ -3,7 +3,7 @@
  * Run: npm run check:videos
  *
  * Figma source of truth for the player media window:
- *   ONCOSMART / 4319:5797 / media 4322:5851 → 341×444, radius 21, fill frame.
+ *   349×444, radius 16. DB/DBE uses fill-stretch; others contain (no crop).
  *
  * Also guards past production bugs:
  * 1. Wrong Supabase bucket (`exercise-videos`) → "Video not available"
@@ -32,24 +32,26 @@ function assert(condition, message) {
 
 const frame = read('lib/exerciseVideoFrame.ts');
 assert(
-  /EXERCISE_VIDEO_FRAME_WIDTH\s*=\s*341/.test(frame),
-  'Frame width must stay 341 (Figma media 4322:5851)',
+  /EXERCISE_VIDEO_FRAME_WIDTH\s*=\s*349/.test(frame),
+  'Frame width must stay 349',
 );
 assert(
   /EXERCISE_VIDEO_FRAME_HEIGHT\s*=\s*444/.test(frame),
-  'Frame height must stay 444 (Figma media 4322:5851)',
+  'Frame height must stay 444',
 );
 assert(
   /EXERCISE_CONTENT_COLUMN_WIDTH\s*=\s*349/.test(frame),
   'Content column must stay 349 (Figma Frame 634958)',
 );
 assert(
-  /EXERCISE_VIDEO_FRAME_BORDER_RADIUS\s*=\s*21/.test(frame),
-  'Frame radius must stay 21 (Figma rounded-[21px])',
+  /EXERCISE_VIDEO_FRAME_BORDER_RADIUS\s*=\s*16/.test(frame),
+  'Frame radius must stay 16',
 );
 assert(
-  /contentFit:\s*'cover'/.test(frame),
-  'Guided videos must cover-fill the 341×444 Figma window',
+  frame.includes('isDiaphragmaticBreathingExercise') &&
+    frame.includes("contentFit: 'fill'") &&
+    frame.includes("contentFit: 'contain'"),
+  'DB/DBE must stretch-fill 349×444; other exercises must contain (no crop)',
 );
 assert(
   frame.includes("layout: 'fill-frame'"),
@@ -113,8 +115,9 @@ const nativePlayer = read('components/exercise/SessionVideoPlayer.tsx');
 assert(
   nativePlayer.includes('frameWidth') &&
     nativePlayer.includes('frameHeight') &&
-    nativePlayer.includes('contentFit={presentation.contentFit}'),
-  'Native player must take explicit Figma frame size and apply presentation contentFit',
+    nativePlayer.includes('contentFit={videoContentFit}') &&
+    nativePlayer.includes('getContainedVideoBox'),
+  'Native player must take explicit Figma frame size and map DB fill vs contain box',
 );
 assert(
   nativePlayer.includes('getGuidedVideoPresentation') &&

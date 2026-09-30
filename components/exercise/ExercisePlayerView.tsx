@@ -38,8 +38,8 @@ type Props = {
 };
 
 /**
- * Figma media 4322:5851 — 341×444, radius 21. Video fills that window
- * (cover) so studio wall + white floor match the design exactly.
+ * Figma 349×444 (radius 16). DB/DBE stretches (`fill`) to cover the window
+ * without cropping; every other clip uses contain + studio-grey pad.
  */
 export function ExercisePlayerView({
   exercise,
@@ -154,7 +154,7 @@ export function ExercisePlayerView({
         showsVerticalScrollIndicator={false}
         bounces={false}
       >
-        {/* Figma 4319:5800 — 349-wide column; media 4322:5851 is 341×444 */}
+        {/* Figma 4319:5800 — 349×444 media + copy column */}
         <View style={[styles.contentColumn, { width: contentWidth }]}>
           <Pressable
             style={[

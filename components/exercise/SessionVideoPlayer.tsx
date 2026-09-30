@@ -5,6 +5,8 @@ import { Platform, StyleSheet, View } from 'react-native';
 import { ensureExerciseAudioSession } from '../../lib/ensureExerciseAudioSession';
 import {
   EXERCISE_VIDEO_FRAME_BACKGROUND,
+  EXERCISE_VIDEO_SOURCE_ASPECT,
+  getContainedVideoBox,
   getGuidedVideoPresentation,
 } from '../../lib/exerciseVideoFrame';
 import { shouldAcceptVideoEnd } from './sessionVideoCompletion';
@@ -219,19 +221,39 @@ export function SessionVideoPlayer({
   const width = Math.max(0, Math.round(frameWidth));
   const height = Math.max(0, Math.round(frameHeight));
 
+  /**
+   * DB: stretch (`fill`) across the full 349×444 — no crop.
+   * Others: contain in an explicit 9:16 box; studio grey pads the rest.
+   */
+  const stretchToFrame = presentation.contentFit === 'fill' || presentation.contentFit === 'cover';
+  const fitted = stretchToFrame
+    ? { width, height }
+    : getContainedVideoBox(width, height, EXERCISE_VIDEO_SOURCE_ASPECT);
+  const videoContentFit = stretchToFrame
+    ? presentation.contentFit
+    : // fill the pre-sized source-aspect box so letterbox colour is studio grey
+      'fill';
+
   if (!source?.trim() || width <= 0 || height <= 0) {
     return <View style={[styles.frame, { width, height }]} />;
   }
 
   return (
     <View style={[styles.frame, { width, height }]} collapsable={false}>
-      <VideoView
-        style={{ width, height }}
-        player={player}
-        contentFit={presentation.contentFit}
-        nativeControls={false}
-        {...(Platform.OS === 'android' ? { surfaceType: 'textureView' as const } : {})}
-      />
+      {fitted.width > 0 && fitted.height > 0 ? (
+        <View
+          style={[styles.fittedBox, { width: fitted.width, height: fitted.height }]}
+          collapsable={false}
+        >
+          <VideoView
+            style={{ width: fitted.width, height: fitted.height }}
+            player={player}
+            contentFit={videoContentFit}
+            nativeControls={false}
+            {...(Platform.OS === 'android' ? { surfaceType: 'textureView' as const } : {})}
+          />
+        </View>
+      ) : null}
     </View>
   );
 }
@@ -242,5 +264,9 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  fittedBox: {
+    overflow: 'hidden',
+    backgroundColor: EXERCISE_VIDEO_FRAME_BACKGROUND,
   },
 });

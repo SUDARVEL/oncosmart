@@ -1,11 +1,12 @@
 /**
- * Guided exercise video framing — Figma `0126.mp4` / 4319:5797 / media 4322:5851.
+ * Guided exercise video framing — Figma player window 349×444.
  *
- * Exact media window (do not invent different sizes):
- *   width: 341px; height: 444px; border-radius: 21px; flex-shrink: 0;
+ * Exact window:
+ *   width: 349px; height: 444px; border-radius: 16px; flex-shrink: 0;
  *
- * Figma fills that rounded rect with the clip (full figure, studio wall + white
- * floor baked into the video). Content column around it stays 349 wide.
+ * Default: `contain` inside 349×444 so nothing is cut (studio grey pads gaps).
+ * Diaphragmatic breathing (DB / DBE) only: `fill` stretches to the frame so the
+ * clip covers 349×444 without cropping the body.
  */
 
 export const EXERCISE_SCREEN_DESIGN_WIDTH = 390;
@@ -13,7 +14,7 @@ export const EXERCISE_SCREEN_DESIGN_HEIGHT = 844;
 export const EXERCISE_SCREEN_HEADER_TOP = 13;
 export const EXERCISE_SCREEN_HEADER_HEIGHT = 40;
 export const EXERCISE_CONTENT_LEFT_INSET = 20.5;
-/** Figma Frame 634958 — text + actions column */
+/** Figma Frame 634958 — text + actions + media column */
 export const EXERCISE_CONTENT_COLUMN_WIDTH = 349;
 export const EXERCISE_VIDEO_TO_COPY_GAP = 24;
 export const EXERCISE_ACTION_BUTTON_GAP = 16;
@@ -23,8 +24,8 @@ export const EXERCISE_VIDEO_SOURCE_HEIGHT = 16;
 export const EXERCISE_VIDEO_SOURCE_ASPECT =
   EXERCISE_VIDEO_SOURCE_WIDTH / EXERCISE_VIDEO_SOURCE_HEIGHT;
 
-/** Figma media node 4322:5851 — exact. */
-export const EXERCISE_VIDEO_FRAME_WIDTH = 341;
+/** Figma guided player media — 349×444. */
+export const EXERCISE_VIDEO_FRAME_WIDTH = 349;
 export const EXERCISE_VIDEO_FRAME_HEIGHT = 444;
 export const CALF_RAISE_VIDEO_FRAME_HEIGHT = EXERCISE_VIDEO_FRAME_HEIGHT;
 export const LEGACY_EXERCISE_VIDEO_FRAME_HEIGHT = 432;
@@ -32,12 +33,11 @@ export const LEGACY_EXERCISE_VIDEO_FRAME_HEIGHT = 432;
 export const EXERCISE_VIDEO_FRAME_ASPECT =
   EXERCISE_VIDEO_FRAME_WIDTH / EXERCISE_VIDEO_FRAME_HEIGHT;
 /**
- * Studio wall from pathway MP4s (avg ~#E0E0E0). Shows while loading; the clip
- * itself paints the grey panel + white floor once playing.
+ * Studio wall from pathway MP4s (avg ~#E0E0E0). Used as contain padding so
+ * letterbox bars match the video instead of looking like a cut/white gap.
  */
 export const EXERCISE_VIDEO_FRAME_BACKGROUND = '#E0E0E0';
-/** Figma rounded-[21px] on media 4322:5851 */
-export const EXERCISE_VIDEO_FRAME_BORDER_RADIUS = 21;
+export const EXERCISE_VIDEO_FRAME_BORDER_RADIUS = 16;
 
 export type GuidedVideoContentFit = 'contain' | 'cover' | 'fill';
 
@@ -47,18 +47,33 @@ export type GuidedVideoPresentation = {
   objectPosition: 'center bottom' | 'center' | `${string} ${string}`;
 };
 
-/**
- * Fill the 341×444 Figma window the same way the design places the media —
- * no letterbox bars that break the white-floor blend.
- */
-const UNIFORM_VIDEO_PRESENTATION: GuidedVideoPresentation = {
+/** Default — never crop face/body/legs. */
+const CONTAIN_PRESENTATION: GuidedVideoPresentation = {
   layout: 'fill-frame',
-  contentFit: 'cover',
+  contentFit: 'contain',
+  objectPosition: 'center',
+};
+
+/**
+ * DB only — stretch into 349×444 (no crop). Slight aspect stretch is OK so the
+ * seated breathing clip fills the Figma window edge-to-edge.
+ */
+const DB_STRETCH_PRESENTATION: GuidedVideoPresentation = {
+  layout: 'fill-frame',
+  contentFit: 'fill',
   objectPosition: 'center',
 };
 
 export function isPathwayExerciseId(exerciseId: string): boolean {
   return exerciseId.startsWith('pathway-');
+}
+
+/** Legacy `diaphragmatic-breathing` or pathway `…-sN-diaphragmatic-breathing`. */
+export function isDiaphragmaticBreathingExercise(exerciseId: string): boolean {
+  if (!exerciseId) return false;
+  if (exerciseId === 'diaphragmatic-breathing') return true;
+  if (exerciseId.endsWith('-diaphragmatic-breathing')) return true;
+  return /\bdbe\b/i.test(exerciseId);
 }
 
 export function getGuidedVideoFrameHeight(_exerciseId: string): number {
@@ -69,8 +84,11 @@ export function getGuidedVideoFrameAspect(_exerciseId: string): number {
   return EXERCISE_VIDEO_FRAME_ASPECT;
 }
 
-export function getGuidedVideoPresentation(_exerciseId: string): GuidedVideoPresentation {
-  return UNIFORM_VIDEO_PRESENTATION;
+export function getGuidedVideoPresentation(exerciseId: string): GuidedVideoPresentation {
+  if (isDiaphragmaticBreathingExercise(exerciseId)) {
+    return DB_STRETCH_PRESENTATION;
+  }
+  return CONTAIN_PRESENTATION;
 }
 
 export function getExerciseScreenScale(screenWidth: number): number {
