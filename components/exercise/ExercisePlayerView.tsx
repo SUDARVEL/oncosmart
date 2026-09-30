@@ -38,8 +38,8 @@ type Props = {
 };
 
 /**
- * Figma 4319:5797 — 390-wide layout, video 349 × 9:16 (matches real MP4s).
- * Fills edge-to-edge: full person, no grey letterbox card, no stroke.
+ * Figma 4319:5797 — 390×844, video 349×444 @ x=20.5.
+ * Every clip uses cover so empty studio space is zoomed out — same for all.
  */
 export function ExercisePlayerView({
   exercise,

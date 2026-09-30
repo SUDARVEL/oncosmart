@@ -3,7 +3,10 @@ import { useCallback, useEffect, useRef } from 'react';
 import { Platform, StyleSheet, View } from 'react-native';
 
 import { ensureExerciseAudioSession } from '../../lib/ensureExerciseAudioSession';
-import { EXERCISE_VIDEO_FRAME_BACKGROUND } from '../../lib/exerciseVideoFrame';
+import {
+  EXERCISE_VIDEO_FRAME_BACKGROUND,
+  getGuidedVideoPresentation,
+} from '../../lib/exerciseVideoFrame';
 import { shouldAcceptVideoEnd } from './sessionVideoCompletion';
 
 type Props = {
@@ -32,6 +35,7 @@ function applyAudiblePlayback(player: {
 
 export function SessionVideoPlayer({
   source,
+  exerciseId = '',
   isPaused,
   restartToken,
   seekRequest = null,
@@ -42,6 +46,7 @@ export function SessionVideoPlayer({
   onPlaybackFailed,
   onEnded,
 }: Props) {
+  const presentation = getGuidedVideoPresentation(exerciseId);
   const onEndedRef = useRef(onEnded);
   const onProgressRef = useRef(onProgress);
   const onBufferingRef = useRef(onBuffering);
@@ -211,14 +216,11 @@ export function SessionVideoPlayer({
 
   return (
     <View style={styles.frame} collapsable={false}>
-      {/*
-        Parent is already 9:16 at full width — video fills it.
-        contain keeps odd assets safe; no grey letterbox card.
-      */}
+      {/* Uniform for every exercise: cover fills 349×444, trims empty studio space. */}
       <VideoView
         style={styles.video}
         player={player}
-        contentFit="contain"
+        contentFit={presentation.contentFit}
         nativeControls={false}
         {...(Platform.OS === 'android' ? { surfaceType: 'textureView' as const } : {})}
       />
