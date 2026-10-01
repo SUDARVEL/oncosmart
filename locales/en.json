@@ -194,7 +194,7 @@
         "description": "Improves blood circulation and prevents stiffness in the legs. Sit upright on the bed with your legs straight. Slowly move your feet up and down."
       },
       "thoracic-expansion": {
-        "title": "Thoracic Expansion",
+        "title": "Thoracic Expansion Exercise",
         "description": "Improves chest expansion and lung capacity. Take a deep breath while expanding your chest. Hold for a few seconds and slowly breathe out."
       },
       "arm-circles": {
@@ -368,15 +368,15 @@
           "description": "Relieves shoulder tension and improves mobility. Lift both shoulders towards your ears and slowly relax."
         },
         "biceps-curls": {
-          "title": "Bicep Curls",
+          "title": "Biceps Curls",
           "description": "Strengthens arm muscles. Bend your elbows and bring your hands toward your shoulders, then slowly lower."
         },
         "wall-pushup": {
-          "title": "Wall Push-ups",
+          "title": "Wall Push-up",
           "description": "Improves upper-body strength. Stand facing the wall with your hands at shoulder height. Slowly bend your elbows and lean toward the wall. Then gently push back to the starting position."
         },
         "calf-raise": {
-          "title": "Calf Raise",
+          "title": "Calf Raises",
           "description": "Strengthens the lower leg muscles and improves balance. Stand upright with your hands on the wall for support. Slowly lift your heels off the floor. Then slowly lower your heels back down."
         },
         "sit-to-stand": {
@@ -432,7 +432,7 @@
           "description": "Helps stretch the muscles at the back of the lower leg. Stand upright with your hands on the wall at shoulder height. Keep your left leg straight behind you with your heel on the floor. Gently lean forward until you feel a stretch in the back of your lower leg."
         },
         "chest-stretch": {
-          "title": "Chest Stretch",
+          "title": "Pectoralis Stretch",
           "description": "Improves flexibility of the chest muscles. Stand in a doorframe with your hands at shoulder height. Gently lean forward until you feel a stretch across the front of your chest."
         },
         "triceps-stretch-right": {

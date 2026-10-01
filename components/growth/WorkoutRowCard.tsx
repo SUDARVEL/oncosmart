@@ -3,7 +3,10 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { StyleSheet, Text, View, type View as RNView } from "react-native";
 
-import { getClinicalExerciseDescription } from "../../lib/clinicalExerciseDescriptions";
+import {
+  getClinicalExerciseDescription,
+  getClinicalExerciseTitle,
+} from "../../lib/clinicalExerciseDescriptions";
 import type { LevelWorkout } from "../../lib/getLevelWorkouts";
 import {
   getPhase2CircleContentPosition,
@@ -75,7 +78,11 @@ export function WorkoutRowCard({
       pressedOpacity={0.94}
       onPress={onPress}
       accessibilityRole="button"
-      accessibilityLabel={workout.title?.trim() || t(workout.titleKey)}
+      accessibilityLabel={
+        getClinicalExerciseTitle(workout.id) ||
+        workout.title?.trim() ||
+        t(workout.titleKey)
+      }
     >
       <View style={styles.photoWrap}>
         {showPhoto && isSvg && remoteUri ? (
@@ -101,7 +108,9 @@ export function WorkoutRowCard({
       </View>
       <View style={styles.textWrap}>
         <Text style={styles.title}>
-          {workout.title?.trim() || t(workout.titleKey)}
+          {getClinicalExerciseTitle(workout.id) ||
+            workout.title?.trim() ||
+            t(workout.titleKey)}
         </Text>
         <Text style={styles.description}>
           {getClinicalExerciseDescription(workout.id, i18n.language) ||

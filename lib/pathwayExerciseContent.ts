@@ -3,7 +3,10 @@
  * Falls back to a cleaned filename title when unknown.
  */
 
-import { getClinicalExerciseDescription } from './clinicalExerciseDescriptions';
+import {
+  getClinicalExerciseDescription,
+  getClinicalExerciseTitle,
+} from './clinicalExerciseDescriptions';
 
 export type PathwayExerciseCopy = {
   slug: string;
@@ -46,16 +49,16 @@ const SLUG_RULES: SlugRule[] = [
 const TITLES: Record<string, string> = {
   'diaphragmatic-breathing': 'Diaphragmatic Breathing',
   'ankle-pumps': 'Ankle Pumps',
-  'thoracic-expansion': 'Thoracic Expansion',
+  'thoracic-expansion': 'Thoracic Expansion Exercise',
   'arm-circles': 'Arm Circles',
   'arm-rotation': 'Arm Rotation',
   'spot-marching': 'Spot Marching',
-  'shoulder-shrugging': 'Shoulder Shrugs',
+  'shoulder-shrugging': 'Shoulder Shrugging',
   'biceps-curls': 'Biceps Curls',
   'wall-pushup': 'Wall Push-up',
   'wall-slides': 'Wall Slides',
   'wall-climbing': 'Wall Climbing',
-  'calf-raise': 'Calf Raise',
+  'calf-raise': 'Calf Raises',
   'calf-stretch': 'Calf Stretch',
   'standing-hamstring-curls': 'Hamstring Curls',
   'hamstring-stretch': 'Hamstring Stretch',
@@ -63,10 +66,10 @@ const TITLES: Record<string, string> = {
   'straight-leg-raise': 'Straight Leg Raise',
   'quadriceps-stretch': 'Quadriceps Stretch',
   'triceps-stretch': 'Triceps Stretch',
-  'chest-stretch': 'Chest Stretch',
-  'neck-flexion-extension': 'Neck Flexion & Extension',
-  'jaw-opening-closing': 'Mouth Opening',
-  'jaw-side-to-side': 'Jaw Side to Side',
+  'chest-stretch': 'Pectoralis Stretch',
+  'neck-flexion-extension': 'Neck Flexion and Extension',
+  'jaw-opening-closing': 'Mouth Opening and Closing',
+  'jaw-side-to-side': 'Jaw Side-to-Side',
   'neck-stretch': 'Neck Stretch',
 };
 
@@ -165,8 +168,12 @@ function fallbackTitleFromLabel(rawLabel: string): string {
 }
 
 function titleForSlug(slug: string, rawLabel: string): string {
-  const base = TITLES[slug] ?? fallbackTitleFromLabel(rawLabel);
   const side = detectSide(rawLabel);
+  const sided = side ? getClinicalExerciseTitle(`${slug}-${side}`) : null;
+  if (sided) return sided;
+  const clinical = getClinicalExerciseTitle(slug);
+  if (clinical) return clinical;
+  const base = TITLES[slug] ?? fallbackTitleFromLabel(rawLabel);
   if (!side) return base;
   // Avoid "Left Left" if fallback already kept the side word.
   if (/\b(left|right)\b/i.test(base)) return base;
@@ -180,8 +187,6 @@ export function resolvePathwayExerciseCopy(rawLabel: string): PathwayExerciseCop
   const idSlug = side ? `${slug}-${side}` : slug;
   const title = titleForSlug(slug, rawLabel) || 'Exercise';
   const description =
-    getClinicalExerciseDescription(idSlug, 'en') ??
-    DESCRIPTIONS[slug] ??
-    'Follow the instructor in the video. Move slowly, stay within comfort, and pause if you feel unwell.';
+    getClinicalExerciseDescription(idSlug, 'en') ?? DESCRIPTIONS[slug] ?? '';
   return { slug: idSlug, title, description };
 }

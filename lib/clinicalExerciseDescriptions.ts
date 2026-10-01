@@ -174,6 +174,50 @@ export const CLINICAL_EXERCISE_DESCRIPTIONS: Record<string, ClinicalExerciseDesc
   },
 };
 
+/**
+ * Headings copied from the exercise documents. Tamil copy in those files
+ * is the description only, so the heading stays the document heading.
+ */
+export const CLINICAL_EXERCISE_TITLES: Record<string, string> = {
+  'diaphragmatic-breathing': 'Diaphragmatic Breathing',
+  'ankle-pumps': 'Ankle Pumps',
+  'thoracic-expansion': 'Thoracic Expansion Exercise',
+  'chest-stretch': 'Pectoralis Stretch',
+  'arm-circles': 'Arm Circles',
+  'arm-rotation': 'Arm Circles',
+  'biceps-curls': 'Biceps Curls',
+  'shoulder-shrugging': 'Shoulder Shrugging',
+  'wall-climbing-right': 'Wall Climbing (Right)',
+  'wall-climbing-left': 'Wall Climbing (Left)',
+  'wall-slides': 'Wall Slides',
+  'wall-pushup': 'Wall Push-up',
+  'triceps-stretch-right': 'Triceps Stretch (Right)',
+  'triceps-stretch-left': 'Triceps Stretch (Left)',
+  'spot-marching': 'Spot Marching',
+  'neck-flexion-extension': 'Neck Flexion and Extension',
+  'jaw-opening-closing': 'Mouth Opening and Closing',
+  'jaw-side-to-side': 'Jaw Side-to-Side',
+  'neck-stretch-left': 'Neck Stretch (Left)',
+  'neck-stretch-right': 'Neck Stretch (Right)',
+  'seated-knee-extension-right': 'Knee Extension (Right)',
+  'seated-knee-extension-left': 'Knee Extension (Left)',
+  'standing-hamstring-curls-right': 'Hamstring Curls (Right)',
+  'standing-hamstring-curls-left': 'Hamstring Curls (Left)',
+  'hamstring-stretch': 'Hamstring Stretch',
+  'quadriceps-stretch-right': 'Quadriceps Stretch (Right)',
+  'quadriceps-stretch-left': 'Quadriceps Stretch (Left)',
+  'calf-raise': 'Calf Raises',
+  'straight-leg-raise-right': 'Straight Leg Raise (Right)',
+  'straight-leg-raise-left': 'Straight Leg Raise (Left)',
+  'calf-stretch-right': 'Calf Stretch (Right)',
+  'calf-stretch-left': 'Calf Stretch (Left)',
+};
+
+export function getClinicalExerciseTitle(exerciseId: string): string | null {
+  const slug = exerciseSlugFromId(exerciseId || '');
+  return CLINICAL_EXERCISE_TITLES[slug] ?? null;
+}
+
 export function getClinicalExerciseDescription(
   exerciseId: string,
   language: string | null | undefined,

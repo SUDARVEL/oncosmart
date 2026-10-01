@@ -3,7 +3,10 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 
-import { getClinicalExerciseDescription } from '../../lib/clinicalExerciseDescriptions';
+import {
+  getClinicalExerciseDescription,
+  getClinicalExerciseTitle,
+} from '../../lib/clinicalExerciseDescriptions';
 import type { WorkoutDetail } from '../../lib/getWorkoutDetails';
 import { getWorkoutRepLabel } from '../../lib/getWorkoutRepLabel';
 import {
@@ -24,15 +27,13 @@ export function WorkoutDetailSlide({ workout, width }: Props) {
   const { t, i18n } = useTranslation();
   const [imageFailed, setImageFailed] = useState(false);
   const title =
+    getClinicalExerciseTitle(workout.id) ||
     workout.title?.trim() ||
-    t(`sessionFlow.exercises.${workout.id}.title`, { defaultValue: 'Exercise' });
+    t(`sessionFlow.exercises.${workout.id}.title`, { defaultValue: '' });
   const description =
     getClinicalExerciseDescription(workout.id, i18n.language) ||
     workout.description?.trim() ||
-    t(`sessionFlow.exercises.${workout.id}.description`, {
-      defaultValue:
-        'Follow the instructor in the video. Move slowly, stay within comfort, and pause if you feel unwell.',
-    });
+    t(`sessionFlow.exercises.${workout.id}.description`, { defaultValue: '' });
   const showPhoto = Boolean(workout.photoSource) && !imageFailed;
   const repLabel = getWorkoutRepLabel(workout, t);
 

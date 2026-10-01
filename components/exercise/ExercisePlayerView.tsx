@@ -13,7 +13,10 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { getClinicalExerciseDescription } from '../../lib/clinicalExerciseDescriptions';
+import {
+  getClinicalExerciseDescription,
+  getClinicalExerciseTitle,
+} from '../../lib/clinicalExerciseDescriptions';
 import type { Day1SessionExercise } from '../../lib/getDay1Session';
 import {
   EXERCISE_ACTION_BUTTON_GAP,
@@ -71,15 +74,13 @@ export function ExercisePlayerView({
   const screenColumnWidth = Math.round(EXERCISE_SCREEN_DESIGN_WIDTH * scale);
 
   const title =
+    getClinicalExerciseTitle(exercise.id) ||
     exercise.title?.trim() ||
-    t(`sessionFlow.exercises.${exercise.id}.title`, { defaultValue: 'Exercise' });
+    t(`sessionFlow.exercises.${exercise.id}.title`, { defaultValue: '' });
   const description =
     getClinicalExerciseDescription(exercise.id, i18n.language) ||
     exercise.description?.trim() ||
-    t(`sessionFlow.exercises.${exercise.id}.description`, {
-      defaultValue:
-        'Follow the instructor in the video. Move slowly, stay within comfort, and pause if you feel unwell.',
-    });
+    t(`sessionFlow.exercises.${exercise.id}.description`, { defaultValue: '' });
 
   const displayValue = exercise.displayValue;
   const displayLabel = exercise.displayLabel;
