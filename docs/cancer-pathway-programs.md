@@ -19,11 +19,12 @@ Left/right storage clips for one diagram step (e.g. Wall Climbing) play as **two
 
 1. Load MP4s for `{Gender} - {Language}/{Cancer}/Level N`
 2. Match files to the diagram sequence (slug + aliases)
-3. Append any unmatched storage clips at the end
-4. Show filename reps when present; otherwise level defaults (5 / 5 / 10 / 15)
+3. If a table step has no file in that folder, use the same exercise from another cancer folder at the same gender, language, and level
+4. Leave out storage files that are not in the table
+5. Show filename reps when present; otherwise level defaults (5 / 5 / 10 / 15)
 
 ## Storage notes
 
 - **Breast / Thorax:** storage order matches the tables (with L/R expansion).
-- **Abdomen:** Arm Rotation in the table is satisfied by Arm Circles videos; an extra Hamstring Curls pair may appear after the program if present in storage.
-- **Head & Neck (proposed):** storage currently has Ankle Pumps and Arm Circles instead of Thoracic Expansion / Arm Rotation. Sessions follow the table where videos exist; extras append at the end until storage is updated.
+- **Abdomen Level 2** follows the table: Standing Hamstring Curls, Calf Raise, then Straight Leg Raise.
+- **Head & Neck:** Ankle Pumps files in that folder are not part of the table and are not shown. Thoracic Expansion is taken from the same gender and language when the Head & Neck folder does not include it. Arm Rotation uses the Arm Circles clip.

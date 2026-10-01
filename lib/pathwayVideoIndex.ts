@@ -1,8 +1,10 @@
 import { getSupabase } from './supabase';
 import {
+  CANCER_TYPE_SLUGS,
   cancerPathMatchesSlug,
   getPathwayStorageRoot,
   parseLevelFromStoragePath,
+  type CancerTypeSlug,
   type PathwayProfile,
 } from './cancerPathway';
 import {
@@ -122,15 +124,47 @@ function sortClipsForStep(a: ParsedPathwayClip, b: ParsedPathwayClip): number {
   return comparePathwayFiles(a.fileMeta, b.fileMeta);
 }
 
+function cancerSlugFromPath(objectPath: string): CancerTypeSlug | null {
+  const folder = objectPath.split('/')[1] ?? '';
+  for (const slug of CANCER_TYPE_SLUGS) {
+    if (cancerPathMatchesSlug(folder, slug)) return slug;
+  }
+  return null;
+}
+
+/** One diagram step: the next numeric group, left before right. */
+function takeProgramGroup(
+  pool: ParsedPathwayClip[],
+  step: PathwayExerciseKey,
+): ParsedPathwayClip[] {
+  const matches = pool
+    .filter((clip) => storageSlugMatchesProgramKey(clip.copy.slug, step))
+    .sort(sortClipsForStep);
+  if (matches.length === 0) return [];
+
+  const nextOrder = matches[0]!.fileMeta.sortOrder;
+  const group = matches
+    .filter((clip) => clip.fileMeta.sortOrder === nextOrder)
+    .sort(sortClipsForStep);
+
+  for (const match of group) {
+    const index = pool.indexOf(match);
+    if (index >= 0) pool.splice(index, 1);
+  }
+  return group;
+}
+
 /**
- * Order storage clips by the ONCOSMART pathway tables.
- * Left/right files for one diagram step stay as consecutive steps.
- * Unmatched clips (storage extras) append at the end in numeric order.
+ * Order clips by the pathway table only.
+ * A missing step can use the same exercise from another cancer folder
+ * for this gender, language, and level. Storage extras (for example
+ * Ankle Pumps inside Head & Neck) are left out.
  */
 function orderClipsByPathwayProgram(
   clips: ParsedPathwayClip[],
   cancerType: PathwayProfile['cancerType'],
   level: number,
+  fallbackClips: ParsedPathwayClip[] = [],
 ): ParsedPathwayClip[] {
   const program = getPathwayExerciseSequence(cancerType, level);
   if (program.length === 0) {
@@ -138,31 +172,33 @@ function orderClipsByPathwayProgram(
   }
 
   const remaining = [...clips];
+  const fallback = [...fallbackClips];
   const ordered: ParsedPathwayClip[] = [];
 
   for (const step of program) {
-    const matches = remaining
-      .filter((clip) => storageSlugMatchesProgramKey(clip.copy.slug, step as PathwayExerciseKey))
-      .sort(sortClipsForStep);
+    const local = takeProgramGroup(remaining, step);
+    if (local.length > 0) {
+      ordered.push(...local);
+      continue;
+    }
 
-    if (matches.length === 0) continue;
-
-    // One program step consumes the next sort-order group only
-    // (e.g. opening DBE ≠ closing DBE; wall-climb left+right stay together).
-    const nextOrder = matches[0]!.fileMeta.sortOrder;
-    const group = matches
-      .filter((clip) => clip.fileMeta.sortOrder === nextOrder)
-      .sort(sortClipsForStep);
-
-    for (const match of group) {
-      ordered.push(match);
-      const index = remaining.indexOf(match);
-      if (index >= 0) remaining.splice(index, 1);
+    for (const source of CANCER_TYPE_SLUGS) {
+      if (source === cancerType) continue;
+      const fromSource = fallback.filter(
+        (clip) => cancerSlugFromPath(clip.objectPath) === source,
+      );
+      const borrowed = takeProgramGroup(fromSource, step);
+      if (borrowed.length === 0) continue;
+      for (const match of borrowed) {
+        const index = fallback.findIndex((clip) => clip.objectPath === match.objectPath);
+        if (index >= 0) fallback.splice(index, 1);
+      }
+      ordered.push(...borrowed);
+      break;
     }
   }
 
-  remaining.sort((a, b) => comparePathwayFiles(a.fileMeta, b.fileMeta));
-  return [...ordered, ...remaining];
+  return ordered;
 }
 
 function applyLevelRepDefaults(
@@ -208,8 +244,14 @@ export function buildGuidedExercisesFromPaths(
   objectPaths: string[],
   level: number,
   profile: PathwayProfile,
+  fallbackObjectPaths: string[] = [],
 ): GuidedSessionExercise[] {
-  const clips = orderClipsByPathwayProgram(parseClips(objectPaths), profile.cancerType, level);
+  const clips = orderClipsByPathwayProgram(
+    parseClips(objectPaths),
+    profile.cancerType,
+    level,
+    parseClips(fallbackObjectPaths),
+  );
 
   return clips.map((entry, index) => {
     const reps = applyLevelRepDefaults(entry, level);
@@ -234,7 +276,13 @@ export async function getPathwaySessionExercises(
 ): Promise<GuidedSessionExercise[]> {
   const paths = await ensurePathwayVideoPathsLoaded();
   const levelPaths = objectPathsForProfileLevel(paths, profile, level);
-  return buildGuidedExercisesFromPaths(levelPaths, level, profile);
+  const root = getPathwayStorageRoot(profile.gender, profile.avatar, profile.language);
+  const prefix = `${root}/`;
+  const fallbackPaths = paths.filter((objectPath) => {
+    if (!objectPath.startsWith(prefix) || levelPaths.includes(objectPath)) return false;
+    return parseLevelFromStoragePath(objectPath) === level;
+  });
+  return buildGuidedExercisesFromPaths(levelPaths, level, profile, fallbackPaths);
 }
 
 export function getPathwaySessionRestSeconds(): number {
