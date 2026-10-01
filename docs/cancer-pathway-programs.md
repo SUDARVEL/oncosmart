@@ -21,7 +21,7 @@ Left/right storage clips for one diagram step (e.g. Wall Climbing) play as **two
 2. Match files to the diagram sequence (slug + aliases)
 3. If a table step has no file in that folder, use the same cancer's Level 2 clip when this is Level 3 or 4, then the same exercise from another cancer folder at the same gender and language
 4. Leave out storage files that are not in the table
-5. Every exercise on the level uses the table repetition: 5, 5, 10, or 15 reps
+5. Keep filename MINS and SECS, and filename REPS when the count is greater than 0; otherwise use the level default (5 / 5 / 10 / 15)
 
 ## Storage notes
 

@@ -221,13 +221,38 @@ function orderClipsByPathwayProgram(
   return ordered;
 }
 
-/** Table repetitions apply to the whole level: 5, 5, 10, then 15. */
-function applyLevelRepDefaults(level: number): {
+/**
+ * Filename duration and explicit rep counts win.
+ * MINS and SECS stay as parsed. Filename REPS stay when the count is greater
+ * than 0. Anything else uses the level default (5 / 5 / 10 / 15).
+ */
+function applyLevelRepDefaults(
+  clip: ParsedPathwayClip,
+  level: number,
+): {
   repType: SessionRepType;
   repValue: number;
   displayValue: string;
   displayLabel: SessionDisplayLabel;
 } {
+  if (clip.fileMeta.displayLabel === 'MINS' || clip.fileMeta.displayLabel === 'SECS') {
+    return {
+      repType: clip.fileMeta.repType,
+      repValue: clip.fileMeta.repValue,
+      displayValue: clip.fileMeta.displayValue,
+      displayLabel: clip.fileMeta.displayLabel,
+    };
+  }
+
+  if (clip.fileMeta.displayLabel === 'REPS' && clip.fileMeta.repValue > 0) {
+    return {
+      repType: clip.fileMeta.repType,
+      repValue: clip.fileMeta.repValue,
+      displayValue: clip.fileMeta.displayValue,
+      displayLabel: clip.fileMeta.displayLabel,
+    };
+  }
+
   const defaults = getPathwayLevelRepDefault(level);
   const padded = defaults.reps < 10 ? `0${defaults.reps}` : String(defaults.reps);
   return {
@@ -252,7 +277,7 @@ export function buildGuidedExercisesFromPaths(
   );
 
   return clips.map((entry, index) => {
-    const reps = applyLevelRepDefaults(level);
+    const reps = applyLevelRepDefaults(entry, level);
     return {
       id: `pathway-${profile.cancerType}-L${level}-s${index}-${entry.copy.slug}`,
       title: entry.copy.title,
