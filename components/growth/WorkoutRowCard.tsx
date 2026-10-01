@@ -4,6 +4,10 @@ import { useTranslation } from "react-i18next";
 import { StyleSheet, Text, View, type View as RNView } from "react-native";
 
 import type { LevelWorkout } from "../../lib/getLevelWorkouts";
+import {
+  getPhase2CircleContentPosition,
+  isPhase2PlaceholderUri,
+} from "../../lib/phase2PlaceholderMedia";
 import { getWorkoutGrowthPlaceholderFit } from "../../lib/workoutGrowthPlaceholders";
 import { colors } from "../../theme/colors";
 import { font } from "../../theme/fonts";
@@ -53,6 +57,9 @@ export function WorkoutRowCard({
         : null,
     [isSvg, workout.id, workout.mediaGender],
   );
+  const circlePosition = isPhase2PlaceholderUri(remoteUri)
+    ? getPhase2CircleContentPosition(workout.id)
+    : "center";
   const handleImageError = useCallback(() => setImageFailed(true), []);
 
   useEffect(() => {
@@ -85,7 +92,7 @@ export function WorkoutRowCard({
             source={workout.photoSource!}
             style={styles.photo}
             contentFit="cover"
-            contentPosition="center"
+            contentPosition={circlePosition}
             recyclingKey={`growth-row-${workout.id}`}
             onError={handleImageError}
           />

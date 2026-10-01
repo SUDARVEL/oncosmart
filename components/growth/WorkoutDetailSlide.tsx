@@ -44,8 +44,8 @@ export function WorkoutDetailSlide({ workout, width }: Props) {
               source={workout.photoSource!}
               style={styles.media}
               /**
-               * Figma media frame is 349×446 at the source aspect. Use contain so the
-               * whole character (legs/feet) stays visible — never crop or widen.
+               * Phase 2 placeholders are 9:16. Contain them in the 349×444 frame so
+               * standing and cot poses both stay fully visible.
                */
               contentFit="contain"
               contentPosition="center"
@@ -84,7 +84,7 @@ const styles = StyleSheet.create({
     paddingTop: WORKOUT_SLIDER_MEDIA_TOP,
     paddingBottom: 16,
   },
-  /** Fixed Figma 349×446 portrait frame — never use circular Growth thumbs here. */
+  /** Fixed Figma 349×444 portrait frame — never use circular Growth thumbs here. */
   mediaWrap: {
     width: WORKOUT_SLIDER_MEDIA_WIDTH,
     height: WORKOUT_SLIDER_MEDIA_HEIGHT,

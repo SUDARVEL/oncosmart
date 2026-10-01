@@ -6,6 +6,7 @@ import { getWorkoutPhotoUrl } from "./getWorkoutPhotoUrl";
 import { getWorkoutSliderPhotoUrl } from "./workoutSliderPhotoUrls";
 import { getWorkoutLocalPhoto } from "./workoutLocalPhotos";
 import { resolveSessionLandscapePhotoSource } from "./sessionLandscapePhotos";
+import { getPhase2PlaceholderUrl } from "./phase2PlaceholderMedia";
 import {
   getWorkoutGrowthPlaceholderUrl,
   resolveWorkoutMediaGender,
@@ -18,14 +19,17 @@ function getPhotoFile(exerciseId: string): string | null {
 }
 
 /**
- * Growth list oval thumbnails (66×70).
- * Prefer gender-matched Workouts placeholder SVGs, then slider/landscape.
+ * Growth list circles (66×70).
+ * Prefer Phase 2 portrait placeholders, then legacy SVGs / slider / landscape.
  */
 export function resolveWorkoutPhotoSource(
   exerciseId: string,
   gender: AppGender | null,
   avatar: AppAvatar | null = null,
 ): ImageSource | null {
+  const phase2Url = getPhase2PlaceholderUrl(exerciseId, gender, avatar);
+  if (phase2Url) return { uri: phase2Url };
+
   const placeholderUrl = getWorkoutGrowthPlaceholderUrl(
     exerciseId,
     gender,
@@ -61,15 +65,17 @@ export function resolveWorkoutPhotoSource(
 }
 
 /**
- * Workout info slider — Male Slider Photos / Female slider from Supabase when available.
- * Never fall back to Growth list circle SVGs (those are 66×70 ovals and look like a
- * grey dome in the portrait Exercise Info sheet).
+ * Workout info slider (349×444).
+ * Prefer Phase 2 portrait placeholders. Never fall back to Growth list circle SVGs.
  */
 export function resolveWorkoutSliderPhotoSource(
   exerciseId: string,
   gender: AppGender | null,
   avatar: AppAvatar | null = null,
 ): ImageSource | null {
+  const phase2Url = getPhase2PlaceholderUrl(exerciseId, gender, avatar);
+  if (phase2Url) return { uri: phase2Url };
+
   const mediaGender = resolveWorkoutMediaGender(gender, avatar);
   const sliderGender: AppGender | null =
     mediaGender === "female" ? "female" : gender;
