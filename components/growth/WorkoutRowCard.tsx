@@ -3,6 +3,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { StyleSheet, Text, View, type View as RNView } from "react-native";
 
+import { getClinicalExerciseDescription } from "../../lib/clinicalExerciseDescriptions";
 import type { LevelWorkout } from "../../lib/getLevelWorkouts";
 import {
   getPhase2CircleContentPosition,
@@ -42,7 +43,7 @@ export function WorkoutRowCard({
   onPress,
   coachAnchorRef,
 }: WorkoutRowCardProps) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [imageFailed, setImageFailed] = useState(false);
   const remoteUri = useMemo(
     () => getRemoteUri(workout.photoSource),
@@ -103,7 +104,9 @@ export function WorkoutRowCard({
           {workout.title?.trim() || t(workout.titleKey)}
         </Text>
         <Text style={styles.description}>
-          {workout.description?.trim() || t(workout.descriptionKey)}
+          {getClinicalExerciseDescription(workout.id, i18n.language) ||
+            workout.description?.trim() ||
+            t(workout.descriptionKey)}
         </Text>
       </View>
     </PressableScale>

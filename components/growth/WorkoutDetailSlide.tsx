@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 
+import { getClinicalExerciseDescription } from '../../lib/clinicalExerciseDescriptions';
 import type { WorkoutDetail } from '../../lib/getWorkoutDetails';
 import { getWorkoutRepLabel } from '../../lib/getWorkoutRepLabel';
 import {
@@ -20,12 +21,13 @@ type Props = {
 };
 
 export function WorkoutDetailSlide({ workout, width }: Props) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [imageFailed, setImageFailed] = useState(false);
   const title =
     workout.title?.trim() ||
     t(`sessionFlow.exercises.${workout.id}.title`, { defaultValue: 'Exercise' });
   const description =
+    getClinicalExerciseDescription(workout.id, i18n.language) ||
     workout.description?.trim() ||
     t(`sessionFlow.exercises.${workout.id}.description`, {
       defaultValue:

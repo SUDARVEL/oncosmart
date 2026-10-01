@@ -3,6 +3,8 @@
  * Falls back to a cleaned filename title when unknown.
  */
 
+import { getClinicalExerciseDescription } from './clinicalExerciseDescriptions';
+
 export type PathwayExerciseCopy = {
   slug: string;
   title: string;
@@ -178,6 +180,7 @@ export function resolvePathwayExerciseCopy(rawLabel: string): PathwayExerciseCop
   const idSlug = side ? `${slug}-${side}` : slug;
   const title = titleForSlug(slug, rawLabel) || 'Exercise';
   const description =
+    getClinicalExerciseDescription(idSlug, 'en') ??
     DESCRIPTIONS[slug] ??
     'Follow the instructor in the video. Move slowly, stay within comfort, and pause if you feel unwell.';
   return { slug: idSlug, title, description };

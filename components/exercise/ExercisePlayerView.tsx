@@ -13,6 +13,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { getClinicalExerciseDescription } from '../../lib/clinicalExerciseDescriptions';
 import type { Day1SessionExercise } from '../../lib/getDay1Session';
 import {
   EXERCISE_ACTION_BUTTON_GAP,
@@ -48,7 +49,7 @@ export function ExercisePlayerView({
   onBackPress,
   overlayPaused = false,
 }: Props) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { width: screenWidth } = useWindowDimensions();
   const [isPaused, setIsPaused] = useState(() => Platform.OS === 'web');
   const [restartToken, setRestartToken] = useState(0);
@@ -73,6 +74,7 @@ export function ExercisePlayerView({
     exercise.title?.trim() ||
     t(`sessionFlow.exercises.${exercise.id}.title`, { defaultValue: 'Exercise' });
   const description =
+    getClinicalExerciseDescription(exercise.id, i18n.language) ||
     exercise.description?.trim() ||
     t(`sessionFlow.exercises.${exercise.id}.description`, {
       defaultValue:
