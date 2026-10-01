@@ -7,10 +7,7 @@ import { getWorkoutSliderPhotoUrl } from "./workoutSliderPhotoUrls";
 import { getWorkoutLocalPhoto } from "./workoutLocalPhotos";
 import { resolveSessionLandscapePhotoSource } from "./sessionLandscapePhotos";
 import { getPhase2PlaceholderUrl, exerciseSlugFromId } from "./phase2PlaceholderMedia";
-import {
-  getWorkoutGrowthPlaceholderUrl,
-  resolveWorkoutMediaGender,
-} from "./workoutGrowthPlaceholders";
+import { resolveWorkoutMediaGender } from "./workoutGrowthPlaceholders";
 import workoutPhotos from "../data/workout-photos.json";
 
 function getPhotoFile(exerciseId: string): string | null {
@@ -20,7 +17,8 @@ function getPhotoFile(exerciseId: string): string | null {
 
 /**
  * Growth list circles (66×70).
- * Prefer Phase 2 portrait placeholders, then legacy SVGs / slider / landscape.
+ * Only portrait stills from Placeholders Oncomsart Phase 2. Landscape and
+ * legacy slider files are a different ratio and stay off these circles.
  */
 export function resolveWorkoutPhotoSource(
   exerciseId: string,
@@ -28,40 +26,7 @@ export function resolveWorkoutPhotoSource(
   avatar: AppAvatar | null = null,
 ): ImageSource | null {
   const phase2Url = getPhase2PlaceholderUrl(exerciseId, gender, avatar);
-  if (phase2Url) return { uri: phase2Url };
-
-  const placeholderUrl = getWorkoutGrowthPlaceholderUrl(
-    exerciseId,
-    gender,
-    avatar,
-  );
-  if (placeholderUrl) return { uri: placeholderUrl };
-
-  const mediaGender = resolveWorkoutMediaGender(gender, avatar);
-  const sliderUrl = getWorkoutSliderPhotoUrl(
-    exerciseId,
-    mediaGender === "female" ? "female" : gender,
-  );
-  if (sliderUrl) return { uri: sliderUrl };
-
-  const landscape = resolveSessionLandscapePhotoSource(
-    exerciseId,
-    mediaGender === "female" ? "female" : gender,
-    avatar,
-  );
-  if (landscape) return landscape;
-
-  const photoFile = getPhotoFile(exerciseId);
-  const remoteUrl = getWorkoutPhotoUrl(photoFile, mediaGender);
-  if (remoteUrl) return { uri: remoteUrl };
-
-  // Avoid showing male bundled art when the user is on a female avatar.
-  if (mediaGender === "female") return null;
-
-  const day1Photo = getDay1Thumbnail(exerciseId);
-  if (day1Photo) return day1Photo;
-
-  return getWorkoutLocalPhoto(exerciseId);
+  return phase2Url ? { uri: phase2Url } : null;
 }
 
 /**

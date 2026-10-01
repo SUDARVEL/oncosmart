@@ -1,11 +1,9 @@
 import type { ImageSource } from "expo-image";
 
-import { getDay1Thumbnail } from "../components/exercise/day1Thumbnails";
 import type { AppAvatar, AppGender } from "../store/useAppStore";
 import { getSessionExercisesForLevel } from "./getDay1Session";
 import { getLevelExerciseProgram } from "./levelExercisePrograms";
 import { resolveWorkoutPhotoSource } from "./resolveWorkoutPhoto";
-import { resolveSessionCardPhotoSource } from "./resolveSessionCardPhoto";
 
 export type LevelWorkout = {
   id: string;
@@ -35,10 +33,7 @@ export function getLevelWorkouts(
   if (pathway.length > 0) {
     return pathway.map((entry) => {
       const slug = catalogSlugFromPathwayId(entry.id) ?? entry.id;
-      const photoSource =
-        resolveWorkoutPhotoSource(slug, gender, avatar) ??
-        resolveSessionCardPhotoSource(slug, gender, avatar) ??
-        getDay1Thumbnail(slug);
+      const photoSource = resolveWorkoutPhotoSource(slug, gender, avatar);
       return {
         id: entry.id,
         titleKey: "",

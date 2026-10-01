@@ -2,9 +2,9 @@
  * Portrait stills from
  * `Oncosmart Videos and Assets/Placeholders Oncomsart Phase 2`.
  *
- * Used for the Exercise Info slider (349×444) and Growth row circles (66×70).
- * Every file is 9:16. Cot / lying poses sit in the lower third, so circles
- * anchor to the bottom; upright poses stay centered.
+ * Growth row circles use only this folder. Every file is 9:16, so the 66×70
+ * circle uses contain and keeps that ratio. Cot / lying poses sit in the
+ * lower third of the frame.
  */
 
 import type { ImageContentPosition } from 'expo-image';
@@ -13,6 +13,7 @@ import type { AppAvatar, AppGender } from '../store/useAppStore';
 import {
   PHASE2_FEMALE_PLACEHOLDERS,
   PHASE2_MALE_PLACEHOLDERS,
+  PHASE2_PLACEHOLDER_ROOT,
 } from './phase2PlaceholderAssets';
 
 const SUPABASE_PUBLIC_BASE =
@@ -65,9 +66,10 @@ export function getPhase2PlaceholderObjectPath(
   const map = isFemaleMediaTrack(gender, avatar)
     ? PHASE2_FEMALE_PLACEHOLDERS
     : PHASE2_MALE_PLACEHOLDERS;
+  const root = `${PHASE2_PLACEHOLDER_ROOT}/`;
   for (const key of slugCandidates(exerciseId)) {
     const path = map[key];
-    if (path) return path;
+    if (path?.startsWith(root)) return path;
   }
   return null;
 }
@@ -92,8 +94,8 @@ export function isPhase2PlaceholderUri(uri: string | null | undefined): boolean 
 }
 
 /**
- * 66×70 circle: cover-crop the 9:16 still.
- * Low cot poses anchor to the bottom so the person stays inside the circle.
+ * 66×70 circle uses contain, so this only shifts leftover space.
+ * Low cot poses stay bottom-aligned inside the 9:16 frame.
  */
 export function getPhase2CircleContentPosition(
   exerciseId: string,

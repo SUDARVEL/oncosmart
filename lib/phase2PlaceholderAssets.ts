@@ -55,11 +55,6 @@ export const PHASE2_FEMALE_PLACEHOLDERS: Partial<Record<string, string>> = {
   'diaphragmatic-breathing': "Placeholders Oncomsart Phase 2/Female - English/Abdomen Cancer - Female - English/Level 1 - Abdomen Cancer - Female - English -/1.Dbe New Female Tamil 5Reps.png",
   'hamstring-stretch': "Placeholders Oncomsart Phase 2/Female - English/Abdomen Cancer - Female - English/Level 1 - Abdomen Cancer - Female - English -/8.Hamstring Female With Cot English.png",
   'jaw-side-to-side': "Placeholders Oncomsart Phase 2/Female - English/Head and Neck Cancer - Female - English/Level 1 - Head and Neck Cancer - Female - English -/6. Jaw side-side female.png",
-  // No "Neck Stretch Right/Left" portrait in this folder. The stills are named
-  // "Neck stretch Right/Left" under Phase II Landscape.
-  'neck-stretch': "Oncosmart Phase II Landscape/Female Videos Landscape/Head and Neck Cancer - FeMale - Tamil/Level 1 - Head and Neck Cancer - FeMale - Tamil -/7.Neck stretch Left Female Landscape.png",
-  'neck-stretch-left': "Oncosmart Phase II Landscape/Female Videos Landscape/Head and Neck Cancer - FeMale - Tamil/Level 1 - Head and Neck Cancer - FeMale - Tamil -/7.Neck stretch Left Female Landscape.png",
-  'neck-stretch-right': "Oncosmart Phase II Landscape/Female Videos Landscape/Head and Neck Cancer - FeMale - Tamil/Level 1 - Head and Neck Cancer - FeMale - Tamil -/7.Neck stretch Right Female Landscape.png",
   'quadriceps-stretch': "Placeholders Oncomsart Phase 2/Female - English/Abdomen Cancer - Female - English/Level 1 - Abdomen Cancer - Female - English -/9.Quadriceps Stretch left FeMale English.png",
   'quadriceps-stretch-left': "Placeholders Oncomsart Phase 2/Female - English/Abdomen Cancer - Female - English/Level 1 - Abdomen Cancer - Female - English -/9.Quadriceps Stretch left FeMale English.png",
   'quadriceps-stretch-right': "Placeholders Oncomsart Phase 2/Female - English/Abdomen Cancer - Female - English/Level 1 - Abdomen Cancer - Female - English -/9.Quadriceps Stretch Right FeMale English.png",

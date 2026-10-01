@@ -92,7 +92,7 @@ export function WorkoutRowCard({
           <CachedMediaImage
             source={workout.photoSource!}
             style={styles.photo}
-            contentFit="cover"
+            contentFit="contain"
             contentPosition={circlePosition}
             recyclingKey={`growth-row-${workout.id}`}
             onError={handleImageError}
