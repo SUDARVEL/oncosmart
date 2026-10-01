@@ -1,7 +1,10 @@
 import type { ImageSource } from "expo-image";
 
 import type { AppAvatar, AppGender } from "../store/useAppStore";
-import { getSessionExercisesForLevel } from "./getDay1Session";
+import {
+  getPathwayProfileFromStore,
+  getSessionExercisesForLevel,
+} from "./getDay1Session";
 import { getLevelExerciseProgram } from "./levelExercisePrograms";
 import { resolveWorkoutPhotoSource } from "./resolveWorkoutPhoto";
 
@@ -30,6 +33,7 @@ export function getLevelWorkouts(
     avatar === "female" || gender === "female" ? "female" : "male";
 
   const pathway = getSessionExercisesForLevel(level);
+  const cancerPathway = Boolean(getPathwayProfileFromStore()?.cancerType);
   if (pathway.length > 0) {
     return pathway.map((entry) => {
       const slug = catalogSlugFromPathwayId(entry.id) ?? entry.id;
@@ -45,6 +49,8 @@ export function getLevelWorkouts(
       };
     });
   }
+
+  if (cancerPathway) return [];
 
   const program = getLevelExerciseProgram(level);
   if (!program) return [];

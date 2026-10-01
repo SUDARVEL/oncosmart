@@ -1,8 +1,12 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useSyncExternalStore } from "react";
 import { useTranslation } from "react-i18next";
 import { StyleSheet, Text, View, type View as RNView } from "react-native";
 
 import { useExercisePauseGuard } from "../../hooks/useExercisePauseGuard";
+import {
+  getPathwaySessionsRevision,
+  subscribePathwaySessions,
+} from "../../lib/getDay1Session";
 import {
   getLevelWorkouts,
   type WorkoutLevel,
@@ -38,13 +42,18 @@ export function WorkoutsSection({ firstCardAnchorRef }: WorkoutsSectionProps = {
     runIfProgressActive,
   } = useExercisePauseGuard();
 
+  const pathwayRevision = useSyncExternalStore(
+    subscribePathwaySessions,
+    getPathwaySessionsRevision,
+    getPathwaySessionsRevision,
+  );
   const workouts = useMemo(
     () => getLevelWorkouts(activeLevel, gender, avatar),
-    [activeLevel, avatar, cancerType, gender, language],
+    [activeLevel, avatar, cancerType, gender, language, pathwayRevision],
   );
   const workoutDetails = useMemo(
     () => getWorkoutDetailsForLevel(activeLevel, language, gender, avatar),
-    [activeLevel, avatar, cancerType, gender, language],
+    [activeLevel, avatar, cancerType, gender, language, pathwayRevision],
   );
 
   const openWorkout = (exerciseId: string) => {

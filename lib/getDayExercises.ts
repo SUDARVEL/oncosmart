@@ -166,6 +166,8 @@ export function getLevelSession(level: number): LevelSession | null {
     };
   }
 
+  if (profile?.cancerType) return null;
+
   const program = getLevelExerciseProgram(level);
   if (!program) return null;
 

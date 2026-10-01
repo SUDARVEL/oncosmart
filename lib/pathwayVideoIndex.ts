@@ -154,11 +154,26 @@ function takeProgramGroup(
   return group;
 }
 
+function takeBorrowedGroup(
+  fallback: ParsedPathwayClip[],
+  pool: ParsedPathwayClip[],
+  step: PathwayExerciseKey,
+): ParsedPathwayClip[] {
+  const borrowed = takeProgramGroup(pool, step);
+  if (borrowed.length === 0) return [];
+  for (const match of borrowed) {
+    const index = fallback.findIndex((clip) => clip.objectPath === match.objectPath);
+    if (index >= 0) fallback.splice(index, 1);
+  }
+  return borrowed;
+}
+
 /**
  * Order clips by the pathway table only.
- * A missing step can use the same exercise from another cancer folder
- * for this gender, language, and level. Storage extras (for example
- * Ankle Pumps inside Head & Neck) are left out.
+ * Level 3 and 4 use the Level 2 sequence. A missing step uses that exercise
+ * from the same cancer's Level 2 folder first, then another cancer folder
+ * at this gender and language. Storage extras (for example Ankle Pumps
+ * inside Head & Neck) are left out.
  */
 function orderClipsByPathwayProgram(
   clips: ParsedPathwayClip[],
@@ -182,17 +197,22 @@ function orderClipsByPathwayProgram(
       continue;
     }
 
+    const sameCancer = fallback.filter(
+      (clip) => cancerSlugFromPath(clip.objectPath) === cancerType,
+    );
+    const fromSameCancer = takeBorrowedGroup(fallback, sameCancer, step);
+    if (fromSameCancer.length > 0) {
+      ordered.push(...fromSameCancer);
+      continue;
+    }
+
     for (const source of CANCER_TYPE_SLUGS) {
       if (source === cancerType) continue;
       const fromSource = fallback.filter(
         (clip) => cancerSlugFromPath(clip.objectPath) === source,
       );
-      const borrowed = takeProgramGroup(fromSource, step);
+      const borrowed = takeBorrowedGroup(fallback, fromSource, step);
       if (borrowed.length === 0) continue;
-      for (const match of borrowed) {
-        const index = fallback.findIndex((clip) => clip.objectPath === match.objectPath);
-        if (index >= 0) fallback.splice(index, 1);
-      }
       ordered.push(...borrowed);
       break;
     }
@@ -201,35 +221,13 @@ function orderClipsByPathwayProgram(
   return ordered;
 }
 
-function applyLevelRepDefaults(
-  clip: ParsedPathwayClip,
-  level: number,
-): {
+/** Table repetitions apply to the whole level: 5, 5, 10, then 15. */
+function applyLevelRepDefaults(level: number): {
   repType: SessionRepType;
   repValue: number;
   displayValue: string;
   displayLabel: SessionDisplayLabel;
 } {
-  // Spot marching / timed clips keep filename duration.
-  if (clip.fileMeta.displayLabel === 'MINS' || clip.fileMeta.displayLabel === 'SECS') {
-    return {
-      repType: clip.fileMeta.repType,
-      repValue: clip.fileMeta.repValue,
-      displayValue: clip.fileMeta.displayValue,
-      displayLabel: clip.fileMeta.displayLabel,
-    };
-  }
-
-  // Prefer explicit rep count from filename when present.
-  if (clip.fileMeta.displayLabel === 'REPS' && clip.fileMeta.repValue > 0) {
-    return {
-      repType: clip.fileMeta.repType,
-      repValue: clip.fileMeta.repValue,
-      displayValue: clip.fileMeta.displayValue,
-      displayLabel: clip.fileMeta.displayLabel,
-    };
-  }
-
   const defaults = getPathwayLevelRepDefault(level);
   const padded = defaults.reps < 10 ? `0${defaults.reps}` : String(defaults.reps);
   return {
@@ -254,7 +252,7 @@ export function buildGuidedExercisesFromPaths(
   );
 
   return clips.map((entry, index) => {
-    const reps = applyLevelRepDefaults(entry, level);
+    const reps = applyLevelRepDefaults(level);
     return {
       id: `pathway-${profile.cancerType}-L${level}-s${index}-${entry.copy.slug}`,
       title: entry.copy.title,
@@ -278,10 +276,15 @@ export async function getPathwaySessionExercises(
   const levelPaths = objectPathsForProfileLevel(paths, profile, level);
   const root = getPathwayStorageRoot(profile.gender, profile.avatar, profile.language);
   const prefix = `${root}/`;
-  const fallbackPaths = paths.filter((objectPath) => {
+  const sameLevelOtherCancers = paths.filter((objectPath) => {
     if (!objectPath.startsWith(prefix) || levelPaths.includes(objectPath)) return false;
     return parseLevelFromStoragePath(objectPath) === level;
   });
+  // Levels 3 and 4 are "all Level 2 exercises". Fill a gap from this
+  // cancer's Level 2 folder before borrowing another cancer's clip.
+  const level2SameCancer =
+    level >= 3 ? objectPathsForProfileLevel(paths, profile, 2) : [];
+  const fallbackPaths = [...level2SameCancer, ...sameLevelOtherCancers];
   return buildGuidedExercisesFromPaths(levelPaths, level, profile, fallbackPaths);
 }
 

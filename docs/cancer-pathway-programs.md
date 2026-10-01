@@ -19,9 +19,9 @@ Left/right storage clips for one diagram step (e.g. Wall Climbing) play as **two
 
 1. Load MP4s for `{Gender} - {Language}/{Cancer}/Level N`
 2. Match files to the diagram sequence (slug + aliases)
-3. If a table step has no file in that folder, use the same exercise from another cancer folder at the same gender, language, and level
+3. If a table step has no file in that folder, use the same cancer's Level 2 clip when this is Level 3 or 4, then the same exercise from another cancer folder at the same gender and language
 4. Leave out storage files that are not in the table
-5. Show filename reps when present; otherwise level defaults (5 / 5 / 10 / 15)
+5. Every exercise on the level uses the table repetition: 5, 5, 10, or 15 reps
 
 ## Storage notes
 
