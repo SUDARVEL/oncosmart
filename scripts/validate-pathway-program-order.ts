@@ -1,95 +1,78 @@
 /**
- * Ensures Male-English sessions follow the diagram program order for Breast L1/L2.
+ * Every cancer, level, gender, and language follows the pathway tables.
  * Run: npx tsx scripts/validate-pathway-program-order.ts
  */
-import { createClient } from '@supabase/supabase-js';
-import { buildGuidedExercisesFromPaths } from '../lib/pathwayVideoIndex';
-import type { CancerTypeSlug } from '../lib/cancerPathway';
+import pathwayVideos from '../data/pathway-videos.json';
+import { CANCER_TYPE_SLUGS, type PathwayProfile } from '../lib/cancerPathway';
+import { getPathwayExerciseSequence } from '../lib/cancerPathwayPrograms';
+import { buildPathwaySessionFromManifest } from '../lib/pathwayVideoIndex';
 
-const SUPABASE_URL = 'https://soyaeuffzytrjojifvdz.supabase.co';
-const SUPABASE_ANON =
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNveWFldWZmenl0cmpvamlmdmR6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEzNjk2MzYsImV4cCI6MjA5Njk0NTYzNn0.WmitCLz5piK5C4r4WJ5mHX50gRn-BOGFnPQH-bJZfCY';
+const paths = pathwayVideos.paths;
 
-/** Expected title prefixes in order (L/R pairs listed separately). */
-const EXPECTED: Record<string, string[]> = {
-  'breast:1': [
-    'Diaphragmatic Breathing',
-    'Ankle Pumps',
-    'Thoracic Expansion Exercise',
-    'Pectoralis Stretch',
-    'Arm Circles',
-    'Biceps Curls',
-    'Wall Climbing (Left)',
-    'Wall Climbing (Right)',
-    'Triceps Stretch (Left)',
-    'Triceps Stretch (Right)',
-    'Spot Marching',
-    'Diaphragmatic Breathing',
-  ],
-  'breast:2': [
-    'Diaphragmatic Breathing',
-    'Ankle Pumps',
-    'Thoracic Expansion Exercise',
-    'Pectoralis Stretch',
-    'Arm Circles',
-    'Biceps Curls',
-    'Shoulder Shrugging',
-    'Wall Climbing (Left)',
-    'Wall Climbing (Right)',
-    'Wall Slides',
-    'Wall Push-up',
-    'Triceps Stretch (Left)',
-    'Triceps Stretch (Right)',
-    'Spot Marching',
-    'Diaphragmatic Breathing',
-  ],
-};
+const genders = ['female', 'male'] as const;
+const languages = ['en', 'ta'] as const;
 
-async function main() {
-  const sb = createClient(SUPABASE_URL, SUPABASE_ANON);
-  const { data, error } = await sb.rpc('list_pathway_video_paths');
-  if (error) throw error;
-  const paths = (data as string[]).filter((p) => typeof p === 'string');
-
-  let failures = 0;
-
-  for (const [key, expectedTitles] of Object.entries(EXPECTED)) {
-    const [cancer, levelStr] = key.split(':') as [CancerTypeSlug, string];
-    const level = Number(levelStr);
-    const levelPaths = paths.filter((objectPath) => {
-      if (!objectPath.startsWith('Male - English/')) return false;
-      const seg = (objectPath.split('/')[1] ?? '').toLowerCase();
-      if (!seg.includes('breast')) return false;
-      const match = /\/Level\s*(\d+)/i.exec(objectPath);
-      return match != null && Number(match[1]) === level;
-    });
-
-    const session = buildGuidedExercisesFromPaths(levelPaths, level, {
-      gender: 'male',
-      avatar: 'male',
-      language: 'en',
-      cancerType: cancer,
-    });
-
-    const titles = session.map((entry) => entry.title);
-    const ok =
-      titles.length === expectedTitles.length &&
-      titles.every((title, index) => title === expectedTitles[index]);
-
-    if (!ok) {
-      failures += 1;
-      console.error(`FAIL ${key}`);
-      console.error('  got     ', titles);
-      console.error('  expected', expectedTitles);
-    } else {
-      console.log(`OK ${key} (${titles.length} steps)`);
-    }
-  }
-
-  if (failures > 0) {
-    process.exit(1);
-  }
-  console.log('Pathway program order checks passed.');
+function baseSlug(id: string): string {
+  return id.replace(/^pathway-.+-s\d+-/, '').replace(/-(left|right)$/i, '');
 }
 
-void main();
+function collapsedKeys(ids: string[]): string[] {
+  const keys: string[] = [];
+  for (const id of ids) {
+    const key = baseSlug(id);
+    if (keys[keys.length - 1] !== key) keys.push(key);
+  }
+  return keys;
+}
+
+let failures = 0;
+
+function fail(message: string) {
+  failures += 1;
+  console.error(`FAIL ${message}`);
+}
+
+for (const gender of genders) {
+  for (const language of languages) {
+    for (const cancerType of CANCER_TYPE_SLUGS) {
+      const profile: PathwayProfile = {
+        gender,
+        avatar: gender,
+        language,
+        cancerType,
+      };
+      const byLevel: Record<number, string> = {};
+      for (const level of [1, 2, 3, 4]) {
+        const session = buildPathwaySessionFromManifest(paths, profile, level);
+        const got = collapsedKeys(session.map((entry) => entry.id));
+        const expected = getPathwayExerciseSequence(cancerType, level).map((key) =>
+          key === 'arm-rotation' ? 'arm-circles' : key,
+        );
+        byLevel[level] = got.join('|');
+        const label = `${gender} ${language} ${cancerType} L${level}`;
+        if (got.join('|') !== expected.join('|')) {
+          fail(`${label}\n  got ${got.join(', ')}\n  exp ${expected.join(', ')}`);
+        }
+        if (session.length === 0) fail(`${label} is empty`);
+        if (cancerType === 'head-neck' && got.includes('ankle-pumps')) {
+          fail(`${label} includes ankle pumps`);
+        }
+      }
+      const label = `${gender} ${language} ${cancerType}`;
+      if (byLevel[3] !== byLevel[2]) fail(`${label} L3 is not the Level 2 order`);
+      if (byLevel[4] !== byLevel[2]) fail(`${label} L4 is not the Level 2 order`);
+      if (byLevel[1] === byLevel[2]) fail(`${label} L1 matches L2`);
+    }
+  }
+}
+
+if (failures > 0) {
+  console.error(`${failures} pathway order failures`);
+  process.exit(1);
+}
+
+console.log(
+  `Pathway order matches the tables for ${CANCER_TYPE_SLUGS.length} cancers × 4 levels × 4 profiles.`,
+);
+
+export {};

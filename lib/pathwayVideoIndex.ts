@@ -132,6 +132,12 @@ function cancerSlugFromPath(objectPath: string): CancerTypeSlug | null {
   return null;
 }
 
+function clipSide(slug: string): 'left' | 'right' | null {
+  if (slug.endsWith('-left')) return 'left';
+  if (slug.endsWith('-right')) return 'right';
+  return null;
+}
+
 /** One diagram step: the next numeric group, left before right. */
 function takeProgramGroup(
   pool: ParsedPathwayClip[],
@@ -139,13 +145,26 @@ function takeProgramGroup(
 ): ParsedPathwayClip[] {
   const matches = pool
     .filter((clip) => storageSlugMatchesProgramKey(clip.copy.slug, step))
-    .sort(sortClipsForStep);
+    .sort(
+      (a, b) =>
+        a.fileMeta.sortOrder - b.fileMeta.sortOrder || sortClipsForStep(a, b),
+    );
   if (matches.length === 0) return [];
 
   const nextOrder = matches[0]!.fileMeta.sortOrder;
-  const group = matches
-    .filter((clip) => clip.fileMeta.sortOrder === nextOrder)
-    .sort(sortClipsForStep);
+  const group = matches.filter((clip) => clip.fileMeta.sortOrder === nextOrder);
+  const sides = new Set(group.map((clip) => clipSide(clip.copy.slug)));
+  if ((sides.has('left') || sides.has('right')) && sides.has('left') !== sides.has('right')) {
+    const missing = sides.has('left') ? 'right' : 'left';
+    const partner = matches.find(
+      (clip) => clip.fileMeta.sortOrder !== nextOrder && clipSide(clip.copy.slug) === missing,
+    );
+    const nextDifferent = matches.find((clip) => clip.fileMeta.sortOrder !== nextOrder);
+    if (partner && nextDifferent && partner.objectPath === nextDifferent.objectPath) {
+      group.push(partner);
+    }
+  }
+  group.sort(sortClipsForStep);
 
   for (const match of group) {
     const index = pool.indexOf(match);
@@ -293,11 +312,12 @@ export function buildGuidedExercisesFromPaths(
   });
 }
 
-export async function getPathwaySessionExercises(
+/** Same ordering the guided player, session cards, and Growth list use. */
+export function buildPathwaySessionFromManifest(
+  paths: string[],
   profile: PathwayProfile,
   level: number,
-): Promise<GuidedSessionExercise[]> {
-  const paths = await ensurePathwayVideoPathsLoaded();
+): GuidedSessionExercise[] {
   const levelPaths = objectPathsForProfileLevel(paths, profile, level);
   const root = getPathwayStorageRoot(profile.gender, profile.avatar, profile.language);
   const prefix = `${root}/`;
@@ -311,6 +331,14 @@ export async function getPathwaySessionExercises(
     level >= 3 ? objectPathsForProfileLevel(paths, profile, 2) : [];
   const fallbackPaths = [...level2SameCancer, ...sameLevelOtherCancers];
   return buildGuidedExercisesFromPaths(levelPaths, level, profile, fallbackPaths);
+}
+
+export async function getPathwaySessionExercises(
+  profile: PathwayProfile,
+  level: number,
+): Promise<GuidedSessionExercise[]> {
+  const paths = await ensurePathwayVideoPathsLoaded();
+  return buildPathwaySessionFromManifest(paths, profile, level);
 }
 
 export function getPathwaySessionRestSeconds(): number {
