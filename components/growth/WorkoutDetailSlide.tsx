@@ -22,8 +22,15 @@ type Props = {
 export function WorkoutDetailSlide({ workout, width }: Props) {
   const { t } = useTranslation();
   const [imageFailed, setImageFailed] = useState(false);
-  const title = t(`sessionFlow.exercises.${workout.id}.title`);
-  const description = t(`sessionFlow.exercises.${workout.id}.description`);
+  const title =
+    workout.title?.trim() ||
+    t(`sessionFlow.exercises.${workout.id}.title`, { defaultValue: 'Exercise' });
+  const description =
+    workout.description?.trim() ||
+    t(`sessionFlow.exercises.${workout.id}.description`, {
+      defaultValue:
+        'Follow the instructor in the video. Move slowly, stay within comfort, and pause if you feel unwell.',
+    });
   const showPhoto = Boolean(workout.photoSource) && !imageFailed;
   const repLabel = getWorkoutRepLabel(workout, t);
 
@@ -44,10 +51,9 @@ export function WorkoutDetailSlide({ workout, width }: Props) {
               source={workout.photoSource!}
               style={styles.media}
               /**
-               * Phase 2 placeholders are 9:16. Contain them in the 349×444 frame so
-               * standing and cot poses both stay fully visible.
+               * Stretch the still to the Figma 349×444 frame, matching the guided player.
                */
-              contentFit="contain"
+              contentFit="fill"
               contentPosition="center"
               recyclingKey={workout.id}
               priority="high"

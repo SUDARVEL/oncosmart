@@ -6,7 +6,8 @@ import { getWorkoutPhotoUrl } from "./getWorkoutPhotoUrl";
 import { getWorkoutSliderPhotoUrl } from "./workoutSliderPhotoUrls";
 import { getWorkoutLocalPhoto } from "./workoutLocalPhotos";
 import { resolveSessionLandscapePhotoSource } from "./sessionLandscapePhotos";
-import { getPhase2PlaceholderUrl } from "./phase2PlaceholderMedia";
+import { getPhase2PlaceholderUrl, exerciseSlugFromId } from "./phase2PlaceholderMedia";
+import { getFemaleNeckStretchSliderPhoto } from "./femaleNeckStretchSliderPhotos";
 import {
   getWorkoutGrowthPlaceholderUrl,
   resolveWorkoutMediaGender,
@@ -66,7 +67,8 @@ export function resolveWorkoutPhotoSource(
 
 /**
  * Workout info slider (349×444).
- * Prefer Phase 2 portrait placeholders. Never fall back to Growth list circle SVGs.
+ * Prefer Phase 2 portrait placeholders. Never fall back to Growth list circle SVGs
+ * or to male bundled art when the selected character is female.
  */
 export function resolveWorkoutSliderPhotoSource(
   exerciseId: string,
@@ -76,12 +78,15 @@ export function resolveWorkoutSliderPhotoSource(
   const phase2Url = getPhase2PlaceholderUrl(exerciseId, gender, avatar);
   if (phase2Url) return { uri: phase2Url };
 
+  const femaleNeck = getFemaleNeckStretchSliderPhoto(exerciseId, gender, avatar);
+  if (femaleNeck) return femaleNeck;
+
   const mediaGender = resolveWorkoutMediaGender(gender, avatar);
   const sliderGender: AppGender | null =
     mediaGender === "female" ? "female" : gender;
-  const sliderUrl = getWorkoutSliderPhotoUrl(exerciseId, sliderGender);
-  if (sliderUrl) return { uri: sliderUrl };
 
+  // Same-gender Phase II landscape before legacy slider files. Several legacy
+  // female slider objects 400, and a pathway id used to miss both lookups.
   const landscape = resolveSessionLandscapePhotoSource(
     exerciseId,
     sliderGender,
@@ -89,15 +94,18 @@ export function resolveWorkoutSliderPhotoSource(
   );
   if (landscape) return landscape;
 
-  const photoFile = getPhotoFile(exerciseId);
+  const sliderUrl = getWorkoutSliderPhotoUrl(exerciseId, sliderGender);
+  if (sliderUrl) return { uri: sliderUrl };
+
+  const slug = exerciseSlugFromId(exerciseId);
+  const photoFile = getPhotoFile(slug);
   const remoteUrl = getWorkoutPhotoUrl(photoFile, mediaGender);
   if (remoteUrl) return { uri: remoteUrl };
 
-  // Avoid showing male bundled art when the user is on a female avatar.
   if (mediaGender === "female") return null;
 
-  const day1Photo = getDay1Thumbnail(exerciseId);
+  const day1Photo = getDay1Thumbnail(slug);
   if (day1Photo) return day1Photo;
 
-  return getWorkoutLocalPhoto(exerciseId);
+  return getWorkoutLocalPhoto(slug);
 }

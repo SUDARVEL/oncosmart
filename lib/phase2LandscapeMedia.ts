@@ -9,6 +9,7 @@
 import type { ImageSource } from 'expo-image';
 
 import type { AppAvatar, AppGender } from '../store/useAppStore';
+import { exerciseSlugFromId } from './phase2PlaceholderMedia';
 import {
   PHASE2_FEMALE_LANDSCAPE_PHOTOS,
   PHASE2_FEMALE_LANDSCAPE_VIDEOS,
@@ -46,7 +47,7 @@ function publicUrlForObjectPath(objectPath: string): string {
 
 /** Lookup keys for a pathway/catalog slug (aliases + left/right variants). */
 function phase2SlugCandidates(exerciseId: string): string[] {
-  const id = exerciseId.trim().toLowerCase();
+  const id = exerciseSlugFromId(exerciseId);
   const base = id.replace(/-(left|right)$/i, '');
   const candidates = [id];
   if (base !== id) candidates.push(base);

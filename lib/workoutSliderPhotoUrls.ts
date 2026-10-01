@@ -1,4 +1,5 @@
 import type { AppGender } from "../store/useAppStore";
+import { exerciseSlugFromId } from "./phase2PlaceholderMedia";
 
 const SUPABASE_PUBLIC_BASE =
   "https://soyaeuffzytrjojifvdz.supabase.co/storage/v1/object/public/Oncosmart%20Videos%20and%20Assets";
@@ -102,15 +103,16 @@ export function getWorkoutSliderPhotoUrl(
   gender: AppGender | null,
 ): string | null {
   const isFemale = gender === "female";
+  const slug = exerciseSlugFromId(exerciseId);
   const photoFile = isFemale
-    ? FEMALE_SLIDER_PHOTO_FILES[exerciseId]
-    : MALE_SLIDER_PHOTO_FILES[exerciseId];
+    ? FEMALE_SLIDER_PHOTO_FILES[slug]
+    : MALE_SLIDER_PHOTO_FILES[slug];
   if (!photoFile) return null;
 
   const folder = isFemale
     ? FEMALE_SLIDER_PHOTOS_PREFIX
-    : MALE_SLIDER_FOLDER_OVERRIDES[exerciseId] ?? MALE_SLIDER_PHOTOS_PREFIX;
-  const cacheKey = `${isFemale ? "f" : "m"}|${folder}|${exerciseId}|${photoFile}`;
+    : MALE_SLIDER_FOLDER_OVERRIDES[slug] ?? MALE_SLIDER_PHOTOS_PREFIX;
+  const cacheKey = `${isFemale ? "f" : "m"}|${folder}|${slug}|${photoFile}`;
   const cached = sliderPhotoUrlCache.get(cacheKey);
   if (cached) return cached;
 
