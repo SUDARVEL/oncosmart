@@ -27,12 +27,12 @@ export const WORKOUT_SHEET_DOTS_HEIGHT = 32;
 export const WORKOUT_SHEET_CONTENT_HEIGHT =
   WORKOUT_SHEET_MAX_HEIGHT - WORKOUT_SHEET_HEADER_HEIGHT;
 
-/** Figma media frame: 349 × 446, radius 16, horizontal inset ~20.5 */
+/** Figma media frame: 349 × 444, radius 16, horizontal inset ~20.5 */
 export const WORKOUT_SLIDER_MEDIA_RADIUS = 16;
 export const WORKOUT_SLIDER_MEDIA_BACKGROUND = 'transparent';
 
 const FIGMA_MEDIA_WIDTH = 349;
-const FIGMA_MEDIA_HEIGHT = 446;
+const FIGMA_MEDIA_HEIGHT = 444;
 const FIGMA_MEDIA_HORIZONTAL_INSET = 20.5;
 const FIGMA_MEDIA_TOP = 10.5;
 const FIGMA_TEXT_BLOCK_HEIGHT = 248;
@@ -59,7 +59,7 @@ export const WORKOUT_SLIDER_BODY_HEIGHT =
   WORKOUT_SHEET_CONTENT_HEIGHT - WORKOUT_SHEET_DOTS_HEIGHT;
 
 /**
- * Keep the exact Figma media aspect (349 × 446). Never clamp shorter — a shorter
+ * Keep the exact Figma media aspect (349 × 444). Never clamp shorter — a shorter
  * frame would crop the character's legs/feet when the photo is drawn. The slide
  * lives inside a ScrollView, so any overflow scrolls instead of cropping.
  */

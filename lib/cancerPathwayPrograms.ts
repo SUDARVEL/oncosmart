@@ -40,7 +40,7 @@ type PathwayProgramsFile = {
 
 const data = pathwayPrograms as PathwayProgramsFile;
 
-/** Level 3 and 4 reuse the Level 2 exercise sequence (diagrams). */
+/** Level 3 and 4 reuse the Level 2 exercise sequence when a level has no list of its own. */
 export function getPathwaySequenceLevel(level: number): 1 | 2 {
   if (level <= 1) return 1;
   return 2;
@@ -50,8 +50,10 @@ export function getPathwayExerciseSequence(
   cancerType: CancerTypeSlug,
   level: number,
 ): PathwayExerciseKey[] {
-  const sequenceLevel = getPathwaySequenceLevel(level);
   const pathway = data.pathways[cancerType];
+  const direct = pathway?.levels[String(level)];
+  if (direct && direct.length > 0) return direct as PathwayExerciseKey[];
+  const sequenceLevel = getPathwaySequenceLevel(level);
   const sequence = pathway?.levels[String(sequenceLevel)] ?? [];
   return sequence as PathwayExerciseKey[];
 }

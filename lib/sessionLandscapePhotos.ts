@@ -4,6 +4,7 @@ import type { AppAvatar, AppGender } from '../store/useAppStore';
 import { FEMALE_LANDSCAPE_FOLDER } from './exerciseFemaleVideos';
 import { isFemaleMediaTrack } from './exerciseMediaUrls';
 import { getPhase2LandscapePhotoUrl } from './phase2LandscapeMedia';
+import { exerciseSlugFromId } from './phase2PlaceholderMedia';
 
 const SUPABASE_PUBLIC_BASE =
   'https://soyaeuffzytrjojifvdz.supabase.co/storage/v1/object/public/Oncosmart%20Videos%20and%20Assets';
@@ -76,13 +77,14 @@ export function getSessionLandscapePhotoUrl(
   if (phase2) return phase2;
 
   const isFemale = isFemaleMediaTrack(gender, avatar);
+  const slug = exerciseSlugFromId(exerciseId);
   const file = isFemale
-    ? FEMALE_LANDSCAPE_PHOTO_FILES[exerciseId]
-    : MALE_LANDSCAPE_PHOTO_FILES[exerciseId];
+    ? FEMALE_LANDSCAPE_PHOTO_FILES[slug]
+    : MALE_LANDSCAPE_PHOTO_FILES[slug];
   if (!file) return null;
 
   const folder = isFemale ? FEMALE_LANDSCAPE_FOLDER : MALE_LANDSCAPE_FOLDER;
-  const cacheKey = `${isFemale ? 'f' : 'm'}|${folder}|${exerciseId}|${file}`;
+  const cacheKey = `${isFemale ? 'f' : 'm'}|${folder}|${slug}|${file}`;
   const cached = landscapeUrlCache.get(cacheKey);
   if (cached) return cached;
 

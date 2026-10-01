@@ -37,6 +37,24 @@ export type GuidedSession = {
 const REST_SECONDS = 20;
 
 const pathwaySessionCache = new Map<string, GuidedSessionExercise[]>();
+let pathwaySessionsRevision = 0;
+const pathwaySessionListeners = new Set<() => void>();
+
+export function getPathwaySessionsRevision(): number {
+  return pathwaySessionsRevision;
+}
+
+export function subscribePathwaySessions(listener: () => void): () => void {
+  pathwaySessionListeners.add(listener);
+  return () => {
+    pathwaySessionListeners.delete(listener);
+  };
+}
+
+function notifyPathwaySessions(): void {
+  pathwaySessionsRevision += 1;
+  for (const listener of pathwaySessionListeners) listener();
+}
 
 function pathwayCacheKey(profile: PathwayProfile, level: number): string {
   const root = `${profile.gender ?? ''}|${profile.avatar ?? ''}|${profile.language ?? ''}|${profile.cancerType}`;
@@ -69,6 +87,7 @@ export async function warmPathwaySessionsForProfile(
       pathwaySessionCache.set(pathwayCacheKey(profile, level), exercises);
     }),
   );
+  notifyPathwaySessions();
 }
 
 export async function warmPathwaySessionsFromStore(): Promise<boolean> {
@@ -107,8 +126,9 @@ function getLegacySessionExercises(level: number): GuidedSessionExercise[] {
 
 function resolveExercisesForLevel(level: number, profile: PathwayProfile | null): GuidedSessionExercise[] {
   if (profile?.cancerType) {
-    const pathway = getPathwayExercises(level, profile);
-    if (pathway.length > 0) return pathway;
+    // Cancer pathways follow the ONCOSMART tables. Do not substitute the
+    // generic program while those sessions are still loading.
+    return getPathwayExercises(level, profile);
   }
   return getLegacySessionExercises(level);
 }

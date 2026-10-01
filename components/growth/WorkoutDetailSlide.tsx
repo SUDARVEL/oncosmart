@@ -3,6 +3,10 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 
+import {
+  getClinicalExerciseDescription,
+  getClinicalExerciseTitle,
+} from '../../lib/clinicalExerciseDescriptions';
 import type { WorkoutDetail } from '../../lib/getWorkoutDetails';
 import { getWorkoutRepLabel } from '../../lib/getWorkoutRepLabel';
 import {
@@ -20,10 +24,16 @@ type Props = {
 };
 
 export function WorkoutDetailSlide({ workout, width }: Props) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [imageFailed, setImageFailed] = useState(false);
-  const title = t(`sessionFlow.exercises.${workout.id}.title`);
-  const description = t(`sessionFlow.exercises.${workout.id}.description`);
+  const title =
+    getClinicalExerciseTitle(workout.id) ||
+    workout.title?.trim() ||
+    t(`sessionFlow.exercises.${workout.id}.title`, { defaultValue: '' });
+  const description =
+    getClinicalExerciseDescription(workout.id, i18n.language) ||
+    workout.description?.trim() ||
+    t(`sessionFlow.exercises.${workout.id}.description`, { defaultValue: '' });
   const showPhoto = Boolean(workout.photoSource) && !imageFailed;
   const repLabel = getWorkoutRepLabel(workout, t);
 
@@ -44,10 +54,9 @@ export function WorkoutDetailSlide({ workout, width }: Props) {
               source={workout.photoSource!}
               style={styles.media}
               /**
-               * Figma media frame is 349×446 at the source aspect. Use contain so the
-               * whole character (legs/feet) stays visible — never crop or widen.
+               * Stretch the still to the Figma 349×444 frame, matching the guided player.
                */
-              contentFit="contain"
+              contentFit="fill"
               contentPosition="center"
               recyclingKey={workout.id}
               priority="high"
@@ -84,7 +93,7 @@ const styles = StyleSheet.create({
     paddingTop: WORKOUT_SLIDER_MEDIA_TOP,
     paddingBottom: 16,
   },
-  /** Fixed Figma 349×446 portrait frame — never use circular Growth thumbs here. */
+  /** Fixed Figma 349×444 portrait frame — never use circular Growth thumbs here. */
   mediaWrap: {
     width: WORKOUT_SLIDER_MEDIA_WIDTH,
     height: WORKOUT_SLIDER_MEDIA_HEIGHT,

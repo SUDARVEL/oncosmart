@@ -187,39 +187,39 @@
     "exercises": {
       "diaphragmatic-breathing": {
         "title": "Diaphragmatic Breathing",
-        "description": "Helps improve lung expansion and oxygen supply. Relax your shoulders. Place your dominant hand over chest and non-dominant hand over stomach. Breath in through your nose. Breath-out through mouth."
+        "description": "Improves lung expansion and helps you breathe better. Sit upright on a chair with your shoulders relaxed. Place one hand on your chest and the other on your abdomen. Breathe slowly through your nose and feel your abdomen rise. Exhale gently through your mouth."
       },
       "ankle-pumps": {
         "title": "Ankle Pumps",
-        "description": "Improves blood circulation and reduces stiffness in the legs. Sit with your legs stretched forward and slowly move your feet up and down."
+        "description": "Improves blood circulation and prevents stiffness in the legs. Sit upright on the bed with your legs straight. Slowly move your feet up and down."
       },
       "thoracic-expansion": {
-        "title": "Thoracic Expansion",
-        "description": "Improves chest expansion and lung capacity. Sit on a chair and clasp both hands. Raise your arms upward while taking a deep breath. Slowly lower your arms while breathing out."
+        "title": "Thoracic Expansion Exercise",
+        "description": "Improves chest expansion and lung capacity. Take a deep breath while expanding your chest. Hold for a few seconds and slowly breathe out."
       },
       "arm-circles": {
         "title": "Arm Circles",
-        "description": "Improves shoulder mobility. Stand upright and raise both arms to the sides. Slowly rotate your arms forward and backward in circular motion."
+        "description": "Improves shoulder mobility and circulation. Lift your arms and slowly rotate them in circular motion."
       },
       "spot-marching": {
         "title": "Spot Marching",
-        "description": "Improves blood circulation. Stand straight and march in place by lifting your knees and moving opposite arms. Continue for two minutes."
+        "description": "Improves circulation and endurance. Stand straight and march in place by lifting knees alternately."
       },
       "shoulder-shrugging": {
         "title": "Shoulder Shrugging",
-        "description": "Strengthens shoulder muscles. Lift both shoulders upward toward your ears, hold briefly, then slowly lower them down."
+        "description": "Relieves shoulder tension and improves mobility. Lift both shoulders towards your ears and slowly relax."
       },
       "biceps-curls": {
         "title": "Biceps Curls",
-        "description": "Strengthens arm muscles. Slowly bend your elbows upward and bring your hands toward your shoulders, then slowly lower them back to the starting position."
+        "description": "Strengthens arm muscles. Bend your elbows and bring your hands toward your shoulders, then slowly lower."
       },
       "wall-pushup": {
         "title": "Wall Push-up",
-        "description": "Strengthens upper body muscles. Stand facing a wall and place your hands on the wall at shoulder level. Slowly bend your elbows and lean toward the wall, then push back to the starting position."
+        "description": "Improves upper-body strength. Stand facing the wall with your hands at shoulder height. Slowly bend your elbows and lean toward the wall. Then gently push back to the starting position."
       },
       "calf-raise": {
         "title": "Calf Raises",
-        "description": "Strengthens lower leg muscles. Stand facing a wall and take support with your hands. Slowly lift your heels and stand on your toes, then slowly lower your heels back down."
+        "description": "Strengthens the lower leg muscles and improves balance. Stand upright with your hands on the wall for support. Slowly lift your heels off the floor. Then slowly lower your heels back down."
       },
       "sit-to-stand": {
         "title": "Sit-to-Stand",
@@ -227,11 +227,11 @@
       },
       "straight-leg-raise-right": {
         "title": "Straight Leg Raise (Right)",
-        "description": "Strengthens thigh muscles and improves knee stability. Lie on your back with the left knee bent and right leg straight. Lift your right leg up to the level of the opposite knee, then slowly lower it down."
+        "description": "Strengthens the thigh muscles and improves leg strength. Lie comfortably on your back on the bed. Keep your right knee straight and slowly lift your right leg as far as comfortable. Then slowly lower your leg back down."
       },
       "straight-leg-raise-left": {
         "title": "Straight Leg Raise (Left)",
-        "description": "Strengthens thigh muscles and improves knee stability. Lie on your back with the right knee bent and left leg straight. Lift the left leg up to the level of the opposite knee, then slowly lower it down."
+        "description": "Strengthens the thigh muscles and improves leg strength. Lie comfortably on your back on the bed. Keep your left knee straight and slowly lift your left leg as far as comfortable. Then slowly lower your leg back down."
       },
       "knee-to-chest-right": {
         "title": "Knee to Chest (Right)",
@@ -251,43 +251,43 @@
       },
       "hamstring-stretch": {
         "title": "Hamstring Stretch",
-        "description": "Improves flexibility of the back thigh muscles. Sit with your legs stretched forward and slowly bend forward, trying to reach your toes. You should feel a stretch at the back of the thigh. Hold this position."
+        "description": "Improves flexibility of the back of the thigh. Sit on the bed with your legs straight. Slowly lean forward and reach toward your toes. Feel a gentle stretch behind your thighs."
       },
       "quadriceps-stretch-right": {
         "title": "Quadriceps Stretch (Right)",
-        "description": "Improves flexibility of the front thigh muscles. Stand holding a chair for support. Using your right hand, bend your right knee and lift the heel toward your hip. You should feel a stretch at the front of the thigh. Hold this position."
+        "description": "Improves flexibility of the front thigh muscles. Stand upright and hold the chair for support. Bend your right knee as far as comfortable and gently pull your foot toward your buttock to stretch the front of your thigh."
       },
       "quadriceps-stretch-left": {
         "title": "Quadriceps Stretch (Left)",
-        "description": "Improves flexibility of the front thigh muscles. Stand holding a chair for support. Using your left hand, bend your left knee and lift the heel toward your hip. You should feel a stretch at the front of the thigh. Hold this position."
+        "description": "Improves flexibility of the front thigh muscles. Stand upright and hold the chair for support. Bend your left knee as far as comfortable and gently pull your foot toward your buttock to stretch the front of your thigh."
       },
       "calf-stretch-right": {
         "title": "Calf Stretch (Right)",
-        "description": "Improves flexibility of the lower leg muscles. Stand facing a wall and place your hands on the wall for support. Step the right leg back with the knee straight and lean forward slowly. You should feel a stretch in the right calf. Hold this position."
+        "description": "Helps stretch the muscles at the back of the lower leg. Stand upright with your hands on the wall at shoulder height. Keep your right leg straight behind you with your heel on the floor. Gently lean forward until you feel a stretch in the back of your lower leg."
       },
       "calf-stretch-left": {
         "title": "Calf Stretch (Left)",
-        "description": "Improves flexibility of the lower leg muscles. Stand facing a wall and place your hands on the wall for support. Step the left leg back with the knee straight and lean forward slowly. You should feel a stretch in the left calf. Hold this position."
+        "description": "Helps stretch the muscles at the back of the lower leg. Stand upright with your hands on the wall at shoulder height. Keep your left leg straight behind you with your heel on the floor. Gently lean forward until you feel a stretch in the back of your lower leg."
       },
       "chest-stretch": {
         "title": "Pectoralis Stretch",
-        "description": "Improves flexibility of chest muscles and improves posture. Stand in a doorway with your hands at shoulder height on the frame. Lean forward slowly. You should feel a stretch across the chest. Hold this position."
+        "description": "Improves flexibility of the chest muscles. Stand in a doorframe with your hands at shoulder height. Gently lean forward until you feel a stretch across the front of your chest."
       },
       "triceps-stretch-right": {
         "title": "Triceps Stretch (Right)",
-        "description": "Improves flexibility of the back arm muscles. Stand upright, raise your right arm overhead, and bend the elbow. Use your left hand to gently pull the right elbow. You should feel a stretch at the back of the right arm. Hold this position."
+        "description": "Helps stretch the muscles at the back of the upper arm. Place your right arm behind your head and gently pull the right elbow with your left hand. Feel a stretch at the back of your right upper arm."
       },
       "triceps-stretch-left": {
         "title": "Triceps Stretch (Left)",
-        "description": "Improves flexibility of the back arm muscles. Stand upright, raise your left arm overhead, and bend the elbow. Use your right hand to gently pull the left elbow. You should feel a stretch at the back of the left arm. Hold this position."
+        "description": "Helps stretch the muscles at the back of the upper arm. Place your left arm behind your head and gently pull the left elbow with your right hand. Feel a stretch at the back of your left upper arm."
       },
       "neck-stretch-right": {
         "title": "Neck Stretch (Right)",
-        "description": "Relieves neck stiffness and improves flexibility. Stand upright and slowly tilt your head toward the left shoulder. Place your left hand on top of your head and gently press. You should feel a stretch on the right side of the neck. Hold this position."
+        "description": "Helps improve neck movement. Stand upright with your shoulders relaxed. Slowly tilt your head towards your left shoulder. Gently apply pressure with your left hand. You should feel a stretch along the right side of your neck."
       },
       "neck-stretch-left": {
         "title": "Neck Stretch (Left)",
-        "description": "Relieves neck stiffness and improves flexibility. Stand upright and slowly tilt your head toward the right shoulder. Place your right hand on top of your head and gently press. You should feel a stretch on the left side of the neck. Hold this position."
+        "description": "Helps improve neck movement. Stand upright with your shoulders relaxed. Slowly tilt your head towards your right shoulder. Gently apply pressure with your right hand. You should feel a stretch along the left side of your neck."
       }
     }
   },
@@ -345,39 +345,39 @@
       "items": {
         "diaphragmatic-breathing": {
           "title": "Diaphragmatic Breathing",
-          "description": "Helps in relaxation and improves ventilation."
+          "description": "Improves lung expansion and helps you breathe better. Sit upright on a chair with your shoulders relaxed. Place one hand on your chest and the other on your abdomen. Breathe slowly through your nose and feel your abdomen rise. Exhale gently through your mouth."
         },
         "ankle-pumps": {
           "title": "Ankle Pumps",
-          "description": "Improves blood circulation and prevents stiffness in the legs."
+          "description": "Improves blood circulation and prevents stiffness in the legs. Sit upright on the bed with your legs straight. Slowly move your feet up and down."
         },
         "thoracic-expansion": {
           "title": "Thoracic Expansion Exercise",
-          "description": "Improves chest expansion and ventilation."
+          "description": "Improves chest expansion and lung capacity. Take a deep breath while expanding your chest. Hold for a few seconds and slowly breathe out."
         },
         "arm-circles": {
           "title": "Arm Circles",
-          "description": "Improves shoulder mobility and circulation."
+          "description": "Improves shoulder mobility and circulation. Lift your arms and slowly rotate them in circular motion."
         },
         "spot-marching": {
           "title": "Spot Marching",
-          "description": "Improves blood circulation."
+          "description": "Improves circulation and endurance. Stand straight and march in place by lifting knees alternately."
         },
         "shoulder-shrugging": {
           "title": "Shoulder Shrugging",
-          "description": "Strengthens shoulder muscles."
+          "description": "Relieves shoulder tension and improves mobility. Lift both shoulders towards your ears and slowly relax."
         },
         "biceps-curls": {
-          "title": "Bicep Curls",
-          "description": "Strengthens arm muscles."
+          "title": "Biceps Curls",
+          "description": "Strengthens arm muscles. Bend your elbows and bring your hands toward your shoulders, then slowly lower."
         },
         "wall-pushup": {
-          "title": "Wall Push-ups",
-          "description": "Strengthens upper body muscles."
+          "title": "Wall Push-up",
+          "description": "Improves upper-body strength. Stand facing the wall with your hands at shoulder height. Slowly bend your elbows and lean toward the wall. Then gently push back to the starting position."
         },
         "calf-raise": {
-          "title": "Calf Raise",
-          "description": "Strengthens lower leg muscles."
+          "title": "Calf Raises",
+          "description": "Strengthens the lower leg muscles and improves balance. Stand upright with your hands on the wall for support. Slowly lift your heels off the floor. Then slowly lower your heels back down."
         },
         "sit-to-stand": {
           "title": "Sit to Stand",
@@ -389,11 +389,11 @@
         },
         "straight-leg-raise-right": {
           "title": "Straight Leg Raise (Right)",
-          "description": "Strengthens thigh muscles and improves knee stability."
+          "description": "Strengthens the thigh muscles and improves leg strength. Lie comfortably on your back on the bed. Keep your right knee straight and slowly lift your right leg as far as comfortable. Then slowly lower your leg back down."
         },
         "straight-leg-raise-left": {
           "title": "Straight Leg Raise (Left)",
-          "description": "Strengthens thigh muscles and improves knee stability."
+          "description": "Strengthens the thigh muscles and improves leg strength. Lie comfortably on your back on the bed. Keep your left knee straight and slowly lift your left leg as far as comfortable. Then slowly lower your leg back down."
         },
         "knee-to-chest-right": {
           "title": "Knee to Chest (Right)",
@@ -413,43 +413,43 @@
         },
         "hamstring-stretch": {
           "title": "Hamstring Stretch",
-          "description": "Improves flexibility of the back thigh muscles."
+          "description": "Improves flexibility of the back of the thigh. Sit on the bed with your legs straight. Slowly lean forward and reach toward your toes. Feel a gentle stretch behind your thighs."
         },
         "quadriceps-stretch-right": {
           "title": "Quadriceps Stretch (Right)",
-          "description": "Improves flexibility of the front thigh muscles."
+          "description": "Improves flexibility of the front thigh muscles. Stand upright and hold the chair for support. Bend your right knee as far as comfortable and gently pull your foot toward your buttock to stretch the front of your thigh."
         },
         "quadriceps-stretch-left": {
           "title": "Quadriceps Stretch (Left)",
-          "description": "Improves flexibility of the front thigh muscles."
+          "description": "Improves flexibility of the front thigh muscles. Stand upright and hold the chair for support. Bend your left knee as far as comfortable and gently pull your foot toward your buttock to stretch the front of your thigh."
         },
         "calf-stretch-right": {
           "title": "Calf Stretch (Right)",
-          "description": "Improves flexibility of the lower leg muscles."
+          "description": "Helps stretch the muscles at the back of the lower leg. Stand upright with your hands on the wall at shoulder height. Keep your right leg straight behind you with your heel on the floor. Gently lean forward until you feel a stretch in the back of your lower leg."
         },
         "calf-stretch-left": {
           "title": "Calf Stretch (Left)",
-          "description": "Improves flexibility of the lower leg muscles."
+          "description": "Helps stretch the muscles at the back of the lower leg. Stand upright with your hands on the wall at shoulder height. Keep your left leg straight behind you with your heel on the floor. Gently lean forward until you feel a stretch in the back of your lower leg."
         },
         "chest-stretch": {
-          "title": "Chest Stretch",
-          "description": "Improves flexibility of chest muscles and improves posture."
+          "title": "Pectoralis Stretch",
+          "description": "Improves flexibility of the chest muscles. Stand in a doorframe with your hands at shoulder height. Gently lean forward until you feel a stretch across the front of your chest."
         },
         "triceps-stretch-right": {
           "title": "Triceps Stretch (Right)",
-          "description": "Improves flexibility of the back arm muscles."
+          "description": "Helps stretch the muscles at the back of the upper arm. Place your right arm behind your head and gently pull the right elbow with your left hand. Feel a stretch at the back of your right upper arm."
         },
         "triceps-stretch-left": {
           "title": "Triceps Stretch (Left)",
-          "description": "Improves flexibility of the back arm muscles."
+          "description": "Helps stretch the muscles at the back of the upper arm. Place your left arm behind your head and gently pull the left elbow with your right hand. Feel a stretch at the back of your left upper arm."
         },
         "neck-stretch-right": {
           "title": "Neck Stretch (Right)",
-          "description": "Relieves neck stiffness and improves flexibility."
+          "description": "Helps improve neck movement. Stand upright with your shoulders relaxed. Slowly tilt your head towards your left shoulder. Gently apply pressure with your left hand. You should feel a stretch along the right side of your neck."
         },
         "neck-stretch-left": {
           "title": "Neck Stretch (Left)",
-          "description": "Relieves neck stiffness and improves flexibility."
+          "description": "Helps improve neck movement. Stand upright with your shoulders relaxed. Slowly tilt your head towards your right shoulder. Gently apply pressure with your right hand. You should feel a stretch along the left side of your neck."
         }
       }
     }

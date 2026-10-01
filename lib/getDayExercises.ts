@@ -5,6 +5,7 @@ import dayExercisesData from '../data/day-exercises.json';
 import type { AppAvatar, AppGender, AppLanguage } from '../store/useAppStore';
 import { useAppStore } from '../store/useAppStore';
 import { normalizeCancerTypeSlug } from './cancerPathway';
+import { getClinicalExerciseTitle } from './clinicalExerciseDescriptions';
 import { getFigmaRepBadge } from './exerciseRepConfig';
 import {
   getPathwayProfileFromStore,
@@ -111,7 +112,11 @@ function pathwayToResolved(
 ): ResolvedDayExercise {
   const slug = catalogSlugFromPathwayId(exercise.id);
   const catalogEntry = slug ? catalog[slug] : undefined;
-  const name = exercise.title ?? catalogEntry?.name ?? 'Exercise';
+  const name =
+    getClinicalExerciseTitle(exercise.id) ??
+    exercise.title ??
+    catalogEntry?.name ??
+    'Exercise';
   const repLabel = repLabelFromGuided(exercise);
   const videoSource = exercise.videoUrl ?? null;
   const thumbnail = slug ? getDay1Thumbnail(slug) : null;
@@ -149,7 +154,7 @@ export function getLevelSession(level: number): LevelSession | null {
       level,
       exercises: pathway.map((entry) => ({
         id: entry.id,
-        name: entry.title ?? entry.id,
+        name: getClinicalExerciseTitle(entry.id) ?? entry.title ?? entry.id,
         repLabel: repLabelFromGuided(entry),
         videos: {
           'male-en': '',
@@ -160,6 +165,8 @@ export function getLevelSession(level: number): LevelSession | null {
       })),
     };
   }
+
+  if (profile?.cancerType) return null;
 
   const program = getLevelExerciseProgram(level);
   if (!program) return null;
