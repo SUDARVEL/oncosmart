@@ -7,7 +7,6 @@ import { getWorkoutSliderPhotoUrl } from "./workoutSliderPhotoUrls";
 import { getWorkoutLocalPhoto } from "./workoutLocalPhotos";
 import { resolveSessionLandscapePhotoSource } from "./sessionLandscapePhotos";
 import { getPhase2PlaceholderUrl, exerciseSlugFromId } from "./phase2PlaceholderMedia";
-import { getFemaleNeckStretchSliderPhoto } from "./femaleNeckStretchSliderPhotos";
 import {
   getWorkoutGrowthPlaceholderUrl,
   resolveWorkoutMediaGender,
@@ -77,9 +76,6 @@ export function resolveWorkoutSliderPhotoSource(
 ): ImageSource | null {
   const phase2Url = getPhase2PlaceholderUrl(exerciseId, gender, avatar);
   if (phase2Url) return { uri: phase2Url };
-
-  const femaleNeck = getFemaleNeckStretchSliderPhoto(exerciseId, gender, avatar);
-  if (femaleNeck) return femaleNeck;
 
   const mediaGender = resolveWorkoutMediaGender(gender, avatar);
   const sliderGender: AppGender | null =
