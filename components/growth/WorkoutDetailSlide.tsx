@@ -54,9 +54,10 @@ export function WorkoutDetailSlide({ workout, width }: Props) {
               source={workout.photoSource!}
               style={styles.media}
               /**
-               * Stretch the still to the Figma 349×444 frame, matching the guided player.
+               * Keep the still's own ratio inside the 349×444 frame.
+               * Fill was stretching 9:16 portraits wider than the person.
                */
-              contentFit="fill"
+              contentFit="contain"
               contentPosition="center"
               recyclingKey={workout.id}
               priority="high"
@@ -99,7 +100,7 @@ const styles = StyleSheet.create({
     height: WORKOUT_SLIDER_MEDIA_HEIGHT,
     borderRadius: WORKOUT_SLIDER_MEDIA_RADIUS,
     overflow: 'hidden',
-    backgroundColor: '#F3F4F6',
+    backgroundColor: '#E8E8E8',
   },
   media: {
     width: '100%',
