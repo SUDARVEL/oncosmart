@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   ActivityIndicator,
@@ -15,13 +15,14 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ExerciseSessionCard } from '../../../components/exercise/ExerciseSessionCard';
 import type { ResolvedDayExercise } from '../../../lib/getDayExercises';
+import { PulseOximeterCoachSheet } from '../../../components/exercise/PulseOximeterCoachSheet';
 import { PulseOximeterModal } from '../../../components/exercise/PulseOximeterModal';
 import { ResumeProgressModal } from '../../../components/growth/ResumeProgressModal';
 import { ReadyToBeginModal } from '../../../components/pain/ReadyToBeginModal';
 import { useExercisePauseGuard } from '../../../hooks/useExercisePauseGuard';
 import { clearLevelExercisesCache, getDayExercises, getLevelSession } from '../../../lib/getDayExercises';
 import { hasGuidedSession, warmPathwaySessionsFromStore } from '../../../lib/getDay1Session';
-import { normalizeCancerTypeSlug } from '../../../lib/cancerPathway';
+import { normalizeCancerTypeSlug, resolveMediaGender } from '../../../lib/cancerPathway';
 import { getModerateHeartRateUpperLimit } from '../../../lib/moderateHeartRateLimit';
 import { syncNextExerciseNotification } from '../../../lib/nextExerciseNotification';
 import { useAppStore } from '../../../store/useAppStore';
@@ -77,7 +78,24 @@ export default function ExerciseSessionsScreen() {
     return getDayExercises(level, language, gender, avatar);
   }, [avatar, gender, language, level, pathwayLoaded]);
   const [showReadyModal, setShowReadyModal] = useState(false);
+  const [showOximeterCoach, setShowOximeterCoach] = useState(false);
   const [showPulseModal, setShowPulseModal] = useState(false);
+  const oximeterMediaGender = resolveMediaGender(gender, avatar);
+  const heartRateTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(
+    () => () => {
+      if (heartRateTimer.current) clearTimeout(heartRateTimer.current);
+    },
+    [],
+  );
+
+  const continueToHeartRate = () => {
+    setShowOximeterCoach(false);
+    if (heartRateTimer.current) clearTimeout(heartRateTimer.current);
+    // Let the coach sheet finish closing before the heart-rate modal opens.
+    heartRateTimer.current = setTimeout(() => setShowPulseModal(true), 280);
+  };
   /** Only mount looping preview videos for on-screen cards (avoids blank players). */
   const [activePreviewIds, setActivePreviewIds] = useState<Set<string>>(() => new Set());
 
@@ -204,8 +222,16 @@ export default function ExerciseSessionsScreen() {
         }}
         onYes={() => {
           setShowReadyModal(false);
-          setShowPulseModal(true);
+          setShowOximeterCoach(true);
         }}
+      />
+
+      <PulseOximeterCoachSheet
+        visible={showOximeterCoach}
+        mediaGender={oximeterMediaGender}
+        onDismiss={() => setShowOximeterCoach(false)}
+        onSkip={continueToHeartRate}
+        onDone={continueToHeartRate}
       />
 
       <PulseOximeterModal
