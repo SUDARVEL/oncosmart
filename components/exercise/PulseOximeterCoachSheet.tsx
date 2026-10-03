@@ -39,6 +39,12 @@ type Props = {
 const STEPS = Array.from({ length: PULSE_OXIMETER_COACH_STEP_COUNT }, (_, index) => index + 1);
 /** Title (2 lines) + body (3 lines) so Skip / Next stay put while copy length changes. */
 const COPY_BLOCK_HEIGHT = 132;
+const SHEET_TOP_RADIUS = 28;
+/**
+ * Android draws a white lip inside the sheet's top radius, above the photo.
+ * The frame is pulled up by this much so the illustration fills that edge.
+ */
+const IMAGE_TOP_BLEED = 16;
 
 /**
  * Bottom-sheet slider that replaces “Please wear your pulse oximeter”.
@@ -147,6 +153,7 @@ export function PulseOximeterCoachSheet({
         />
         <View style={[styles.sheet, { paddingBottom: Math.max(insets.bottom, 12) }]}>
           <FlatList
+            removeClippedSubviews={false}
             ref={listRef}
             data={STEPS}
             keyExtractor={(step) => String(step)}
@@ -174,7 +181,10 @@ export function PulseOximeterCoachSheet({
                 listRef.current?.scrollToIndex({ index: failed, animated: false });
               });
             }}
-            style={{ height: imageHeight + COPY_BLOCK_HEIGHT }}
+            style={{
+              height: imageHeight + COPY_BLOCK_HEIGHT,
+              marginTop: -IMAGE_TOP_BLEED,
+            }}
           />
 
           <View style={styles.dots}>
@@ -221,8 +231,8 @@ const styles = StyleSheet.create({
   },
   sheet: {
     backgroundColor: '#FFFFFF',
-    borderTopLeftRadius: 28,
-    borderTopRightRadius: 28,
+    borderTopLeftRadius: SHEET_TOP_RADIUS,
+    borderTopRightRadius: SHEET_TOP_RADIUS,
     overflow: 'hidden',
     shadowColor: '#111827',
     shadowOffset: { width: 0, height: -4 },
@@ -233,6 +243,8 @@ const styles = StyleSheet.create({
   imageFrame: {
     width: '100%',
     backgroundColor: '#AEB0B2',
+    borderTopLeftRadius: SHEET_TOP_RADIUS,
+    borderTopRightRadius: SHEET_TOP_RADIUS,
     overflow: 'hidden',
   },
   image: {
@@ -242,7 +254,7 @@ const styles = StyleSheet.create({
   },
   stepCount: {
     position: 'absolute',
-    top: 14,
+    top: 14 + IMAGE_TOP_BLEED,
     left: 16,
     fontSize: 13,
     lineHeight: 16,
