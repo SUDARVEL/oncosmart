@@ -80,7 +80,12 @@ export function ExerciseSessionCard({
           ) : null}
         </View>
 
-        <Text style={styles.title} numberOfLines={2}>
+        <Text
+          style={styles.title}
+          numberOfLines={1}
+          adjustsFontSizeToFit
+          minimumFontScale={0.7}
+        >
           {name}
         </Text>
       </View>
@@ -122,12 +127,12 @@ const styles = StyleSheet.create({
   },
   body: {
     flex: 1,
-    paddingTop: 12,
-    paddingHorizontal: 16,
-    paddingBottom: 12,
-    gap: 8,
+    paddingTop: 8,
+    paddingHorizontal: 12,
+    paddingBottom: 8,
+    gap: 6,
     alignItems: 'center',
-    justifyContent: 'center',
+    justifyContent: 'flex-start',
   },
   previewStage: {
     width: SESSION_EXERCISE_CARD_PREVIEW_WIDTH,
@@ -147,13 +152,13 @@ const styles = StyleSheet.create({
     backgroundColor: '#D1D5DB',
   },
   title: {
-    fontSize: 16,
-    lineHeight: 22,
+    width: '100%',
+    fontSize: 13,
+    lineHeight: 16,
     color: '#000000',
     textAlign: 'center',
     textTransform: 'uppercase',
     ...font('semiBold'),
-    paddingHorizontal: 8,
   },
   repBadge: {
     position: 'absolute',

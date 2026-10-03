@@ -2,9 +2,9 @@
  * Portrait stills from
  * `Oncosmart Videos and Assets/Placeholders Oncomsart Phase 2`.
  *
- * Growth row circles use only this folder. Every file is 9:16, so the 66×70
- * circle uses contain and keeps that ratio. Cot / lying poses sit in the
- * lower third of the frame.
+ * Growth row circles use only this folder. The 66×70 circle covers the
+ * still so the photo fills the circle without stretching. Cot / lying poses
+ * stay bottom-aligned so the person remains inside the circle.
  */
 
 import type { ImageContentPosition } from 'expo-image';
@@ -94,8 +94,8 @@ export function isPhase2PlaceholderUri(uri: string | null | undefined): boolean 
 }
 
 /**
- * 66×70 circle uses contain, so this only shifts leftover space.
- * Low cot poses stay bottom-aligned inside the 9:16 frame.
+ * Cover fills the circle. Low cot poses stay bottom-aligned so the
+ * person in the lower third stays inside the circle.
  */
 export function getPhase2CircleContentPosition(
   exerciseId: string,

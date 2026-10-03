@@ -99,7 +99,7 @@ export function WorkoutRowCard({
           <CachedMediaImage
             source={workout.photoSource!}
             style={styles.photo}
-            contentFit="contain"
+            contentFit="cover"
             contentPosition={circlePosition}
             recyclingKey={`growth-row-${workout.id}`}
             onError={handleImageError}
@@ -107,12 +107,17 @@ export function WorkoutRowCard({
         ) : null}
       </View>
       <View style={styles.textWrap}>
-        <Text style={styles.title}>
+        <Text
+          style={styles.title}
+          numberOfLines={1}
+          adjustsFontSizeToFit
+          minimumFontScale={0.72}
+        >
           {getClinicalExerciseTitle(workout.id) ||
             workout.title?.trim() ||
             t(workout.titleKey)}
         </Text>
-        <Text style={styles.description}>
+        <Text style={styles.description} numberOfLines={2}>
           {getClinicalExerciseDescription(workout.id, i18n.language) ||
             workout.description?.trim() ||
             t(workout.descriptionKey)}
@@ -127,15 +132,16 @@ const styles = StyleSheet.create({
   card: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 16,
+    gap: 12,
     width: 326,
-    minHeight: 85,
-    paddingHorizontal: 16,
-    paddingVertical: 8,
+    height: 85,
+    paddingHorizontal: 12,
+    paddingVertical: 7,
     backgroundColor: "#FFFFFF",
     borderWidth: 1,
     borderColor: colors.cardBorder,
     borderRadius: 8,
+    overflow: "hidden",
   },
   photoWrap: {
     width: PHOTO_WIDTH,
@@ -158,20 +164,24 @@ const styles = StyleSheet.create({
   },
   textWrap: {
     flex: 1,
+    minWidth: 0,
+    height: 70,
+    justifyContent: "center",
     gap: 2,
+    overflow: "hidden",
   },
   title: {
-    fontSize: 16,
-    lineHeight: 20,
+    fontSize: 13,
+    lineHeight: 16,
     color: "#262526",
     textTransform: "uppercase",
     ...font("medium"),
   },
   description: {
-    fontSize: 12,
-    lineHeight: 20,
+    fontSize: 11,
+    lineHeight: 14,
     color: colors.textMuted,
-    letterSpacing: 0.25,
+    letterSpacing: 0.1,
     ...font("regular"),
   },
 });
