@@ -17,3 +17,6 @@ alter table public.exercise_completions add constraint exercise_completions_sess
   session_feedback is null
   or session_feedback = any (array['easy'::text, 'hard'::text, 'tired'::text])
 );
+
+-- Applied remotely as pause_note_and_session_feedback.
+-- Hold alerts include the free-text note, and the admin list returns it.
