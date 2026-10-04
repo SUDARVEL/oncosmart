@@ -20,7 +20,6 @@ import {
   getPulseOximeterCoachImageUrl,
   getPulseOximeterCoachImageUrls,
   PULSE_OXIMETER_COACH_STEP_COUNT,
-  PULSE_VALUE_MARK,
   PULSE_VALUE_MARK_STEP,
   type PulseOximeterMediaGender,
 } from '../../lib/pulseOximeterCoach';
@@ -48,26 +47,6 @@ const COPY_BLOCK_HEIGHT = 124;
 const IMAGE_ZOOM = 1.04;
 /** Manual infographic is 1024×1536. */
 const MANUAL_ASPECT = 1536 / 1024;
-
-function pulseValueRingStyle(
-  frameWidth: number,
-  frameHeight: number,
-  mediaGender: PulseOximeterMediaGender,
-) {
-  const mark = PULSE_VALUE_MARK[mediaGender];
-  const scale =
-    Math.max(frameWidth / mark.imageWidth, frameHeight / mark.imageHeight) * IMAGE_ZOOM;
-  const offsetX = (frameWidth - mark.imageWidth * scale) / 2;
-  const offsetY = (frameHeight - mark.imageHeight * scale) / 2;
-  const height = mark.height * scale;
-  return {
-    left: offsetX + mark.x * scale,
-    top: offsetY + mark.y * scale,
-    width: mark.width * scale,
-    height,
-    borderRadius: height / 2,
-  };
-}
 
 /**
  * Bottom sheet for checking pulse before a session.
@@ -162,23 +141,17 @@ export function PulseOximeterCoachSheet({
   const renderItem = useCallback(
     ({ item }: { item: number }) => {
       const uri = getPulseOximeterCoachImageUrl(item, mediaGender);
+      const showsHeartRateGuide = item === PULSE_VALUE_MARK_STEP;
       return (
         <View style={{ width }}>
           <View style={[styles.imageFrame, { height: imageHeight }]}>
             {uri ? (
               <CachedMediaImage
                 source={{ uri }}
-                style={styles.image}
-                contentFit="cover"
+                style={showsHeartRateGuide ? styles.imageContain : styles.image}
+                contentFit={showsHeartRateGuide ? 'contain' : 'cover'}
                 contentPosition="center"
                 accessibilityIgnoresInvertColors
-              />
-            ) : null}
-            {item === PULSE_VALUE_MARK_STEP ? (
-              <View
-                pointerEvents="none"
-                style={[styles.pulseRing, pulseValueRingStyle(width, imageHeight, mediaGender)]}
-                accessibilityLabel={t('daySession.oximeter6Body')}
               />
             ) : null}
             <View style={styles.stepPill}>
@@ -415,11 +388,9 @@ const styles = StyleSheet.create({
     height: '100%',
     transform: [{ scale: IMAGE_ZOOM }],
   },
-  pulseRing: {
-    position: 'absolute',
-    borderWidth: 3,
-    borderColor: '#FF2D2D',
-    backgroundColor: 'transparent',
+  imageContain: {
+    width: '100%',
+    height: '100%',
   },
   stepPill: {
     position: 'absolute',

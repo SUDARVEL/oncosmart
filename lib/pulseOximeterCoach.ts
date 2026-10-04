@@ -22,8 +22,14 @@ const STEP_HAND_IMAGE: Record<PulseOximeterMediaGender, string> = {
 /** One wrist infographic for both men and women. */
 const MANUAL_PULSE_IMAGE = `${FEMALE_FOLDER}/Manual Pulse Check Infographic.png`;
 
+/** Step 6 already circles the heart rate. Same file for every gender. */
+const HEART_RATE_GUIDE_IMAGE = 'Coachmarks/Pulse Oximeter Heart Rate Guide.png';
+
 /** The seated “wait for the reading” frame. */
 export const PULSE_OXIMETER_HAND_STEP = 5;
+
+/** Step 6 uses the shared heart-rate guide, which already circles the pulse. */
+export const PULSE_VALUE_MARK_STEP = 6;
 
 export function getPulseOximeterCoachImageUrl(
   step: number,
@@ -32,6 +38,9 @@ export function getPulseOximeterCoachImageUrl(
   if (step < 1 || step > PULSE_OXIMETER_COACH_STEP_COUNT) return null;
   if (step === PULSE_OXIMETER_HAND_STEP) {
     return getPublicStorageUrl(STEP_HAND_IMAGE[mediaGender]);
+  }
+  if (step === PULSE_VALUE_MARK_STEP) {
+    return getPublicStorageUrl(HEART_RATE_GUIDE_IMAGE);
   }
   const objectPath =
     mediaGender === 'female'
@@ -46,22 +55,6 @@ export function getManualPulseGuideUrl(
 ): string | null {
   return getPublicStorageUrl(MANUAL_PULSE_IMAGE);
 }
-
-/**
- * Step 6 shows SpO2 and pulse together. This box is the heart icon plus the
- * pulse number in that step’s source image, so the guide can circle the value
- * the person should enter.
- */
-export const PULSE_VALUE_MARK: Record<
-  PulseOximeterMediaGender,
-  { imageWidth: number; imageHeight: number; x: number; y: number; width: number; height: number }
-> = {
-  male: { imageWidth: 457, imageHeight: 380, x: 228, y: 160, width: 128, height: 50 },
-  female: { imageWidth: 474, imageHeight: 386, x: 248, y: 160, width: 132, height: 52 },
-};
-
-/** Step whose illustration shows both readings. */
-export const PULSE_VALUE_MARK_STEP = 6;
 
 export function getPulseOximeterCoachImageUrls(
   mediaGender: PulseOximeterMediaGender,
