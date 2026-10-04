@@ -19,6 +19,8 @@ import {
   getPulseOximeterCoachImageUrl,
   getPulseOximeterCoachImageUrls,
   PULSE_OXIMETER_COACH_STEP_COUNT,
+  PULSE_VALUE_MARK,
+  PULSE_VALUE_MARK_STEP,
   type PulseOximeterMediaGender,
 } from '../../lib/pulseOximeterCoach';
 import { colors } from '../../theme/colors';
@@ -45,6 +47,28 @@ const SHEET_TOP_RADIUS = 28;
  * The frame is pulled up by this much so the illustration fills that edge.
  */
 const IMAGE_TOP_BLEED = 16;
+/** Matches the zoom on the coach illustration. */
+const IMAGE_ZOOM = 1.04;
+
+function pulseValueRingStyle(
+  frameWidth: number,
+  frameHeight: number,
+  mediaGender: PulseOximeterMediaGender,
+) {
+  const mark = PULSE_VALUE_MARK[mediaGender];
+  const scale =
+    Math.max(frameWidth / mark.imageWidth, frameHeight / mark.imageHeight) * IMAGE_ZOOM;
+  const offsetX = (frameWidth - mark.imageWidth * scale) / 2;
+  const offsetY = (frameHeight - mark.imageHeight * scale) / 2;
+  const height = mark.height * scale;
+  return {
+    left: offsetX + mark.x * scale,
+    top: offsetY + mark.y * scale,
+    width: mark.width * scale,
+    height,
+    borderRadius: height / 2,
+  };
+}
 
 /**
  * Bottom-sheet slider that replaces “Please wear your pulse oximeter”.
@@ -122,6 +146,13 @@ export function PulseOximeterCoachSheet({
                 contentFit="cover"
                 contentPosition="center"
                 accessibilityIgnoresInvertColors
+              />
+            ) : null}
+            {item === PULSE_VALUE_MARK_STEP ? (
+              <View
+                pointerEvents="none"
+                style={[styles.pulseRing, pulseValueRingStyle(width, imageHeight, mediaGender)]}
+                accessibilityLabel={t('daySession.oximeter6Body')}
               />
             ) : null}
             <Text style={styles.stepCount}>
@@ -250,7 +281,13 @@ const styles = StyleSheet.create({
   image: {
     width: '100%',
     height: '100%',
-    transform: [{ scale: 1.04 }],
+    transform: [{ scale: IMAGE_ZOOM }],
+  },
+  pulseRing: {
+    position: 'absolute',
+    borderWidth: 3,
+    borderColor: '#FF2D2D',
+    backgroundColor: 'transparent',
   },
   stepCount: {
     position: 'absolute',

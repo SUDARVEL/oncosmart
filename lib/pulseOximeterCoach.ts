@@ -25,6 +25,22 @@ export function getPulseOximeterCoachImageUrl(
   return getPublicStorageUrl(objectPath);
 }
 
+/**
+ * Step 6 shows SpO2 and pulse together. This box is the heart icon plus the
+ * pulse number in that step’s source image, so the guide can circle the value
+ * the person should enter.
+ */
+export const PULSE_VALUE_MARK: Record<
+  PulseOximeterMediaGender,
+  { imageWidth: number; imageHeight: number; x: number; y: number; width: number; height: number }
+> = {
+  male: { imageWidth: 457, imageHeight: 380, x: 228, y: 160, width: 128, height: 50 },
+  female: { imageWidth: 474, imageHeight: 386, x: 248, y: 160, width: 132, height: 52 },
+};
+
+/** Step whose illustration shows both readings. */
+export const PULSE_VALUE_MARK_STEP = 6;
+
 export function getPulseOximeterCoachImageUrls(
   mediaGender: PulseOximeterMediaGender,
 ): string[] {
