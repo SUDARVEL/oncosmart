@@ -110,34 +110,36 @@ function CoachTourFilmBody({ onClose }: { onClose: () => void }) {
   };
 
   return (
-    <View style={[styles.screen, { paddingTop: insets.top + 8, paddingBottom: Math.max(insets.bottom, 16) }]}>
-      <View style={styles.topRow}>
-        <Pressable
-          onPress={onBack}
-          hitSlop={10}
-          accessibilityRole="button"
-          style={styles.back}
-        >
-          <Ionicons name="chevron-back" size={26} color="#111111" />
-        </Pressable>
-        <View style={styles.bars}>
-          {COACH_FILM_CHAPTERS.map((item, bar) => (
-            <View
-              key={item.start}
-              style={[
-                styles.bar,
-                bar === index && styles.barCurrent,
-                { backgroundColor: bar <= index ? BAR : BAR_OFF },
-              ]}
-            />
-          ))}
+    <View style={[styles.screen, { paddingBottom: Math.max(insets.bottom, 16) }]}>
+      <View style={[styles.header, { paddingTop: insets.top + 18 }]}>
+        <View style={styles.topRow}>
+          <Pressable
+            onPress={onBack}
+            hitSlop={10}
+            accessibilityRole="button"
+            style={styles.back}
+          >
+            <Ionicons name="chevron-back" size={26} color="#111111" />
+          </Pressable>
+          <View style={styles.bars}>
+            {COACH_FILM_CHAPTERS.map((item, bar) => (
+              <View
+                key={item.start}
+                style={[
+                  styles.bar,
+                  bar === index && styles.barCurrent,
+                  { backgroundColor: bar <= index ? BAR : BAR_OFF },
+                ]}
+              />
+            ))}
+          </View>
+          <Pressable onPress={onClose} hitSlop={8} accessibilityRole="button">
+            <Text style={styles.skip}>{t('coach.skip')}</Text>
+          </Pressable>
         </View>
-        <Pressable onPress={onClose} hitSlop={8} accessibilityRole="button">
-          <Text style={styles.skip}>{t('coach.skip')}</Text>
-        </Pressable>
-      </View>
 
-      <Text style={styles.title}>{t(chapter.titleKey)}</Text>
+        <Text style={styles.title}>{t(chapter.titleKey)}</Text>
+      </View>
 
       <View style={styles.stage}>
         {url ? (
@@ -147,6 +149,7 @@ function CoachTourFilmBody({ onClose }: { onClose: () => void }) {
             contentFit="contain"
             nativeControls={false}
             allowsPictureInPicture={false}
+            surfaceType="textureView"
           />
         ) : null}
       </View>
@@ -170,6 +173,11 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#FFFFFF',
     paddingHorizontal: 20,
+  },
+  header: {
+    zIndex: 2,
+    backgroundColor: '#FFFFFF',
+    paddingBottom: 8,
   },
   topRow: {
     flexDirection: 'row',
@@ -203,7 +211,7 @@ const styles = StyleSheet.create({
     ...font('medium'),
   },
   title: {
-    marginTop: 28,
+    marginTop: 22,
     paddingHorizontal: 12,
     fontSize: 28,
     lineHeight: 36,
@@ -213,7 +221,7 @@ const styles = StyleSheet.create({
   },
   stage: {
     flex: 1,
-    marginTop: 22,
+    marginTop: 20,
     marginBottom: 18,
     borderRadius: 28,
     overflow: 'hidden',
