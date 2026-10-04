@@ -1,5 +1,5 @@
 import { useRouter } from 'expo-router';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   RefreshControl,
@@ -20,9 +20,7 @@ import { StreakCard } from '../components/growth/StreakCard';
 import { WorkoutsSection } from '../components/growth/WorkoutsSection';
 import { ScreenHeader } from '../components/ScreenHeader';
 import { useAndroidBack } from '../hooks/useAndroidBack';
-import { CoachMarkOverlay } from '../components/coach/CoachMarkOverlay';
 import { useCoachTour } from '../hooks/useCoachTour';
-import { COACH_TOUR_FINALE_STEP } from '../lib/coachTour';
 import { usePullToRefresh } from '../hooks/usePullToRefresh';
 import { getDisplayPainScore } from '../lib/getDisplayPainScore';
 import { goBackOr } from '../lib/navBack';
@@ -48,17 +46,10 @@ export default function GrowthScreen() {
   const [activeTab, setActiveTab] = useState<GrowthTab>('progress');
   const [showPauseReason, setShowPauseReason] = useState(false);
   const {
-    active: coachActive,
     step: coachStep,
-    stepIndex: coachStepIndex,
-    stepCount: coachStepCount,
-    rect: coachRect,
     registerHost,
     registerTarget,
-    skip: coachSkip,
-    coachTourStep,
   } = useCoachTour('growth');
-  const returnedHome = useRef(false);
   const { refreshing, onRefresh } = usePullToRefresh();
 
   const progressPaused = useAppStore((state) => state.progressPaused);
@@ -72,17 +63,6 @@ export default function GrowthScreen() {
       setActiveTab(coachStep.growthTab);
     }
   }, [coachStep?.growthTab]);
-
-  useEffect(() => {
-    if (coachTourStep == null) {
-      returnedHome.current = false;
-      return;
-    }
-    if (coachTourStep === COACH_TOUR_FINALE_STEP && !returnedHome.current) {
-      returnedHome.current = true;
-      router.back();
-    }
-  }, [coachTourStep, router]);
 
   const levelsCompleted = useAppStore((state) => state.levelsCompleted);
   const avatar = useAppStore((state) => state.avatar);
@@ -235,20 +215,6 @@ export default function GrowthScreen() {
       />
 
     </SafeAreaView>
-      {coachActive && coachStep ? (
-        <CoachMarkOverlay
-          title={t(coachStep.titleKey)}
-          body={t(coachStep.bodyKey)}
-          stepIndex={coachStepIndex}
-          stepCount={coachStepCount}
-          target={coachRect}
-          preferPlacement={coachStep.preferPlacement}
-          spotlight={coachStep.spotlight}
-          pad={coachStep.pad}
-          gesture={coachStep.gesture}
-          onSkip={coachSkip}
-        />
-      ) : null}
     </View>
   );
 }
