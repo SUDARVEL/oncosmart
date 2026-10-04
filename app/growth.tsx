@@ -11,7 +11,6 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { BottomTabBar } from '../components/BottomTabBar';
 import { ChatFab } from '../components/ChatFab';
-import { CoachMarkOverlay } from '../components/coach/CoachMarkOverlay';
 import { BadgesSection } from '../components/growth/BadgesSection';
 import { GrowthTabSwitch, type GrowthTab } from '../components/growth/GrowthTabSwitch';
 import { LevelsCard } from '../components/growth/LevelsCard';
@@ -46,17 +45,7 @@ export default function GrowthScreen() {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<GrowthTab>('progress');
   const [showPauseReason, setShowPauseReason] = useState(false);
-  const {
-    active: coachActive,
-    step: coachStep,
-    stepIndex: coachStepIndex,
-    stepCount: coachStepCount,
-    rect: coachRect,
-    registerHost,
-    registerTarget,
-    next: coachNext,
-    skip: coachSkip,
-  } = useCoachTour('growth');
+  const { step: coachStep, registerHost, registerTarget } = useCoachTour('growth');
   const { refreshing, onRefresh } = usePullToRefresh();
 
   const progressPaused = useAppStore((state) => state.progressPaused);
@@ -216,29 +205,6 @@ export default function GrowthScreen() {
       />
 
     </SafeAreaView>
-      {coachActive && coachStep ? (
-        <CoachMarkOverlay
-          visible
-          title={t(coachStep.titleKey)}
-          body={t(coachStep.bodyKey)}
-          icon={coachStep.icon}
-          stepIndex={coachStepIndex}
-          stepCount={coachStepCount}
-          target={coachRect}
-          preferPlacement={coachStep.preferPlacement}
-          spotlight={coachStep.spotlight}
-          pad={coachStep.pad}
-          onNext={() => {
-            if (coachStep.id === 'growth.workoutCard') {
-              coachNext();
-              router.replace('/home');
-              return;
-            }
-            coachNext();
-          }}
-          onSkip={coachSkip}
-        />
-      ) : null}
     </View>
   );
 }

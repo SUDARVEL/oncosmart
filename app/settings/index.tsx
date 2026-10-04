@@ -7,7 +7,6 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { BottomTabBar } from '../../components/BottomTabBar';
 import { ChatFab } from '../../components/ChatFab';
-import { CoachMarkOverlay } from '../../components/coach/CoachMarkOverlay';
 import { ScreenHeader } from '../../components/ScreenHeader';
 import {
   CancerTypeBottomSheet,
@@ -53,17 +52,7 @@ export default function SettingsScreen() {
   const [resetPathwayModalOpen, setResetPathwayModalOpen] = useState(false);
   const [pendingCancerSlug, setPendingCancerSlug] = useState<CancerTypeSlug | null>(null);
   const [pathwayChangeBusy, setPathwayChangeBusy] = useState(false);
-  const {
-    active: coachActive,
-    step: coachStep,
-    stepIndex: coachStepIndex,
-    stepCount: coachStepCount,
-    rect: coachRect,
-    registerHost,
-    registerTarget,
-    next: coachNext,
-    skip: coachSkip,
-  } = useCoachTour('settings');
+  const { registerHost, registerTarget } = useCoachTour('settings');
   const { refreshing, onRefresh } = usePullToRefresh();
 
   const selectedLanguage: AppLanguage = language === 'ta' ? 'ta' : 'en';
@@ -306,22 +295,6 @@ export default function SettingsScreen() {
       />
 
     </SafeAreaView>
-      {coachActive && coachStep ? (
-        <CoachMarkOverlay
-          visible
-          title={t(coachStep.titleKey)}
-          body={t(coachStep.bodyKey)}
-          icon={coachStep.icon}
-          stepIndex={coachStepIndex}
-          stepCount={coachStepCount}
-          target={coachRect}
-          preferPlacement={coachStep.preferPlacement}
-          spotlight={coachStep.spotlight}
-          pad={coachStep.pad}
-          onNext={coachNext}
-          onSkip={coachSkip}
-        />
-      ) : null}
     </View>
   );
 }

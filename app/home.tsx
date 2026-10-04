@@ -19,7 +19,6 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { AdminTestingTools } from "../components/admin/AdminTestingTools";
 import { BottomTabBar } from "../components/BottomTabBar";
 import { ChatFab } from "../components/ChatFab";
-import { CoachMarkOverlay } from "../components/coach/CoachMarkOverlay";
 import { ExerciseVideoBanner } from "../components/ExerciseVideoBanner";
 import { ResumeProgressModal } from "../components/growth/ResumeProgressModal";
 import { HomeAvatarButton } from "../components/home/HomeAvatarButton";
@@ -102,17 +101,7 @@ export default function HomeScreen() {
   const [activeQuote, setActiveQuote] = useState(0);
   const [now, setNow] = useState(() => Date.now());
   const scrollRef = useRef<ScrollView>(null);
-  const {
-    active: coachActive,
-    step: coachStep,
-    stepIndex: coachStepIndex,
-    stepCount: coachStepCount,
-    rect: coachRect,
-    registerHost,
-    registerTarget,
-    next: coachNext,
-    skip: coachSkip,
-  } = useCoachTour("home");
+  const { registerHost, registerTarget } = useCoachTour("home");
   const { refreshing, onRefresh } = usePullToRefresh();
 
   // After logout, never keep showing a guest Home if the stack wasn't cleared.
@@ -202,20 +191,6 @@ export default function HomeScreen() {
         `/exercise/pain-score?level=${primarySession.level}&day=${primarySession.dayInLevel}`,
       );
     });
-  };
-
-  const handleCoachNext = () => {
-    if (coachStep?.id === "home.growthTab") {
-      coachNext();
-      router.push("/growth");
-      return;
-    }
-    if (coachStep?.id === "home.settingsTab") {
-      coachNext();
-      router.push("/settings");
-      return;
-    }
-    coachNext();
   };
 
   return (
@@ -359,23 +334,6 @@ export default function HomeScreen() {
       />
 
     </SafeAreaView>
-      {/* Outside SafeArea so measureInWindow coords match the spotlight. */}
-      {coachActive && coachStep ? (
-        <CoachMarkOverlay
-          visible
-          title={t(coachStep.titleKey)}
-          body={t(coachStep.bodyKey)}
-          icon={coachStep.icon}
-          stepIndex={coachStepIndex}
-          stepCount={coachStepCount}
-          target={coachRect}
-          preferPlacement={coachStep.preferPlacement}
-          spotlight={coachStep.spotlight}
-          pad={coachStep.pad}
-          onNext={handleCoachNext}
-          onSkip={coachSkip}
-        />
-      ) : null}
     </View>
   );
 }

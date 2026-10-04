@@ -27,6 +27,7 @@ import { ActivityIndicator, Platform, StyleSheet, View } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { AdminAlertBridge } from '../components/AdminAlertBridge';
+import { CoachMarkVideoGate } from '../components/coach/CoachMarkVideoGate';
 import { AppUpdateBridge } from '../components/AppUpdateBridge';
 import { CloudSyncBridge } from '../components/CloudSyncBridge';
 import { PathwayVideoBridge } from '../components/PathwayVideoBridge';
@@ -117,6 +118,7 @@ export default function RootLayout() {
       <PathwayVideoBridge />
       <AdminAlertBridge />
       <AppUpdateBridge />
+      <CoachMarkVideoGate />
       <Stack screenOptions={{ headerShown: false, animation: 'fade' }}>
         <Stack.Screen name="index" />
         <Stack.Screen name="language" />
