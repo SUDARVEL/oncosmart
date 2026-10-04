@@ -1,5 +1,5 @@
 import { useRouter } from 'expo-router';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   RefreshControl,
@@ -22,6 +22,7 @@ import { ScreenHeader } from '../components/ScreenHeader';
 import { useAndroidBack } from '../hooks/useAndroidBack';
 import { CoachMarkOverlay } from '../components/coach/CoachMarkOverlay';
 import { useCoachTour } from '../hooks/useCoachTour';
+import { COACH_TOUR_FINALE_STEP } from '../lib/coachTour';
 import { usePullToRefresh } from '../hooks/usePullToRefresh';
 import { getDisplayPainScore } from '../lib/getDisplayPainScore';
 import { goBackOr } from '../lib/navBack';
@@ -54,8 +55,10 @@ export default function GrowthScreen() {
     rect: coachRect,
     registerHost,
     registerTarget,
-    next: coachNext,
+    skip: coachSkip,
+    coachTourStep,
   } = useCoachTour('growth');
+  const returnedHome = useRef(false);
   const { refreshing, onRefresh } = usePullToRefresh();
 
   const progressPaused = useAppStore((state) => state.progressPaused);
@@ -69,6 +72,17 @@ export default function GrowthScreen() {
       setActiveTab(coachStep.growthTab);
     }
   }, [coachStep?.growthTab]);
+
+  useEffect(() => {
+    if (coachTourStep == null) {
+      returnedHome.current = false;
+      return;
+    }
+    if (coachTourStep === COACH_TOUR_FINALE_STEP && !returnedHome.current) {
+      returnedHome.current = true;
+      router.back();
+    }
+  }, [coachTourStep, router]);
 
   const levelsCompleted = useAppStore((state) => state.levelsCompleted);
   const avatar = useAppStore((state) => state.avatar);
@@ -156,13 +170,16 @@ export default function GrowthScreen() {
           <GrowthTabSwitch
             activeTab={activeTab}
             onTabChange={setActiveTab}
-            progressAnchorRef={(node) => registerTarget('growth.progress', node)}
             workoutsAnchorRef={(node) => registerTarget('growth.workouts', node)}
           />
         </View>
 
         {activeTab === 'progress' ? (
           <View style={styles.cards}>
+            <View
+              ref={(node) => registerTarget('growth.progress', node)}
+              collapsable={false}
+            >
             <LevelsCard
               completed={levelsCompleted}
               total={LEVELS_TOTAL}
@@ -173,6 +190,7 @@ export default function GrowthScreen() {
               onResume={handleResumeProgress}
               pauseAnchorRef={(node) => registerTarget('growth.pauseProgress', node)}
             />
+            </View>
             <StreakCard
               paused={progressPaused}
               completedByWeekday={weekdayStreak.completed}
@@ -197,6 +215,7 @@ export default function GrowthScreen() {
 
       <ChatFab bottom={88} />
 
+      <View ref={(node) => registerTarget('nav.tabs', node)} collapsable={false}>
       <BottomTabBar
         activeTab="growth"
         onTabPress={handleTabPress}
@@ -206,6 +225,7 @@ export default function GrowthScreen() {
           settings: t('home.tabSettings'),
         }}
       />
+      </View>
 
       <PauseReasonModal
         visible={showPauseReason}
@@ -217,24 +237,16 @@ export default function GrowthScreen() {
     </SafeAreaView>
       {coachActive && coachStep ? (
         <CoachMarkOverlay
-          visible
           title={t(coachStep.titleKey)}
           body={t(coachStep.bodyKey)}
-          icon={coachStep.icon}
           stepIndex={coachStepIndex}
           stepCount={coachStepCount}
           target={coachRect}
           preferPlacement={coachStep.preferPlacement}
           spotlight={coachStep.spotlight}
           pad={coachStep.pad}
-          onNext={() => {
-            if (coachStep.id === 'growth.workouts') {
-              coachNext();
-              router.push('/settings');
-              return;
-            }
-            coachNext();
-          }}
+          gesture={coachStep.gesture}
+          onSkip={coachSkip}
         />
       ) : null}
     </View>

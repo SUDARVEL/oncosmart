@@ -27,6 +27,7 @@ import { PressableScale } from "../components/PressableScale";
 import { useAndroidBack } from "../hooks/useAndroidBack";
 import { CoachMarkOverlay } from "../components/coach/CoachMarkOverlay";
 import { useCoachTour } from "../hooks/useCoachTour";
+import { COACH_TOUR_STEPS } from "../lib/coachTour";
 import { useExercisePauseGuard } from "../hooks/useExercisePauseGuard";
 import { usePullToRefresh } from "../hooks/usePullToRefresh";
 import { getCurrentSession } from "../lib/auth";
@@ -102,6 +103,8 @@ export default function HomeScreen() {
   const [activeQuote, setActiveQuote] = useState(0);
   const [now, setNow] = useState(() => Date.now());
   const scrollRef = useRef<ScrollView>(null);
+  const pageScrollRef = useRef<ScrollView>(null);
+  const sessionOffset = useRef(0);
   const {
     active: coachActive,
     step: coachStep,
@@ -110,9 +113,40 @@ export default function HomeScreen() {
     rect: coachRect,
     registerHost,
     registerTarget,
-    next: coachNext,
+    skip: coachSkip,
+    finale: coachFinale,
+    coachTourStep,
   } = useCoachTour("home");
   const { refreshing, onRefresh } = usePullToRefresh();
+  const sentToGrowth = useRef(false);
+
+  useEffect(() => {
+    if (coachTourStep == null) {
+      sentToGrowth.current = false;
+      return;
+    }
+    const beat = COACH_TOUR_STEPS[coachTourStep];
+    if (beat?.screen === "growth" && !sentToGrowth.current) {
+      sentToGrowth.current = true;
+      router.push("/growth");
+    }
+  }, [coachTourStep, router]);
+
+  useEffect(() => {
+    if (coachFinale) {
+      pageScrollRef.current?.scrollTo({ y: 0, animated: true });
+      return;
+    }
+    if (coachStep?.id === "home.progress") {
+      pageScrollRef.current?.scrollTo({ y: 0, animated: true });
+    }
+    if (coachStep?.id === "home.session") {
+      pageScrollRef.current?.scrollTo({
+        y: Math.max(0, sessionOffset.current - 16),
+        animated: true,
+      });
+    }
+  }, [coachFinale, coachStep?.id]);
 
   // After logout, never keep showing a guest Home if the stack wasn't cleared.
   useEffect(() => {
@@ -211,6 +245,7 @@ export default function HomeScreen() {
     >
     <SafeAreaView style={styles.screen} edges={["top"]}>
       <ScrollView
+        ref={pageScrollRef}
         style={styles.scroll}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
@@ -296,6 +331,9 @@ export default function HomeScreen() {
           ref={(node) => registerTarget("home.session", node)}
           collapsable={false}
           style={styles.sessionSection}
+          onLayout={(event) => {
+            sessionOffset.current = event.nativeEvent.layout.y;
+          }}
         >
           <Text style={styles.sessionTitle}>{t("home.sessionTitle")}</Text>
 
@@ -344,22 +382,19 @@ export default function HomeScreen() {
       />
 
     </SafeAreaView>
-      {coachActive && coachStep ? (
+      {(coachActive && coachStep) || coachFinale ? (
         <CoachMarkOverlay
-          visible
-          title={t(coachStep.titleKey)}
-          body={t(coachStep.bodyKey)}
-          icon={coachStep.icon}
-          stepIndex={coachStepIndex}
+          title={t(coachFinale ? "coach.tourAllSetTitle" : coachStep!.titleKey)}
+          body={t(coachFinale ? "coach.tourAllSetBody" : coachStep!.bodyKey)}
+          stepIndex={coachFinale ? coachStepCount : coachStepIndex}
           stepCount={coachStepCount}
-          target={coachRect}
-          preferPlacement={coachStep.preferPlacement}
-          spotlight={coachStep.spotlight}
-          pad={coachStep.pad}
-          onNext={() => {
-            coachNext();
-            router.push("/growth");
-          }}
+          target={coachFinale ? null : coachRect}
+          preferPlacement={coachFinale ? "below" : coachStep!.preferPlacement}
+          spotlight={coachFinale ? "rounded" : coachStep!.spotlight}
+          pad={coachFinale ? 8 : coachStep!.pad}
+          gesture={coachFinale ? "none" : coachStep!.gesture}
+          finale={coachFinale}
+          onSkip={coachSkip}
         />
       ) : null}
     </View>

@@ -247,6 +247,7 @@ export function useCoachTour(screen: CoachTourScreen) {
     registerTarget,
     next,
     skip: finish,
+    finale: coachTourStep === COACH_TOUR_FINALE_STEP,
     coachTourStep,
   };
 }
