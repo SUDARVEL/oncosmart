@@ -63,6 +63,7 @@ function CoachTourFilmBody({ onClose }: { onClose: () => void }) {
   const [trackWidths, setTrackWidths] = useState<number[]>([]);
   const indexRef = useRef(0);
   const seekingRef = useRef(false);
+  const heldRef = useRef(false);
   const last = COACH_FILM_CHAPTERS.length - 1;
   const chapter = COACH_FILM_CHAPTERS[index] ?? COACH_FILM_CHAPTERS[0];
 
@@ -82,11 +83,32 @@ function CoachTourFilmBody({ onClose }: { onClose: () => void }) {
     player.muted = true;
     player.timeUpdateEventInterval = 0.05;
 
+    const holdClosingFrame = (length: number) => {
+      if (heldRef.current) return;
+      heldRef.current = true;
+      // The recording fades the closing line out in the last half-second.
+      const holdAt = Math.max(0, length - 1);
+      try {
+        player.pause();
+        player.currentTime = holdAt;
+      } catch {
+        // The player can already be sitting on the faded end frame.
+      }
+      setPlayed(length);
+      const next = coachFilmChapterIndex(holdAt);
+      setIndex((current) => (current === next ? current : next));
+    };
+
     const applyTime = (time: number) => {
+      if (heldRef.current) return;
       if (!Number.isFinite(time) || time < 0) return;
       const length = player.duration;
       if (Number.isFinite(length) && length > 1) {
         setDuration((current) => (Math.abs(current - length) > 0.2 ? length : current));
+        if (time >= length - 0.55) {
+          holdClosingFrame(length);
+          return;
+        }
       }
       if (seekingRef.current) {
         const target = COACH_FILM_CHAPTERS[indexRef.current]?.start ?? 0;
@@ -106,10 +128,14 @@ function CoachTourFilmBody({ onClose }: { onClose: () => void }) {
     });
     const loadSub = player.addListener('sourceLoad', ({ duration: nextDuration }) => {
       if (Number.isFinite(nextDuration) && nextDuration > 1) setDuration(nextDuration);
-      player.play();
+      if (!heldRef.current) player.play();
     });
     const statusSub = player.addListener('statusChange', ({ status }) => {
-      if (status === 'readyToPlay') player.play();
+      if (status === 'readyToPlay' && !heldRef.current) player.play();
+    });
+    const endSub = player.addListener('playToEnd', () => {
+      const length = player.duration;
+      if (Number.isFinite(length) && length > 1) holdClosingFrame(length);
     });
     const clock = setInterval(() => {
       try {
@@ -124,12 +150,14 @@ function CoachTourFilmBody({ onClose }: { onClose: () => void }) {
       timeSub.remove();
       loadSub.remove();
       statusSub.remove();
+      endSub.remove();
     };
   }, [player]);
 
   const goTo = (nextIndex: number) => {
     const clamped = Math.max(0, Math.min(last, nextIndex));
     seekingRef.current = true;
+    heldRef.current = false;
     indexRef.current = clamped;
     setIndex(clamped);
     const start = COACH_FILM_CHAPTERS[clamped]?.start ?? 0;
