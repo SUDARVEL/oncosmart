@@ -52,6 +52,8 @@ function CoachTourFilmBody({ onClose }: { onClose: () => void }) {
   const insets = useSafeAreaInsets();
   const url = getCoachMarkVideoUrl();
   const [index, setIndex] = useState(0);
+  const [played, setPlayed] = useState(0);
+  const [duration, setDuration] = useState(152.37);
   const indexRef = useRef(0);
   const seekingRef = useRef(false);
   const last = COACH_FILM_CHAPTERS.length - 1;
@@ -60,7 +62,7 @@ function CoachTourFilmBody({ onClose }: { onClose: () => void }) {
   const player = useVideoPlayer(url, (instance) => {
     instance.loop = false;
     instance.muted = true;
-    instance.timeUpdateEventInterval = 0.25;
+    instance.timeUpdateEventInterval = 0.1;
     instance.play();
   });
 
@@ -70,16 +72,21 @@ function CoachTourFilmBody({ onClose }: { onClose: () => void }) {
 
   useEffect(() => {
     const timeSub = player.addListener('timeUpdate', ({ currentTime }) => {
+      setPlayed(currentTime);
       if (seekingRef.current) {
         const target = COACH_FILM_CHAPTERS[indexRef.current]?.start ?? 0;
         if (Math.abs(currentTime - target) < 0.75) seekingRef.current = false;
-        return;
+        else return;
       }
       const next = coachFilmChapterIndex(currentTime);
       setIndex((current) => (current === next ? current : next));
     });
+    const loadSub = player.addListener('sourceLoad', ({ duration: nextDuration }) => {
+      if (Number.isFinite(nextDuration) && nextDuration > 1) setDuration(nextDuration);
+    });
     return () => {
       timeSub.remove();
+      loadSub.remove();
     };
   }, [player]);
 
@@ -89,6 +96,7 @@ function CoachTourFilmBody({ onClose }: { onClose: () => void }) {
     indexRef.current = clamped;
     setIndex(clamped);
     const start = COACH_FILM_CHAPTERS[clamped]?.start ?? 0;
+    setPlayed(start);
     player.currentTime = start;
     player.play();
   };
@@ -122,16 +130,17 @@ function CoachTourFilmBody({ onClose }: { onClose: () => void }) {
             <Ionicons name="chevron-back" size={26} color="#111111" />
           </Pressable>
           <View style={styles.bars}>
-            {COACH_FILM_CHAPTERS.map((item, bar) => (
-              <View
-                key={item.start}
-                style={[
-                  styles.bar,
-                  bar === index && styles.barCurrent,
-                  { backgroundColor: bar <= index ? BAR : BAR_OFF },
-                ]}
-              />
-            ))}
+            {COACH_FILM_CHAPTERS.map((item, bar) => {
+              const start = item.start;
+              const end = COACH_FILM_CHAPTERS[bar + 1]?.start ?? duration;
+              const span = Math.max(0.01, end - start);
+              const fill = played >= end ? 1 : played <= start ? 0 : (played - start) / span;
+              return (
+                <View key={item.start} style={[styles.bar, bar === index && styles.barCurrent]}>
+                  <View style={[styles.barFill, { width: `${Math.max(0, Math.min(1, fill)) * 100}%` }]} />
+                </View>
+              );
+            })}
           </View>
           <Pressable onPress={onClose} hitSlop={8} accessibilityRole="button">
             <Text style={styles.skip}>{t('coach.skip')}</Text>
@@ -200,6 +209,13 @@ const styles = StyleSheet.create({
     flex: 1,
     height: 4,
     borderRadius: 2,
+    backgroundColor: BAR_OFF,
+    overflow: 'hidden',
+  },
+  barFill: {
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: BAR,
   },
   barCurrent: {
     flex: 1.7,
