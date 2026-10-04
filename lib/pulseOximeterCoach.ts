@@ -13,16 +13,40 @@ export type PulseOximeterMediaGender = 'male' | 'female';
  * Female and male each have their own seven frames in Supabase `Coachmarks`.
  * Breast, thorax, abdomen, and head & neck all use this gender set.
  */
+/** Step 5 is the seated check. These files show the device on the correct hand. */
+const STEP_HAND_IMAGE: Record<PulseOximeterMediaGender, string> = {
+  female: `${FEMALE_FOLDER}/Mirrored Pulse Oximeter Check.png`,
+  male: `${MALE_FOLDER}/Opposite-Hand Pulse Oximeter Check.png`,
+};
+
+const MANUAL_PULSE_IMAGE: Record<PulseOximeterMediaGender, string> = {
+  female: `${FEMALE_FOLDER}/Manual Pulse Check_ Radial Artery Method Female.png`,
+  male: `${MALE_FOLDER}/Manual Pulse Check Guide Men.png`,
+};
+
+/** The seated “wait for the reading” frame. */
+export const PULSE_OXIMETER_HAND_STEP = 5;
+
 export function getPulseOximeterCoachImageUrl(
   step: number,
   mediaGender: PulseOximeterMediaGender,
 ): string | null {
   if (step < 1 || step > PULSE_OXIMETER_COACH_STEP_COUNT) return null;
+  if (step === PULSE_OXIMETER_HAND_STEP) {
+    return getPublicStorageUrl(STEP_HAND_IMAGE[mediaGender]);
+  }
   const objectPath =
     mediaGender === 'female'
       ? `${FEMALE_FOLDER}/pulse_oximeter_step_${step}.png`
       : `${MALE_FOLDER}/male_pulse_oximeter_step_${step}.png`;
   return getPublicStorageUrl(objectPath);
+}
+
+/** Single radial-artery poster for the manual pulse method. */
+export function getManualPulseGuideUrl(
+  mediaGender: PulseOximeterMediaGender,
+): string | null {
+  return getPublicStorageUrl(MANUAL_PULSE_IMAGE[mediaGender]);
 }
 
 /**

@@ -16,6 +16,7 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import {
+  getManualPulseGuideUrl,
   getPulseOximeterCoachImageUrl,
   getPulseOximeterCoachImageUrls,
   PULSE_OXIMETER_COACH_STEP_COUNT,
@@ -24,7 +25,7 @@ import {
   type PulseOximeterMediaGender,
 } from '../../lib/pulseOximeterCoach';
 import { colors } from '../../theme/colors';
-import { font } from '../../theme/fonts';
+import { uiText } from '../../theme/typography';
 import { CachedMediaImage } from '../CachedMediaImage';
 
 type Props = {
@@ -38,17 +39,15 @@ type Props = {
   onDismiss: () => void;
 };
 
+type MeasureMethod = 'manual' | 'oximeter';
+
 const STEPS = Array.from({ length: PULSE_OXIMETER_COACH_STEP_COUNT }, (_, index) => index + 1);
 /** Title (2 lines) + body (3 lines) so Skip / Next stay put while copy length changes. */
-const COPY_BLOCK_HEIGHT = 132;
-const SHEET_TOP_RADIUS = 28;
-/**
- * Android draws a white lip inside the sheet's top radius, above the photo.
- * The frame is pulled up by this much so the illustration fills that edge.
- */
-const IMAGE_TOP_BLEED = 16;
+const COPY_BLOCK_HEIGHT = 124;
 /** Matches the zoom on the coach illustration. */
 const IMAGE_ZOOM = 1.04;
+/** Manual poster is 941×1672. */
+const MANUAL_ASPECT = 1672 / 941;
 
 function pulseValueRingStyle(
   frameWidth: number,
@@ -71,9 +70,8 @@ function pulseValueRingStyle(
 }
 
 /**
- * Bottom-sheet slider that replaces “Please wear your pulse oximeter”.
- * Layout follows the seven-step Measure Oxygen Level coach mark:
- * illustration, step count, title, body, dots, Skip, and Next / Done.
+ * Bottom sheet for checking pulse before a session.
+ * Manual method is one fitted poster. Oximeter method is the seven-step guide.
  */
 export function PulseOximeterCoachSheet({
   visible,
@@ -86,15 +84,28 @@ export function PulseOximeterCoachSheet({
   const insets = useSafeAreaInsets();
   const { width, height } = useWindowDimensions();
   const listRef = useRef<FlatList<number>>(null);
+  const indexRef = useRef(0);
   const [index, setIndex] = useState(0);
+  const [method, setMethod] = useState<MeasureMethod>('oximeter');
 
-  const imageHeight = Math.min(Math.round(width / 1.12), Math.round(height * 0.42));
+  const imageHeight = Math.min(Math.round(width / 1.15), Math.round(height * 0.36));
+  const manualWidth = width - 32;
+  const manualHeight = Math.min(
+    Math.round(manualWidth * MANUAL_ASPECT),
+    Math.round(height * 0.5),
+  );
+  indexRef.current = index;
   const isLast = index >= PULSE_OXIMETER_COACH_STEP_COUNT - 1;
+  const finishLabel = method === 'manual' || isLast;
 
   useEffect(() => {
     if (!visible) return;
     setIndex(0);
-    const urls = getPulseOximeterCoachImageUrls(mediaGender);
+    setMethod('oximeter');
+    const urls = [
+      ...getPulseOximeterCoachImageUrls(mediaGender),
+      getManualPulseGuideUrl(mediaGender),
+    ].filter((url): url is string => Boolean(url));
     if (urls.length > 0) void Image.prefetch(urls);
     const frame = requestAnimationFrame(() => {
       listRef.current?.scrollToOffset({ offset: 0, animated: false });
@@ -126,11 +137,26 @@ export function PulseOximeterCoachSheet({
   };
 
   const handleNext = () => {
-    if (isLast) {
+    if (method === 'manual' || isLast) {
       onDone();
       return;
     }
     goTo(index + 1);
+  };
+
+  useEffect(() => {
+    if (!visible || method !== 'oximeter') return;
+    const frame = requestAnimationFrame(() => {
+      listRef.current?.scrollToOffset({
+        offset: width * indexRef.current,
+        animated: false,
+      });
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [method, visible, width]);
+
+  const selectMethod = (next: MeasureMethod) => {
+    setMethod(next);
   };
 
   const renderItem = useCallback(
@@ -155,9 +181,11 @@ export function PulseOximeterCoachSheet({
                 accessibilityLabel={t('daySession.oximeter6Body')}
               />
             ) : null}
-            <Text style={styles.stepCount}>
-              {t('coach.stepOf', { current: item, total: PULSE_OXIMETER_COACH_STEP_COUNT })}
-            </Text>
+            <View style={styles.stepPill}>
+              <Text style={styles.stepCount}>
+                {t('coach.stepOf', { current: item, total: PULSE_OXIMETER_COACH_STEP_COUNT })}
+              </Text>
+            </View>
           </View>
           <View style={styles.copy}>
             <Text style={styles.title} numberOfLines={2} adjustsFontSizeToFit minimumFontScale={0.8}>
@@ -173,6 +201,8 @@ export function PulseOximeterCoachSheet({
     [imageHeight, mediaGender, t, width],
   );
 
+  const manualUri = getManualPulseGuideUrl(mediaGender);
+
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onDismiss}>
       <View style={styles.root}>
@@ -182,49 +212,101 @@ export function PulseOximeterCoachSheet({
           accessibilityRole="button"
           accessibilityLabel={t('daySession.pulseCancel')}
         />
-        <View style={[styles.sheet, { paddingBottom: Math.max(insets.bottom, 12) }]}>
-          <FlatList
-            removeClippedSubviews={false}
-            ref={listRef}
-            data={STEPS}
-            keyExtractor={(step) => String(step)}
-            renderItem={renderItem}
-            horizontal
-            pagingEnabled
-            bounces={false}
-            showsHorizontalScrollIndicator={false}
-            decelerationRate="fast"
-            snapToInterval={width}
-            snapToAlignment="start"
-            disableIntervalMomentum
-            getItemLayout={(_, itemIndex) => ({
-              length: width,
-              offset: width * itemIndex,
-              index: itemIndex,
+        <View style={[styles.sheet, { paddingBottom: Math.max(insets.bottom, 16) }]}>
+          <View style={styles.handle} />
+          <Text style={styles.sheetTitle}>{t('daySession.pulseCheckTitle')}</Text>
+
+          <View style={styles.tabs}>
+            {(['manual', 'oximeter'] as const).map((id) => {
+              const selected = method === id;
+              const label =
+                id === 'manual' ? t('daySession.methodManual') : t('daySession.methodOximeter');
+              return (
+                <Pressable
+                  key={id}
+                  style={[styles.tab, selected && styles.tabSelected]}
+                  onPress={() => selectMethod(id)}
+                  accessibilityRole="button"
+                  accessibilityState={{ selected }}
+                >
+                  <Text
+                    style={[styles.tabText, selected && styles.tabTextSelected]}
+                    numberOfLines={1}
+                    adjustsFontSizeToFit
+                    minimumFontScale={0.75}
+                  >
+                    {label}
+                  </Text>
+                </Pressable>
+              );
             })}
-            onMomentumScrollEnd={handleScrollEnd}
-            onViewableItemsChanged={onViewableItemsChanged}
-            viewabilityConfig={viewabilityConfig}
-            initialNumToRender={2}
-            windowSize={3}
-            onScrollToIndexFailed={({ index: failed }) => {
-              requestAnimationFrame(() => {
-                listRef.current?.scrollToIndex({ index: failed, animated: false });
-              });
-            }}
-            style={{
-              height: imageHeight + COPY_BLOCK_HEIGHT,
-              marginTop: -IMAGE_TOP_BLEED,
-            }}
-          />
+          </View>
+
+          {method === 'oximeter' ? (
+            <FlatList
+              removeClippedSubviews={false}
+              ref={listRef}
+              data={STEPS}
+              keyExtractor={(step) => String(step)}
+              renderItem={renderItem}
+              horizontal
+              pagingEnabled
+              bounces={false}
+              showsHorizontalScrollIndicator={false}
+              decelerationRate="fast"
+              snapToInterval={width}
+              snapToAlignment="start"
+              disableIntervalMomentum
+              getItemLayout={(_, itemIndex) => ({
+                length: width,
+                offset: width * itemIndex,
+                index: itemIndex,
+              })}
+              onMomentumScrollEnd={handleScrollEnd}
+              onViewableItemsChanged={onViewableItemsChanged}
+              viewabilityConfig={viewabilityConfig}
+              initialNumToRender={2}
+              windowSize={3}
+              onScrollToIndexFailed={({ index: failed }) => {
+                requestAnimationFrame(() => {
+                  listRef.current?.scrollToIndex({ index: failed, animated: false });
+                });
+              }}
+              style={{ height: imageHeight + COPY_BLOCK_HEIGHT }}
+            />
+          ) : (
+            <View style={styles.manualWrap}>
+              <View style={[styles.manualFrame, { width: manualWidth, height: manualHeight }]}>
+                {manualUri ? (
+                  <CachedMediaImage
+                    source={{ uri: manualUri }}
+                    style={styles.manualImage}
+                    contentFit="contain"
+                    contentPosition="center"
+                    accessibilityIgnoresInvertColors
+                  />
+                ) : null}
+              </View>
+              <View style={styles.manualCopy}>
+                <Text style={styles.title} numberOfLines={2}>
+                  {t('daySession.manualTitle')}
+                </Text>
+                <Text style={styles.body} numberOfLines={3}>
+                  {t('daySession.manualBody')}
+                </Text>
+              </View>
+            </View>
+          )}
 
           <View style={styles.dots}>
-            {STEPS.map((step, stepIndex) => (
-              <View
-                key={step}
-                style={[styles.dot, stepIndex === index && styles.dotActive]}
-              />
-            ))}
+            {method === 'oximeter'
+              ? STEPS.map((step, stepIndex) => (
+                  <View
+                    key={step}
+                    style={[styles.dot, stepIndex === index && styles.dotActive]}
+                  />
+                ))
+              : null}
           </View>
 
           <View style={styles.actions}>
@@ -240,9 +322,9 @@ export function PulseOximeterCoachSheet({
               onPress={handleNext}
               style={styles.nextButton}
               accessibilityRole="button"
-              accessibilityLabel={isLast ? t('coach.done') : t('coach.next')}
+              accessibilityLabel={finishLabel ? t('coach.done') : t('coach.next')}
             >
-              <Text style={styles.nextText}>{isLast ? t('coach.done') : t('coach.next')}</Text>
+              <Text style={styles.nextText}>{finishLabel ? t('coach.done') : t('coach.next')}</Text>
             </Pressable>
           </View>
         </View>
@@ -258,24 +340,74 @@ const styles = StyleSheet.create({
   },
   scrim: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(17, 24, 39, 0.45)',
+    backgroundColor: 'rgba(17, 24, 39, 0.5)',
   },
   sheet: {
     backgroundColor: '#FFFFFF',
-    borderTopLeftRadius: SHEET_TOP_RADIUS,
-    borderTopRightRadius: SHEET_TOP_RADIUS,
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
     overflow: 'hidden',
     shadowColor: '#111827',
-    shadowOffset: { width: 0, height: -4 },
-    shadowOpacity: 0.16,
-    shadowRadius: 16,
-    elevation: 12,
+    shadowOffset: { width: 0, height: -8 },
+    shadowOpacity: 0.12,
+    shadowRadius: 24,
+    elevation: 16,
+  },
+  handle: {
+    alignSelf: 'center',
+    width: 40,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: '#E5E7EB',
+    marginTop: 10,
+  },
+  sheetTitle: {
+    marginTop: 14,
+    paddingHorizontal: 20,
+    ...uiText(18, 'semiBold'),
+    color: '#111827',
+  },
+  tabs: {
+    flexDirection: 'row',
+    alignItems: 'stretch',
+    marginHorizontal: 16,
+    marginTop: 14,
+    marginBottom: 16,
+    padding: 4,
+    gap: 4,
+    borderRadius: 14,
+    backgroundColor: '#F3F4F6',
+  },
+  tab: {
+    flex: 1,
+    minWidth: 0,
+    minHeight: 40,
+    borderRadius: 11,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+  },
+  tabSelected: {
+    backgroundColor: '#FFFFFF',
+    shadowColor: '#111827',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.08,
+    shadowRadius: 3,
+    elevation: 2,
+  },
+  tabText: {
+    ...uiText(14, 'medium'),
+    color: '#6B7280',
+    textAlign: 'center',
+  },
+  tabTextSelected: {
+    ...uiText(14, 'semiBold'),
+    color: colors.navy,
   },
   imageFrame: {
     width: '100%',
-    backgroundColor: '#AEB0B2',
-    borderTopLeftRadius: SHEET_TOP_RADIUS,
-    borderTopRightRadius: SHEET_TOP_RADIUS,
+    backgroundColor: '#E6E7EA',
     overflow: 'hidden',
   },
   image: {
@@ -289,14 +421,18 @@ const styles = StyleSheet.create({
     borderColor: '#FF2D2D',
     backgroundColor: 'transparent',
   },
-  stepCount: {
+  stepPill: {
     position: 'absolute',
-    top: 14 + IMAGE_TOP_BLEED,
-    left: 16,
-    fontSize: 13,
-    lineHeight: 16,
+    top: 12,
+    left: 12,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 999,
+    backgroundColor: 'rgba(255, 255, 255, 0.94)',
+  },
+  stepCount: {
+    ...uiText(12, 'semiBold'),
     color: '#374151',
-    ...font('medium'),
   },
   copy: {
     height: COPY_BLOCK_HEIGHT,
@@ -304,41 +440,61 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
   },
   title: {
-    fontSize: 20,
-    lineHeight: 26,
+    ...uiText(18, 'semiBold'),
     color: '#111827',
-    ...font('bold'),
   },
   body: {
-    marginTop: 4,
-    fontSize: 14,
-    lineHeight: 20,
-    color: '#6B7280',
-    ...font('regular'),
+    marginTop: 6,
+    ...uiText(14, 'regular'),
+    color: '#4B5563',
+  },
+  manualWrap: {
+    alignItems: 'center',
+    paddingHorizontal: 16,
+  },
+  manualFrame: {
+    borderRadius: 16,
+    overflow: 'hidden',
+    backgroundColor: '#E6E7EA',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  manualImage: {
+    width: '100%',
+    height: '100%',
+  },
+  manualCopy: {
+    alignSelf: 'stretch',
+    minHeight: 92,
+    paddingTop: 14,
+    paddingHorizontal: 4,
   },
   dots: {
-    height: 24,
+    height: 22,
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    gap: 8,
+    gap: 7,
   },
   dot: {
-    width: 8,
-    height: 8,
+    width: 7,
+    height: 7,
     borderRadius: 4,
-    backgroundColor: '#D1D5DB',
+    backgroundColor: '#E5E7EB',
   },
   dotActive: {
-    backgroundColor: colors.buttonPrimary,
+    width: 18,
+    backgroundColor: colors.navy,
   },
   actions: {
-    minHeight: 56,
-    paddingTop: 8,
+    minHeight: 60,
+    paddingTop: 6,
     paddingHorizontal: 20,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: '#E5E7EB',
   },
   skipButton: {
     minHeight: 44,
@@ -346,24 +502,20 @@ const styles = StyleSheet.create({
     paddingRight: 16,
   },
   skipText: {
-    fontSize: 16,
-    lineHeight: 24,
-    color: '#111827',
-    ...font('semiBold'),
+    ...uiText(16, 'medium'),
+    color: '#4B5563',
   },
   nextButton: {
     minHeight: 44,
-    minWidth: 96,
-    paddingHorizontal: 28,
-    borderRadius: 22,
-    backgroundColor: colors.buttonPrimary,
+    minWidth: 108,
+    paddingHorizontal: 22,
+    borderRadius: 12,
+    backgroundColor: colors.navy,
     alignItems: 'center',
     justifyContent: 'center',
   },
   nextText: {
-    fontSize: 16,
-    lineHeight: 24,
+    ...uiText(16, 'semiBold'),
     color: '#FFFFFF',
-    ...font('semiBold'),
   },
 });
