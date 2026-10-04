@@ -28,7 +28,7 @@ const HEART_RATE_GUIDE_IMAGE = 'Coachmarks/Pulse Oximeter Heart Rate Guide.png';
 const TAMIL_HEART_RATE_GUIDE_IMAGE = `${MALE_FOLDER}/Pulse Oximeter Heart Rate tamil.png`;
 
 function usesTamilGuide(language?: string | null): boolean {
-  return language === 'ta';
+  return (language ?? '').toLowerCase().startsWith('ta');
 }
 
 /** The seated “wait for the reading” frame. */
@@ -63,9 +63,11 @@ export function getManualPulseGuideUrl(
   _mediaGender?: PulseOximeterMediaGender,
   language?: string | null,
 ): string | null {
-  return getPublicStorageUrl(
+  const url = getPublicStorageUrl(
     usesTamilGuide(language) ? TAMIL_MANUAL_PULSE_IMAGE : MANUAL_PULSE_IMAGE,
   );
+  // New filename. A query keeps a previously failed disk cache from sticking.
+  return url ? `${url}?v=2` : null;
 }
 
 export function getPulseOximeterCoachImageUrls(

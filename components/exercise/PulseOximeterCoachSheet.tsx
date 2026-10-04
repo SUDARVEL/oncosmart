@@ -260,6 +260,8 @@ export function PulseOximeterCoachSheet({
                     style={styles.manualImage}
                     contentFit="contain"
                     contentPosition="center"
+                    cachePolicy="none"
+                    recyclingKey={manualUri}
                     accessibilityIgnoresInvertColors
                   />
                 ) : null}
@@ -435,8 +437,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   manualImage: {
-    width: '100%',
-    height: '100%',
+    ...StyleSheet.absoluteFillObject,
   },
   manualCopy: {
     alignSelf: 'stretch',

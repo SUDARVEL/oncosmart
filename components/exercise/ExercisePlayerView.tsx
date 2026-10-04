@@ -5,6 +5,7 @@ import {
   ActivityIndicator,
   Platform,
   Pressable,
+  ScrollView,
   StyleSheet,
   Text,
   useWindowDimensions,
@@ -52,7 +53,7 @@ export function ExercisePlayerView({
   overlayPaused = false,
 }: Props) {
   const { t, i18n } = useTranslation();
-  const { width: screenWidth, height: screenHeight } = useWindowDimensions();
+  const { width: screenWidth } = useWindowDimensions();
   const [isPaused, setIsPaused] = useState(() => Platform.OS === 'web');
   const [restartToken, setRestartToken] = useState(0);
   const [videoProgress, setVideoProgress] = useState(0);
@@ -68,14 +69,9 @@ export function ExercisePlayerView({
   const playbackPaused = isPaused || overlayPaused;
   const primarySource = videoSources[0]?.trim() ?? '';
 
-  const { height: designFrameHeight, scale, contentWidth } = getScaledVideoFrameSize(screenWidth);
+  const { width: frameWidth, height: frameHeight, scale, contentWidth } =
+    getScaledVideoFrameSize(screenWidth);
   const screenColumnWidth = Math.round(EXERCISE_SCREEN_DESIGN_WIDTH * scale);
-  // Leave room under the film for the title, count, instruction, and buttons.
-  const frameHeight = Math.max(
-    Math.round(210 * scale),
-    Math.min(designFrameHeight, Math.round(screenHeight * 0.4)),
-  );
-  const frameWidth = contentWidth;
 
   const title =
     getClinicalExerciseTitle(exercise.id) ||
@@ -149,7 +145,19 @@ export function ExercisePlayerView({
         </Pressable>
       </View>
 
-      <View style={[styles.body, { width: screenColumnWidth }]}>
+      <ScrollView
+        style={styles.scroll}
+        contentContainerStyle={[
+          styles.scrollContent,
+          {
+            width: screenColumnWidth,
+            paddingBottom: Math.round(24 * scale),
+          },
+        ]}
+        showsVerticalScrollIndicator={false}
+        bounces={false}
+      >
+        {/* Figma 4319:5800 — 349×444 media + copy column */}
         <View style={[styles.contentColumn, { width: contentWidth }]}>
           <Pressable
             style={[
@@ -209,17 +217,22 @@ export function ExercisePlayerView({
           <View style={{ height: Math.round(EXERCISE_VIDEO_TO_COPY_GAP * scale) - 8 }} />
 
           <ExercisePlayerCopyBlock
-            compact
             title={title}
             description={description}
             displayValue={displayValue}
             unitLabel={unitLabel}
           />
-        </View>
-      </View>
 
-      <View style={[styles.footer, { width: screenColumnWidth }]}>
-          <View style={[styles.actions, { width: contentWidth }]}>
+          {/* Pause + Restart — hard spacer View so gap cannot collapse */}
+          <View
+            style={[
+              styles.actions,
+              {
+                width: contentWidth,
+                marginTop: Math.round(16 * scale),
+              },
+            ]}
+          >
             <PressableScale
               style={styles.pauseButton}
               onPress={handlePauseToggle}
@@ -254,7 +267,8 @@ export function ExercisePlayerView({
               </Text>
             </PressableScale>
           </View>
-      </View>
+        </View>
+      </ScrollView>
     </SafeAreaView>
   );
 }
@@ -276,28 +290,22 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  body: {
+  scroll: {
     flex: 1,
+  },
+  scrollContent: {
     alignSelf: 'center',
     alignItems: 'center',
-    minHeight: 0,
+    flexGrow: 1,
   },
   contentColumn: {
-    flex: 1,
     alignItems: 'center',
-    minHeight: 0,
-  },
-  footer: {
-    alignSelf: 'center',
-    alignItems: 'center',
-    paddingTop: 8,
-    paddingBottom: 8,
   },
   videoWrap: {
     overflow: 'hidden',
     backgroundColor: EXERCISE_VIDEO_FRAME_BACKGROUND,
-    flexShrink: 1,
-    minHeight: 0,
+    // Figma: flex-shrink: 0; box-sizing: border-box (RN default)
+    flexShrink: 0,
   },
   videoLoaderOverlay: {
     ...StyleSheet.absoluteFillObject,

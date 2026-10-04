@@ -1,6 +1,7 @@
 import { Platform, StyleSheet } from 'react-native';
 
 import { displayFontStyle, font } from '../theme/fonts';
+import { uiText } from '../theme/typography';
 
 /**
  * Guided exercise copy typography (Figma node 2978:4976 family).
@@ -74,15 +75,13 @@ export const exercisePlayerCopyStyles = StyleSheet.create({
     letterSpacing: 0.1,
     ...font('bold'),
   },
-  /** Figma 4319:5810 — Roboto Regular 16 / Grey 80 */
+  /** Instruction under the rep count. Smaller so it sits with the full-size video. */
   description: {
     marginTop: 0,
     width: '100%',
-    fontSize: 16,
-    lineHeight: 20,
     letterSpacing: 0.1,
     color: '#6B7280',
     textAlign: 'center',
-    ...font('regular'),
+    ...uiText(13),
   },
 });
