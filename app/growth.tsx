@@ -55,7 +55,6 @@ export default function GrowthScreen() {
     registerHost,
     registerTarget,
     next: coachNext,
-    skip: coachSkip,
   } = useCoachTour('growth');
   const { refreshing, onRefresh } = usePullToRefresh();
 
@@ -236,7 +235,6 @@ export default function GrowthScreen() {
             }
             coachNext();
           }}
-          onSkip={coachSkip}
         />
       ) : null}
     </View>

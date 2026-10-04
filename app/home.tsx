@@ -111,7 +111,6 @@ export default function HomeScreen() {
     registerHost,
     registerTarget,
     next: coachNext,
-    skip: coachSkip,
   } = useCoachTour("home");
   const { refreshing, onRefresh } = usePullToRefresh();
 
@@ -361,7 +360,6 @@ export default function HomeScreen() {
             coachNext();
             router.push("/growth");
           }}
-          onSkip={coachSkip}
         />
       ) : null}
     </View>

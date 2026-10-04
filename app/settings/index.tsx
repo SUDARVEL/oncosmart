@@ -62,7 +62,6 @@ export default function SettingsScreen() {
     registerHost,
     registerTarget,
     next: coachNext,
-    skip: coachSkip,
   } = useCoachTour('settings');
   const { refreshing, onRefresh } = usePullToRefresh();
 
@@ -320,7 +319,6 @@ export default function SettingsScreen() {
           spotlight={coachStep.spotlight}
           pad={coachStep.pad}
           onNext={coachNext}
-          onSkip={coachSkip}
         />
       ) : null}
     </View>

@@ -135,6 +135,8 @@ export function useCoachTour(screen: CoachTourScreen) {
       setRect(null);
       return;
     }
+    // Drop the previous spotlight so the new step does not point at the last control.
+    setRect(null);
     const handle = InteractionManager.runAfterInteractions(() => {
       setMeasureTick((n) => n + 1);
     });

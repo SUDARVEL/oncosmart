@@ -88,6 +88,12 @@ export const COACH_TOUR_STEPS: CoachTourStep[] = [
 /** Step index used while the closing “You’re all set” card is on screen. */
 export const COACH_TOUR_FINALE_STEP = COACH_TOUR_STEPS.length;
 
+/** How long each spotlight stays before the tour moves on by itself. */
+export const COACH_TOUR_BEAT_MS = 5200;
+
+/** How long the closing card stays before the app continues on its own. */
+export const COACH_TOUR_FINALE_MS = 4200;
+
 export function coachStepIndex(id: CoachTourStepId): number {
   return COACH_TOUR_STEPS.findIndex((s) => s.id === id);
 }

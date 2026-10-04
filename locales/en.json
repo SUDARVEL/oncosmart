@@ -627,7 +627,7 @@
     "skip": "Skip",
     "videoContinue": "Continue",
     "videoAllSetTitle": "You're All Set!",
-    "videoAllSetBody": "Tap Continue to access your exercises and start your journey.",
+    "videoAllSetBody": "Your exercises are ready. Starting your journey now.",
     "videoReplayNote": "You can replay this guided tour anytime from Settings → App tips.",
     "stepOf": "{{current}}/{{total}}",
     "settingsTabTitle": "Settings",

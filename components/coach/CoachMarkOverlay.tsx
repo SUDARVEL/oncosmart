@@ -1,19 +1,16 @@
 import { Ionicons } from '@expo/vector-icons';
-import { useState } from 'react';
-import { useTranslation } from 'react-i18next';
+import { useEffect, useRef, useState } from 'react';
 import {
-  Pressable,
+  Animated,
+  Easing,
   StyleSheet,
   Text,
   View,
   type LayoutChangeEvent,
 } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import type { CoachSpotlightShape } from '../../lib/coachTour';
-import { colors } from '../../theme/colors';
+import { COACH_TOUR_BEAT_MS, type CoachSpotlightShape } from '../../lib/coachTour';
 import { font } from '../../theme/fonts';
-import { uiText } from '../../theme/typography';
 
 export type CoachTargetRect = {
   /** Host-relative X (same coordinate space as this absolute overlay). */
@@ -36,8 +33,8 @@ type Props = {
   preferPlacement: 'below' | 'above';
   spotlight?: CoachSpotlightShape;
   pad?: number;
+  /** Called when this beat finishes. The tour advances itself. */
   onNext: () => void;
-  onSkip: () => void;
 };
 
 const CARD_MAX_WIDTH = 280;
@@ -56,9 +53,9 @@ function spotlightRadius(
 }
 
 /**
- * In-tree fullscreen overlay.
- * Target rects MUST be host-relative (see useCoachTour) so the ring sits
- * exactly on the measured control on every device.
+ * In-tree fullscreen overlay that plays like the walkthrough recording:
+ * the tip appears, the ring pulses, and the next screen opens on its own.
+ * Target rects MUST be host-relative (see useCoachTour).
  */
 export function CoachMarkOverlay({
   visible,
@@ -72,12 +69,72 @@ export function CoachMarkOverlay({
   spotlight = 'rounded',
   pad = 6,
   onNext,
-  onSkip,
 }: Props) {
-  const { t } = useTranslation();
-  const insets = useSafeAreaInsets();
-  const [cardHeight, setCardHeight] = useState(200);
+  const [cardHeight, setCardHeight] = useState(160);
   const [overlaySize, setOverlaySize] = useState({ width: 0, height: 0 });
+  const enter = useRef(new Animated.Value(0)).current;
+  const progress = useRef(new Animated.Value(0)).current;
+  const pulse = useRef(new Animated.Value(0)).current;
+  const onNextRef = useRef(onNext);
+  onNextRef.current = onNext;
+
+  const hasTarget = Boolean(target && target.width > 0 && target.height > 0);
+
+  useEffect(() => {
+    if (!visible) return;
+    let advanced = false;
+    enter.setValue(0);
+    progress.setValue(0);
+    Animated.timing(enter, {
+      toValue: 1,
+      duration: 420,
+      easing: Easing.out(Easing.cubic),
+      useNativeDriver: true,
+    }).start();
+
+    const pulseLoop = Animated.loop(
+      Animated.sequence([
+        Animated.timing(pulse, {
+          toValue: 1,
+          duration: 720,
+          easing: Easing.inOut(Easing.quad),
+          useNativeDriver: true,
+        }),
+        Animated.timing(pulse, {
+          toValue: 0,
+          duration: 720,
+          easing: Easing.inOut(Easing.quad),
+          useNativeDriver: true,
+        }),
+      ]),
+    );
+    pulseLoop.start();
+
+    let dwellTimer: ReturnType<typeof setTimeout> | undefined;
+    let progressAnim: Animated.CompositeAnimation | undefined;
+    const beginDwell = () => {
+      progressAnim = Animated.timing(progress, {
+        toValue: 1,
+        duration: COACH_TOUR_BEAT_MS,
+        easing: Easing.linear,
+        useNativeDriver: false,
+      });
+      progressAnim.start(({ finished }) => {
+        if (!finished || advanced) return;
+        advanced = true;
+        onNextRef.current();
+      });
+    };
+
+    dwellTimer = setTimeout(beginDwell, hasTarget ? 280 : 1600);
+
+    return () => {
+      advanced = true;
+      pulseLoop.stop();
+      progressAnim?.stop();
+      if (dwellTimer) clearTimeout(dwellTimer);
+    };
+  }, [visible, stepIndex, hasTarget, enter, progress, pulse]);
 
   if (!visible) return null;
 
@@ -85,17 +142,14 @@ export function CoachMarkOverlay({
   const screenH = overlaySize.height > 0 ? overlaySize.height : 720;
 
   const cardWidth = Math.min(CARD_MAX_WIDTH, Math.max(200, screenW - CARD_MARGIN * 2));
-  const estimatedCardH = Math.max(160, cardHeight);
+  const estimatedCardH = Math.max(120, cardHeight);
 
-  let cardTop = Math.max(insets.top + 72, screenH * 0.22);
+  let cardTop = Math.max(24, screenH * 0.22);
   let cardLeft = Math.max(CARD_MARGIN, (screenW - cardWidth) / 2);
   let placeBelow = preferPlacement === 'below';
   let showCaret = false;
   let caretLeft = cardWidth / 2 - 8;
 
-  const hasTarget = Boolean(target && target.width > 0 && target.height > 0);
-
-  // 1:1 with host-relative measure — no safe-area clamp that shifts the ring.
   const highlight = hasTarget && target
     ? {
         left: target.x - pad,
@@ -113,8 +167,8 @@ export function CoachMarkOverlay({
   if (hasTarget && target) {
     const highlightBottom = target.y + target.height + pad;
     const highlightTop = target.y - pad;
-    const spaceBelow = screenH - insets.bottom - highlightBottom;
-    const spaceAbove = highlightTop - insets.top;
+    const spaceBelow = screenH - highlightBottom;
+    const spaceAbove = highlightTop;
 
     if (preferPlacement === 'below' && spaceBelow > estimatedCardH + GAP) {
       placeBelow = true;
@@ -122,21 +176,21 @@ export function CoachMarkOverlay({
       showCaret = true;
     } else if (preferPlacement === 'above' && spaceAbove > estimatedCardH + GAP) {
       placeBelow = false;
-      cardTop = Math.max(insets.top + 8, highlightTop - estimatedCardH - GAP);
+      cardTop = Math.max(8, highlightTop - estimatedCardH - GAP);
       showCaret = true;
-    } else if (spaceBelow >= spaceAbove && spaceBelow > 140) {
+    } else if (spaceBelow >= spaceAbove && spaceBelow > 120) {
       placeBelow = true;
       cardTop = highlightBottom + GAP;
       showCaret = true;
-    } else if (spaceAbove > 140) {
+    } else if (spaceAbove > 120) {
       placeBelow = false;
-      cardTop = Math.max(insets.top + 8, highlightTop - estimatedCardH - GAP);
+      cardTop = Math.max(8, highlightTop - estimatedCardH - GAP);
       showCaret = true;
     } else {
       placeBelow = spaceBelow >= spaceAbove;
       cardTop = placeBelow
-        ? Math.min(highlightBottom + GAP, screenH - insets.bottom - estimatedCardH - 8)
-        : Math.max(insets.top + 8, highlightTop - estimatedCardH - GAP);
+        ? Math.min(highlightBottom + GAP, screenH - estimatedCardH - 8)
+        : Math.max(8, highlightTop - estimatedCardH - GAP);
       showCaret = true;
     }
 
@@ -168,20 +222,35 @@ export function CoachMarkOverlay({
     if (Math.abs(nextH - cardHeight) > 2) setCardHeight(nextH);
   };
 
+  const cardShift = enter.interpolate({
+    inputRange: [0, 1],
+    outputRange: [placeBelow ? 14 : -14, 0],
+  });
+  const ringScale = pulse.interpolate({
+    inputRange: [0, 1],
+    outputRange: [1, 1.035],
+  });
+  const ringOpacity = pulse.interpolate({
+    inputRange: [0, 1],
+    outputRange: [1, 0.55],
+  });
+  const progressWidth = progress.interpolate({
+    inputRange: [0, 1],
+    outputRange: ['0%', '100%'],
+  });
+
   return (
     <View
       style={styles.root}
-      pointerEvents="box-none"
+      pointerEvents="auto"
       onLayout={onRootLayout}
       collapsable={false}
     >
+      <View style={StyleSheet.absoluteFill} onStartShouldSetResponder={() => true} />
       {highlight ? (
         <>
-          <Pressable
-            style={[styles.scrimPiece, { top: 0, left: 0, right: 0, height: Math.max(0, highlight.top) }]}
-            onPress={onSkip}
-          />
-          <Pressable
+          <View style={[styles.scrimPiece, { top: 0, left: 0, right: 0, height: Math.max(0, highlight.top) }]} />
+          <View
             style={[
               styles.scrimPiece,
               {
@@ -191,16 +260,14 @@ export function CoachMarkOverlay({
                 bottom: 0,
               },
             ]}
-            onPress={onSkip}
           />
-          <Pressable
+          <View
             style={[
               styles.scrimPiece,
               { top: highlight.top, left: 0, width: Math.max(0, highlight.left), height: highlight.height },
             ]}
-            onPress={onSkip}
           />
-          <Pressable
+          <View
             style={[
               styles.scrimPiece,
               {
@@ -210,7 +277,6 @@ export function CoachMarkOverlay({
                 height: highlight.height,
               },
             ]}
-            onPress={onSkip}
           />
           <View
             pointerEvents="none"
@@ -222,17 +288,28 @@ export function CoachMarkOverlay({
                 width: highlight.width,
                 height: highlight.height,
                 borderRadius: highlight.borderRadius,
+                opacity: ringOpacity,
+                transform: [{ scale: ringScale }],
               },
             ]}
           />
         </>
       ) : (
-        <Pressable style={styles.scrim} onPress={onSkip} accessibilityRole="button" />
+        <View style={styles.scrim} />
       )}
 
-      <View
-        style={[styles.cardWrap, { top: cardTop, left: cardLeft, width: cardWidth }]}
-        pointerEvents="box-none"
+      <Animated.View
+        style={[
+          styles.cardWrap,
+          {
+            top: cardTop,
+            left: cardLeft,
+            width: cardWidth,
+            opacity: enter,
+            transform: [{ translateY: cardShift }],
+          },
+        ]}
+        pointerEvents="none"
         onLayout={onCardLayout}
       >
         {showCaret && placeBelow ? (
@@ -253,31 +330,15 @@ export function CoachMarkOverlay({
             ))}
           </View>
 
-          <View style={styles.actions}>
-            <Pressable
-              onPress={onSkip}
-              style={styles.skipButton}
-              accessibilityRole="button"
-              accessibilityLabel={t('coach.skip')}
-              hitSlop={8}
-            >
-              <Text style={styles.skipText}>{t('coach.skip')}</Text>
-            </Pressable>
-            <Pressable
-              onPress={onNext}
-              style={styles.nextButton}
-              accessibilityRole="button"
-              accessibilityLabel={t('coach.next')}
-            >
-              <Text style={styles.nextText}>{t('coach.next')}</Text>
-            </Pressable>
+          <View style={styles.progressTrack}>
+            <Animated.View style={[styles.progressFill, { width: progressWidth }]} />
           </View>
         </View>
 
         {showCaret && !placeBelow ? (
           <View style={[styles.caretDown, { left: caretLeft }]} />
         ) : null}
-      </View>
+      </Animated.View>
     </View>
   );
 }
@@ -334,8 +395,9 @@ const styles = StyleSheet.create({
     borderColor: RING,
     paddingHorizontal: 14,
     paddingTop: 12,
-    paddingBottom: 12,
+    paddingBottom: 10,
     gap: 6,
+    overflow: 'hidden',
   },
   headerRow: {
     flexDirection: 'row',
@@ -374,43 +436,16 @@ const styles = StyleSheet.create({
     borderRadius: 4,
     backgroundColor: RING,
   },
-  actions: {
-    marginTop: 4,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: 12,
+  progressTrack: {
+    marginTop: 6,
+    height: 3,
+    borderRadius: 2,
+    backgroundColor: '#E5E7EB',
+    overflow: 'hidden',
   },
-  actionsRight: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-  },
-  skipButton: {
-    paddingVertical: 10,
-    paddingHorizontal: 4,
-    minWidth: 56,
-  },
-  skipText: {
-    ...uiText(14, 'semiBold'),
-    color: colors.textMuted,
-  },
-  stepText: {
-    ...uiText(13, 'medium'),
-    color: colors.textMuted,
-  },
-  nextButton: {
-    backgroundColor: colors.buttonPrimary,
-    borderRadius: 20,
-    paddingHorizontal: 18,
-    paddingVertical: 10,
-    minWidth: 88,
-    alignItems: 'center',
-  },
-  nextText: {
-    ...font('semiBold'),
-    fontSize: 14,
-    lineHeight: 20,
-    color: colors.buttonText,
+  progressFill: {
+    height: 3,
+    borderRadius: 2,
+    backgroundColor: RING,
   },
 });
