@@ -72,9 +72,10 @@ export function CoachMarkOverlay({
 }: Props) {
   const [cardHeight, setCardHeight] = useState(160);
   const [overlaySize, setOverlaySize] = useState({ width: 0, height: 0 });
-  const enter = useRef(new Animated.Value(0)).current;
-  const progress = useRef(new Animated.Value(0)).current;
-  const pulse = useRef(new Animated.Value(0)).current;
+  const [trackWidth, setTrackWidth] = useState(0);
+  const [progress, setProgress] = useState(0);
+  const slide = useRef(new Animated.Value(0)).current;
+  const pulse = useRef(new Animated.Value(1)).current;
   const onNextRef = useRef(onNext);
   onNextRef.current = onNext;
 
@@ -82,59 +83,56 @@ export function CoachMarkOverlay({
 
   useEffect(() => {
     if (!visible) return;
-    let advanced = false;
-    enter.setValue(0);
-    progress.setValue(0);
-    Animated.timing(enter, {
-      toValue: 1,
-      duration: 420,
+    slide.setValue(12);
+    const slideAnim = Animated.timing(slide, {
+      toValue: 0,
+      duration: 380,
       easing: Easing.out(Easing.cubic),
       useNativeDriver: true,
-    }).start();
-
+    });
+    slideAnim.start();
     const pulseLoop = Animated.loop(
       Animated.sequence([
         Animated.timing(pulse, {
-          toValue: 1,
-          duration: 720,
+          toValue: 0.4,
+          duration: 700,
           easing: Easing.inOut(Easing.quad),
           useNativeDriver: true,
         }),
         Animated.timing(pulse, {
-          toValue: 0,
-          duration: 720,
+          toValue: 1,
+          duration: 700,
           easing: Easing.inOut(Easing.quad),
           useNativeDriver: true,
         }),
       ]),
     );
     pulseLoop.start();
-
-    let dwellTimer: ReturnType<typeof setTimeout> | undefined;
-    let progressAnim: Animated.CompositeAnimation | undefined;
-    const beginDwell = () => {
-      progressAnim = Animated.timing(progress, {
-        toValue: 1,
-        duration: COACH_TOUR_BEAT_MS,
-        easing: Easing.linear,
-        useNativeDriver: false,
-      });
-      progressAnim.start(({ finished }) => {
-        if (!finished || advanced) return;
-        advanced = true;
-        onNextRef.current();
-      });
-    };
-
-    dwellTimer = setTimeout(beginDwell, hasTarget ? 280 : 1600);
-
     return () => {
-      advanced = true;
+      slideAnim.stop();
       pulseLoop.stop();
-      progressAnim?.stop();
-      if (dwellTimer) clearTimeout(dwellTimer);
     };
-  }, [visible, stepIndex, hasTarget, enter, progress, pulse]);
+  }, [visible, stepIndex, slide, pulse]);
+
+  useEffect(() => {
+    if (!visible) return;
+    let movedOn = false;
+    setProgress(0);
+    const hold = hasTarget ? 350 : 900;
+    const startedAt = Date.now() + hold;
+    const timer = setInterval(() => {
+      const next = Math.max(0, Math.min(1, (Date.now() - startedAt) / COACH_TOUR_BEAT_MS));
+      setProgress(next);
+      if (next < 1 || movedOn) return;
+      movedOn = true;
+      clearInterval(timer);
+      onNextRef.current();
+    }, 50);
+    return () => {
+      movedOn = true;
+      clearInterval(timer);
+    };
+  }, [visible, stepIndex, hasTarget]);
 
   if (!visible) return null;
 
@@ -222,22 +220,7 @@ export function CoachMarkOverlay({
     if (Math.abs(nextH - cardHeight) > 2) setCardHeight(nextH);
   };
 
-  const cardShift = enter.interpolate({
-    inputRange: [0, 1],
-    outputRange: [placeBelow ? 14 : -14, 0],
-  });
-  const ringScale = pulse.interpolate({
-    inputRange: [0, 1],
-    outputRange: [1, 1.035],
-  });
-  const ringOpacity = pulse.interpolate({
-    inputRange: [0, 1],
-    outputRange: [1, 0.55],
-  });
-  const progressWidth = progress.interpolate({
-    inputRange: [0, 1],
-    outputRange: ['0%', '100%'],
-  });
+  const cardShift = placeBelow ? slide : Animated.multiply(slide, -1);
 
   return (
     <View
@@ -278,7 +261,7 @@ export function CoachMarkOverlay({
               },
             ]}
           />
-          <View
+          <Animated.View
             pointerEvents="none"
             style={[
               styles.highlight,
@@ -288,8 +271,7 @@ export function CoachMarkOverlay({
                 width: highlight.width,
                 height: highlight.height,
                 borderRadius: highlight.borderRadius,
-                opacity: ringOpacity,
-                transform: [{ scale: ringScale }],
+                opacity: pulse,
               },
             ]}
           />
@@ -305,7 +287,7 @@ export function CoachMarkOverlay({
             top: cardTop,
             left: cardLeft,
             width: cardWidth,
-            opacity: enter,
+            opacity: 1,
             transform: [{ translateY: cardShift }],
           },
         ]}
@@ -330,8 +312,15 @@ export function CoachMarkOverlay({
             ))}
           </View>
 
-          <View style={styles.progressTrack}>
-            <Animated.View style={[styles.progressFill, { width: progressWidth }]} />
+          <View
+            style={styles.progressTrack}
+            onLayout={(event) => {
+              const nextWidth = event.nativeEvent.layout.width;
+              if (!Number.isFinite(nextWidth) || nextWidth < 1) return;
+              if (Math.abs(nextWidth - trackWidth) > 1) setTrackWidth(nextWidth);
+            }}
+          >
+            <View style={[styles.progressFill, { width: Math.max(0, trackWidth * progress) }]} />
           </View>
         </View>
 

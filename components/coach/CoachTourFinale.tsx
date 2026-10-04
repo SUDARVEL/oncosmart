@@ -1,8 +1,8 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Animated, Easing, Modal, StyleSheet, Text, View } from 'react-native';
+import { Modal, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { COACH_TOUR_FINALE_MS, COACH_TOUR_FINALE_STEP } from '../../lib/coachTour';
@@ -10,7 +10,7 @@ import { useAppStore } from '../../store/useAppStore';
 import { colors } from '../../theme/colors';
 import { font } from '../../theme/fonts';
 
-/** Closing card. It holds, then continues into the app on its own. */
+/** Closing card. The words stay on screen, then the app continues on its own. */
 export function CoachTourFinale() {
   const { t } = useTranslation();
   const router = useRouter();
@@ -19,8 +19,8 @@ export function CoachTourFinale() {
   const coachTourStep = useAppStore((state) => state.coachTourStep);
   const setCoachTourSeen = useAppStore((state) => state.setCoachTourSeen);
   const setCoachTourStep = useAppStore((state) => state.setCoachTourStep);
-  const enter = useRef(new Animated.Value(0)).current;
-  const progress = useRef(new Animated.Value(0)).current;
+  const [trackWidth, setTrackWidth] = useState(0);
+  const [progress, setProgress] = useState(0);
   const finishedRef = useRef(false);
 
   const visible = !coachTourSeen && coachTourStep === COACH_TOUR_FINALE_STEP;
@@ -36,68 +36,47 @@ export function CoachTourFinale() {
   useEffect(() => {
     if (!visible) {
       finishedRef.current = false;
+      setProgress(0);
       return;
     }
     finishedRef.current = false;
-    enter.setValue(0);
-    progress.setValue(0);
-    Animated.timing(enter, {
-      toValue: 1,
-      duration: 420,
-      easing: Easing.out(Easing.cubic),
-      useNativeDriver: true,
-    }).start();
-    const progressAnim = Animated.timing(progress, {
-      toValue: 1,
-      duration: COACH_TOUR_FINALE_MS,
-      easing: Easing.linear,
-      useNativeDriver: false,
-    });
-    progressAnim.start(({ finished }) => {
-      if (finished) finish();
-    });
-    return () => {
-      progressAnim.stop();
-    };
-    // finish reads the latest store actions; the effect should run once per appearance.
+    setProgress(0);
+    const startedAt = Date.now();
+    const timer = setInterval(() => {
+      const next = Math.min(1, (Date.now() - startedAt) / COACH_TOUR_FINALE_MS);
+      setProgress(next);
+      if (next >= 1) {
+        clearInterval(timer);
+        finish();
+      }
+    }, 50);
+    return () => clearInterval(timer);
+    // finish is stable for this appearance: store setters and router do not change the beat.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [visible]);
 
   if (!visible) return null;
 
-  const progressWidth = progress.interpolate({
-    inputRange: [0, 1],
-    outputRange: ['0%', '100%'],
-  });
-
   return (
     <Modal visible animationType="fade" onRequestClose={finish} statusBarTranslucent>
       <View style={[styles.screen, { paddingTop: insets.top, paddingBottom: Math.max(insets.bottom, 16) }]}>
-        <Animated.View
-          style={[
-            styles.copy,
-            {
-              opacity: enter,
-              transform: [
-                {
-                  translateY: enter.interpolate({
-                    inputRange: [0, 1],
-                    outputRange: [16, 0],
-                  }),
-                },
-              ],
-            },
-          ]}
-        >
+        <View style={styles.copy}>
           <Text style={styles.title}>{t('coach.videoAllSetTitle')}</Text>
           <Text style={styles.body}>{t('coach.videoAllSetBody')}</Text>
           <View style={styles.note}>
             <Ionicons name="information-circle-outline" size={16} color={colors.navy} />
             <Text style={styles.noteText}>{t('coach.videoReplayNote')}</Text>
           </View>
-        </Animated.View>
-        <View style={[styles.progressTrack, { bottom: Math.max(insets.bottom, 16) + 28 }]}>
-          <Animated.View style={[styles.progressFill, { width: progressWidth }]} />
+        </View>
+        <View
+          style={[styles.progressTrack, { bottom: Math.max(insets.bottom, 16) + 28 }]}
+          onLayout={(event) => {
+            const nextWidth = event.nativeEvent.layout.width;
+            if (!Number.isFinite(nextWidth) || nextWidth < 1) return;
+            if (Math.abs(nextWidth - trackWidth) > 1) setTrackWidth(nextWidth);
+          }}
+        >
+          <View style={[styles.progressFill, { width: Math.max(0, trackWidth * progress) }]} />
         </View>
       </View>
     </Modal>
