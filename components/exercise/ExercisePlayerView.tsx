@@ -10,6 +10,7 @@ import {
   Text,
   useWindowDimensions,
   View,
+  type LayoutChangeEvent,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -24,10 +25,15 @@ import {
   EXERCISE_SCREEN_HEADER_HEIGHT,
   EXERCISE_VIDEO_FRAME_BACKGROUND,
   EXERCISE_VIDEO_FRAME_BORDER_RADIUS,
+  EXERCISE_VIDEO_FRAME_HEIGHT,
   EXERCISE_VIDEO_TO_COPY_GAP,
   getScaledVideoFrameSize,
 } from '../../lib/exerciseVideoFrame';
 import { colors } from '../../theme/colors';
+import {
+  EXERCISE_DESCRIPTION_LINE_HEIGHT,
+  EXERCISE_DESCRIPTION_MORE_HEIGHT,
+} from '../../lib/exercisePlayerCopyStyles';
 import { ExercisePlayerCopyBlock } from './ExercisePlayerCopyBlock';
 import { font } from '../../theme/fonts';
 import { PressableScale } from '../PressableScale';
@@ -60,6 +66,7 @@ export function ExercisePlayerView({
   const [isBuffering, setIsBuffering] = useState(true);
   const [playbackFailed, setPlaybackFailed] = useState(false);
   const [audioUnlockToken, setAudioUnlockToken] = useState(0);
+  const [scrollHeight, setScrollHeight] = useState(0);
   const completedRef = useRef(false);
 
   const unlockAudio = useCallback(() => {
@@ -112,6 +119,13 @@ export function ExercisePlayerView({
   }, [markComplete]);
 
   const videoProgressPercent = Math.round(Math.min(Math.max(videoProgress, 0), 1) * 100);
+  const scrollPadding = Math.round(12 * scale);
+  const collapsedLines = getCollapsedDescriptionLines(scrollHeight, scale, title.length);
+
+  const handleScrollLayout = (event: LayoutChangeEvent) => {
+    const next = Math.round(event.nativeEvent.layout.height);
+    setScrollHeight((current) => (current === next ? current : next));
+  };
 
   const handlePauseToggle = () => {
     if (overlayPaused) return;
@@ -147,11 +161,12 @@ export function ExercisePlayerView({
 
       <ScrollView
         style={styles.scroll}
+        onLayout={handleScrollLayout}
         contentContainerStyle={[
           styles.scrollContent,
           {
             width: screenColumnWidth,
-            paddingBottom: Math.round(24 * scale),
+            paddingBottom: scrollPadding,
           },
         ]}
         showsVerticalScrollIndicator={false}
@@ -221,55 +236,100 @@ export function ExercisePlayerView({
             description={description}
             displayValue={displayValue}
             unitLabel={unitLabel}
+            collapsedLines={collapsedLines}
           />
-
-          {/* Pause + Restart — hard spacer View so gap cannot collapse */}
-          <View
-            style={[
-              styles.actions,
-              {
-                width: contentWidth,
-                marginTop: Math.round(16 * scale),
-              },
-            ]}
-          >
-            <PressableScale
-              style={styles.pauseButton}
-              onPress={handlePauseToggle}
-              accessibilityRole="button"
-            >
-              <Ionicons name={playbackPaused ? 'play' : 'pause'} size={24} color="#FFFFFF" />
-              <Text style={styles.pauseButtonText} numberOfLines={1}>
-                {playbackPaused ? t('sessionFlow.resume') : t('sessionFlow.pause')}
-              </Text>
-            </PressableScale>
-
-            <View
-              style={{ width: Math.round(EXERCISE_ACTION_BUTTON_GAP * scale) }}
-              accessibilityElementsHidden
-              importantForAccessibility="no-hide-descendants"
-            />
-
-            <PressableScale
-              style={[
-                styles.restartButton,
-                {
-                  minWidth: Math.round(112 * scale),
-                  paddingHorizontal: Math.round(12 * scale),
-                },
-              ]}
-              onPress={handleRestart}
-              accessibilityRole="button"
-            >
-              <Ionicons name="refresh" size={22} color="#374151" />
-              <Text style={styles.restartButtonText} numberOfLines={1}>
-                {t('sessionFlow.restart')}
-              </Text>
-            </PressableScale>
-          </View>
         </View>
       </ScrollView>
+
+      <View style={styles.actionBar}>
+        <ExerciseActions
+          scale={scale}
+          contentWidth={contentWidth}
+          playbackPaused={playbackPaused}
+          pauseLabel={playbackPaused ? t('sessionFlow.resume') : t('sessionFlow.pause')}
+          restartLabel={t('sessionFlow.restart')}
+          onPauseToggle={handlePauseToggle}
+          onRestart={handleRestart}
+        />
+      </View>
     </SafeAreaView>
+  );
+}
+
+/**
+ * How many instruction lines fit above the pause button.
+ * The video frame stays full size; extra lines open with “View more”.
+ */
+function getCollapsedDescriptionLines(
+  scrollHeight: number,
+  scale: number,
+  titleLength: number,
+): number {
+  if (scrollHeight <= 0) return 3;
+  const frameHeight = Math.round(EXERCISE_VIDEO_FRAME_HEIGHT * scale);
+  const titleBlock = titleLength > 26 ? 60 : 34;
+  const fixed =
+    frameHeight +
+    Math.round(8 * scale) +
+    6 +
+    Math.max(0, Math.round(EXERCISE_VIDEO_TO_COPY_GAP * scale) - 8) +
+    titleBlock +
+    82 +
+    EXERCISE_DESCRIPTION_MORE_HEIGHT +
+    Math.round(12 * scale);
+  const fitted = Math.floor((scrollHeight - fixed) / EXERCISE_DESCRIPTION_LINE_HEIGHT);
+  return Math.max(2, Math.min(6, fitted));
+}
+
+function ExerciseActions({
+  scale,
+  contentWidth,
+  playbackPaused,
+  pauseLabel,
+  restartLabel,
+  onPauseToggle,
+  onRestart,
+}: {
+  scale: number;
+  contentWidth: number;
+  playbackPaused: boolean;
+  pauseLabel: string;
+  restartLabel: string;
+  onPauseToggle: () => void;
+  onRestart: () => void;
+}) {
+  return (
+    <View style={[styles.actions, { width: contentWidth }]}>
+      <PressableScale style={styles.pauseButton} onPress={onPauseToggle} accessibilityRole="button">
+        <Ionicons name={playbackPaused ? 'play' : 'pause'} size={24} color="#FFFFFF" />
+        <Text style={styles.pauseButtonText} numberOfLines={1}>
+          {pauseLabel}
+        </Text>
+      </PressableScale>
+
+      <View
+        style={{ width: Math.round(EXERCISE_ACTION_BUTTON_GAP * scale) }}
+        accessibilityElementsHidden
+        importantForAccessibility="no-hide-descendants"
+      />
+
+      <PressableScale
+        style={[
+          styles.restartButton,
+          {
+            minWidth: Math.round(112 * scale),
+            paddingHorizontal: Math.round(12 * scale),
+          },
+        ]}
+        onPress={onRestart}
+        accessibilityRole="button"
+      >
+        <Ionicons name="refresh" size={22} color="#374151" />
+        <Text style={styles.restartButtonText} numberOfLines={1}>
+          {restartLabel}
+        </Text>
+      </PressableScale>
+    </View>
   );
 }
 
@@ -341,6 +401,15 @@ const styles = StyleSheet.create({
     height: '100%',
     borderRadius: 999,
     backgroundColor: '#0074B8',
+  },
+  actionBar: {
+    width: '100%',
+    alignItems: 'center',
+    paddingTop: 8,
+    paddingBottom: 8,
+    backgroundColor: '#FFFFFF',
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: '#E5E7EB',
   },
   actions: {
     flexDirection: 'row',

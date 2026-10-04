@@ -196,6 +196,8 @@
     "pause": "Pause",
     "resume": "Resume",
     "restart": "Restart",
+    "viewMore": "View more",
+    "viewLess": "View less",
     "repsLabel": "REPS",
     "minsLabel": "MINS",
     "secsLabel": "sec",

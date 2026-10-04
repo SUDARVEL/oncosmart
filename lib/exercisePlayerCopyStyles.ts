@@ -1,7 +1,11 @@
 import { Platform, StyleSheet } from 'react-native';
 
 import { displayFontStyle, font } from '../theme/fonts';
-import { uiText } from '../theme/typography';
+
+/** Instruction line box. Tall enough for Tamil, tight enough to stay even. */
+export const EXERCISE_DESCRIPTION_LINE_HEIGHT = 20;
+/** “View more” row reserved so the pause button can stay on screen. */
+export const EXERCISE_DESCRIPTION_MORE_HEIGHT = 32;
 
 /**
  * Guided exercise copy typography (Figma node 2978:4976 family).
@@ -18,8 +22,8 @@ export const exercisePlayerCopyStyles = StyleSheet.create({
   titleWrap: {
     alignSelf: 'stretch',
     width: '100%',
-    paddingTop: 4,
-    paddingBottom: 4,
+    paddingTop: 2,
+    paddingBottom: 2,
     overflow: 'visible',
   },
   /** Figma 4319:5807 — Roboto SemiBold 24 / 20 */
@@ -29,7 +33,7 @@ export const exercisePlayerCopyStyles = StyleSheet.create({
     lineHeight: 28,
     color: '#262526',
     textAlign: 'center',
-    letterSpacing: 0.1,
+    letterSpacing: 0,
     flexShrink: 1,
     ...font('semiBold'),
     ...(Platform.OS === 'android'
@@ -40,8 +44,8 @@ export const exercisePlayerCopyStyles = StyleSheet.create({
     alignSelf: 'stretch',
     width: '100%',
     alignItems: 'center',
-    marginTop: 12,
-    marginBottom: 12,
+    marginTop: 8,
+    marginBottom: 6,
     paddingVertical: 0,
   },
   repRow: {
@@ -76,12 +80,45 @@ export const exercisePlayerCopyStyles = StyleSheet.create({
     ...font('bold'),
   },
   /** Instruction under the rep count. Smaller so it sits with the full-size video. */
-  description: {
-    marginTop: 0,
+  descriptionWrap: {
+    alignSelf: 'stretch',
     width: '100%',
-    letterSpacing: 0.1,
+    position: 'relative',
+  },
+  description: {
+    marginTop: 2,
+    width: '100%',
+    letterSpacing: 0,
     color: '#6B7280',
     textAlign: 'center',
-    ...uiText(13),
+    fontSize: 13,
+    lineHeight: EXERCISE_DESCRIPTION_LINE_HEIGHT,
+    ...font('regular'),
+    ...(Platform.OS === 'android' ? { includeFontPadding: false } : {}),
+  },
+  descriptionMeasure: {
+    position: 'absolute',
+    opacity: 0,
+    left: 0,
+    right: 0,
+    zIndex: -1,
+  },
+  moreButton: {
+    alignSelf: 'center',
+    marginTop: 4,
+    minHeight: EXERCISE_DESCRIPTION_MORE_HEIGHT,
+    paddingHorizontal: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 2,
+  },
+  moreLabel: {
+    color: '#005F99',
+    letterSpacing: 0.15,
+    fontSize: 13,
+    lineHeight: 18,
+    ...font('medium'),
+    ...(Platform.OS === 'android' ? { includeFontPadding: false } : {}),
   },
 });
