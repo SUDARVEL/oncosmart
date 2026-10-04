@@ -13,8 +13,8 @@ export type ClinicalExerciseDescription = {
 
 export const CLINICAL_EXERCISE_DESCRIPTIONS: Record<string, ClinicalExerciseDescription> = {
   "diaphragmatic-breathing": {
-    en: "Improves lung expansion and helps you breathe better. Sit upright on a chair with your shoulders relaxed. Place one hand on your chest and the other on your abdomen. Breathe slowly through your nose and feel your abdomen rise. Exhale gently through your mouth.",
-    ta: "நுரையீரல் விரிவை அதிகரித்து சுவாசத்தை மேம்படுத்த உதவும். நாற்காலியில் நிமிர்ந்து அமர்ந்து, தோள்களை தளர்வாக வைத்திருக்கவும். ஒரு கையை மார்பிலும், மற்றொரு கையை வயிற்றிலும் வைக்கவும். மூக்கில் மெதுவாக சுவாசித்து வயிறு உயர்வதை உணரவும். வாயால் மெதுவாக சுவாசத்தை வெளியே விடவும்.",
+    en: "Improves lung expansion and helps you breathe better. Sit upright on a chair. Place one hand on your chest and the other on your abdomen. Breathe in slowly through your nose, feel your abdomen rise, and breathe out gently through your mouth.",
+    ta: "நுரையீரல் விரிவை அதிகரித்து, சுவாசத்தை மேம்படுத்த உதவும். நாற்காலியில் நிமிர்ந்து அமர்ந்து, ஒரு கையை மார்பிலும் மற்றொரு கையை வயிற்றிலும் வைக்கவும். மூக்கில் மெதுவாக சுவாசித்து வயிறு உயர்வதை உணர்ந்து, வாயால் மெதுவாக வெளியே விடவும்.",
   },
   "ankle-pumps": {
     en: "Improves blood circulation and prevents stiffness in the legs. Sit upright on the bed with your legs straight. Slowly move your feet up and down.",
