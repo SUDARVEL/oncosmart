@@ -25,6 +25,7 @@ import { HomeAvatarButton } from "../components/home/HomeAvatarButton";
 import { ProgressLogo } from "../components/home/ProgressLogo";
 import { PressableScale } from "../components/PressableScale";
 import { useAndroidBack } from "../hooks/useAndroidBack";
+import { CoachMarkOverlay } from "../components/coach/CoachMarkOverlay";
 import { useCoachTour } from "../hooks/useCoachTour";
 import { useExercisePauseGuard } from "../hooks/useExercisePauseGuard";
 import { usePullToRefresh } from "../hooks/usePullToRefresh";
@@ -101,7 +102,17 @@ export default function HomeScreen() {
   const [activeQuote, setActiveQuote] = useState(0);
   const [now, setNow] = useState(() => Date.now());
   const scrollRef = useRef<ScrollView>(null);
-  const { registerHost, registerTarget } = useCoachTour("home");
+  const {
+    active: coachActive,
+    step: coachStep,
+    stepIndex: coachStepIndex,
+    stepCount: coachStepCount,
+    rect: coachRect,
+    registerHost,
+    registerTarget,
+    next: coachNext,
+    skip: coachSkip,
+  } = useCoachTour("home");
   const { refreshing, onRefresh } = usePullToRefresh();
 
   // After logout, never keep showing a guest Home if the stack wasn't cleared.
@@ -334,6 +345,25 @@ export default function HomeScreen() {
       />
 
     </SafeAreaView>
+      {coachActive && coachStep ? (
+        <CoachMarkOverlay
+          visible
+          title={t(coachStep.titleKey)}
+          body={t(coachStep.bodyKey)}
+          icon={coachStep.icon}
+          stepIndex={coachStepIndex}
+          stepCount={coachStepCount}
+          target={coachRect}
+          preferPlacement={coachStep.preferPlacement}
+          spotlight={coachStep.spotlight}
+          pad={coachStep.pad}
+          onNext={() => {
+            coachNext();
+            router.push("/growth");
+          }}
+          onSkip={coachSkip}
+        />
+      ) : null}
     </View>
   );
 }

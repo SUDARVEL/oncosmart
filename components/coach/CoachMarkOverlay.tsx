@@ -40,9 +40,10 @@ type Props = {
   onSkip: () => void;
 };
 
-const CARD_MAX_WIDTH = 320;
-const CARD_MARGIN = 20;
-const GAP = 14;
+const CARD_MAX_WIDTH = 280;
+const CARD_MARGIN = 16;
+const GAP = 12;
+const RING = '#2457A6';
 
 function spotlightRadius(
   shape: CoachSpotlightShape | undefined,
@@ -83,7 +84,6 @@ export function CoachMarkOverlay({
   const screenW = overlaySize.width > 0 ? overlaySize.width : 360;
   const screenH = overlaySize.height > 0 ? overlaySize.height : 720;
 
-  const isLast = stepIndex >= stepCount - 1;
   const cardWidth = Math.min(CARD_MAX_WIDTH, Math.max(200, screenW - CARD_MARGIN * 2));
   const estimatedCardH = Math.max(160, cardHeight);
 
@@ -175,23 +175,60 @@ export function CoachMarkOverlay({
       onLayout={onRootLayout}
       collapsable={false}
     >
-      <Pressable style={styles.scrim} onPress={onSkip} accessibilityRole="button" />
-
       {highlight ? (
-        <View
-          pointerEvents="none"
-          style={[
-            styles.highlight,
-            {
-              left: highlight.left,
-              top: highlight.top,
-              width: highlight.width,
-              height: highlight.height,
-              borderRadius: highlight.borderRadius,
-            },
-          ]}
-        />
-      ) : null}
+        <>
+          <Pressable
+            style={[styles.scrimPiece, { top: 0, left: 0, right: 0, height: Math.max(0, highlight.top) }]}
+            onPress={onSkip}
+          />
+          <Pressable
+            style={[
+              styles.scrimPiece,
+              {
+                top: highlight.top + highlight.height,
+                left: 0,
+                right: 0,
+                bottom: 0,
+              },
+            ]}
+            onPress={onSkip}
+          />
+          <Pressable
+            style={[
+              styles.scrimPiece,
+              { top: highlight.top, left: 0, width: Math.max(0, highlight.left), height: highlight.height },
+            ]}
+            onPress={onSkip}
+          />
+          <Pressable
+            style={[
+              styles.scrimPiece,
+              {
+                top: highlight.top,
+                left: highlight.left + highlight.width,
+                right: 0,
+                height: highlight.height,
+              },
+            ]}
+            onPress={onSkip}
+          />
+          <View
+            pointerEvents="none"
+            style={[
+              styles.highlight,
+              {
+                left: highlight.left,
+                top: highlight.top,
+                width: highlight.width,
+                height: highlight.height,
+                borderRadius: highlight.borderRadius,
+              },
+            ]}
+          />
+        </>
+      ) : (
+        <Pressable style={styles.scrim} onPress={onSkip} accessibilityRole="button" />
+      )}
 
       <View
         style={[styles.cardWrap, { top: cardTop, left: cardLeft, width: cardWidth }]}
@@ -204,13 +241,17 @@ export function CoachMarkOverlay({
 
         <View style={styles.card}>
           <View style={styles.headerRow}>
-            <View style={styles.iconCircle}>
-              <Ionicons name={icon} size={22} color={colors.buttonPrimary} />
-            </View>
+            <Ionicons name={icon} size={18} color={RING} />
             <Text style={styles.title}>{title}</Text>
           </View>
 
           <Text style={styles.body}>{body}</Text>
+
+          <View style={styles.dots}>
+            {Array.from({ length: stepCount }, (_, dot) => (
+              <View key={dot} style={[styles.dot, dot === stepIndex && styles.dotActive]} />
+            ))}
+          </View>
 
           <View style={styles.actions}>
             <Pressable
@@ -222,22 +263,14 @@ export function CoachMarkOverlay({
             >
               <Text style={styles.skipText}>{t('coach.skip')}</Text>
             </Pressable>
-
-            <View style={styles.actionsRight}>
-              <Text style={styles.stepText}>
-                {t('coach.stepOf', { current: stepIndex + 1, total: stepCount })}
-              </Text>
-              <Pressable
-                onPress={onNext}
-                style={styles.nextButton}
-                accessibilityRole="button"
-                accessibilityLabel={isLast ? t('coach.done') : t('coach.next')}
-              >
-                <Text style={styles.nextText}>
-                  {isLast ? t('coach.done') : `${t('coach.next')} →`}
-                </Text>
-              </Pressable>
-            </View>
+            <Pressable
+              onPress={onNext}
+              style={styles.nextButton}
+              accessibilityRole="button"
+              accessibilityLabel={t('coach.next')}
+            >
+              <Text style={styles.nextText}>{t('coach.next')}</Text>
+            </Pressable>
           </View>
         </View>
 
@@ -257,13 +290,17 @@ const styles = StyleSheet.create({
   },
   scrim: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(17, 24, 39, 0.55)',
+    backgroundColor: 'rgba(255, 255, 255, 0.72)',
+  },
+  scrimPiece: {
+    position: 'absolute',
+    backgroundColor: 'rgba(255, 255, 255, 0.72)',
   },
   highlight: {
     position: 'absolute',
-    borderWidth: 2.5,
-    borderColor: '#FFFFFF',
-    backgroundColor: 'rgba(255, 255, 255, 0.12)',
+    borderWidth: 3,
+    borderColor: RING,
+    backgroundColor: 'transparent',
   },
   cardWrap: {
     position: 'absolute',
@@ -277,7 +314,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 10,
     borderLeftColor: 'transparent',
     borderRightColor: 'transparent',
-    borderBottomColor: '#FFFFFF',
+    borderBottomColor: RING,
   },
   caretDown: {
     width: 0,
@@ -288,42 +325,54 @@ const styles = StyleSheet.create({
     borderTopWidth: 10,
     borderLeftColor: 'transparent',
     borderRightColor: 'transparent',
-    borderTopColor: '#FFFFFF',
+    borderTopColor: RING,
   },
   card: {
     backgroundColor: '#FFFFFF',
-    borderRadius: 16,
-    paddingHorizontal: 18,
-    paddingTop: 16,
-    paddingBottom: 14,
-    gap: 10,
-    shadowColor: '#000',
-    shadowOpacity: 0.18,
-    shadowRadius: 16,
-    shadowOffset: { width: 0, height: 8 },
-    elevation: 8,
+    borderRadius: 14,
+    borderWidth: 1.5,
+    borderColor: RING,
+    paddingHorizontal: 14,
+    paddingTop: 12,
+    paddingBottom: 12,
+    gap: 6,
   },
   headerRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
-  },
-  iconCircle: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: colors.tabIconActiveBg,
-    alignItems: 'center',
-    justifyContent: 'center',
+    gap: 8,
   },
   title: {
     flex: 1,
-    ...uiText(17, 'semiBold'),
-    color: colors.textPrimary,
+    fontSize: 15,
+    lineHeight: 20,
+    color: '#16325C',
+    ...font('bold'),
   },
   body: {
-    ...uiText(14, 'regular'),
-    color: colors.textSecondary,
+    fontSize: 13,
+    lineHeight: 18,
+    color: '#4B5563',
+    ...font('regular'),
+  },
+  dots: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 6,
+    marginTop: 4,
+  },
+  dot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: '#D1D5DB',
+  },
+  dotActive: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: RING,
   },
   actions: {
     marginTop: 4,

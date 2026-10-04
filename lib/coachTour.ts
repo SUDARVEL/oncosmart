@@ -24,78 +24,42 @@ export type CoachTourStep = {
     | 'person-outline'
     | 'ribbon-outline'
     | 'play-circle-outline'
+    | 'play-circle'
     | 'stats-chart-outline'
+    | 'stats-chart'
     | 'trending-up-outline'
     | 'pause-circle-outline'
     | 'list-outline'
+    | 'walk'
     | 'document-text-outline'
-    | 'settings-outline';
+    | 'settings-outline'
+    | 'settings';
   titleKey: string;
   bodyKey: string;
   growthTab?: 'progress' | 'workouts';
 };
 
+/** Same beats as the walkthrough reference: exercise, levels, workouts, profile. */
 export const COACH_TOUR_STEPS: CoachTourStep[] = [
-  {
-    id: 'home.avatar',
-    screen: 'home',
-    preferPlacement: 'below',
-    spotlight: 'circle',
-    pad: 4,
-    icon: 'person-outline',
-    titleKey: 'coach.avatarTitle',
-    bodyKey: 'coach.avatarBody',
-  },
-  {
-    id: 'home.progress',
-    screen: 'home',
-    preferPlacement: 'below',
-    spotlight: 'rounded',
-    pad: 6,
-    icon: 'ribbon-outline',
-    titleKey: 'coach.homeProgressTitle',
-    bodyKey: 'coach.homeProgressBody',
-  },
   {
     id: 'home.session',
     screen: 'home',
     preferPlacement: 'above',
     spotlight: 'rounded',
-    pad: 6,
-    icon: 'play-circle-outline',
+    pad: 8,
+    icon: 'play-circle',
     titleKey: 'coach.sessionTitle',
     bodyKey: 'coach.sessionBody',
-  },
-  {
-    id: 'home.growthTab',
-    screen: 'home',
-    preferPlacement: 'above',
-    spotlight: 'pill',
-    pad: 4,
-    icon: 'stats-chart-outline',
-    titleKey: 'coach.growthTabTitle',
-    bodyKey: 'coach.growthTabBody',
   },
   {
     id: 'growth.progress',
     screen: 'growth',
     preferPlacement: 'below',
-    spotlight: 'pill',
-    pad: 4,
-    icon: 'trending-up-outline',
+    spotlight: 'rounded',
+    pad: 8,
+    icon: 'stats-chart',
     titleKey: 'coach.progressTitle',
     bodyKey: 'coach.progressBody',
-    growthTab: 'progress',
-  },
-  {
-    id: 'growth.pauseProgress',
-    screen: 'growth',
-    preferPlacement: 'above',
-    spotlight: 'pill',
-    pad: 8,
-    icon: 'pause-circle-outline',
-    titleKey: 'coach.pauseProgressTitle',
-    bodyKey: 'coach.pauseProgressBody',
     growthTab: 'progress',
   },
   {
@@ -103,44 +67,26 @@ export const COACH_TOUR_STEPS: CoachTourStep[] = [
     screen: 'growth',
     preferPlacement: 'below',
     spotlight: 'pill',
-    pad: 4,
-    icon: 'list-outline',
+    pad: 6,
+    icon: 'walk',
     titleKey: 'coach.workoutsTitle',
     bodyKey: 'coach.workoutsBody',
     growthTab: 'workouts',
-  },
-  {
-    id: 'growth.workoutCard',
-    screen: 'growth',
-    preferPlacement: 'below',
-    spotlight: 'rounded',
-    pad: 6,
-    icon: 'document-text-outline',
-    titleKey: 'coach.workoutCardTitle',
-    bodyKey: 'coach.workoutCardBody',
-    growthTab: 'workouts',
-  },
-  {
-    id: 'home.settingsTab',
-    screen: 'home',
-    preferPlacement: 'above',
-    spotlight: 'pill',
-    pad: 4,
-    icon: 'settings-outline',
-    titleKey: 'coach.settingsTabTitle',
-    bodyKey: 'coach.settingsTabBody',
   },
   {
     id: 'settings.menu',
     screen: 'settings',
     preferPlacement: 'below',
     spotlight: 'rounded',
-    pad: 8,
-    icon: 'settings-outline',
+    pad: 6,
+    icon: 'settings',
     titleKey: 'coach.settingsMenuTitle',
     bodyKey: 'coach.settingsMenuBody',
   },
 ];
+
+/** Step index used while the closing “You’re all set” card is on screen. */
+export const COACH_TOUR_FINALE_STEP = COACH_TOUR_STEPS.length;
 
 export function coachStepIndex(id: CoachTourStepId): number {
   return COACH_TOUR_STEPS.findIndex((s) => s.id === id);

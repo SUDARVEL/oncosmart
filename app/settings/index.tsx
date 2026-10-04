@@ -22,6 +22,7 @@ import { getCompletedSessionCount } from '../../lib/programProgress';
 import { SettingsRow } from '../../components/settings/SettingsRow';
 import { AdminTestingTools } from '../../components/admin/AdminTestingTools';
 import { useAndroidBack } from '../../hooks/useAndroidBack';
+import { CoachMarkOverlay } from '../../components/coach/CoachMarkOverlay';
 import { useCoachTour } from '../../hooks/useCoachTour';
 import { usePullToRefresh } from '../../hooks/usePullToRefresh';
 import { signOut } from '../../lib/auth';
@@ -52,7 +53,17 @@ export default function SettingsScreen() {
   const [resetPathwayModalOpen, setResetPathwayModalOpen] = useState(false);
   const [pendingCancerSlug, setPendingCancerSlug] = useState<CancerTypeSlug | null>(null);
   const [pathwayChangeBusy, setPathwayChangeBusy] = useState(false);
-  const { registerHost, registerTarget } = useCoachTour('settings');
+  const {
+    active: coachActive,
+    step: coachStep,
+    stepIndex: coachStepIndex,
+    stepCount: coachStepCount,
+    rect: coachRect,
+    registerHost,
+    registerTarget,
+    next: coachNext,
+    skip: coachSkip,
+  } = useCoachTour('settings');
   const { refreshing, onRefresh } = usePullToRefresh();
 
   const selectedLanguage: AppLanguage = language === 'ta' ? 'ta' : 'en';
@@ -171,17 +182,18 @@ export default function SettingsScreen() {
           />
         }
       >
-        <View
-          ref={(node) => registerTarget('settings.menu', node)}
-          collapsable={false}
-          style={styles.menuAnchor}
-        >
-          <SettingsRow
-            title={t('settings.myProfile')}
-            description={profileLabel}
-            showChevron
-            onPress={() => setProfileSheetOpen(true)}
-          />
+        <View style={styles.menuAnchor}>
+          <View
+            ref={(node) => registerTarget('settings.menu', node)}
+            collapsable={false}
+          >
+            <SettingsRow
+              title={t('settings.myProfile')}
+              description={profileLabel}
+              showChevron
+              onPress={() => setProfileSheetOpen(true)}
+            />
+          </View>
           <SettingsRow
             title={t('settings.changeAvatar')}
             description={t('settings.changeAvatarDescription')}
@@ -295,6 +307,22 @@ export default function SettingsScreen() {
       />
 
     </SafeAreaView>
+      {coachActive && coachStep ? (
+        <CoachMarkOverlay
+          visible
+          title={t(coachStep.titleKey)}
+          body={t(coachStep.bodyKey)}
+          icon={coachStep.icon}
+          stepIndex={coachStepIndex}
+          stepCount={coachStepCount}
+          target={coachRect}
+          preferPlacement={coachStep.preferPlacement}
+          spotlight={coachStep.spotlight}
+          pad={coachStep.pad}
+          onNext={coachNext}
+          onSkip={coachSkip}
+        />
+      ) : null}
     </View>
   );
 }

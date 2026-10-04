@@ -3,6 +3,7 @@ import { InteractionManager, type View } from 'react-native';
 
 import type { CoachTargetRect } from '../components/coach/CoachMarkOverlay';
 import {
+  COACH_TOUR_FINALE_STEP,
   COACH_TOUR_STEPS,
   type CoachTourScreen,
   type CoachTourStepId,
@@ -73,6 +74,12 @@ export function useCoachTour(screen: CoachTourScreen) {
     // Ref-only — never setState here (inline refs re-fire every render).
     targetsRef.current[id] = node;
   }, []);
+
+  useEffect(() => {
+    if (!hydrated) return;
+    if (coachTourStep == null) return;
+    if (coachTourStep > COACH_TOUR_FINALE_STEP) setCoachTourStep(0);
+  }, [coachTourStep, hydrated, setCoachTourStep]);
 
   const step =
     coachTourStep != null &&
@@ -221,11 +228,11 @@ export function useCoachTour(screen: CoachTourScreen) {
   const next = useCallback(() => {
     if (coachTourStep == null) return;
     if (coachTourStep >= COACH_TOUR_STEPS.length - 1) {
-      finish();
+      setCoachTourStep(COACH_TOUR_FINALE_STEP);
       return;
     }
     setCoachTourStep(coachTourStep + 1);
-  }, [coachTourStep, finish, setCoachTourStep]);
+  }, [coachTourStep, setCoachTourStep]);
 
   return {
     hydrated,

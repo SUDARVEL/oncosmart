@@ -20,6 +20,7 @@ import { StreakCard } from '../components/growth/StreakCard';
 import { WorkoutsSection } from '../components/growth/WorkoutsSection';
 import { ScreenHeader } from '../components/ScreenHeader';
 import { useAndroidBack } from '../hooks/useAndroidBack';
+import { CoachMarkOverlay } from '../components/coach/CoachMarkOverlay';
 import { useCoachTour } from '../hooks/useCoachTour';
 import { usePullToRefresh } from '../hooks/usePullToRefresh';
 import { getDisplayPainScore } from '../lib/getDisplayPainScore';
@@ -45,7 +46,17 @@ export default function GrowthScreen() {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<GrowthTab>('progress');
   const [showPauseReason, setShowPauseReason] = useState(false);
-  const { step: coachStep, registerHost, registerTarget } = useCoachTour('growth');
+  const {
+    active: coachActive,
+    step: coachStep,
+    stepIndex: coachStepIndex,
+    stepCount: coachStepCount,
+    rect: coachRect,
+    registerHost,
+    registerTarget,
+    next: coachNext,
+    skip: coachSkip,
+  } = useCoachTour('growth');
   const { refreshing, onRefresh } = usePullToRefresh();
 
   const progressPaused = useAppStore((state) => state.progressPaused);
@@ -205,6 +216,29 @@ export default function GrowthScreen() {
       />
 
     </SafeAreaView>
+      {coachActive && coachStep ? (
+        <CoachMarkOverlay
+          visible
+          title={t(coachStep.titleKey)}
+          body={t(coachStep.bodyKey)}
+          icon={coachStep.icon}
+          stepIndex={coachStepIndex}
+          stepCount={coachStepCount}
+          target={coachRect}
+          preferPlacement={coachStep.preferPlacement}
+          spotlight={coachStep.spotlight}
+          pad={coachStep.pad}
+          onNext={() => {
+            if (coachStep.id === 'growth.workouts') {
+              coachNext();
+              router.push('/settings');
+              return;
+            }
+            coachNext();
+          }}
+          onSkip={coachSkip}
+        />
+      ) : null}
     </View>
   );
 }
