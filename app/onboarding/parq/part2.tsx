@@ -1,4 +1,4 @@
-import { useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -6,6 +6,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { ParqQuestion } from '../../../components/ParqQuestion';
 import { PrimaryButton } from '../../../components/PrimaryButton';
 import { ScreenHeader } from '../../../components/ScreenHeader';
+import { isOnboardingReview, onboardingReviewHref } from '../../../lib/onboardingReview';
 import { useAppStore } from '../../../store/useAppStore';
 import { colors } from '../../../theme/colors';
 
@@ -15,6 +16,8 @@ const PART2_OFFSET = 4;
 export default function ParqPart2Screen() {
   const { t } = useTranslation();
   const router = useRouter();
+  const { from } = useLocalSearchParams<{ from?: string }>();
+  const review = isOnboardingReview(from);
   const parqAnswers = useAppStore((state) => state.parqAnswers);
   const setParqAnswer = useAppStore((state) => state.setParqAnswer);
   const setParqCleared = useAppStore((state) => state.setParqCleared);
@@ -25,7 +28,7 @@ export default function ParqPart2Screen() {
     if (!allAnswered) return;
     const hasYes = parqAnswers.some((answer) => answer === true);
     setParqCleared(!hasYes);
-    router.push('/onboarding/parq/result');
+    router.push(review ? onboardingReviewHref('/onboarding/parq/result') : '/onboarding/parq/result');
   };
 
   return (

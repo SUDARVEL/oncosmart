@@ -10,6 +10,7 @@ import { PrimaryButton } from '../../components/PrimaryButton';
 import { ScreenHeader } from '../../components/ScreenHeader';
 import { useAndroidBack } from '../../hooks/useAndroidBack';
 import { goBackOr } from '../../lib/navBack';
+import { isOnboardingReview, onboardingReviewHref } from '../../lib/onboardingReview';
 import { AppAvatar, useAppStore } from '../../store/useAppStore';
 import { colors } from '../../theme/colors';
 import { font } from '../../theme/fonts';
@@ -30,6 +31,7 @@ export default function AvatarScreen() {
   const { from } = useLocalSearchParams<{ from?: string }>();
   const isFromHome = from === 'home';
   const isFromSettings = from === 'settings';
+  const review = isOnboardingReview(from);
   const savedAvatar = useAppStore((state) => state.avatar);
   const setAvatar = useAppStore((state) => state.setAvatar);
   // Start from saved avatar only — allows the Figma "none selected" state.
@@ -40,6 +42,10 @@ export default function AvatarScreen() {
     setAvatar(selected);
     if (isFromHome) {
       router.replace('/home');
+      return;
+    }
+    if (review) {
+      router.push(onboardingReviewHref('/onboarding/parq'));
       return;
     }
     if (isFromSettings) {
@@ -58,8 +64,12 @@ export default function AvatarScreen() {
       goBackOr(() => router.replace('/settings'));
       return;
     }
+    if (review) {
+      goBackOr(() => router.replace('/settings'));
+      return;
+    }
     goBackOr(() => router.replace('/home'));
-  }, [isFromHome, isFromSettings, router]);
+  }, [isFromHome, isFromSettings, review, router]);
 
   useAndroidBack(
     useCallback(() => {

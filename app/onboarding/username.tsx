@@ -1,5 +1,5 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   KeyboardAvoidingView,
@@ -15,6 +15,9 @@ import { AppTextInput } from '../../components/AppTextInput';
 import { OncosmartLogo } from '../../components/OncosmartLogo';
 import { PrimaryButton } from '../../components/PrimaryButton';
 import { ScreenHeader } from '../../components/ScreenHeader';
+import { getCurrentSession } from '../../lib/auth';
+import { isAdminSession } from '../../lib/isAdmin';
+import { isOnboardingReview, onboardingReviewHref } from '../../lib/onboardingReview';
 import { useAppStore } from '../../store/useAppStore';
 import { colors } from '../../theme/colors';
 import { font } from '../../theme/fonts';
@@ -24,7 +27,20 @@ export default function UsernameScreen() {
   const { t } = useTranslation();
   const router = useRouter();
   const { from } = useLocalSearchParams<{ from?: string }>();
-  const returnToSettings = from === 'settings';
+  const review = isOnboardingReview(from);
+  const returnToSettings = from === 'settings' || review;
+
+  useEffect(() => {
+    if (!review) return;
+    let cancelled = false;
+    void getCurrentSession().then((session) => {
+      if (cancelled) return;
+      if (!isAdminSession(session)) router.replace('/settings');
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [review, router]);
   const savedUsername = useAppStore((state) => state.username);
   const setUsername = useAppStore((state) => state.setUsername);
   const [name, setName] = useState(savedUsername);
@@ -35,7 +51,11 @@ export default function UsernameScreen() {
   const handleContinue = () => {
     if (!canContinue) return;
     setUsername(trimmedName);
-    if (returnToSettings) {
+    if (review) {
+      router.push(onboardingReviewHref('/onboarding/age'));
+      return;
+    }
+    if (from === 'settings') {
       router.replace('/settings');
       return;
     }

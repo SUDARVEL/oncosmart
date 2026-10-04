@@ -7,6 +7,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ParqCheckmarkIllustration } from '../../../components/ParqCheckmarkIllustration';
 import { PrimaryButton } from '../../../components/PrimaryButton';
+import { isOnboardingReview } from '../../../lib/onboardingReview';
 import { saveCloudProfileFromStore } from '../../../lib/userCloudSync';
 import { useAppStore } from '../../../store/useAppStore';
 import { colors } from '../../../theme/colors';
@@ -15,7 +16,8 @@ import { font } from '../../../theme/fonts';
 export default function ParqResultScreen() {
   const { t } = useTranslation();
   const router = useRouter();
-  const { preview } = useLocalSearchParams<{ preview?: string }>();
+  const { preview, from } = useLocalSearchParams<{ preview?: string; from?: string }>();
+  const review = isOnboardingReview(from);
   const parqCleared = useAppStore((state) => state.parqCleared);
   const activeAuthUserId = useAppStore((state) => state.activeAuthUserId);
   const [saving, setSaving] = useState(false);
@@ -27,6 +29,15 @@ export default function ParqResultScreen() {
       setSaving(true);
       await saveCloudProfileFromStore(activeAuthUserId);
       setSaving(false);
+    }
+    if (review) {
+      try {
+        if (typeof router.dismissAll === 'function') router.dismissAll();
+      } catch {
+        // Stack may already be a single screen.
+      }
+      router.replace('/settings');
+      return;
     }
     router.replace('/home');
   };

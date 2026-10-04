@@ -510,7 +510,7 @@
     "about": "ONCOSMART பற்றி",
     "aboutDescription": "பதிப்பு {{version}}",
     "onboardingAnswers": "தொடக்கக் கேள்விகள்",
-    "onboardingAnswersDescription": "திரையிடல் கேள்விகளை பார்த்து மாற்றலாம். முடித்த அமர்வுகள் அப்படியே இருக்கும்.",
+    "onboardingAnswersDescription": "முதல் கேள்வியிலிருந்து அதே வரிசையில் கேட்கப்படும். முடித்த அமர்வுகள் அப்படியே இருக்கும்.",
     "onboardingSave": "பதில்களை சேமி",
     "onboardingSaving": "சேமிக்கிறது…",
     "onboardingSaved": "பதில்கள் சேமிக்கப்பட்டன",

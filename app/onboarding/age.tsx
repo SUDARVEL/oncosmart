@@ -1,4 +1,4 @@
-import { useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
@@ -13,6 +13,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { PrimaryButton } from '../../components/PrimaryButton';
 import { ScreenHeader } from '../../components/ScreenHeader';
+import { isOnboardingReview, onboardingReviewHref } from '../../lib/onboardingReview';
 import { useAppStore } from '../../store/useAppStore';
 import { colors } from '../../theme/colors';
 import { font } from '../../theme/fonts';
@@ -31,6 +32,8 @@ function parseAgeInput(value: string): number | null {
 export default function AgeScreen() {
   const { t } = useTranslation();
   const router = useRouter();
+  const { from } = useLocalSearchParams<{ from?: string }>();
+  const review = isOnboardingReview(from);
   const savedAge = useAppStore((state) => state.age);
   const setAge = useAppStore((state) => state.setAge);
   const [ageText, setAgeText] = useState(
@@ -48,7 +51,7 @@ export default function AgeScreen() {
   const handleContinue = () => {
     if (!canContinue || parsedAge == null) return;
     setAge(parsedAge);
-    router.push('/onboarding/gender');
+    router.push(review ? onboardingReviewHref('/onboarding/gender') : '/onboarding/gender');
   };
 
   return (

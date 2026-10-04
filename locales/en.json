@@ -510,7 +510,7 @@
     "about": "About ONCOSMART",
     "aboutDescription": "Version {{version}}",
     "onboardingAnswers": "Onboarding answers",
-    "onboardingAnswersDescription": "Review and update the screening questions. Completed sessions stay saved.",
+    "onboardingAnswersDescription": "Walk through the same questions from the start. Completed sessions stay saved.",
     "onboardingSave": "Save answers",
     "onboardingSaving": "Saving…",
     "onboardingSaved": "Answers saved",

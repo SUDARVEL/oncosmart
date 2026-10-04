@@ -1,4 +1,4 @@
-import { useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, Text, View } from 'react-native';
@@ -7,6 +7,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { PrimaryButton } from '../../components/PrimaryButton';
 import { ScreenHeader } from '../../components/ScreenHeader';
 import { SelectOption } from '../../components/SelectOption';
+import { isOnboardingReview, onboardingReviewHref } from '../../lib/onboardingReview';
 import { AppGender, useAppStore } from '../../store/useAppStore';
 import { colors } from '../../theme/colors';
 import { font } from '../../theme/fonts';
@@ -20,6 +21,8 @@ const GENDER_OPTIONS: { id: AppGender; labelKey: string }[] = [
 export default function GenderScreen() {
   const { t } = useTranslation();
   const router = useRouter();
+  const { from } = useLocalSearchParams<{ from?: string }>();
+  const review = isOnboardingReview(from);
   const savedGender = useAppStore((state) => state.gender);
   const setGender = useAppStore((state) => state.setGender);
   const [selected, setSelected] = useState<AppGender | null>(savedGender);
@@ -27,7 +30,9 @@ export default function GenderScreen() {
   const handleContinue = () => {
     if (!selected) return;
     setGender(selected);
-    router.push('/onboarding/cancer-pathway');
+    router.push(
+      review ? onboardingReviewHref('/onboarding/cancer-pathway') : '/onboarding/cancer-pathway',
+    );
   };
 
   return (

@@ -232,7 +232,7 @@ export default function SettingsScreen() {
                 title={t('settings.onboardingAnswers')}
                 description={t('settings.onboardingAnswersDescription')}
                 showChevron
-                onPress={() => router.push('/settings/onboarding-answers')}
+                onPress={() => router.push('/onboarding/username?from=review')}
               />
               <SettingsRow
                 title={t('settings.adminDashboard')}

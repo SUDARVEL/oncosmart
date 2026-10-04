@@ -1,4 +1,4 @@
-import { useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
@@ -15,6 +15,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { PrimaryButton } from '../../components/PrimaryButton';
 import { ScreenHeader } from '../../components/ScreenHeader';
 import { normalizeCancerTypeSlug } from '../../lib/cancerPathway';
+import { isOnboardingReview, onboardingReviewHref } from '../../lib/onboardingReview';
 import { TreatmentType, useAppStore } from '../../store/useAppStore';
 import { colors } from '../../theme/colors';
 import { font } from '../../theme/fonts';
@@ -65,6 +66,8 @@ function ChoiceChip({ label, selected, onPress, compact = false }: ChoiceChipPro
 export default function TreatmentScreen() {
   const { t } = useTranslation();
   const router = useRouter();
+  const { from } = useLocalSearchParams<{ from?: string }>();
+  const review = isOnboardingReview(from);
   const cancerType = useAppStore((state) => state.cancerType);
   const savedTreatment = useAppStore((state) => state.treatmentUndergoing);
   const savedSurgery = useAppStore((state) => state.underwentSurgery);
@@ -81,7 +84,7 @@ export default function TreatmentScreen() {
     if (!canContinue || treatment == null || surgery == null) return;
     setTreatmentUndergoing(treatment);
     setUnderwentSurgery(surgery);
-    router.push('/onboarding/avatar');
+    router.push(review ? onboardingReviewHref('/onboarding/avatar') : '/onboarding/avatar');
   };
 
   return (

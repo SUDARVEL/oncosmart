@@ -1,4 +1,4 @@
-import { useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, Text, View } from 'react-native';
@@ -13,6 +13,7 @@ import {
   normalizeCancerTypeSlug,
   type CancerTypeSlug,
 } from '../../lib/cancerPathway';
+import { isOnboardingReview, onboardingReviewHref } from '../../lib/onboardingReview';
 import { useAppStore } from '../../store/useAppStore';
 import { colors } from '../../theme/colors';
 import { font } from '../../theme/fonts';
@@ -24,6 +25,8 @@ import { font } from '../../theme/fonts';
 export default function CancerPathwayScreen() {
   const { t } = useTranslation();
   const router = useRouter();
+  const { from } = useLocalSearchParams<{ from?: string }>();
+  const review = isOnboardingReview(from);
   const savedCancerType = useAppStore((state) => state.cancerType);
   const setCancerType = useAppStore((state) => state.setCancerType);
 
@@ -36,7 +39,7 @@ export default function CancerPathwayScreen() {
   const handleContinue = () => {
     if (!selected) return;
     setCancerType(selected);
-    router.push('/onboarding/treatment');
+    router.push(review ? onboardingReviewHref('/onboarding/treatment') : '/onboarding/treatment');
   };
 
   return (
