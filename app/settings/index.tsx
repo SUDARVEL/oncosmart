@@ -7,6 +7,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { BottomTabBar } from '../../components/BottomTabBar';
 import { ChatFab } from '../../components/ChatFab';
+import { PulseOximeterCoachSheet } from '../../components/exercise/PulseOximeterCoachSheet';
 import { ScreenHeader } from '../../components/ScreenHeader';
 import {
   CancerTypeBottomSheet,
@@ -16,7 +17,7 @@ import { LanguageBottomSheet } from '../../components/settings/LanguageBottomShe
 import { ProfileBottomSheet } from '../../components/settings/ProfileBottomSheet';
 import { ResetPathwayProgressModal } from '../../components/settings/ResetPathwayProgressModal';
 import { applyCancerTypeChange } from '../../lib/applyCancerTypeChange';
-import { formatCancerTypeForDisplay } from '../../lib/cancerPathway';
+import { formatCancerTypeForDisplay, resolveMediaGender } from '../../lib/cancerPathway';
 import type { CancerTypeSlug } from '../../lib/cancerPathway';
 import { getCompletedSessionCount } from '../../lib/programProgress';
 import { SettingsRow } from '../../components/settings/SettingsRow';
@@ -45,12 +46,15 @@ export default function SettingsScreen() {
   const setUsername = useAppStore((state) => state.setUsername);
   const resetApp = useAppStore((state) => state.resetApp);
   const restartCoachTour = useAppStore((state) => state.restartCoachTour);
+  const gender = useAppStore((state) => state.gender);
+  const avatar = useAppStore((state) => state.avatar);
   const [languageSheetOpen, setLanguageSheetOpen] = useState(false);
   const [profileSheetOpen, setProfileSheetOpen] = useState(false);
   const [cancerSheetOpen, setCancerSheetOpen] = useState(false);
   const [resetPathwayModalOpen, setResetPathwayModalOpen] = useState(false);
   const [pendingCancerSlug, setPendingCancerSlug] = useState<CancerTypeSlug | null>(null);
   const [pathwayChangeBusy, setPathwayChangeBusy] = useState(false);
+  const [oximeterTipsOpen, setOximeterTipsOpen] = useState(false);
   const { refreshing, onRefresh } = usePullToRefresh();
 
   const selectedLanguage: AppLanguage = language === 'ta' ? 'ta' : 'en';
@@ -216,6 +220,12 @@ export default function SettingsScreen() {
               }, 350);
             }}
           />
+          <SettingsRow
+            title={t('settings.replayOximeter')}
+            description={t('settings.replayOximeterDescription')}
+            showChevron
+            onPress={() => setOximeterTipsOpen(true)}
+          />
           {isAdmin ? (
             <>
               <SettingsRow
@@ -258,6 +268,14 @@ export default function SettingsScreen() {
         selected={selectedCancerSlug}
         onClose={() => setCancerSheetOpen(false)}
         onSelect={handleCancerPathwaySelect}
+      />
+
+      <PulseOximeterCoachSheet
+        visible={oximeterTipsOpen}
+        mediaGender={resolveMediaGender(gender, avatar)}
+        onDismiss={() => setOximeterTipsOpen(false)}
+        onSkip={() => setOximeterTipsOpen(false)}
+        onDone={() => setOximeterTipsOpen(false)}
       />
 
       <ResetPathwayProgressModal

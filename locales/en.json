@@ -484,6 +484,8 @@
     "logoutDescription": "Sign out of this device",
     "replayTips": "App tips",
     "replayTipsDescription": "Replay the guided tour of Home, Growth, and Settings",
+    "replayOximeter": "Oximeter tips",
+    "replayOximeterDescription": "Replay the pulse oximeter guide",
     "changeAvatar": "Change avatar",
     "changeAvatarDescription": "Pick a new male or female avatar",
     "cancerPathway": "Cancer pathway",
