@@ -19,11 +19,17 @@ const STEP_HAND_IMAGE: Record<PulseOximeterMediaGender, string> = {
   male: `${MALE_FOLDER}/Opposite-Hand Pulse Oximeter Check.png`,
 };
 
-/** One wrist infographic for both men and women. */
+/** One wrist infographic for both men and women. Tamil uses its own poster. */
 const MANUAL_PULSE_IMAGE = `${FEMALE_FOLDER}/Manual Pulse Check Infographic.png`;
+const TAMIL_MANUAL_PULSE_IMAGE = `${MALE_FOLDER}/Tamil Wrist Pulse Guide.png`;
 
 /** Step 6 already circles the heart rate. Same file for every gender. */
 const HEART_RATE_GUIDE_IMAGE = 'Coachmarks/Pulse Oximeter Heart Rate Guide.png';
+const TAMIL_HEART_RATE_GUIDE_IMAGE = `${MALE_FOLDER}/Pulse Oximeter Heart Rate tamil.png`;
+
+function usesTamilGuide(language?: string | null): boolean {
+  return language === 'ta';
+}
 
 /** The seated “wait for the reading” frame. */
 export const PULSE_OXIMETER_HAND_STEP = 5;
@@ -34,13 +40,16 @@ export const PULSE_VALUE_MARK_STEP = 6;
 export function getPulseOximeterCoachImageUrl(
   step: number,
   mediaGender: PulseOximeterMediaGender,
+  language?: string | null,
 ): string | null {
   if (step < 1 || step > PULSE_OXIMETER_COACH_STEP_COUNT) return null;
   if (step === PULSE_OXIMETER_HAND_STEP) {
     return getPublicStorageUrl(STEP_HAND_IMAGE[mediaGender]);
   }
   if (step === PULSE_VALUE_MARK_STEP) {
-    return getPublicStorageUrl(HEART_RATE_GUIDE_IMAGE);
+    return getPublicStorageUrl(
+      usesTamilGuide(language) ? TAMIL_HEART_RATE_GUIDE_IMAGE : HEART_RATE_GUIDE_IMAGE,
+    );
   }
   const objectPath =
     mediaGender === 'female'
@@ -49,19 +58,23 @@ export function getPulseOximeterCoachImageUrl(
   return getPublicStorageUrl(objectPath);
 }
 
-/** Same manual-method poster for every gender. */
+/** Same manual-method poster for every gender. Tamil uses the Tamil wrist guide. */
 export function getManualPulseGuideUrl(
   _mediaGender?: PulseOximeterMediaGender,
+  language?: string | null,
 ): string | null {
-  return getPublicStorageUrl(MANUAL_PULSE_IMAGE);
+  return getPublicStorageUrl(
+    usesTamilGuide(language) ? TAMIL_MANUAL_PULSE_IMAGE : MANUAL_PULSE_IMAGE,
+  );
 }
 
 export function getPulseOximeterCoachImageUrls(
   mediaGender: PulseOximeterMediaGender,
+  language?: string | null,
 ): string[] {
   const urls: string[] = [];
   for (let step = 1; step <= PULSE_OXIMETER_COACH_STEP_COUNT; step += 1) {
-    const url = getPulseOximeterCoachImageUrl(step, mediaGender);
+    const url = getPulseOximeterCoachImageUrl(step, mediaGender, language);
     if (url) urls.push(url);
   }
   return urls;

@@ -23,6 +23,7 @@ import {
   PULSE_VALUE_MARK_STEP,
   type PulseOximeterMediaGender,
 } from '../../lib/pulseOximeterCoach';
+import { useAppStore } from '../../store/useAppStore';
 import { colors } from '../../theme/colors';
 import { uiText } from '../../theme/typography';
 import { CachedMediaImage } from '../CachedMediaImage';
@@ -60,6 +61,7 @@ export function PulseOximeterCoachSheet({
   onDismiss,
 }: Props) {
   const { t } = useTranslation();
+  const language = useAppStore((state) => state.language);
   const insets = useSafeAreaInsets();
   const { width, height } = useWindowDimensions();
   const listRef = useRef<FlatList<number>>(null);
@@ -82,15 +84,15 @@ export function PulseOximeterCoachSheet({
     setIndex(0);
     setMethod('oximeter');
     const urls = [
-      ...getPulseOximeterCoachImageUrls(mediaGender),
-      getManualPulseGuideUrl(mediaGender),
+      ...getPulseOximeterCoachImageUrls(mediaGender, language),
+      getManualPulseGuideUrl(mediaGender, language),
     ].filter((url): url is string => Boolean(url));
     if (urls.length > 0) void Image.prefetch(urls);
     const frame = requestAnimationFrame(() => {
       listRef.current?.scrollToOffset({ offset: 0, animated: false });
     });
     return () => cancelAnimationFrame(frame);
-  }, [mediaGender, visible]);
+  }, [language, mediaGender, visible]);
 
   const goTo = useCallback(
     (next: number) => {
@@ -140,7 +142,7 @@ export function PulseOximeterCoachSheet({
 
   const renderItem = useCallback(
     ({ item }: { item: number }) => {
-      const uri = getPulseOximeterCoachImageUrl(item, mediaGender);
+      const uri = getPulseOximeterCoachImageUrl(item, mediaGender, language);
       const showsHeartRateGuide = item === PULSE_VALUE_MARK_STEP;
       return (
         <View style={{ width }}>
@@ -171,10 +173,10 @@ export function PulseOximeterCoachSheet({
         </View>
       );
     },
-    [imageHeight, mediaGender, t, width],
+    [imageHeight, language, mediaGender, t, width],
   );
 
-  const manualUri = getManualPulseGuideUrl(mediaGender);
+  const manualUri = getManualPulseGuideUrl(mediaGender, language);
 
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onDismiss}>
