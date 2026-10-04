@@ -17,6 +17,7 @@ export async function notifyAdminsOfHold(params: {
   reason: HoldReason | null;
   patientName: string;
   patientUsername?: string;
+  note?: string | null;
 }): Promise<void> {
   const supabase = getSupabase();
   if (!supabase) return;

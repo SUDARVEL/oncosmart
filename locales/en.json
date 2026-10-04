@@ -180,7 +180,12 @@
     "nextLevelUnlock": "Level {{level}} unlocks after 12 hours, around {{when}}.",
     "allDone": "You have completed all available days.",
     "goHome": "Go to Home",
-    "viewProgress": "View Progress"
+    "viewProgress": "View Progress",
+    "feedbackTitle": "How was today's exercise session?",
+    "feedbackSubtitle": "This helps us support you better.",
+    "feedbackEasy": "Easy to finish",
+    "feedbackHard": "A little bit hard",
+    "feedbackTired": "Felt tired"
   },
   "sessionFlow": {
     "pause": "Pause",
@@ -324,6 +329,9 @@
     "pauseReasonPain": "Having pain",
     "pauseReasonTreatment": "Recently underwent treatment",
     "pauseReasonUnwell": "Not feeling well",
+    "pauseReasonOther": "Any other",
+    "pauseReasonOtherPlaceholder": "Tell us in your own words",
+    "pauseReasonOtherSave": "Save reason",
     "streakTitle": "This week's streak",
     "streakWeekLabel": "{{range}}",
     "streakWeekFallback": "Mon – Sun this week",
@@ -496,6 +504,11 @@
     "resetPathwayProgressCancel": "Cancel",
     "about": "About ONCOSMART",
     "aboutDescription": "Version {{version}}",
+    "onboardingAnswers": "Onboarding answers",
+    "onboardingAnswersDescription": "Review and update the screening questions. Completed sessions stay saved.",
+    "onboardingSave": "Save answers",
+    "onboardingSaving": "Saving…",
+    "onboardingSaved": "Answers saved",
     "adminDashboard": "Admin dashboard",
     "adminDashboardDescription": "Patient progress, pause/quit alerts",
     "adminTestingTitle": "Admin testing tools"
@@ -605,6 +618,7 @@
     "pauseReasonPain": "Pain",
     "pauseReasonTreatment": "Treatment",
     "pauseReasonUnwell": "Unwell",
+    "pauseReasonOther": "Any other",
     "quitReasonExploring": "Just exploring"
   },
   "coach": {

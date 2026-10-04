@@ -22,8 +22,9 @@ create table if not exists patients (
   ),
   pause_reason text check (
     pause_reason is null
-    or pause_reason = any (array['tired'::text, 'pain'::text, 'treatment'::text, 'unwell'::text])
+    or pause_reason = any (array['tired'::text, 'pain'::text, 'treatment'::text, 'unwell'::text, 'other'::text])
   ),
+  pause_reason_note text,
   quit_reason text check (
     quit_reason is null
     or quit_reason = any (array['tired'::text, 'pain'::text, 'exploring'::text, 'treatment'::text, 'unwell'::text])
@@ -79,6 +80,10 @@ create table if not exists exercise_completions (
   pain_score int,
   start_bpm int,
   end_bpm int,
+  session_feedback text check (
+    session_feedback is null
+    or session_feedback = any (array['easy'::text, 'hard'::text, 'tired'::text])
+  ),
   completed_at timestamptz default now(),
   unique (patient_id, session_key)
 );

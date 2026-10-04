@@ -1,15 +1,23 @@
 /** How the patient froze the program — pause (Growth) vs quit (mid-exercise exit). */
 export type ProgressHoldType = 'pause' | 'quit';
 
-/** Reasons from Growth → Pause Progress. */
-export type PauseReason = 'tired' | 'pain' | 'treatment' | 'unwell';
+/** Reasons from Growth → Pause Progress. `other` stores free text in pauseReasonNote. */
+export type PauseReason = 'tired' | 'pain' | 'treatment' | 'unwell' | 'other';
 
 /** Reasons from guided session → Why did you stop? */
 export type QuitReason = 'tired' | 'pain' | 'exploring';
 
 export type HoldReason = PauseReason | QuitReason;
 
-const PAUSE_REASONS = new Set<PauseReason>(['tired', 'pain', 'treatment', 'unwell']);
+const PAUSE_REASONS = new Set<PauseReason>(['tired', 'pain', 'treatment', 'unwell', 'other']);
+
+const PAUSE_NOTE_MAX = 240;
+
+export function asPauseReasonNote(value: unknown): string | null {
+  if (typeof value !== 'string') return null;
+  const trimmed = value.trim().slice(0, PAUSE_NOTE_MAX);
+  return trimmed.length > 0 ? trimmed : null;
+}
 const QUIT_REASONS = new Set<QuitReason>(['tired', 'pain', 'exploring']);
 
 export function asPauseReason(value: unknown): PauseReason | null {

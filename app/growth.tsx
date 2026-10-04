@@ -69,9 +69,9 @@ export default function GrowthScreen() {
   const painScores = useAppStore((state) => state.painScores);
   const dayCompletedAt = useAppStore((state) => state.dayCompletedAt);
 
-  const handlePauseReasonSelect = (reason: PauseReason) => {
+  const handlePauseReasonSelect = (reason: PauseReason, note?: string) => {
     setShowPauseReason(false);
-    setProgressPaused(true, reason, 'pause');
+    setProgressPaused(true, reason, 'pause', note ?? null);
     // Pausing stops exercise reminders until the patient resumes.
     void cancelNextExerciseNotification();
     const displayName = username.trim() || 'Patient';
@@ -83,6 +83,7 @@ export default function GrowthScreen() {
       await notifyAdminsOfHold({
         holdType: 'pause',
         reason,
+        note: reason === 'other' ? note : null,
         patientName: displayName,
         patientUsername: displayName,
       });

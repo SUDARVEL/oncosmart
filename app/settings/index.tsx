@@ -229,6 +229,12 @@ export default function SettingsScreen() {
           {isAdmin ? (
             <>
               <SettingsRow
+                title={t('settings.onboardingAnswers')}
+                description={t('settings.onboardingAnswersDescription')}
+                showChevron
+                onPress={() => router.push('/settings/onboarding-answers')}
+              />
+              <SettingsRow
                 title={t('settings.adminDashboard')}
                 description={t('settings.adminDashboardDescription')}
                 showChevron

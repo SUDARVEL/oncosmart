@@ -36,6 +36,7 @@ export type AdminPatientProgress = {
   progressPaused: boolean;
   progressHoldType: ProgressHoldType | null;
   pauseReason: string | null;
+  pauseReasonNote: string | null;
   quitReason: string | null;
   pausedAt: string | null;
   quitAt: string | null;
@@ -220,6 +221,7 @@ type RpcRow = {
   progress_paused: boolean | null;
   progress_hold_type: string | null;
   pause_reason: string | null;
+  pause_reason_note: string | null;
   quit_reason: string | null;
   paused_at: string | null;
   quit_at: string | null;
@@ -259,6 +261,10 @@ export async function fetchAdminPatientProgress(): Promise<AdminPatientProgress[
       typeof row.pause_reason === 'string' && row.pause_reason.trim()
         ? row.pause_reason.trim()
         : null;
+    const pauseReasonNote =
+      typeof row.pause_reason_note === 'string' && row.pause_reason_note.trim()
+        ? row.pause_reason_note.trim()
+        : null;
     const quitReason =
       typeof row.quit_reason === 'string' && row.quit_reason.trim()
         ? row.quit_reason.trim()
@@ -280,6 +286,7 @@ export async function fetchAdminPatientProgress(): Promise<AdminPatientProgress[
       progressPaused,
       progressHoldType: progressPaused ? 'pause' : null,
       pauseReason: progressPaused ? pauseReason : null,
+      pauseReasonNote: progressPaused && pauseReason === 'other' ? pauseReasonNote : null,
       quitReason,
       pausedAt: row.paused_at,
       quitAt: row.quit_at,

@@ -5,6 +5,7 @@ import { createJSONStorage, persist } from 'zustand/middleware';
 import { getCompletedLevelsCount, sessionKey } from '../lib/programProgress';
 import type { BadgeKey } from '../lib/getEarnedBadges';
 import type { ProgressHoldType, PauseReason, QuitReason } from '../lib/progressHold';
+import type { SessionFeedback } from '../lib/sessionFeedback';
 
 export type AppLanguage = 'en' | 'ta';
 export type AppGender = 'male' | 'female' | 'prefer_not_to_say';
@@ -32,6 +33,10 @@ export type AppStateSnapshot = {
   progressHoldType: ProgressHoldType | null;
   /** Why progress was paused (Growth → Pause Progress). */
   pauseReason: PauseReason | null;
+  /** Free-text note when pauseReason is `other`. */
+  pauseReasonNote: string | null;
+  /** How the session felt, keyed by L{level}D{day}. */
+  sessionFeedbackByKey: Record<string, SessionFeedback>;
   /** Why the patient quit mid-exercise (Why did you stop?). */
   quitReason: QuitReason | null;
   /** Start/end BPM captured per session key (L1D1, etc.) before cloud sync. */
@@ -81,7 +86,10 @@ type AppState = AppStateSnapshot & {
     paused: boolean,
     reason?: PauseReason | QuitReason | null,
     holdType?: ProgressHoldType | null,
+    note?: string | null,
   ) => void;
+  setSessionFeedback: (sessionKey: string, feedback: SessionFeedback) => void;
+  mergeSessionFeedbackFromCloud: (entries: Record<string, SessionFeedback>) => void;
   /** Record mid-exercise quit without pausing program progress. */
   recordExerciseQuit: (reason: QuitReason) => void;
   setSessionBpm: (
@@ -161,6 +169,8 @@ export const useAppStore = create<AppState>()(
       progressPaused: false,
       progressHoldType: null,
       pauseReason: null,
+      pauseReasonNote: null,
+      sessionFeedbackByKey: {},
       quitReason: null,
       sessionBpmByKey: {},
       levelsCompleted: 0,
@@ -194,25 +204,40 @@ export const useAppStore = create<AppState>()(
             painScores: { ...state.painScores, [`${level}:${dayInLevel}`]: score },
           };
         }),
-      setProgressPaused: (paused, reason = null, holdType = null) =>
+      setProgressPaused: (paused, reason = null, holdType = null, note = null) =>
         set((state) => {
           if (!paused) {
             return {
               progressPaused: false,
               progressHoldType: null,
               pauseReason: null,
+              pauseReasonNote: null,
             };
           }
           // Growth → Pause Progress only. Mid-exercise quit uses recordExerciseQuit().
           if (holdType === 'quit') {
             return state;
           }
+          const pauseReason = (reason as PauseReason | null) ?? null;
+          const pauseReasonNote =
+            pauseReason === 'other' && typeof note === 'string' && note.trim()
+              ? note.trim().slice(0, 240)
+              : null;
           return {
             progressPaused: true,
             progressHoldType: 'pause',
-            pauseReason: (reason as PauseReason | null) ?? null,
+            pauseReason,
+            pauseReasonNote,
           };
         }),
+      setSessionFeedback: (sessionKey, feedback) =>
+        set((state) => ({
+          sessionFeedbackByKey: { ...state.sessionFeedbackByKey, [sessionKey]: feedback },
+        })),
+      mergeSessionFeedbackFromCloud: (entries) =>
+        set((state) => ({
+          sessionFeedbackByKey: { ...state.sessionFeedbackByKey, ...entries },
+        })),
       recordExerciseQuit: (reason) =>
         set({
           quitReason: reason,
@@ -342,6 +367,8 @@ export const useAppStore = create<AppState>()(
           progressPaused: false,
           progressHoldType: null,
           pauseReason: null,
+          pauseReasonNote: null,
+          sessionFeedbackByKey: {},
           quitReason: null,
           sessionBpmByKey: {},
           levelsCompleted: 0,
@@ -376,6 +403,8 @@ export const useAppStore = create<AppState>()(
         progressPaused: state.progressPaused,
         progressHoldType: state.progressHoldType,
         pauseReason: state.pauseReason,
+        pauseReasonNote: state.pauseReasonNote,
+        sessionFeedbackByKey: state.sessionFeedbackByKey,
         quitReason: state.quitReason,
         levelsCompleted: state.levelsCompleted,
         dayCompletedAt: state.dayCompletedAt,

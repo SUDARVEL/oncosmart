@@ -1,17 +1,21 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useCallback } from 'react';
+import { useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { SessionFeedbackModal } from '../../components/exercise/SessionFeedbackModal';
 import { BadgeCelebrationModal } from '../../components/growth/BadgeCelebrationModal';
 import { PressableScale } from '../../components/PressableScale';
 import {
   DAYS_PER_LEVEL,
   getNextSession,
+  sessionKey,
   UNLOCK_DELAY_MS,
 } from '../../lib/programProgress';
+import type { SessionFeedback } from '../../lib/sessionFeedback';
+import { saveSessionFeedback } from '../../lib/userCloudSync';
 import { useAppStore } from '../../store/useAppStore';
 import { colors } from '../../theme/colors';
 import { font } from '../../theme/fonts';
@@ -38,16 +42,36 @@ export default function SessionCompleteScreen() {
   const level = Number(levelParam) || 1;
   const dayInLevel = Number(dayParam) || 1;
 
-  const completedAt = useAppStore(
-    (state) => state.dayCompletedAt[`L${level}D${dayInLevel}`],
-  );
+  const sessionId = sessionKey(level, dayInLevel);
+  const completedAt = useAppStore((state) => state.dayCompletedAt[sessionId]);
+  const savedFeedback = useAppStore((state) => state.sessionFeedbackByKey[sessionId]);
+  const setSessionFeedback = useAppStore((state) => state.setSessionFeedback);
   const pendingBadges = useAppStore((state) => state.pendingBadgeCelebrations);
   const dismissBadgeCelebration = useAppStore((state) => state.dismissBadgeCelebration);
   const activeBadge = pendingBadges[0] ?? null;
+  const [feedbackDismissed, setFeedbackDismissed] = useState(false);
+  const askFeedback = savedFeedback == null && !feedbackDismissed;
 
   const handleCelebrationDismiss = useCallback(() => {
     dismissBadgeCelebration();
   }, [dismissBadgeCelebration]);
+
+  const handleFeedback = useCallback(
+    (feedback: SessionFeedback) => {
+      setSessionFeedback(sessionId, feedback);
+      setFeedbackDismissed(true);
+      const userId = useAppStore.getState().activeAuthUserId;
+      if (userId) {
+        void saveSessionFeedback({
+          userId,
+          level,
+          dayInLevel,
+          feedback,
+        });
+      }
+    },
+    [dayInLevel, level, sessionId, setSessionFeedback],
+  );
 
   const next = getNextSession(level, dayInLevel);
   const unlockAt = completedAt ? completedAt + UNLOCK_DELAY_MS : Date.now() + UNLOCK_DELAY_MS;
@@ -108,9 +132,15 @@ export default function SessionCompleteScreen() {
         </PressableScale>
       </View>
 
+      <SessionFeedbackModal
+        visible={askFeedback}
+        onClose={() => setFeedbackDismissed(true)}
+        onSelect={handleFeedback}
+      />
+
       <BadgeCelebrationModal
         badgeKey={activeBadge}
-        visible={activeBadge != null}
+        visible={activeBadge != null && !askFeedback}
         onDismiss={handleCelebrationDismiss}
       />
     </SafeAreaView>

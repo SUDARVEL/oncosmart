@@ -2,8 +2,10 @@ import { normalizeCancerTypeSlug } from './cancerPathway';
 import { getCompletedLevelsCount } from './programProgress';
 import {
   asPauseReason,
+  asPauseReasonNote,
   asQuitReason,
 } from './progressHold';
+import { asSessionFeedback, type SessionFeedback } from './sessionFeedback';
 import { getSupabase } from './supabase';
 import type {
   AgeRange,
@@ -113,7 +115,7 @@ export async function loadCloudProfileIntoStore(userId: string): Promise<CloudLo
   const { data, error } = await supabase
     .from('patients')
     .select(
-      'id,user_id,name,language,gender,avatar,age,age_range,cancer_type,treatment_undergoing,underwent_surgery,parq_answers,parq_cleared,progress_paused,progress_hold_type,pause_reason,quit_reason,pain_scores,day_completed_at,levels_completed,onboarding_complete,coach_tour_seen',
+      'id,user_id,name,language,gender,avatar,age,age_range,cancer_type,treatment_undergoing,underwent_surgery,parq_answers,parq_cleared,progress_paused,progress_hold_type,pause_reason,pause_reason_note,quit_reason,pain_scores,day_completed_at,levels_completed,onboarding_complete,coach_tour_seen',
     )
     .eq('user_id', userId)
     .maybeSingle();
@@ -143,6 +145,8 @@ export async function loadCloudProfileIntoStore(userId: string): Promise<CloudLo
   const progressPaused = Boolean(data.progress_paused);
   const progressHoldType = progressPaused ? 'pause' : null;
   const pauseReason = progressPaused ? asPauseReason(data.pause_reason) : null;
+  const pauseReasonNote =
+    progressPaused && pauseReason === 'other' ? asPauseReasonNote(data.pause_reason_note) : null;
   const quitReason = asQuitReason(data.quit_reason);
 
   useAppStore.getState().hydrateFromCloud({
@@ -162,6 +166,7 @@ export async function loadCloudProfileIntoStore(userId: string): Promise<CloudLo
     progressPaused,
     progressHoldType,
     pauseReason,
+    pauseReasonNote,
     quitReason,
     painScores: asRecordNumber(data.pain_scores),
     dayCompletedAt,
@@ -185,7 +190,7 @@ export async function loadSessionBpmIntoStore(patientId: string): Promise<void> 
 
   const { data, error } = await supabase
     .from('exercise_completions')
-    .select('session_key,start_bpm,end_bpm')
+    .select('session_key,start_bpm,end_bpm,session_feedback')
     .eq('patient_id', patientId);
 
   if (error) {
@@ -194,18 +199,25 @@ export async function loadSessionBpmIntoStore(patientId: string): Promise<void> 
   }
 
   const entries: Record<string, { startBpm: number; endBpm: number }> = {};
+  const feedbackEntries: Record<string, SessionFeedback> = {};
   for (const row of data ?? []) {
     const key = typeof row.session_key === 'string' ? row.session_key : '';
+    if (!key) continue;
     const startBpm =
       typeof row.start_bpm === 'number' ? row.start_bpm : Number(row.start_bpm);
     const endBpm = typeof row.end_bpm === 'number' ? row.end_bpm : Number(row.end_bpm);
-    if (!key || !Number.isFinite(startBpm) || !Number.isFinite(endBpm)) continue;
-    if (startBpm <= 0 || endBpm <= 0) continue;
-    entries[key] = { startBpm, endBpm };
+    if (Number.isFinite(startBpm) && Number.isFinite(endBpm) && startBpm > 0 && endBpm > 0) {
+      entries[key] = { startBpm, endBpm };
+    }
+    const feedback = asSessionFeedback(row.session_feedback);
+    if (feedback) feedbackEntries[key] = feedback;
   }
 
   if (Object.keys(entries).length > 0) {
     useAppStore.getState().mergeSessionBpmFromCloud(entries);
+  }
+  if (Object.keys(feedbackEntries).length > 0) {
+    useAppStore.getState().mergeSessionFeedbackFromCloud(feedbackEntries);
   }
 }
 
@@ -237,10 +249,17 @@ export async function saveCloudProfileFromStore(userId: string): Promise<boolean
       progress_paused: state.progressPaused,
       progress_hold_type: state.progressPaused ? 'pause' : null,
       pause_reason: state.progressPaused ? state.pauseReason : null,
+      pause_reason_note:
+        state.progressPaused && state.pauseReason === 'other' ? state.pauseReasonNote : null,
       quit_reason: state.quitReason,
       ...(state.progressPaused
         ? {}
-        : { paused_at: null, progress_hold_type: null, pause_reason: null }),
+        : {
+            paused_at: null,
+            progress_hold_type: null,
+            pause_reason: null,
+            pause_reason_note: null,
+          }),
       pain_scores: state.painScores,
       day_completed_at: state.dayCompletedAt,
       levels_completed: state.levelsCompleted,
@@ -357,6 +376,7 @@ export async function upsertSessionCompletion(params: {
   painScore?: number;
   startBpm?: number;
   endBpm?: number;
+  sessionFeedback?: SessionFeedback;
 }): Promise<void> {
   const supabase = getSupabase();
   if (!supabase) return;
@@ -384,6 +404,9 @@ export async function upsertSessionCompletion(params: {
   if (params.endBpm != null && params.endBpm > 0) {
     row.end_bpm = params.endBpm;
   }
+  if (params.sessionFeedback) {
+    row.session_feedback = params.sessionFeedback;
+  }
 
   const { error } = await supabase.from('exercise_completions').upsert(row, {
     onConflict: 'patient_id,session_key',
@@ -391,4 +414,28 @@ export async function upsertSessionCompletion(params: {
   if (error) {
     console.warn('[CloudSync] completion upsert failed', error.message);
   }
+}
+
+/** Save how the finished session felt, without touching progress. */
+export async function saveSessionFeedback(params: {
+  userId: string;
+  level: number;
+  dayInLevel: number;
+  feedback: SessionFeedback;
+}): Promise<void> {
+  const state = useAppStore.getState();
+  const key = `L${params.level}D${params.dayInLevel}`;
+  const completedAt = state.dayCompletedAt[key] ?? Date.now();
+  const bpm = state.sessionBpmByKey[key];
+  const painScore = state.painScores[`${params.level}:${params.dayInLevel}`];
+  await upsertSessionCompletion({
+    userId: params.userId,
+    level: params.level,
+    dayInLevel: params.dayInLevel,
+    completedAt,
+    painScore,
+    startBpm: bpm?.startBpm,
+    endBpm: bpm?.endBpm,
+    sessionFeedback: params.feedback,
+  });
 }

@@ -41,6 +41,7 @@ export function CloudSyncBridge() {
   const progressPaused = useAppStore((s) => s.progressPaused);
   const progressHoldType = useAppStore((s) => s.progressHoldType);
   const pauseReason = useAppStore((s) => s.pauseReason);
+  const pauseReasonNote = useAppStore((s) => s.pauseReasonNote);
   const quitReason = useAppStore((s) => s.quitReason);
   const painScores = useAppStore((s) => s.painScores);
   const dayCompletedAt = useAppStore((s) => s.dayCompletedAt);
@@ -109,6 +110,7 @@ export function CloudSyncBridge() {
     progressPaused,
     progressHoldType,
     pauseReason,
+    pauseReasonNote,
     quitReason,
     painScores,
     dayCompletedAt,

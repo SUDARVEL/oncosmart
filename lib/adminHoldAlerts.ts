@@ -19,7 +19,7 @@ export type AdminHoldAlert = {
 
 const ADMIN_ALERTS_CHANNEL_ID = 'admin-alerts';
 
-function reasonLabel(reason: string | null | undefined): string {
+function reasonLabel(reason: string | null | undefined, note?: string | null): string {
   switch (reason) {
     case 'tired':
       return 'Feeling tired';
@@ -31,6 +31,10 @@ function reasonLabel(reason: string | null | undefined): string {
       return 'Not feeling well';
     case 'exploring':
       return 'Just exploring';
+    case 'other': {
+      const extra = note?.trim();
+      return extra ? `Any other: ${extra}` : 'Any other';
+    }
     default:
       return typeof reason === 'string' && reason.trim() ? reason.trim() : 'No reason given';
   }
@@ -41,13 +45,14 @@ export function buildHoldAlertCopy(params: {
   reason: HoldReason | string | null;
   patientName: string;
   patientUsername?: string;
+  note?: string | null;
 }): { title: string; body: string } {
   const username = (params.patientUsername || params.patientName || 'patient').trim();
   const name = (params.patientName || username).trim();
   const actionWord = params.holdType === 'quit' ? 'quit' : 'paused';
   const title =
     params.holdType === 'quit' ? 'Patient quit exercise' : 'Patient paused exercise';
-  const body = `${name} (${username}) has ${actionWord}. Reason: ${reasonLabel(params.reason)}.`;
+  const body = `${name} (${username}) has ${actionWord}. Reason: ${reasonLabel(params.reason, params.note)}.`;
   return { title, body };
 }
 

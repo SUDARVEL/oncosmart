@@ -119,16 +119,16 @@ export function WorkoutsSection({ firstCardAnchorRef }: WorkoutsSectionProps = {
 const styles = StyleSheet.create({
   container: {
     width: "100%",
-    alignItems: "center",
+    alignItems: "stretch",
     gap: 16,
     paddingHorizontal: 16,
   },
   list: {
-    width: 326,
+    width: "100%",
     gap: 15,
   },
   empty: {
-    width: 326,
+    width: "100%",
     minHeight: 120,
     alignItems: "center",
     justifyContent: "center",

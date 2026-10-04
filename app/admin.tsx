@@ -52,6 +52,7 @@ function formatHoldReason(
   reason: string | null | undefined,
   t: (key: string) => string,
   unknownKey: string,
+  note?: string | null,
 ): string {
   switch (reason) {
     case 'tired':
@@ -64,6 +65,11 @@ function formatHoldReason(
       return t('admin.pauseReasonUnwell');
     case 'exploring':
       return t('admin.quitReasonExploring');
+    case 'other': {
+      const label = t('admin.pauseReasonOther');
+      const extra = note?.trim();
+      return extra ? `${label}: ${extra}` : label;
+    }
     default:
       if (typeof reason === 'string' && reason.trim()) return reason.trim();
       return t(unknownKey);
@@ -213,7 +219,12 @@ function PatientCard({
           </Text>
           <Text style={styles.pauseBannerReason}>
             {t('admin.reasonLabel')}:{' '}
-            {formatHoldReason(patient.pauseReason, t, 'admin.pauseReasonUnknown')}
+            {formatHoldReason(
+              patient.pauseReason,
+              t,
+              'admin.pauseReasonUnknown',
+              patient.pauseReasonNote,
+            )}
           </Text>
         </View>
       ) : null}
@@ -291,7 +302,12 @@ function PatientCard({
           <Text style={styles.detailLine}>
             {t('admin.reasonLabel')}:{' '}
             {patient.progressPaused
-              ? formatHoldReason(patient.pauseReason, t, 'admin.pauseReasonNone')
+              ? formatHoldReason(
+                  patient.pauseReason,
+                  t,
+                  'admin.pauseReasonNone',
+                  patient.pauseReasonNote,
+                )
               : t('admin.pauseReasonNone')}
           </Text>
 

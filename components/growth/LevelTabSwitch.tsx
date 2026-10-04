@@ -1,9 +1,9 @@
 import { useTranslation } from 'react-i18next';
-import { Pressable, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import type { WorkoutLevel } from '../../lib/getLevelWorkouts';
 import { colors } from '../../theme/colors';
-import { font } from '../../theme/fonts';
+import { uiText } from '../../theme/typography';
 
 type LevelTabSwitchProps = {
   activeLevel: WorkoutLevel;
@@ -14,11 +14,9 @@ const LEVELS: WorkoutLevel[] = [1, 2, 3, 4];
 
 export function LevelTabSwitch({ activeLevel, onLevelChange }: LevelTabSwitchProps) {
   const { t } = useTranslation();
-  const { width: screenWidth } = useWindowDimensions();
-  const switchWidth = Math.min(326, screenWidth - 32);
 
   return (
-    <View style={[styles.container, { width: switchWidth }]}>
+    <View style={styles.container}>
       {LEVELS.map((level) => {
         const isActive = activeLevel === level;
         return (
@@ -30,10 +28,10 @@ export function LevelTabSwitch({ activeLevel, onLevelChange }: LevelTabSwitchPro
             accessibilityState={{ selected: isActive }}
           >
             <Text
-              style={[styles.tabText, !isActive && styles.tabTextInactive, isActive && styles.tabTextActive]}
+              style={[styles.tabText, !isActive && styles.tabTextInactive]}
               numberOfLines={1}
               adjustsFontSizeToFit
-              minimumFontScale={0.75}
+              minimumFontScale={0.72}
             >
               {t('growth.workouts.level', { level })}
             </Text>
@@ -46,44 +44,36 @@ export function LevelTabSwitch({ activeLevel, onLevelChange }: LevelTabSwitchPro
 
 const styles = StyleSheet.create({
   container: {
+    width: '100%',
     flexDirection: 'row',
-    flexWrap: 'nowrap',
-    alignItems: 'center',
-    backgroundColor: '#F9FAFB',
-    borderRadius: 41,
-    paddingHorizontal: 4,
-    paddingVertical: 4,
-    height: 48,
+    alignItems: 'stretch',
+    backgroundColor: '#F3F4F6',
+    borderRadius: 28,
+    padding: 6,
+    gap: 6,
   },
   tab: {
     flex: 1,
     minWidth: 0,
-    height: 40,
-    borderRadius: 35,
+    minHeight: 44,
+    borderRadius: 22,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingHorizontal: 4,
+    paddingHorizontal: 8,
+    paddingVertical: 10,
   },
   tabActive: {
-    backgroundColor: 'rgba(224, 244, 255, 0.2)',
+    backgroundColor: '#FFFFFF',
     borderWidth: 1,
     borderColor: colors.buttonPrimary,
   },
   tabText: {
-    fontSize: 14,
-    lineHeight: 18,
+    ...uiText(13, 'medium'),
     textAlign: 'center',
-    ...font('medium'),
     color: colors.buttonPrimary,
-    textTransform: 'capitalize',
   },
   tabTextInactive: {
-    ...font('regular'),
+    ...uiText(13, 'regular'),
     color: colors.textMuted,
-    textTransform: 'none',
-  },
-  tabTextActive: {
-    color: colors.buttonPrimary,
-    ...font('medium'),
   },
 });
