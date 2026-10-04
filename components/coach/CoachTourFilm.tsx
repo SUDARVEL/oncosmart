@@ -54,6 +54,7 @@ function CoachTourFilmBody({ onClose }: { onClose: () => void }) {
   const [index, setIndex] = useState(0);
   const [played, setPlayed] = useState(0);
   const [duration, setDuration] = useState(152.37);
+  const [trackWidths, setTrackWidths] = useState<number[]>([]);
   const indexRef = useRef(0);
   const seekingRef = useRef(false);
   const last = COACH_FILM_CHAPTERS.length - 1;
@@ -62,7 +63,7 @@ function CoachTourFilmBody({ onClose }: { onClose: () => void }) {
   const player = useVideoPlayer(url, (instance) => {
     instance.loop = false;
     instance.muted = true;
-    instance.timeUpdateEventInterval = 0.1;
+    instance.timeUpdateEventInterval = 0.05;
     instance.play();
   });
 
@@ -71,22 +72,52 @@ function CoachTourFilmBody({ onClose }: { onClose: () => void }) {
   }, [index]);
 
   useEffect(() => {
-    const timeSub = player.addListener('timeUpdate', ({ currentTime }) => {
-      setPlayed(currentTime);
+    player.loop = false;
+    player.muted = true;
+    player.timeUpdateEventInterval = 0.05;
+
+    const applyTime = (time: number) => {
+      if (!Number.isFinite(time) || time < 0) return;
+      const length = player.duration;
+      if (Number.isFinite(length) && length > 1) {
+        setDuration((current) => (Math.abs(current - length) > 0.2 ? length : current));
+      }
       if (seekingRef.current) {
         const target = COACH_FILM_CHAPTERS[indexRef.current]?.start ?? 0;
-        if (Math.abs(currentTime - target) < 0.75) seekingRef.current = false;
-        else return;
+        if (Math.abs(time - target) < 0.45) seekingRef.current = false;
+        else {
+          setPlayed(target);
+          return;
+        }
       }
-      const next = coachFilmChapterIndex(currentTime);
+      setPlayed((current) => (Math.abs(current - time) < 0.03 ? current : time));
+      const next = coachFilmChapterIndex(time);
       setIndex((current) => (current === next ? current : next));
+    };
+
+    const timeSub = player.addListener('timeUpdate', ({ currentTime }) => {
+      applyTime(currentTime);
     });
     const loadSub = player.addListener('sourceLoad', ({ duration: nextDuration }) => {
       if (Number.isFinite(nextDuration) && nextDuration > 1) setDuration(nextDuration);
+      player.play();
     });
+    const statusSub = player.addListener('statusChange', ({ status }) => {
+      if (status === 'readyToPlay') player.play();
+    });
+    const clock = setInterval(() => {
+      try {
+        applyTime(player.currentTime);
+      } catch {
+        // Position is not readable until the first frame.
+      }
+    }, 50);
+
     return () => {
+      clearInterval(clock);
       timeSub.remove();
       loadSub.remove();
+      statusSub.remove();
     };
   }, [player]);
 
@@ -135,9 +166,23 @@ function CoachTourFilmBody({ onClose }: { onClose: () => void }) {
               const end = COACH_FILM_CHAPTERS[bar + 1]?.start ?? duration;
               const span = Math.max(0.01, end - start);
               const fill = played >= end ? 1 : played <= start ? 0 : (played - start) / span;
+              const width = (trackWidths[bar] ?? 0) * Math.max(0, Math.min(1, fill));
               return (
-                <View key={item.start} style={[styles.bar, bar === index && styles.barCurrent]}>
-                  <View style={[styles.barFill, { width: `${Math.max(0, Math.min(1, fill)) * 100}%` }]} />
+                <View
+                  key={item.start}
+                  style={[styles.bar, bar === index && styles.barCurrent]}
+                  onLayout={(event) => {
+                    const nextWidth = event.nativeEvent.layout.width;
+                    if (!Number.isFinite(nextWidth) || nextWidth < 1) return;
+                    setTrackWidths((current) => {
+                      if (Math.abs((current[bar] ?? 0) - nextWidth) < 0.5) return current;
+                      const copy = current.slice();
+                      copy[bar] = nextWidth;
+                      return copy;
+                    });
+                  }}
+                >
+                  <View style={[styles.barFill, { width: Math.max(width, 0) }]} />
                 </View>
               );
             })}
@@ -213,7 +258,10 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   barFill: {
-    height: 4,
+    position: 'absolute',
+    left: 0,
+    top: 0,
+    bottom: 0,
     borderRadius: 2,
     backgroundColor: BAR,
   },
