@@ -25,6 +25,7 @@ const BUTTON = '#3A3A3C';
 export function CoachTourFilm() {
   const coachTourSeen = useAppStore((state) => state.coachTourSeen === true);
   const coachTourStep = useAppStore((state) => state.coachTourStep);
+  const language = useAppStore((state) => state.language);
   const setCoachTourSeen = useAppStore((state) => state.setCoachTourSeen);
   const setCoachTourStep = useAppStore((state) => state.setCoachTourStep);
   const visible = !coachTourSeen && coachTourStep != null;
@@ -42,7 +43,11 @@ export function CoachTourFilm() {
       onRequestClose={close}
       presentationStyle="fullScreen"
     >
-      {visible ? <CoachTourFilmBody onClose={close} /> : <View style={styles.screen} />}
+      {visible ? (
+        <CoachTourFilmBody key={language ?? 'en'} onClose={close} />
+      ) : (
+        <View style={styles.screen} />
+      )}
     </Modal>
   );
 }
@@ -50,7 +55,8 @@ export function CoachTourFilm() {
 function CoachTourFilmBody({ onClose }: { onClose: () => void }) {
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
-  const url = getCoachMarkVideoUrl();
+  const language = useAppStore((state) => state.language);
+  const url = getCoachMarkVideoUrl(language);
   const [index, setIndex] = useState(0);
   const [played, setPlayed] = useState(0);
   const [duration, setDuration] = useState(152.37);
