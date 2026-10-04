@@ -19,10 +19,8 @@ const STEP_HAND_IMAGE: Record<PulseOximeterMediaGender, string> = {
   male: `${MALE_FOLDER}/Opposite-Hand Pulse Oximeter Check.png`,
 };
 
-const MANUAL_PULSE_IMAGE: Record<PulseOximeterMediaGender, string> = {
-  female: `${FEMALE_FOLDER}/Manual Pulse Check_ Radial Artery Method Female.png`,
-  male: `${MALE_FOLDER}/Manual Pulse Check Guide Men.png`,
-};
+/** One wrist infographic for both men and women. */
+const MANUAL_PULSE_IMAGE = `${FEMALE_FOLDER}/Manual Pulse Check Infographic.png`;
 
 /** The seated “wait for the reading” frame. */
 export const PULSE_OXIMETER_HAND_STEP = 5;
@@ -42,11 +40,11 @@ export function getPulseOximeterCoachImageUrl(
   return getPublicStorageUrl(objectPath);
 }
 
-/** Single radial-artery poster for the manual pulse method. */
+/** Same manual-method poster for every gender. */
 export function getManualPulseGuideUrl(
-  mediaGender: PulseOximeterMediaGender,
+  _mediaGender?: PulseOximeterMediaGender,
 ): string | null {
-  return getPublicStorageUrl(MANUAL_PULSE_IMAGE[mediaGender]);
+  return getPublicStorageUrl(MANUAL_PULSE_IMAGE);
 }
 
 /**

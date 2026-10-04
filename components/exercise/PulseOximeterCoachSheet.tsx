@@ -46,8 +46,8 @@ const STEPS = Array.from({ length: PULSE_OXIMETER_COACH_STEP_COUNT }, (_, index)
 const COPY_BLOCK_HEIGHT = 124;
 /** Matches the zoom on the coach illustration. */
 const IMAGE_ZOOM = 1.04;
-/** Manual poster is 941×1672. */
-const MANUAL_ASPECT = 1672 / 941;
+/** Manual infographic is 1024×1536. */
+const MANUAL_ASPECT = 1536 / 1024;
 
 function pulseValueRingStyle(
   frameWidth: number,
