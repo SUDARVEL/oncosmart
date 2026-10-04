@@ -21,7 +21,7 @@ const STEP_HAND_IMAGE: Record<PulseOximeterMediaGender, string> = {
 
 /** One wrist infographic for both men and women. Tamil uses its own poster. */
 const MANUAL_PULSE_IMAGE = `${FEMALE_FOLDER}/Manual Pulse Check Infographic.png`;
-const TAMIL_MANUAL_PULSE_IMAGE = `${MALE_FOLDER}/Tamil Wrist Pulse Guide.png`;
+const TAMIL_MANUAL_PULSE_IMAGE = `${MALE_FOLDER}/Tamil wrist guide.png`;
 
 /** Step 6 already circles the heart rate. Same file for every gender. */
 const HEART_RATE_GUIDE_IMAGE = 'Coachmarks/Pulse Oximeter Heart Rate Guide.png';
