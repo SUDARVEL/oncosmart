@@ -111,27 +111,30 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
+    flexGrow: 1,
     paddingHorizontal: 20,
-    paddingTop: 4,
-    paddingBottom: 20,
-    gap: 18,
+    paddingTop: 8,
+    paddingBottom: 8,
   },
   intro: {
-    gap: 8,
+    gap: 6,
+    marginBottom: 8,
   },
   title: {
-    ...uiText(22, 'semiBold'),
+    ...uiText(22, 'bold'),
     color: colors.textPrimary,
   },
   subtitle: {
-    ...uiText(14),
+    ...uiText(15),
     color: colors.textMuted,
   },
   options: {
-    gap: 12,
+    flex: 1,
+    justifyContent: 'space-evenly',
+    gap: 16,
   },
   card: {
-    minHeight: 84,
+    minHeight: 88,
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
