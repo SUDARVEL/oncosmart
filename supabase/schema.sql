@@ -13,6 +13,7 @@ create table if not exists patients (
   cancer_type text not null default '',
   treatment_undergoing text,
   underwent_surgery boolean,
+  anaemia_diagnosed boolean,
   parq_answers jsonb not null default '[]'::jsonb,
   parq_cleared boolean default false,
   progress_paused boolean not null default false,

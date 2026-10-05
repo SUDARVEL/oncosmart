@@ -24,6 +24,8 @@ export type AppStateSnapshot = {
   cancerType: string;
   treatmentUndergoing: TreatmentType | null;
   underwentSurgery: boolean | null;
+  /** Yes/No from the cancer-pathway anaemia question. Null until answered. */
+  anaemiaDiagnosed: boolean | null;
   avatar: AppAvatar | null;
   parqAnswers: (boolean | null)[];
   parqCleared: boolean | null;
@@ -73,6 +75,7 @@ type AppState = AppStateSnapshot & {
   setCancerType: (cancerType: string) => void;
   setTreatmentUndergoing: (treatment: TreatmentType) => void;
   setUnderwentSurgery: (value: boolean) => void;
+  setAnaemiaDiagnosed: (value: boolean) => void;
   setAvatar: (avatar: AppAvatar) => void;
   setParqAnswer: (index: number, value: boolean) => void;
   setParqCleared: (cleared: boolean) => void;
@@ -162,6 +165,7 @@ export const useAppStore = create<AppState>()(
       cancerType: '',
       treatmentUndergoing: null,
       underwentSurgery: null,
+      anaemiaDiagnosed: null,
       avatar: null,
       parqAnswers: [...INITIAL_PARQ_ANSWERS],
       parqCleared: null,
@@ -189,6 +193,7 @@ export const useAppStore = create<AppState>()(
       setCancerType: (cancerType) => set({ cancerType }),
       setTreatmentUndergoing: (treatmentUndergoing) => set({ treatmentUndergoing }),
       setUnderwentSurgery: (underwentSurgery) => set({ underwentSurgery }),
+      setAnaemiaDiagnosed: (anaemiaDiagnosed) => set({ anaemiaDiagnosed }),
       setAvatar: (avatar) => set({ avatar }),
       setParqAnswer: (index, value) =>
         set((state) => {
@@ -360,6 +365,7 @@ export const useAppStore = create<AppState>()(
           cancerType: '',
           treatmentUndergoing: null,
           underwentSurgery: null,
+          anaemiaDiagnosed: null,
           avatar: null,
           parqAnswers: [...INITIAL_PARQ_ANSWERS],
           parqCleared: null,
@@ -396,6 +402,7 @@ export const useAppStore = create<AppState>()(
         cancerType: state.cancerType,
         treatmentUndergoing: state.treatmentUndergoing,
         underwentSurgery: state.underwentSurgery,
+        anaemiaDiagnosed: state.anaemiaDiagnosed,
         avatar: state.avatar,
         parqAnswers: state.parqAnswers,
         parqCleared: state.parqCleared,

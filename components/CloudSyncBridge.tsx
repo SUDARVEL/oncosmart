@@ -35,6 +35,7 @@ export function CloudSyncBridge() {
   const cancerType = useAppStore((s) => s.cancerType);
   const treatmentUndergoing = useAppStore((s) => s.treatmentUndergoing);
   const underwentSurgery = useAppStore((s) => s.underwentSurgery);
+  const anaemiaDiagnosed = useAppStore((s) => s.anaemiaDiagnosed);
   const avatar = useAppStore((s) => s.avatar);
   const parqAnswers = useAppStore((s) => s.parqAnswers);
   const parqCleared = useAppStore((s) => s.parqCleared);
@@ -104,6 +105,7 @@ export function CloudSyncBridge() {
     cancerType,
     treatmentUndergoing,
     underwentSurgery,
+    anaemiaDiagnosed,
     avatar,
     parqAnswers,
     parqCleared,

@@ -9,12 +9,14 @@ import {
   ScrollView,
   StyleSheet,
   Text,
+  useWindowDimensions,
   View,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import type { ProgressHoldType, PauseReason } from '../../lib/progressHold';
 import { colors } from '../../theme/colors';
-import { font } from '../../theme/fonts';
+import { uiText } from '../../theme/typography';
 import { AppTextInput } from '../AppTextInput';
 
 export type { PauseReason };
@@ -39,6 +41,8 @@ const PRESET_REASONS: { reason: Exclude<PauseReason, 'other'>; labelKey: string 
  */
 export function PauseReasonModal({ visible, holdType, onClose, onSelect }: Props) {
   const { t } = useTranslation();
+  const insets = useSafeAreaInsets();
+  const { height: windowHeight } = useWindowDimensions();
   const isQuit = holdType === 'quit';
   const [otherOpen, setOtherOpen] = useState(false);
   const [note, setNote] = useState('');
@@ -52,6 +56,10 @@ export function PauseReasonModal({ visible, holdType, onClose, onSelect }: Props
 
   const trimmedNote = note.trim();
   const canSaveOther = trimmedNote.length > 0;
+  const cardMaxHeight = windowHeight - insets.top - insets.bottom - 24;
+  // Header stays fixed. The note footer (button included) stays fixed too,
+  // so the option list is the only part that scrolls on a short phone.
+  const scrollMaxHeight = Math.max(160, cardMaxHeight - (otherOpen ? 220 : 120));
 
   const submitOther = () => {
     if (!canSaveOther) return;
@@ -61,10 +69,13 @@ export function PauseReasonModal({ visible, holdType, onClose, onSelect }: Props
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
       <KeyboardAvoidingView
-        style={styles.backdrop}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        style={[
+          styles.backdrop,
+          { paddingTop: insets.top + 12, paddingBottom: insets.bottom + 12 },
+        ]}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
-        <View style={styles.card}>
+        <View style={[styles.card, { maxHeight: cardMaxHeight }]}>
           <View style={styles.header}>
             <Text style={styles.title}>
               {isQuit ? t('growth.quitReasonTitle') : t('growth.pauseReasonTitle')}
@@ -82,6 +93,7 @@ export function PauseReasonModal({ visible, holdType, onClose, onSelect }: Props
           <View style={styles.divider} />
 
           <ScrollView
+            style={[styles.scroll, { maxHeight: scrollMaxHeight }]}
             contentContainerStyle={styles.body}
             showsVerticalScrollIndicator={false}
             bounces={false}
@@ -129,18 +141,24 @@ export function PauseReasonModal({ visible, holdType, onClose, onSelect }: Props
                     onSubmitEditing={submitOther}
                     accessibilityLabel={t('growth.pauseReasonOther')}
                   />
-                  <Pressable
-                    style={[styles.saveButton, !canSaveOther && styles.saveButtonDisabled]}
-                    onPress={submitOther}
-                    disabled={!canSaveOther}
-                    accessibilityRole="button"
-                  >
-                    <Text style={styles.saveButtonText}>{t('growth.pauseReasonOtherSave')}</Text>
-                  </Pressable>
                 </View>
               ) : null}
             </View>
           </ScrollView>
+
+          {otherOpen ? (
+            <View style={styles.footer}>
+              <Pressable
+                style={[styles.saveButton, !canSaveOther && styles.saveButtonDisabled]}
+                onPress={submitOther}
+                disabled={!canSaveOther}
+                accessibilityRole="button"
+                accessibilityState={{ disabled: !canSaveOther }}
+              >
+                <Text style={styles.saveButtonText}>{t('growth.pauseReasonOtherSave')}</Text>
+              </Pressable>
+            </View>
+          ) : null}
         </View>
       </KeyboardAvoidingView>
     </Modal>
@@ -159,7 +177,7 @@ const styles = StyleSheet.create({
   card: {
     width: '100%',
     maxWidth: 400,
-    maxHeight: '88%',
+    flexShrink: 1,
     backgroundColor: '#FFFFFF',
     borderRadius: 16,
     overflow: 'hidden',
@@ -179,10 +197,8 @@ const styles = StyleSheet.create({
   },
   title: {
     flex: 1,
-    fontSize: 16,
-    lineHeight: 24,
     color: '#374151',
-    ...font('semiBold'),
+    ...uiText(16, 'semiBold'),
   },
   closeButton: {
     width: 32,
@@ -194,6 +210,10 @@ const styles = StyleSheet.create({
     height: 1,
     backgroundColor: '#E5E7EB',
   },
+  scroll: {
+    flexGrow: 0,
+    flexShrink: 1,
+  },
   body: {
     paddingHorizontal: 20,
     paddingTop: 20,
@@ -201,10 +221,8 @@ const styles = StyleSheet.create({
     gap: 16,
   },
   subtitle: {
-    fontSize: 15,
-    lineHeight: 22,
     color: '#374151',
-    ...font('regular'),
+    ...uiText(15),
   },
   options: {
     gap: 12,
@@ -224,10 +242,8 @@ const styles = StyleSheet.create({
     backgroundColor: colors.cardSelectedBg,
   },
   optionText: {
-    fontSize: 16,
-    lineHeight: 24,
     color: '#414651',
-    ...font('semiBold'),
+    ...uiText(16, 'semiBold'),
   },
   optionTextSelected: {
     color: colors.buttonPrimary,
@@ -244,21 +260,29 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     backgroundColor: '#FFFFFF',
   },
+  footer: {
+    paddingHorizontal: 20,
+    paddingTop: 8,
+    paddingBottom: 16,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: '#E5E7EB',
+    backgroundColor: '#FFFFFF',
+  },
   saveButton: {
-    minHeight: 48,
+    minHeight: 52,
     borderRadius: 10,
     backgroundColor: colors.buttonPrimary,
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: 16,
+    paddingVertical: 12,
   },
   saveButtonDisabled: {
     backgroundColor: colors.buttonDisabled,
   },
   saveButtonText: {
-    fontSize: 15,
-    lineHeight: 22,
     color: '#FFFFFF',
-    ...font('semiBold'),
+    textAlign: 'center',
+    ...uiText(15, 'semiBold'),
   },
 });

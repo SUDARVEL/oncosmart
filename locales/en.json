@@ -48,6 +48,10 @@
     "header": "Cancer Pathway",
     "title": "Select your cancer type",
     "subtitle": "Your exercise plan and videos are chosen from this pathway, matched to your gender and language.",
+    "anaemiaTitle": "Have you been diagnosed with anaemia?",
+    "anaemiaYes": "Yes",
+    "anaemiaNo": "No",
+    "anaemiaAdvice": "If yes, please follow your healthcare provider’s advice before exercising.",
     "continue": "Continue"
   },
   "treatment": {

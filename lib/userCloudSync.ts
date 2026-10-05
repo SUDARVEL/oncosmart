@@ -115,7 +115,7 @@ export async function loadCloudProfileIntoStore(userId: string): Promise<CloudLo
   const { data, error } = await supabase
     .from('patients')
     .select(
-      'id,user_id,name,language,gender,avatar,age,age_range,cancer_type,treatment_undergoing,underwent_surgery,parq_answers,parq_cleared,progress_paused,progress_hold_type,pause_reason,pause_reason_note,quit_reason,pain_scores,day_completed_at,levels_completed,onboarding_complete,coach_tour_seen',
+      'id,user_id,name,language,gender,avatar,age,age_range,cancer_type,treatment_undergoing,underwent_surgery,anaemia_diagnosed,parq_answers,parq_cleared,progress_paused,progress_hold_type,pause_reason,pause_reason_note,quit_reason,pain_scores,day_completed_at,levels_completed,onboarding_complete,coach_tour_seen',
     )
     .eq('user_id', userId)
     .maybeSingle();
@@ -161,6 +161,8 @@ export async function loadCloudProfileIntoStore(userId: string): Promise<CloudLo
     treatmentUndergoing: (data.treatment_undergoing as TreatmentType | null) ?? null,
     underwentSurgery:
       typeof data.underwent_surgery === 'boolean' ? data.underwent_surgery : null,
+    anaemiaDiagnosed:
+      typeof data.anaemia_diagnosed === 'boolean' ? data.anaemia_diagnosed : null,
     parqAnswers: asParqAnswers(data.parq_answers),
     parqCleared,
     progressPaused,
@@ -244,6 +246,7 @@ export async function saveCloudProfileFromStore(userId: string): Promise<boolean
       cancer_type: state.cancerType,
       treatment_undergoing: state.treatmentUndergoing,
       underwent_surgery: state.underwentSurgery,
+      anaemia_diagnosed: state.anaemiaDiagnosed,
       parq_answers: state.parqAnswers,
       parq_cleared: state.parqCleared,
       progress_paused: state.progressPaused,
