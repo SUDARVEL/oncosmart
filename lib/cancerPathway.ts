@@ -78,6 +78,17 @@ export function parseLevelFromStoragePath(objectPath: string): number | null {
   return Number.isFinite(level) && level >= 1 && level <= 4 ? level : null;
 }
 
+/**
+ * Illustrations in Supabase `Oximeter info`.
+ * Thorax has extra transparent padding, so it is scaled to fill the same circle.
+ */
+export const CANCER_TYPE_ART: Record<CancerTypeSlug, { path: string; scale: number }> = {
+  breast: { path: 'Oximeter info/Breast Cancer.png', scale: 1 },
+  thorax: { path: 'Oximeter info/Thorax cancer2.png', scale: 1.24 },
+  abdomen: { path: 'Oximeter info/Gastro cancer.png', scale: 1 },
+  'head-neck': { path: 'Oximeter info/Head&Neck 2.png', scale: 1 },
+};
+
 export const CANCER_TYPE_I18N_KEYS: Record<CancerTypeSlug, string> = {
   breast: 'treatment.cancerTypeBreast',
   thorax: 'treatment.cancerTypeThorax',

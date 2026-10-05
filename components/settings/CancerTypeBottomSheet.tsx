@@ -1,16 +1,29 @@
 import { Ionicons } from '@expo/vector-icons';
+import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Modal, Pressable, StyleSheet, Text, View } from 'react-native';
+import {
+  FlatList,
+  Modal,
+  Pressable,
+  StyleSheet,
+  Text,
+  useWindowDimensions,
+  View,
+  type NativeScrollEvent,
+  type NativeSyntheticEvent,
+} from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { CachedMediaImage } from '../CachedMediaImage';
 import {
+  CANCER_TYPE_ART,
   CANCER_TYPE_I18N_KEYS,
   CANCER_TYPE_SLUGS,
   normalizeCancerTypeSlug,
   type CancerTypeSlug,
 } from '../../lib/cancerPathway';
+import { getPublicStorageUrl } from '../../lib/supabaseStorage';
 import { colors } from '../../theme/colors';
-import { font } from '../../theme/fonts';
 import { uiText } from '../../theme/typography';
 
 type Props = {
@@ -20,9 +33,44 @@ type Props = {
   onSelect: (slug: CancerTypeSlug) => void;
 };
 
+const CARD_GAP = 14;
+
 export function CancerTypeBottomSheet({ visible, selected, onClose, onSelect }: Props) {
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
+  const { width } = useWindowDimensions();
+  const listRef = useRef<FlatList<CancerTypeSlug>>(null);
+  const cardWidth = Math.min(260, width - 88);
+  const stride = cardWidth + CARD_GAP;
+  const sidePad = (width - cardWidth) / 2;
+  const selectedIndex = Math.max(
+    0,
+    CANCER_TYPE_SLUGS.findIndex((slug) => slug === selected),
+  );
+  const [index, setIndex] = useState(selectedIndex);
+
+  useEffect(() => {
+    if (!visible) return;
+    setIndex(selectedIndex);
+    const frame = requestAnimationFrame(() => {
+      listRef.current?.scrollToOffset({
+        offset: selectedIndex * stride,
+        animated: false,
+      });
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [selectedIndex, stride, visible]);
+
+  const scrollTo = (next: number) => {
+    const clamped = Math.max(0, Math.min(CANCER_TYPE_SLUGS.length - 1, next));
+    setIndex(clamped);
+    listRef.current?.scrollToOffset({ offset: clamped * stride, animated: true });
+  };
+
+  const onScrollEnd = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
+    const next = Math.round(event.nativeEvent.contentOffset.x / stride);
+    if (next >= 0 && next < CANCER_TYPE_SLUGS.length) setIndex(next);
+  };
 
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
@@ -31,7 +79,7 @@ export function CancerTypeBottomSheet({ visible, selected, onClose, onSelect }: 
           style={styles.scrim}
           onPress={onClose}
           accessibilityRole="button"
-          accessibilityLabel="Dismiss"
+          accessibilityLabel={t('pain.close')}
         />
 
         <View style={[styles.sheet, { paddingBottom: Math.max(insets.bottom, 16) }]}>
@@ -45,7 +93,7 @@ export function CancerTypeBottomSheet({ visible, selected, onClose, onSelect }: 
               onPress={onClose}
               style={styles.closeButton}
               accessibilityRole="button"
-              accessibilityLabel="Close"
+              accessibilityLabel={t('pain.close')}
             >
               <Ionicons name="close" size={22} color="#374151" />
             </Pressable>
@@ -53,23 +101,73 @@ export function CancerTypeBottomSheet({ visible, selected, onClose, onSelect }: 
 
           <Text style={styles.subtitle}>{t('settings.cancerPathwayDescription')}</Text>
 
-          <View style={styles.chipGrid}>
-            {CANCER_TYPE_SLUGS.map((slug) => {
-              const isSelected = selected === slug;
-              return (
-                <Pressable
-                  key={slug}
-                  onPress={() => onSelect(slug)}
-                  style={[styles.chip, isSelected && styles.chipSelected]}
-                  accessibilityRole="button"
-                  accessibilityState={{ selected: isSelected }}
-                >
-                  <Text style={[styles.chipText, isSelected && styles.chipTextSelected]}>
-                    {t(CANCER_TYPE_I18N_KEYS[slug])}
-                  </Text>
-                </Pressable>
-              );
+          <FlatList
+            ref={listRef}
+            data={CANCER_TYPE_SLUGS}
+            keyExtractor={(slug) => slug}
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            decelerationRate="fast"
+            snapToOffsets={CANCER_TYPE_SLUGS.map((_, itemIndex) => itemIndex * stride)}
+            snapToAlignment="start"
+            disableIntervalMomentum
+            contentContainerStyle={{
+              paddingLeft: sidePad,
+              paddingRight: Math.max(0, sidePad - CARD_GAP),
+              paddingVertical: 4,
+            }}
+            onMomentumScrollEnd={onScrollEnd}
+            getItemLayout={(_, itemIndex) => ({
+              length: stride,
+              offset: stride * itemIndex,
+              index: itemIndex,
             })}
+            renderItem={({ item: slug }) => {
+              const isSelected = selected === slug;
+              const art = CANCER_TYPE_ART[slug];
+              const uri = getPublicStorageUrl(art.path);
+              return (
+                <View style={{ width: stride }}>
+                  <Pressable
+                    onPress={() => onSelect(slug)}
+                    style={[styles.card, { width: cardWidth }, isSelected && styles.cardSelected]}
+                    accessibilityRole="button"
+                    accessibilityState={{ selected: isSelected }}
+                  >
+                    <View style={styles.iconWrap}>
+                      {uri ? (
+                        <CachedMediaImage
+                          source={{ uri }}
+                          style={[styles.icon, { transform: [{ scale: art.scale }] }]}
+                          contentFit="contain"
+                          accessibilityIgnoresInvertColors
+                        />
+                      ) : null}
+                    </View>
+                    <Text style={[styles.cardLabel, isSelected && styles.cardLabelSelected]}>
+                      {t(CANCER_TYPE_I18N_KEYS[slug])}
+                    </Text>
+                    <View style={[styles.radio, isSelected && styles.radioSelected]}>
+                      {isSelected ? <View style={styles.radioDot} /> : null}
+                    </View>
+                  </Pressable>
+                </View>
+              );
+            }}
+          />
+
+          <View style={styles.dots}>
+            {CANCER_TYPE_SLUGS.map((slug, dotIndex) => (
+              <Pressable
+                key={slug}
+                onPress={() => scrollTo(dotIndex)}
+                hitSlop={8}
+                accessibilityRole="button"
+                accessibilityLabel={t(CANCER_TYPE_I18N_KEYS[slug])}
+              >
+                <View style={[styles.dot, dotIndex === index && styles.dotActive]} />
+              </Pressable>
+            ))}
           </View>
         </View>
       </View>
@@ -95,7 +193,6 @@ const styles = StyleSheet.create({
     backgroundColor: colors.background,
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
-    paddingHorizontal: 20,
     paddingTop: 8,
     gap: 12,
   },
@@ -113,13 +210,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+    paddingHorizontal: 20,
   },
   headerTitle: {
     flex: 1,
-    fontSize: 18,
-    lineHeight: 24,
+    ...uiText(18, 'semiBold'),
     color: colors.textPrimary,
-    ...font('semiBold'),
   },
   closeButton: {
     width: 36,
@@ -128,41 +224,83 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   subtitle: {
-    fontSize: 15,
-    lineHeight: 22,
+    ...uiText(14),
     color: colors.textSecondary,
-    ...font('regular'),
+    paddingHorizontal: 20,
   },
-  chipGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 12,
-    marginTop: 4,
-    marginBottom: 8,
-  },
-  chip: {
-    flexGrow: 1,
-    flexBasis: '45%',
-    minHeight: 48,
-    borderRadius: 8,
-    backgroundColor: '#F1F3F5',
+  card: {
+    minHeight: 248,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingHorizontal: 12,
-    paddingVertical: 12,
+    gap: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 18,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    backgroundColor: '#FFFFFF',
   },
-  chipSelected: {
-    backgroundColor: colors.optionBgSelected,
-    borderWidth: 1.5,
-    borderColor: colors.optionBorderSelected,
+  cardSelected: {
+    borderColor: colors.buttonPrimary,
+    backgroundColor: colors.cardSelectedBg,
   },
-  chipText: {
-    ...uiText(15, 'medium'),
+  iconWrap: {
+    width: 132,
+    height: 132,
+    borderRadius: 66,
+    overflow: 'hidden',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#FDECEF',
+  },
+  icon: {
+    width: 132,
+    height: 132,
+  },
+  cardLabel: {
+    ...uiText(16, 'medium'),
     textAlign: 'center',
-    color: colors.textMuted,
+    color: '#1F2937',
+    minHeight: 46,
   },
-  chipTextSelected: {
-    ...font('semiBold'),
-    color: colors.optionTextSelected,
+  cardLabelSelected: {
+    ...uiText(16, 'semiBold'),
+    color: colors.navy,
+  },
+  radio: {
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    borderWidth: 1.5,
+    borderColor: '#D1D5DB',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#FFFFFF',
+  },
+  radioSelected: {
+    borderColor: colors.buttonPrimary,
+  },
+  radioDot: {
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    backgroundColor: colors.buttonPrimary,
+  },
+  dots: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 8,
+    paddingBottom: 4,
+  },
+  dot: {
+    width: 7,
+    height: 7,
+    borderRadius: 4,
+    backgroundColor: '#E5E7EB',
+  },
+  dotActive: {
+    width: 18,
+    backgroundColor: colors.navy,
   },
 });

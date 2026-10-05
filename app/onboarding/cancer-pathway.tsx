@@ -8,6 +8,7 @@ import { CachedMediaImage } from '../../components/CachedMediaImage';
 import { PrimaryButton } from '../../components/PrimaryButton';
 import { ScreenHeader } from '../../components/ScreenHeader';
 import {
+  CANCER_TYPE_ART,
   CANCER_TYPE_I18N_KEYS,
   CANCER_TYPE_SLUGS,
   normalizeCancerTypeSlug,
@@ -18,18 +19,6 @@ import { getPublicStorageUrl } from '../../lib/supabaseStorage';
 import { useAppStore } from '../../store/useAppStore';
 import { colors } from '../../theme/colors';
 import { uiText } from '../../theme/typography';
-
-/**
- * Cancer illustrations live in Supabase `Oximeter info`.
- * Thorax file has extra transparent padding above and below the circle,
- * so it is scaled until the disc fills the same round frame as the others.
- */
-const CANCER_TYPE_ART: Record<CancerTypeSlug, { path: string; scale: number }> = {
-  breast: { path: 'Oximeter info/Breast Cancer.png', scale: 1 },
-  thorax: { path: 'Oximeter info/Thorax cancer2.png', scale: 1.24 },
-  abdomen: { path: 'Oximeter info/Gastro cancer.png', scale: 1 },
-  'head-neck': { path: 'Oximeter info/Head&Neck 2.png', scale: 1 },
-};
 
 /** Cancer pathway picker — Breast / Thorax / Abdomen / Head & Neck. */
 export default function CancerPathwayScreen() {
