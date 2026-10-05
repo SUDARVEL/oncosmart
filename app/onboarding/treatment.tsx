@@ -113,7 +113,7 @@ export default function TreatmentScreen() {
             ) : null}
 
             <View style={styles.section}>
-              <Text style={styles.label}>{t('treatment.treatmentLabel')}</Text>
+              <Text style={styles.heading}>{t('treatment.treatmentLabel')}</Text>
               <View style={styles.chipRow}>
                 {TREATMENT_ROW_PRIMARY.map((option) => (
                   <ChoiceChip
@@ -137,7 +137,7 @@ export default function TreatmentScreen() {
             </View>
 
             <View style={styles.section}>
-              <Text style={styles.label}>{t('treatment.surgeryLabel')}</Text>
+              <Text style={styles.heading}>{t('treatment.surgeryLabel')}</Text>
               <View style={styles.chipRow}>
                 <ChoiceChip
                   label={t('treatment.yes')}
@@ -153,7 +153,7 @@ export default function TreatmentScreen() {
             </View>
 
             <View style={styles.section}>
-              <Text style={styles.anaemiaTitle}>{t('cancerPathway.anaemiaTitle')}</Text>
+              <Text style={styles.heading}>{t('cancerPathway.anaemiaTitle')}</Text>
               <View style={styles.chipRow}>
                 <ChoiceChip
                   label={t('cancerPathway.anaemiaYes')}
@@ -203,10 +203,9 @@ const styles = StyleSheet.create({
   section: {
     gap: 10,
   },
-  label: {
-    ...uiText(15, 'medium'),
-    color: '#00131F',
-    letterSpacing: 0,
+  heading: {
+    ...uiText(16, 'bold'),
+    color: colors.textPrimary,
   },
   warning: {
     ...uiText(14, 'regular'),
@@ -249,10 +248,6 @@ const styles = StyleSheet.create({
   chipTextSelected: {
     ...font('semiBold'),
     color: colors.optionTextSelected,
-  },
-  anaemiaTitle: {
-    ...uiText(16, 'semiBold'),
-    color: colors.textPrimary,
   },
   advice: {
     ...uiText(14),
