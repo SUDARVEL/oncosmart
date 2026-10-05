@@ -191,17 +191,16 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
-    flexGrow: 1,
     paddingHorizontal: 20,
-    paddingTop: 12,
-    paddingBottom: 20,
+    paddingTop: 16,
+    paddingBottom: 16,
   },
   form: {
     width: '100%',
-    gap: 24,
+    gap: 16,
   },
   section: {
-    gap: 10,
+    gap: 16,
   },
   heading: {
     ...uiText(16, 'bold'),
@@ -215,16 +214,19 @@ const styles = StyleSheet.create({
   chipRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 12,
+    alignItems: 'stretch',
+    gap: 16,
   },
   chip: {
     minHeight: 56,
     borderRadius: 10,
+    borderWidth: 1.5,
+    borderColor: 'transparent',
     backgroundColor: '#F1F3F5',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingHorizontal: 12,
-    paddingVertical: 12,
+    paddingHorizontal: 14,
+    paddingVertical: 14,
   },
   chipCompact: {
     minHeight: 56,
@@ -232,6 +234,7 @@ const styles = StyleSheet.create({
   },
   chipFlex: {
     flexGrow: 1,
+    flexShrink: 1,
     flexBasis: '45%',
   },
   chipSelected: {
@@ -241,6 +244,7 @@ const styles = StyleSheet.create({
   },
   chipText: {
     ...uiText(15, 'medium'),
+    width: '100%',
     textAlign: 'center',
     color: colors.textMuted,
     letterSpacing: 0,
@@ -255,7 +259,7 @@ const styles = StyleSheet.create({
   },
   footer: {
     paddingHorizontal: 20,
-    paddingTop: 8,
+    paddingTop: 16,
     paddingBottom: 12,
     backgroundColor: colors.background,
   },

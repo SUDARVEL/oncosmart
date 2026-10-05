@@ -112,12 +112,12 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     paddingHorizontal: 20,
-    paddingTop: 8,
+    paddingTop: 16,
     paddingBottom: 16,
     gap: 16,
   },
   intro: {
-    gap: 6,
+    gap: 8,
   },
   title: {
     ...uiText(22, 'bold'),
@@ -135,9 +135,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
-    paddingVertical: 10,
-    paddingLeft: 10,
-    paddingRight: 14,
+    paddingHorizontal: 12,
+    paddingVertical: 12,
     borderRadius: 14,
     borderWidth: 1,
     borderColor: '#E5E7EB',
@@ -162,6 +161,7 @@ const styles = StyleSheet.create({
   },
   cardLabel: {
     flex: 1,
+    flexShrink: 1,
     ...uiText(16, 'medium'),
     color: '#1F2937',
   },
@@ -190,7 +190,7 @@ const styles = StyleSheet.create({
   },
   footer: {
     paddingHorizontal: 20,
-    paddingTop: 8,
+    paddingTop: 16,
     paddingBottom: 12,
     backgroundColor: colors.background,
   },
