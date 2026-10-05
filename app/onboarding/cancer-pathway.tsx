@@ -17,7 +17,6 @@ import { isOnboardingReview, onboardingReviewHref } from '../../lib/onboardingRe
 import { getPublicStorageUrl } from '../../lib/supabaseStorage';
 import { useAppStore } from '../../store/useAppStore';
 import { colors } from '../../theme/colors';
-import { font } from '../../theme/fonts';
 import { uiText } from '../../theme/typography';
 
 /**
@@ -32,33 +31,24 @@ const CANCER_TYPE_ART: Record<CancerTypeSlug, { path: string; scale: number }> =
   'head-neck': { path: 'Oximeter info/Head&Neck 2.png', scale: 1 },
 };
 
-/**
- * Cancer pathway picker — Breast / Thorax / Abdomen / Head & Neck.
- * Anaemia is asked on this screen and saved with the pathway choice.
- */
+/** Cancer pathway picker — Breast / Thorax / Abdomen / Head & Neck. */
 export default function CancerPathwayScreen() {
   const { t } = useTranslation();
   const router = useRouter();
   const { from } = useLocalSearchParams<{ from?: string }>();
   const review = isOnboardingReview(from);
   const savedCancerType = useAppStore((state) => state.cancerType);
-  const savedAnaemia = useAppStore((state) => state.anaemiaDiagnosed);
   const setCancerType = useAppStore((state) => state.setCancerType);
-  const setAnaemiaDiagnosed = useAppStore((state) => state.setAnaemiaDiagnosed);
 
   const initialSlug = useMemo(
     () => normalizeCancerTypeSlug(savedCancerType),
     [savedCancerType],
   );
   const [selected, setSelected] = useState<CancerTypeSlug | null>(initialSlug);
-  const [anaemia, setAnaemia] = useState<boolean | null>(savedAnaemia);
-
-  const canContinue = selected != null && anaemia != null;
 
   const handleContinue = () => {
-    if (!selected || anaemia == null) return;
+    if (!selected) return;
     setCancerType(selected);
-    setAnaemiaDiagnosed(anaemia);
     router.push(review ? onboardingReviewHref('/onboarding/treatment') : '/onboarding/treatment');
   };
 
@@ -110,40 +100,13 @@ export default function CancerPathwayScreen() {
             );
           })}
         </View>
-
-        <View style={styles.anaemia}>
-          <Text style={styles.anaemiaTitle}>{t('cancerPathway.anaemiaTitle')}</Text>
-          <View style={styles.chipRow}>
-            <Pressable
-              onPress={() => setAnaemia(true)}
-              style={[styles.chip, anaemia === true && styles.chipSelected]}
-              accessibilityRole="button"
-              accessibilityState={{ selected: anaemia === true }}
-            >
-              <Text style={[styles.chipText, anaemia === true && styles.chipTextSelected]}>
-                {t('cancerPathway.anaemiaYes')}
-              </Text>
-            </Pressable>
-            <Pressable
-              onPress={() => setAnaemia(false)}
-              style={[styles.chip, anaemia === false && styles.chipSelected]}
-              accessibilityRole="button"
-              accessibilityState={{ selected: anaemia === false }}
-            >
-              <Text style={[styles.chipText, anaemia === false && styles.chipTextSelected]}>
-                {t('cancerPathway.anaemiaNo')}
-              </Text>
-            </Pressable>
-          </View>
-          <Text style={styles.advice}>{t('cancerPathway.anaemiaAdvice')}</Text>
-        </View>
       </ScrollView>
 
       <View style={styles.footer}>
         <PrimaryButton
           label={t('cancerPathway.continue')}
           onPress={handleContinue}
-          disabled={!canContinue}
+          disabled={!selected}
         />
       </View>
     </SafeAreaView>
@@ -235,45 +198,6 @@ const styles = StyleSheet.create({
     height: 12,
     borderRadius: 6,
     backgroundColor: colors.buttonPrimary,
-  },
-  anaemia: {
-    gap: 12,
-  },
-  anaemiaTitle: {
-    ...uiText(16, 'semiBold'),
-    color: colors.textPrimary,
-  },
-  chipRow: {
-    flexDirection: 'row',
-    gap: 12,
-  },
-  chip: {
-    flex: 1,
-    minHeight: 48,
-    borderRadius: 10,
-    backgroundColor: '#F1F3F5',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 12,
-    paddingVertical: 12,
-  },
-  chipSelected: {
-    backgroundColor: colors.optionBgSelected,
-    borderWidth: 1.5,
-    borderColor: colors.optionBorderSelected,
-  },
-  chipText: {
-    ...uiText(15, 'medium'),
-    textAlign: 'center',
-    color: colors.textMuted,
-  },
-  chipTextSelected: {
-    ...font('semiBold'),
-    color: colors.optionTextSelected,
-  },
-  advice: {
-    ...uiText(14),
-    color: colors.textMuted,
   },
   footer: {
     paddingHorizontal: 20,

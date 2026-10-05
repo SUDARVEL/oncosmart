@@ -62,7 +62,7 @@ function ChoiceChip({ label, selected, onPress, compact = false }: ChoiceChipPro
   );
 }
 
-/** Treatment + surgery — cancer pathway is chosen on the previous screen. */
+/** Treatment, surgery, and anaemia — cancer pathway is chosen on the previous screen. */
 export default function TreatmentScreen() {
   const { t } = useTranslation();
   const router = useRouter();
@@ -71,19 +71,24 @@ export default function TreatmentScreen() {
   const cancerType = useAppStore((state) => state.cancerType);
   const savedTreatment = useAppStore((state) => state.treatmentUndergoing);
   const savedSurgery = useAppStore((state) => state.underwentSurgery);
+  const savedAnaemia = useAppStore((state) => state.anaemiaDiagnosed);
   const setTreatmentUndergoing = useAppStore((state) => state.setTreatmentUndergoing);
   const setUnderwentSurgery = useAppStore((state) => state.setUnderwentSurgery);
+  const setAnaemiaDiagnosed = useAppStore((state) => state.setAnaemiaDiagnosed);
 
   const [treatment, setTreatmentLocal] = useState<TreatmentType | null>(savedTreatment);
   const [surgery, setSurgeryLocal] = useState<boolean | null>(savedSurgery);
+  const [anaemia, setAnaemia] = useState<boolean | null>(savedAnaemia);
 
   const hasCancerPathway = normalizeCancerTypeSlug(cancerType) != null;
-  const canContinue = hasCancerPathway && treatment != null && surgery != null;
+  const canContinue =
+    hasCancerPathway && treatment != null && surgery != null && anaemia != null;
 
   const handleContinue = () => {
-    if (!canContinue || treatment == null || surgery == null) return;
+    if (!canContinue || treatment == null || surgery == null || anaemia == null) return;
     setTreatmentUndergoing(treatment);
     setUnderwentSurgery(surgery);
+    setAnaemiaDiagnosed(anaemia);
     router.push(review ? onboardingReviewHref('/onboarding/avatar') : '/onboarding/avatar');
   };
 
@@ -145,6 +150,23 @@ export default function TreatmentScreen() {
                   onPress={() => setSurgeryLocal(false)}
                 />
               </View>
+            </View>
+
+            <View style={styles.section}>
+              <Text style={styles.anaemiaTitle}>{t('cancerPathway.anaemiaTitle')}</Text>
+              <View style={styles.chipRow}>
+                <ChoiceChip
+                  label={t('cancerPathway.anaemiaYes')}
+                  selected={anaemia === true}
+                  onPress={() => setAnaemia(true)}
+                />
+                <ChoiceChip
+                  label={t('cancerPathway.anaemiaNo')}
+                  selected={anaemia === false}
+                  onPress={() => setAnaemia(false)}
+                />
+              </View>
+              <Text style={styles.advice}>{t('cancerPathway.anaemiaAdvice')}</Text>
             </View>
           </View>
         </ScrollView>
@@ -227,6 +249,14 @@ const styles = StyleSheet.create({
   chipTextSelected: {
     ...font('semiBold'),
     color: colors.optionTextSelected,
+  },
+  anaemiaTitle: {
+    ...uiText(16, 'semiBold'),
+    color: colors.textPrimary,
+  },
+  advice: {
+    ...uiText(14),
+    color: colors.textMuted,
   },
   footer: {
     paddingHorizontal: 20,
