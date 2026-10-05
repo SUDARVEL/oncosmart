@@ -16,6 +16,7 @@ import {
   WORKOUT_SLIDER_MEDIA_TOP,
   WORKOUT_SLIDER_MEDIA_WIDTH,
 } from '../../lib/workoutInfoSheetLayout';
+import { isLandscapeWorkoutStill } from '../../lib/resolveWorkoutPhoto';
 import { ExercisePlayerCopyBlock } from '../exercise/ExercisePlayerCopyBlock';
 
 type Props = {
@@ -54,10 +55,10 @@ export function WorkoutDetailSlide({ workout, width }: Props) {
               source={workout.photoSource!}
               style={styles.media}
               /**
-               * Keep the still's own ratio inside the 349×444 frame.
-               * Fill was stretching 9:16 portraits wider than the person.
+               * Portrait stills keep their own ratio. Wide Head & Neck stills
+               * cover the frame so the person is not a small strip.
                */
-              contentFit="contain"
+              contentFit={isLandscapeWorkoutStill(workout.photoSource) ? 'cover' : 'contain'}
               contentPosition="center"
               recyclingKey={workout.id}
               priority="high"
