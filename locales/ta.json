@@ -607,6 +607,7 @@
     "bpmColStart": "தொடக்க BPM",
     "bpmColEnd": "முடிவு BPM",
     "bpmColPain": "வலி",
+    "feedbackColumn": "கருத்து",
     "bpmColCompleted": "முடிந்தது",
     "lastUpdated": "கடைசியாக புதுப்பிக்கப்பட்டது",
     "completedSessions": "முடித்த அமர்வுகள்",
@@ -630,7 +631,13 @@
     "pauseReasonTreatment": "சிகிச்சை",
     "pauseReasonUnwell": "உடல்நலக்குறைவு",
     "pauseReasonOther": "வேறு காரணம்",
-    "quitReasonExploring": "வெறுமனே பார்த்தல்"
+    "quitReasonExploring": "வெறுமனே பார்த்தல்",
+    "pauseNoteLabel": "எழுதிய காரணம்",
+    "feedbackSectionTitle": "அமர்வுக்குப் பின் கருத்து",
+    "patientsTitle": "நோயாளிகள்",
+    "sessionsChartTitle": "முடித்த அமர்வுகள்",
+    "sessionsChartHint": "28 அமர்வுகளில் எத்தனை முடித்துள்ளனர் என்பதன் அடிப்படையில் நோயாளிகள்.",
+    "noFeedback": "கருத்து இல்லை"
   },
   "chat": {
     "placeholder": "உங்கள் செய்தியை எழுதவும்...",

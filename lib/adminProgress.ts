@@ -1,5 +1,6 @@
 import { getSupabase } from './supabase';
 import type { ProgressHoldType } from './progressHold';
+import { asSessionFeedback, type SessionFeedback } from './sessionFeedback';
 import type { TreatmentType } from '../store/useAppStore';
 import {
   DAYS_PER_LEVEL,
@@ -18,6 +19,7 @@ export type AdminSessionDetail = {
   painScore: number | null;
   startBpm: number | null;
   endBpm: number | null;
+  sessionFeedback: SessionFeedback | null;
 };
 
 export type AdminPatientProgress = {
@@ -62,7 +64,26 @@ export type AdminSessionRow = {
   painScore: number | null;
   startBpm: number | null;
   endBpm: number | null;
+  sessionFeedback: SessionFeedback | null;
 };
+
+export type SessionFeedbackCounts = Record<SessionFeedback, number>;
+
+export function emptyFeedbackCounts(): SessionFeedbackCounts {
+  return { easy: 0, hard: 0, tired: 0 };
+}
+
+export function summarizeSessionFeedback(
+  patients: AdminPatientProgress[],
+): SessionFeedbackCounts {
+  const counts = emptyFeedbackCounts();
+  for (const patient of patients) {
+    for (const detail of patient.sessionDetails) {
+      if (detail.sessionFeedback) counts[detail.sessionFeedback] += 1;
+    }
+  }
+  return counts;
+}
 
 export function buildAdminSessionRows(patient: AdminPatientProgress): AdminSessionRow[] {
   const completed = sortedCompletedSessions(patient.dayCompletedAt);
@@ -96,6 +117,7 @@ export function buildAdminSessionRows(patient: AdminPatientProgress): AdminSessi
         typeof detail?.endBpm === 'number' && Number.isFinite(detail.endBpm)
           ? detail.endBpm
           : null,
+      sessionFeedback: detail?.sessionFeedback ?? null,
     });
   }
 
@@ -118,6 +140,7 @@ export function buildAdminSessionRows(patient: AdminPatientProgress): AdminSessi
         typeof detail.endBpm === 'number' && Number.isFinite(detail.endBpm)
           ? detail.endBpm
           : null,
+      sessionFeedback: detail.sessionFeedback,
     });
   }
 
@@ -192,6 +215,7 @@ function asSessionDetails(value: unknown): AdminSessionDetail[] {
           : row.end_bpm == null
             ? null
             : Number(row.end_bpm),
+      sessionFeedback: asSessionFeedback(row.session_feedback),
     });
   }
   return out.sort((a, b) => a.level - b.level || a.dayInLevel - b.dayInLevel);
@@ -286,7 +310,7 @@ export async function fetchAdminPatientProgress(): Promise<AdminPatientProgress[
       progressPaused,
       progressHoldType: progressPaused ? 'pause' : null,
       pauseReason: progressPaused ? pauseReason : null,
-      pauseReasonNote: progressPaused && pauseReason === 'other' ? pauseReasonNote : null,
+      pauseReasonNote: progressPaused ? pauseReasonNote : null,
       quitReason,
       pausedAt: row.paused_at,
       quitAt: row.quit_at,

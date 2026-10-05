@@ -25,6 +25,7 @@ import {
   buildAdminDashboardStats,
   buildAdminSessionRows,
   fetchAdminPatientProgress,
+  summarizeSessionFeedback,
   type AdminPatientProgress,
 } from '../lib/adminProgress';
 import { formatCancerTypeForDisplay } from '../lib/cancerPathway';
@@ -32,6 +33,7 @@ import { signOut } from '../lib/auth';
 import { useAppStore } from '../store/useAppStore';
 import { colors } from '../theme/colors';
 import { font } from '../theme/fonts';
+import { uiText } from '../theme/typography';
 
 function formatWhen(ms: number | null | undefined, locale: string): string {
   if (ms == null || !Number.isFinite(ms)) return '—';
@@ -76,24 +78,44 @@ function formatHoldReason(
   }
 }
 
-function StatChip({ label, value }: { label: string; value: number }) {
+function MetricCard({
+  label,
+  value,
+  tint,
+  icon,
+  iconColor,
+}: {
+  label: string;
+  value: number;
+  tint: string;
+  icon: keyof typeof Ionicons.glyphMap;
+  iconColor: string;
+}) {
   return (
-    <View style={styles.statChip}>
+    <View style={[styles.statChip, { backgroundColor: tint }]}>
+      <View style={styles.metricTop}>
+        <Ionicons name={icon} size={16} color={iconColor} />
+        <Text style={styles.statLabel}>{label}</Text>
+      </View>
       <Text style={styles.statValue}>{value}</Text>
-      <Text style={styles.statLabel}>{label}</Text>
     </View>
   );
 }
 
 function SessionBarChart({
+  title,
+  hint,
   buckets,
 }: {
+  title: string;
+  hint: string;
   buckets: { label: string; count: number }[];
 }) {
   const max = Math.max(1, ...buckets.map((b) => b.count));
   return (
     <View style={styles.chartCard}>
-      <Text style={styles.chartTitle}>Sessions completed</Text>
+      <Text style={styles.chartTitle}>{title}</Text>
+      <Text style={styles.chartHint}>{hint}</Text>
       <View style={styles.chartRows}>
         {buckets.map((bucket) => (
           <View key={bucket.label} style={styles.chartRow}>
@@ -143,6 +165,19 @@ function PatientCard({
 }) {
   const { t, i18n } = useTranslation();
   const sessionRows = useMemo(() => buildAdminSessionRows(patient), [patient]);
+  const feedbackCounts = useMemo(() => {
+    const counts = { easy: 0, hard: 0, tired: 0 };
+    for (const row of sessionRows) {
+      if (row.sessionFeedback) counts[row.sessionFeedback] += 1;
+    }
+    return counts;
+  }, [sessionRows]);
+  const feedbackTotal = feedbackCounts.easy + feedbackCounts.hard + feedbackCounts.tired;
+  const progressPct = Math.min(
+    100,
+    Math.round((patient.sessionsCompleted / TOTAL_SESSIONS) * 100),
+  );
+  const initial = (patient.displayName || patient.accountUsername || '?').trim().charAt(0).toUpperCase();
   const progressLabel = t('admin.sessionsProgress', {
     done: patient.sessionsCompleted,
     total: TOTAL_SESSIONS,
@@ -158,9 +193,12 @@ function PatientCard({
   return (
     <View style={styles.card}>
       <Pressable onPress={onToggle} accessibilityRole="button" style={styles.cardHeader}>
+        <View style={styles.avatar}>
+          <Text style={styles.avatarText}>{initial}</Text>
+        </View>
         <View style={styles.cardHeaderText}>
-          <Text style={styles.accountId}>{patient.accountUsername}</Text>
-          <Text style={styles.displayName}>{patient.displayName}</Text>
+          <Text style={styles.accountId}>{patient.displayName}</Text>
+          <Text style={styles.displayName}>{patient.accountUsername}</Text>
         </View>
         <Ionicons
           name={expanded ? 'chevron-up' : 'chevron-down'}
@@ -170,7 +208,13 @@ function PatientCard({
       </Pressable>
 
       <View style={styles.statsRow}>
-        <Text style={styles.statPrimary}>{progressLabel}</Text>
+        <View style={styles.progressMeta}>
+          <Text style={styles.statPrimary}>{progressLabel}</Text>
+          <Text style={styles.progressPct}>{progressPct}%</Text>
+        </View>
+        <View style={styles.progressTrack}>
+          <View style={[styles.progressFill, { width: `${progressPct}%` }]} />
+        </View>
         <Text style={styles.statSecondary}>{currentLabel}</Text>
       </View>
 
@@ -219,13 +263,14 @@ function PatientCard({
           </Text>
           <Text style={styles.pauseBannerReason}>
             {t('admin.reasonLabel')}:{' '}
-            {formatHoldReason(
-              patient.pauseReason,
-              t,
-              'admin.pauseReasonUnknown',
-              patient.pauseReasonNote,
-            )}
+            {formatHoldReason(patient.pauseReason, t, 'admin.pauseReasonUnknown')}
           </Text>
+          {patient.pauseReasonNote ? (
+            <View style={styles.noteBlock}>
+              <Text style={styles.noteLabel}>{t('admin.pauseNoteLabel')}</Text>
+              <Text style={styles.noteBody}>{patient.pauseReasonNote}</Text>
+            </View>
+          ) : null}
         </View>
       ) : null}
 
@@ -242,6 +287,23 @@ function PatientCard({
             {t('admin.reasonLabel')}:{' '}
             {formatHoldReason(patient.quitReason, t, 'admin.quitReasonUnknown')}
           </Text>
+        </View>
+      ) : null}
+
+      {feedbackTotal > 0 ? (
+        <View style={styles.feedbackRow}>
+          <Text style={styles.feedbackHeading}>{t('admin.feedbackSectionTitle')}</Text>
+          <View style={styles.feedbackChips}>
+            <Text style={[styles.feedbackChip, styles.feedbackEasy]}>
+              {t('complete.feedbackEasy')} {feedbackCounts.easy}
+            </Text>
+            <Text style={[styles.feedbackChip, styles.feedbackHard]}>
+              {t('complete.feedbackHard')} {feedbackCounts.hard}
+            </Text>
+            <Text style={[styles.feedbackChip, styles.feedbackTired]}>
+              {t('complete.feedbackTired')} {feedbackCounts.tired}
+            </Text>
+          </View>
         </View>
       ) : null}
 
@@ -302,13 +364,11 @@ function PatientCard({
           <Text style={styles.detailLine}>
             {t('admin.reasonLabel')}:{' '}
             {patient.progressPaused
-              ? formatHoldReason(
-                  patient.pauseReason,
-                  t,
-                  'admin.pauseReasonNone',
-                  patient.pauseReasonNote,
-                )
+              ? formatHoldReason(patient.pauseReason, t, 'admin.pauseReasonNone')
               : t('admin.pauseReasonNone')}
+          </Text>
+          <Text style={styles.detailLine}>
+            {t('admin.pauseNoteLabel')}: {patient.pauseReasonNote ?? t('admin.pauseReasonNone')}
           </Text>
 
           <Text style={styles.completedTitle}>{t('admin.quitSectionTitle')}</Text>
@@ -375,6 +435,7 @@ export default function AdminScreen() {
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
   const stats = useMemo(() => buildAdminDashboardStats(patients), [patients]);
+  const feedback = useMemo(() => summarizeSessionFeedback(patients), [patients]);
   const unreadAlerts = useMemo(
     () => alerts.filter((alert) => !alert.readAt).slice(0, 8),
     [alerts],
@@ -409,9 +470,11 @@ export default function AdminScreen() {
 
   return (
     <SafeAreaView style={styles.screen} edges={['top', 'bottom']}>
+      <View style={styles.headerBlock}>
       <ScreenHeader
         title={t('admin.title')}
         showBack
+        largeTitle
         onBack={() => router.replace('/home')}
       />
 
@@ -429,6 +492,7 @@ export default function AdminScreen() {
             <Text style={styles.logoutText}>{t('admin.logout')}</Text>
           </Pressable>
         </View>
+      </View>
       </View>
 
       {loading ? (
@@ -480,17 +544,78 @@ export default function AdminScreen() {
           </View>
 
           <View style={styles.statGrid}>
-            <StatChip label={t('admin.statTotal')} value={stats.total} />
-            <StatChip label={t('admin.statOnboarded')} value={stats.onboarded} />
-            <StatChip label={t('admin.statActive')} value={stats.withProgress} />
-            <StatChip label={t('admin.statNeverLogin')} value={stats.neverLoggedIn} />
-            <StatChip label={t('admin.statPasswordChanged')} value={stats.passwordChanged} />
-            <StatChip label={t('admin.statPaused')} value={stats.paused} />
-            <StatChip label={t('admin.statQuit')} value={stats.quit} />
+            <MetricCard
+              label={t('admin.statTotal')}
+              value={stats.total}
+              tint="#E8F4FC"
+              icon="people-outline"
+              iconColor={colors.navy}
+            />
+            <MetricCard
+              label={t('admin.statOnboarded')}
+              value={stats.onboarded}
+              tint="#ECFDF3"
+              icon="checkmark-circle-outline"
+              iconColor="#15803D"
+            />
+            <MetricCard
+              label={t('admin.statActive')}
+              value={stats.withProgress}
+              tint="#F3EEFF"
+              icon="barbell-outline"
+              iconColor="#6D28D9"
+            />
+            <MetricCard
+              label={t('admin.statPaused')}
+              value={stats.paused}
+              tint="#FFF7ED"
+              icon="pause-circle-outline"
+              iconColor="#C2410C"
+            />
+            <MetricCard
+              label={t('admin.statQuit')}
+              value={stats.quit}
+              tint="#FEF2F2"
+              icon="close-circle-outline"
+              iconColor="#B91C1C"
+            />
+            <MetricCard
+              label={t('admin.statNeverLogin')}
+              value={stats.neverLoggedIn}
+              tint="#F3F4F6"
+              icon="log-in-outline"
+              iconColor="#4B5563"
+            />
           </View>
 
-          <SessionBarChart buckets={stats.sessionBuckets} />
+          <SessionBarChart
+            title={t('admin.sessionsChartTitle')}
+            hint={t('admin.sessionsChartHint')}
+            buckets={stats.sessionBuckets}
+          />
 
+          <View style={styles.feedbackCard}>
+            <Text style={styles.chartTitle}>{t('admin.feedbackSectionTitle')}</Text>
+            <View style={styles.feedbackSummary}>
+              <View style={[styles.feedbackStat, styles.feedbackEasy]}>
+                <Text style={styles.feedbackStatValue}>{feedback.easy}</Text>
+                <Text style={styles.feedbackStatLabel}>{t('complete.feedbackEasy')}</Text>
+              </View>
+              <View style={[styles.feedbackStat, styles.feedbackHard]}>
+                <Text style={styles.feedbackStatValue}>{feedback.hard}</Text>
+                <Text style={styles.feedbackStatLabel}>{t('complete.feedbackHard')}</Text>
+              </View>
+              <View style={[styles.feedbackStat, styles.feedbackTired]}>
+                <Text style={styles.feedbackStatValue}>{feedback.tired}</Text>
+                <Text style={styles.feedbackStatLabel}>{t('complete.feedbackTired')}</Text>
+              </View>
+            </View>
+            {feedback.easy + feedback.hard + feedback.tired === 0 ? (
+              <Text style={styles.alertsEmpty}>{t('admin.noFeedback')}</Text>
+            ) : null}
+          </View>
+
+          <Text style={styles.sectionTitle}>{t('admin.patientsTitle')}</Text>
           <Text style={styles.subtitle}>{t('admin.subtitle')}</Text>
           {patients.length === 0 ? (
             <Text style={styles.emptyList}>{t('admin.empty')}</Text>
@@ -515,32 +640,35 @@ export default function AdminScreen() {
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: colors.background,
+    backgroundColor: '#F4F7FB',
+  },
+  headerBlock: {
+    backgroundColor: '#FFFFFF',
+    paddingBottom: 8,
   },
   summaryBar: {
     paddingHorizontal: 16,
     paddingBottom: 8,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: 12,
+    gap: 10,
   },
   summaryText: {
-    flex: 1,
-    ...font('medium'),
-    fontSize: 13,
+    ...uiText(14, 'medium'),
     color: colors.textSecondary,
   },
   summaryActions: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
+    gap: 8,
   },
   openAppBtn: {
-    paddingVertical: 6,
-    paddingHorizontal: 10,
-    borderRadius: 8,
+    flex: 1,
+    minHeight: 40,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 10,
     backgroundColor: colors.buttonPrimary,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   openAppText: {
     ...font('semiBold'),
@@ -548,8 +676,14 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
   },
   logoutBtn: {
-    paddingVertical: 6,
-    paddingHorizontal: 10,
+    minHeight: 40,
+    paddingHorizontal: 14,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    backgroundColor: '#FFFFFF',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   logoutText: {
     ...font('semiBold'),
@@ -562,13 +696,17 @@ const styles = StyleSheet.create({
   scrollContent: {
     paddingHorizontal: 16,
     paddingBottom: 32,
-    gap: 12,
+    gap: 16,
+  },
+  sectionTitle: {
+    ...uiText(18, 'semiBold'),
+    color: colors.textPrimary,
+    marginTop: 4,
   },
   subtitle: {
-    ...font('regular'),
-    fontSize: 14,
+    ...uiText(14),
     color: colors.textMuted,
-    marginTop: 4,
+    marginTop: -8,
   },
   centered: {
     flex: 1,
@@ -585,40 +723,44 @@ const styles = StyleSheet.create({
   statGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 8,
+    gap: 12,
   },
   statChip: {
-    width: '31%',
-    minWidth: 100,
+    width: '47%',
     flexGrow: 1,
-    backgroundColor: colors.optionBg,
-    borderRadius: 10,
-    paddingVertical: 10,
-    paddingHorizontal: 10,
+    borderRadius: 16,
+    paddingVertical: 14,
+    paddingHorizontal: 14,
+    gap: 8,
+  },
+  metricTop: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
   },
   statValue: {
-    ...font('bold'),
-    fontSize: 20,
+    ...uiText(28, 'semiBold'),
     color: colors.navy,
   },
   statLabel: {
-    ...font('regular'),
-    fontSize: 11,
-    color: colors.textMuted,
-    marginTop: 2,
+    ...uiText(12, 'medium'),
+    color: colors.textSecondary,
+    flex: 1,
   },
   chartCard: {
-    borderWidth: 1,
-    borderColor: colors.cardBorder,
-    borderRadius: 12,
-    padding: 14,
-    gap: 10,
-    backgroundColor: colors.homeCardBg,
+    borderRadius: 16,
+    padding: 16,
+    gap: 12,
+    backgroundColor: '#FFFFFF',
   },
   chartTitle: {
-    ...font('semiBold'),
-    fontSize: 15,
+    ...uiText(16, 'semiBold'),
     color: colors.textPrimary,
+  },
+  chartHint: {
+    ...uiText(13),
+    color: colors.textMuted,
+    marginTop: -6,
   },
   chartRows: {
     gap: 8,
@@ -636,9 +778,9 @@ const styles = StyleSheet.create({
   },
   chartTrack: {
     flex: 1,
-    height: 10,
-    borderRadius: 6,
-    backgroundColor: colors.optionBg,
+    height: 12,
+    borderRadius: 8,
+    backgroundColor: '#E8EEF5',
     overflow: 'hidden',
   },
   chartFill: {
@@ -654,17 +796,41 @@ const styles = StyleSheet.create({
     color: colors.textPrimary,
   },
   alertsCard: {
-    borderWidth: 1,
-    borderColor: colors.cardBorder,
-    borderRadius: 12,
-    padding: 14,
-    backgroundColor: colors.homeCardBg,
+    borderRadius: 16,
+    padding: 16,
+    backgroundColor: '#FFFFFF',
     gap: 8,
   },
   alertsTitle: {
-    ...font('semiBold'),
-    fontSize: 15,
+    ...uiText(16, 'semiBold'),
     color: colors.textPrimary,
+  },
+  feedbackCard: {
+    borderRadius: 16,
+    padding: 16,
+    backgroundColor: '#FFFFFF',
+    gap: 12,
+  },
+  feedbackSummary: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  feedbackStat: {
+    flex: 1,
+    borderRadius: 12,
+    paddingVertical: 10,
+    paddingHorizontal: 8,
+    gap: 2,
+  },
+  feedbackStatValue: {
+    ...uiText(20, 'semiBold'),
+    color: colors.textPrimary,
+    textAlign: 'center',
+  },
+  feedbackStatLabel: {
+    ...uiText(11, 'medium'),
+    color: colors.textSecondary,
+    textAlign: 'center',
   },
   alertsHint: {
     ...font('regular'),
@@ -704,45 +870,103 @@ const styles = StyleSheet.create({
     color: colors.textSecondary,
   },
   card: {
-    borderWidth: 1,
-    borderColor: colors.cardBorder,
-    borderRadius: 12,
-    padding: 14,
-    backgroundColor: colors.homeCardBg,
-    gap: 10,
+    borderRadius: 16,
+    padding: 16,
+    backgroundColor: '#FFFFFF',
+    gap: 12,
   },
   cardHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: 8,
+    gap: 12,
+  },
+  avatar: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#E8F4FC',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  avatarText: {
+    ...uiText(16, 'semiBold'),
+    color: colors.navy,
   },
   cardHeaderText: {
     flex: 1,
     gap: 2,
   },
   accountId: {
-    ...font('bold'),
-    fontSize: 17,
-    color: colors.navy,
+    ...uiText(16, 'semiBold'),
+    color: colors.textPrimary,
   },
   displayName: {
-    ...font('regular'),
-    fontSize: 13,
+    ...uiText(13),
     color: colors.textMuted,
   },
   statsRow: {
-    gap: 2,
+    gap: 6,
+  },
+  progressMeta: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 8,
+  },
+  progressPct: {
+    ...uiText(13, 'semiBold'),
+    color: colors.navy,
+  },
+  progressTrack: {
+    height: 8,
+    borderRadius: 8,
+    backgroundColor: '#E8EEF5',
+    overflow: 'hidden',
+  },
+  progressFill: {
+    height: '100%',
+    borderRadius: 8,
+    backgroundColor: colors.buttonPrimary,
   },
   statPrimary: {
-    ...font('semiBold'),
-    fontSize: 15,
+    ...uiText(14, 'semiBold'),
     color: colors.textPrimary,
+    flex: 1,
   },
   statSecondary: {
-    ...font('regular'),
-    fontSize: 13,
+    ...uiText(13),
     color: colors.textSecondary,
+  },
+  feedbackRow: {
+    gap: 8,
+  },
+  feedbackHeading: {
+    ...uiText(13, 'semiBold'),
+    color: colors.textPrimary,
+  },
+  feedbackChips: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 6,
+  },
+  feedbackChip: {
+    ...uiText(12, 'medium'),
+    borderRadius: 8,
+    overflow: 'hidden',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+  },
+  feedbackEasy: {
+    backgroundColor: '#ECFDF3',
+    color: '#15803D',
+  },
+  feedbackHard: {
+    backgroundColor: '#FFF7ED',
+    color: '#C2410C',
+  },
+  feedbackTired: {
+    backgroundColor: '#FFF1F2',
+    color: '#9F1239',
   },
   badgeRow: {
     flexDirection: 'row',
@@ -787,9 +1011,20 @@ const styles = StyleSheet.create({
     color: '#92400E',
   },
   pauseBannerReason: {
-    ...font('medium'),
-    fontSize: 13,
+    ...uiText(13, 'medium'),
     color: '#78350F',
+  },
+  noteBlock: {
+    marginTop: 6,
+    gap: 2,
+  },
+  noteLabel: {
+    ...uiText(12, 'semiBold'),
+    color: '#92400E',
+  },
+  noteBody: {
+    ...uiText(15, 'medium'),
+    color: '#1F2937',
   },
   quitBanner: {
     marginTop: 10,

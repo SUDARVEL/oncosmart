@@ -2,6 +2,7 @@ import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 
 import type { AdminSessionRow } from '../../lib/adminProgress';
+import type { SessionFeedback } from '../../lib/sessionFeedback';
 import { colors } from '../../theme/colors';
 import { font } from '../../theme/fonts';
 
@@ -14,6 +15,17 @@ function formatBpm(value: number | null, emptyLabel: string): string {
   if (typeof value === 'number' && Number.isFinite(value) && value > 0) {
     return String(value);
   }
+  return emptyLabel;
+}
+
+function feedbackLabel(
+  value: SessionFeedback | null,
+  t: (key: string) => string,
+  emptyLabel: string,
+): string {
+  if (value === 'easy') return t('complete.feedbackEasy');
+  if (value === 'hard') return t('complete.feedbackHard');
+  if (value === 'tired') return t('complete.feedbackTired');
   return emptyLabel;
 }
 
@@ -44,6 +56,9 @@ export function AdminSessionBpmTable({ rows, formatWhen }: Props) {
           <Text style={[styles.cell, styles.colPain, styles.headerCell]}>
             {t('admin.bpmColPain')}
           </Text>
+          <Text style={[styles.cell, styles.colFeedback, styles.headerCell]}>
+            {t('admin.feedbackColumn')}
+          </Text>
           <Text style={[styles.cell, styles.colWhen, styles.headerCell]}>
             {t('admin.bpmColCompleted')}
           </Text>
@@ -61,6 +76,18 @@ export function AdminSessionBpmTable({ rows, formatWhen }: Props) {
             </Text>
             <Text style={[styles.cell, styles.colPain]}>
               {typeof row.painScore === 'number' ? `${row.painScore}/10` : empty}
+            </Text>
+            <Text
+              style={[
+                styles.cell,
+                styles.colFeedback,
+                row.sessionFeedback === 'easy' && styles.feedbackEasy,
+                row.sessionFeedback === 'hard' && styles.feedbackHard,
+                row.sessionFeedback === 'tired' && styles.feedbackTired,
+              ]}
+              numberOfLines={2}
+            >
+              {feedbackLabel(row.sessionFeedback, t, empty)}
             </Text>
             <Text style={[styles.cell, styles.colWhen]} numberOfLines={2}>
               {formatWhen(row.completedAt)}
@@ -122,6 +149,22 @@ const styles = StyleSheet.create({
   colPain: {
     width: 56,
     textAlign: 'center',
+  },
+  colFeedback: {
+    width: 132,
+    textAlign: 'left',
+  },
+  feedbackEasy: {
+    ...font('semiBold'),
+    color: '#15803D',
+  },
+  feedbackHard: {
+    ...font('semiBold'),
+    color: '#B45309',
+  },
+  feedbackTired: {
+    ...font('semiBold'),
+    color: '#9F1239',
   },
   colWhen: {
     width: 128,

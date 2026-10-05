@@ -607,6 +607,7 @@
     "bpmColStart": "Start BPM",
     "bpmColEnd": "End BPM",
     "bpmColPain": "Pain",
+    "feedbackColumn": "Feedback",
     "bpmColCompleted": "Completed",
     "lastUpdated": "Last updated",
     "completedSessions": "Completed sessions",
@@ -630,7 +631,13 @@
     "pauseReasonTreatment": "Treatment",
     "pauseReasonUnwell": "Unwell",
     "pauseReasonOther": "Any other",
-    "quitReasonExploring": "Just exploring"
+    "quitReasonExploring": "Just exploring",
+    "pauseNoteLabel": "Written reason",
+    "feedbackSectionTitle": "After-session feedback",
+    "patientsTitle": "Patients",
+    "sessionsChartTitle": "Sessions completed",
+    "sessionsChartHint": "Patients grouped by how many of the 28 sessions they have finished.",
+    "noFeedback": "No feedback yet"
   },
   "coach": {
     "avatarTitle": "Choose your avatar",
