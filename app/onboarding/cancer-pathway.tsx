@@ -111,14 +111,13 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
-    flexGrow: 1,
     paddingHorizontal: 20,
     paddingTop: 8,
-    paddingBottom: 8,
+    paddingBottom: 16,
+    gap: 16,
   },
   intro: {
     gap: 6,
-    marginBottom: 8,
   },
   title: {
     ...uiText(22, 'bold'),
@@ -129,8 +128,6 @@ const styles = StyleSheet.create({
     color: colors.textMuted,
   },
   options: {
-    flex: 1,
-    justifyContent: 'space-evenly',
     gap: 16,
   },
   card: {
