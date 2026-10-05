@@ -46,9 +46,8 @@ const STEPS = Array.from({ length: PULSE_OXIMETER_COACH_STEP_COUNT }, (_, index)
 const COPY_BLOCK_HEIGHT = 124;
 /** Matches the zoom on the coach illustration. */
 const IMAGE_ZOOM = 1.04;
-/** English wrist poster is 1024×1536. Tamil wrist poster is 1385×1136. */
-const MANUAL_ASPECT_EN = 1536 / 1024;
-const MANUAL_ASPECT_TA = 1136 / 1385;
+/** English and Tamil wrist posters are both 1145×1374. */
+const MANUAL_ASPECT = 1374 / 1145;
 
 /**
  * Bottom sheet for checking pulse before a session.
@@ -72,10 +71,9 @@ export function PulseOximeterCoachSheet({
 
   const imageHeight = Math.min(Math.round(width / 1.15), Math.round(height * 0.36));
   const manualWidth = width - 32;
-  const manualAspect = language === 'ta' ? MANUAL_ASPECT_TA : MANUAL_ASPECT_EN;
   const manualHeight = Math.min(
-    Math.round(manualWidth * manualAspect),
-    Math.round(height * 0.5),
+    Math.round(manualWidth * MANUAL_ASPECT),
+    Math.round(height * 0.52),
   );
   indexRef.current = index;
   const isLast = index >= PULSE_OXIMETER_COACH_STEP_COUNT - 1;
@@ -386,7 +384,7 @@ const styles = StyleSheet.create({
   },
   imageFrame: {
     width: '100%',
-    backgroundColor: '#E6E7EA',
+    backgroundColor: '#F4F7FB',
     overflow: 'hidden',
   },
   image: {
@@ -432,7 +430,7 @@ const styles = StyleSheet.create({
   manualFrame: {
     borderRadius: 16,
     overflow: 'hidden',
-    backgroundColor: '#E6E7EA',
+    backgroundColor: '#FFFFFF',
     alignItems: 'center',
     justifyContent: 'center',
   },

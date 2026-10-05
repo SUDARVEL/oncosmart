@@ -19,13 +19,13 @@ const STEP_HAND_IMAGE: Record<PulseOximeterMediaGender, string> = {
   male: `${MALE_FOLDER}/Opposite-Hand Pulse Oximeter Check.png`,
 };
 
-/** One wrist infographic for both men and women. Tamil uses its own poster. */
-const MANUAL_PULSE_IMAGE = `${FEMALE_FOLDER}/Manual Pulse Check Infographic.png`;
-const TAMIL_MANUAL_PULSE_IMAGE = `${MALE_FOLDER}/Tamil wrist guide.png`;
+/** Wrist-count posters. One English file and one Tamil file, shared by every gender. */
+const MANUAL_PULSE_IMAGE = 'Oximeter info/English Wrist Pulse Guide.png';
+const TAMIL_MANUAL_PULSE_IMAGE = 'Oximeter info/Tamil Wrist Pulse Guide.png';
 
-/** Step 6 already circles the heart rate. Same file for every gender. */
-const HEART_RATE_GUIDE_IMAGE = 'Coachmarks/Pulse Oximeter Heart Rate Guide.png';
-const TAMIL_HEART_RATE_GUIDE_IMAGE = `${MALE_FOLDER}/Pulse Oximeter Heart Rate tamil.png`;
+/** Step 6 heart-rate callout. One English file and one Tamil file, shared by every gender. */
+const HEART_RATE_GUIDE_IMAGE = 'Oximeter info/English PM dem.png';
+const TAMIL_HEART_RATE_GUIDE_IMAGE = 'Oximeter info/Tamil PM Dem.png';
 
 function usesTamilGuide(language?: string | null): boolean {
   return (language ?? '').toLowerCase().startsWith('ta');
@@ -47,9 +47,10 @@ export function getPulseOximeterCoachImageUrl(
     return getPublicStorageUrl(STEP_HAND_IMAGE[mediaGender]);
   }
   if (step === PULSE_VALUE_MARK_STEP) {
-    return getPublicStorageUrl(
+    const url = getPublicStorageUrl(
       usesTamilGuide(language) ? TAMIL_HEART_RATE_GUIDE_IMAGE : HEART_RATE_GUIDE_IMAGE,
     );
+    return url ? `${url}?v=3` : null;
   }
   const objectPath =
     mediaGender === 'female'
@@ -66,8 +67,8 @@ export function getManualPulseGuideUrl(
   const url = getPublicStorageUrl(
     usesTamilGuide(language) ? TAMIL_MANUAL_PULSE_IMAGE : MANUAL_PULSE_IMAGE,
   );
-  // New filename. A query keeps a previously failed disk cache from sticking.
-  return url ? `${url}?v=2` : null;
+  // New filename. A query keeps a previously cached poster from sticking.
+  return url ? `${url}?v=3` : null;
 }
 
 export function getPulseOximeterCoachImageUrls(

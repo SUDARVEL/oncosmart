@@ -138,25 +138,23 @@ export default function TreatmentScreen() {
                   label={t('treatment.yes')}
                   selected={surgery === true}
                   onPress={() => setSurgeryLocal(true)}
-                  compact
                 />
                 <ChoiceChip
                   label={t('treatment.no')}
                   selected={surgery === false}
                   onPress={() => setSurgeryLocal(false)}
-                  compact
                 />
               </View>
             </View>
-
-            <PrimaryButton
-              label={t('treatment.continue')}
-              onPress={handleContinue}
-              disabled={!canContinue}
-              style={styles.continueButton}
-            />
           </View>
         </ScrollView>
+        <View style={styles.footer}>
+          <PrimaryButton
+            label={t('treatment.continue')}
+            onPress={handleContinue}
+            disabled={!canContinue}
+          />
+        </View>
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
@@ -172,16 +170,13 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     flexGrow: 1,
-    justifyContent: 'center',
-    paddingHorizontal: 24,
+    paddingHorizontal: 20,
     paddingTop: 12,
-    paddingBottom: 28,
+    paddingBottom: 20,
   },
   form: {
     width: '100%',
-    maxWidth: 320,
-    alignSelf: 'center',
-    gap: 28,
+    gap: 24,
   },
   section: {
     gap: 10,
@@ -202,8 +197,8 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   chip: {
-    minHeight: 48,
-    borderRadius: 8,
+    minHeight: 56,
+    borderRadius: 10,
     backgroundColor: '#F1F3F5',
     alignItems: 'center',
     justifyContent: 'center',
@@ -211,8 +206,8 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
   },
   chipCompact: {
-    minHeight: 44,
-    paddingVertical: 10,
+    minHeight: 56,
+    paddingVertical: 12,
   },
   chipFlex: {
     flexGrow: 1,
@@ -233,7 +228,10 @@ const styles = StyleSheet.create({
     ...font('semiBold'),
     color: colors.optionTextSelected,
   },
-  continueButton: {
-    marginTop: 4,
+  footer: {
+    paddingHorizontal: 20,
+    paddingTop: 8,
+    paddingBottom: 12,
+    backgroundColor: colors.background,
   },
 });
