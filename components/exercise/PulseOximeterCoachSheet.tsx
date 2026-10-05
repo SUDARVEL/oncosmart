@@ -73,7 +73,7 @@ export function PulseOximeterCoachSheet({
   const manualWidth = width - 32;
   const manualHeight = Math.min(
     Math.round(manualWidth * MANUAL_ASPECT),
-    Math.round(height * 0.52),
+    Math.round(height * 0.42),
   );
   indexRef.current = index;
   const isLast = index >= PULSE_OXIMETER_COACH_STEP_COUNT - 1;
@@ -268,7 +268,7 @@ export function PulseOximeterCoachSheet({
                 <Text style={styles.title} numberOfLines={2}>
                   {t('daySession.manualTitle')}
                 </Text>
-                <Text style={styles.body} numberOfLines={3}>
+                <Text style={styles.body}>
                   {t('daySession.manualBody')}
                 </Text>
               </View>
