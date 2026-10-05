@@ -636,7 +636,13 @@
     "feedbackSectionTitle": "After-session feedback",
     "patientsTitle": "Patients",
     "sessionsChartTitle": "Sessions completed",
-    "sessionsChartHint": "Patients grouped by how many of the 28 sessions they have finished.",
+    "sessionsChartHint": "Each bar is how many patients have finished that many sessions.",
+    "sessionsLogged": "{{count}} logged",
+    "filterAll": "All",
+    "filterActive": "Active",
+    "filterPaused": "Paused",
+    "filterQuit": "Quit",
+    "filterEmpty": "No patients in this group.",
     "noFeedback": "No feedback yet"
   },
   "coach": {

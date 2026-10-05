@@ -78,60 +78,114 @@ function formatHoldReason(
   }
 }
 
-function MetricCard({
-  label,
-  value,
-  tint,
-  icon,
-  iconColor,
-}: {
-  label: string;
-  value: number;
-  tint: string;
-  icon: keyof typeof Ionicons.glyphMap;
-  iconColor: string;
-}) {
-  return (
-    <View style={[styles.statChip, { backgroundColor: tint }]}>
-      <View style={styles.metricTop}>
-        <Ionicons name={icon} size={16} color={iconColor} />
-        <Text style={styles.statLabel}>{label}</Text>
-      </View>
-      <Text style={styles.statValue}>{value}</Text>
-    </View>
-  );
-}
-
-function SessionBarChart({
+function SessionColumnChart({
   title,
   hint,
+  totalLabel,
   buckets,
 }: {
   title: string;
   hint: string;
+  totalLabel: string;
   buckets: { label: string; count: number }[];
 }) {
   const max = Math.max(1, ...buckets.map((b) => b.count));
+  const chartHeight = 128;
   return (
     <View style={styles.chartCard}>
-      <Text style={styles.chartTitle}>{title}</Text>
-      <Text style={styles.chartHint}>{hint}</Text>
-      <View style={styles.chartRows}>
-        {buckets.map((bucket) => (
-          <View key={bucket.label} style={styles.chartRow}>
-            <Text style={styles.chartLabel}>{bucket.label}</Text>
-            <View style={styles.chartTrack}>
-              <View
-                style={[
-                  styles.chartFill,
-                  { width: `${Math.round((bucket.count / max) * 100)}%` },
-                ]}
-              />
-            </View>
-            <Text style={styles.chartCount}>{bucket.count}</Text>
-          </View>
-        ))}
+      <View style={styles.chartHead}>
+        <View style={styles.chartHeadText}>
+          <Text style={styles.chartTitle}>{title}</Text>
+          <Text style={styles.chartHint}>{hint}</Text>
+        </View>
+        <Text style={styles.chartTotal}>{totalLabel}</Text>
       </View>
+      <View style={styles.columnChart}>
+        {buckets.map((bucket) => {
+          const height =
+            bucket.count === 0 ? 0 : Math.max(8, Math.round((bucket.count / max) * chartHeight));
+          return (
+            <View key={bucket.label} style={styles.column}>
+              <Text style={styles.columnCount}>{bucket.count}</Text>
+              <View style={[styles.columnTrack, { height: chartHeight }]}>
+                <View style={[styles.columnBar, { height }]} />
+              </View>
+              <Text style={styles.columnLabel}>{bucket.label}</Text>
+            </View>
+          );
+        })}
+      </View>
+    </View>
+  );
+}
+
+function FeedbackChart({
+  title,
+  emptyLabel,
+  easyLabel,
+  hardLabel,
+  tiredLabel,
+  easy,
+  hard,
+  tired,
+}: {
+  title: string;
+  emptyLabel: string;
+  easyLabel: string;
+  hardLabel: string;
+  tiredLabel: string;
+  easy: number;
+  hard: number;
+  tired: number;
+}) {
+  const total = easy + hard + tired;
+  const share = (count: number) => (total === 0 ? 0 : Math.round((count / total) * 100));
+  return (
+    <View style={styles.chartCard}>
+      <View style={styles.chartHead}>
+        <Text style={styles.chartTitle}>{title}</Text>
+        <Text style={styles.chartTotal}>{total}</Text>
+      </View>
+      {total === 0 ? (
+        <Text style={styles.alertsEmpty}>{emptyLabel}</Text>
+      ) : (
+        <>
+          <View style={styles.stackTrack}>
+            {easy > 0 ? (
+              <View style={[styles.stackEasy, { flex: easy }]} />
+            ) : null}
+            {hard > 0 ? (
+              <View style={[styles.stackHard, { flex: hard }]} />
+            ) : null}
+            {tired > 0 ? (
+              <View style={[styles.stackTired, { flex: tired }]} />
+            ) : null}
+          </View>
+          <View style={styles.legend}>
+            <View style={styles.legendItem}>
+              <View style={[styles.legendDot, styles.stackEasy]} />
+              <Text style={styles.legendLabel}>{easyLabel}</Text>
+              <Text style={styles.legendValue}>
+                {easy} · {share(easy)}%
+              </Text>
+            </View>
+            <View style={styles.legendItem}>
+              <View style={[styles.legendDot, styles.stackHard]} />
+              <Text style={styles.legendLabel}>{hardLabel}</Text>
+              <Text style={styles.legendValue}>
+                {hard} · {share(hard)}%
+              </Text>
+            </View>
+            <View style={styles.legendItem}>
+              <View style={[styles.legendDot, styles.stackTired]} />
+              <Text style={styles.legendLabel}>{tiredLabel}</Text>
+              <Text style={styles.legendValue}>
+                {tired} · {share(tired)}%
+              </Text>
+            </View>
+          </View>
+        </>
+      )}
     </View>
   );
 }
@@ -433,6 +487,7 @@ export default function AdminScreen() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [patientFilter, setPatientFilter] = useState<'all' | 'active' | 'paused' | 'quit'>('all');
 
   const stats = useMemo(() => buildAdminDashboardStats(patients), [patients]);
   const feedback = useMemo(() => summarizeSessionFeedback(patients), [patients]);
@@ -440,6 +495,26 @@ export default function AdminScreen() {
     () => alerts.filter((alert) => !alert.readAt).slice(0, 8),
     [alerts],
   );
+  const sessionsLogged = useMemo(
+    () => patients.reduce((sum, patient) => sum + patient.sessionsCompleted, 0),
+    [patients],
+  );
+  const visiblePatients = useMemo(() => {
+    if (patientFilter === 'paused') return patients.filter((patient) => patient.progressPaused);
+    if (patientFilter === 'quit') {
+      return patients.filter((patient) => Boolean(patient.quitReason || patient.quitAt));
+    }
+    if (patientFilter === 'active') {
+      return patients.filter(
+        (patient) =>
+          patient.sessionsCompleted > 0 &&
+          !patient.progressPaused &&
+          !patient.quitReason &&
+          !patient.quitAt,
+      );
+    }
+    return patients;
+  }, [patientFilter, patients]);
 
   const load = useCallback(async (mode: 'initial' | 'refresh' = 'initial') => {
     if (mode === 'initial') setLoading(true);
@@ -543,84 +618,86 @@ export default function AdminScreen() {
             )}
           </View>
 
-          <View style={styles.statGrid}>
-            <MetricCard
-              label={t('admin.statTotal')}
-              value={stats.total}
-              tint="#E8F4FC"
-              icon="people-outline"
-              iconColor={colors.navy}
-            />
-            <MetricCard
-              label={t('admin.statOnboarded')}
-              value={stats.onboarded}
-              tint="#ECFDF3"
-              icon="checkmark-circle-outline"
-              iconColor="#15803D"
-            />
-            <MetricCard
-              label={t('admin.statActive')}
-              value={stats.withProgress}
-              tint="#F3EEFF"
-              icon="barbell-outline"
-              iconColor="#6D28D9"
-            />
-            <MetricCard
-              label={t('admin.statPaused')}
-              value={stats.paused}
-              tint="#FFF7ED"
-              icon="pause-circle-outline"
-              iconColor="#C2410C"
-            />
-            <MetricCard
-              label={t('admin.statQuit')}
-              value={stats.quit}
-              tint="#FEF2F2"
-              icon="close-circle-outline"
-              iconColor="#B91C1C"
-            />
-            <MetricCard
-              label={t('admin.statNeverLogin')}
-              value={stats.neverLoggedIn}
-              tint="#F3F4F6"
-              icon="log-in-outline"
-              iconColor="#4B5563"
-            />
+          <View style={styles.heroCard}>
+            <Text style={styles.heroLabel}>{t('admin.statTotal')}</Text>
+            <Text style={styles.heroValue}>{stats.total}</Text>
+            <Text style={styles.heroHint}>
+              {t('admin.summary', {
+                total: stats.total,
+                onboarded: stats.onboarded,
+                active: stats.withProgress,
+              })}
+            </Text>
+            <View style={styles.heroStats}>
+              <View style={styles.heroStat}>
+                <Text style={styles.heroStatValue}>{stats.onboarded}</Text>
+                <Text style={styles.heroStatLabel}>{t('admin.statOnboarded')}</Text>
+              </View>
+              <View style={styles.heroDivider} />
+              <View style={styles.heroStat}>
+                <Text style={styles.heroStatValue}>{stats.withProgress}</Text>
+                <Text style={styles.heroStatLabel}>{t('admin.statActive')}</Text>
+              </View>
+              <View style={styles.heroDivider} />
+              <View style={styles.heroStat}>
+                <Text style={styles.heroStatValue}>{stats.neverLoggedIn}</Text>
+                <Text style={styles.heroStatLabel}>{t('admin.statNeverLogin')}</Text>
+              </View>
+            </View>
           </View>
 
-          <SessionBarChart
+          <View style={styles.filterRow}>
+            {(
+              [
+                ['all', t('admin.filterAll'), stats.total],
+                ['active', t('admin.filterActive'), stats.withProgress],
+                ['paused', t('admin.filterPaused'), stats.paused],
+                ['quit', t('admin.filterQuit'), stats.quit],
+              ] as const
+            ).map(([id, label, count]) => {
+              const selected = patientFilter === id;
+              return (
+                <Pressable
+                  key={id}
+                  onPress={() => setPatientFilter(id)}
+                  accessibilityRole="button"
+                  accessibilityState={{ selected }}
+                  style={[styles.filterChip, selected && styles.filterChipSelected]}
+                >
+                  <Text style={[styles.filterChipText, selected && styles.filterChipTextSelected]}>
+                    {label} {count}
+                  </Text>
+                </Pressable>
+              );
+            })}
+          </View>
+
+          <SessionColumnChart
             title={t('admin.sessionsChartTitle')}
             hint={t('admin.sessionsChartHint')}
+            totalLabel={t('admin.sessionsLogged', { count: sessionsLogged })}
             buckets={stats.sessionBuckets}
           />
 
-          <View style={styles.feedbackCard}>
-            <Text style={styles.chartTitle}>{t('admin.feedbackSectionTitle')}</Text>
-            <View style={styles.feedbackSummary}>
-              <View style={[styles.feedbackStat, styles.feedbackEasy]}>
-                <Text style={styles.feedbackStatValue}>{feedback.easy}</Text>
-                <Text style={styles.feedbackStatLabel}>{t('complete.feedbackEasy')}</Text>
-              </View>
-              <View style={[styles.feedbackStat, styles.feedbackHard]}>
-                <Text style={styles.feedbackStatValue}>{feedback.hard}</Text>
-                <Text style={styles.feedbackStatLabel}>{t('complete.feedbackHard')}</Text>
-              </View>
-              <View style={[styles.feedbackStat, styles.feedbackTired]}>
-                <Text style={styles.feedbackStatValue}>{feedback.tired}</Text>
-                <Text style={styles.feedbackStatLabel}>{t('complete.feedbackTired')}</Text>
-              </View>
-            </View>
-            {feedback.easy + feedback.hard + feedback.tired === 0 ? (
-              <Text style={styles.alertsEmpty}>{t('admin.noFeedback')}</Text>
-            ) : null}
-          </View>
+          <FeedbackChart
+            title={t('admin.feedbackSectionTitle')}
+            emptyLabel={t('admin.noFeedback')}
+            easyLabel={t('complete.feedbackEasy')}
+            hardLabel={t('complete.feedbackHard')}
+            tiredLabel={t('complete.feedbackTired')}
+            easy={feedback.easy}
+            hard={feedback.hard}
+            tired={feedback.tired}
+          />
 
           <Text style={styles.sectionTitle}>{t('admin.patientsTitle')}</Text>
           <Text style={styles.subtitle}>{t('admin.subtitle')}</Text>
-          {patients.length === 0 ? (
-            <Text style={styles.emptyList}>{t('admin.empty')}</Text>
+          {visiblePatients.length === 0 ? (
+            <Text style={styles.emptyList}>
+              {patients.length === 0 ? t('admin.empty') : t('admin.filterEmpty')}
+            </Text>
           ) : (
-            patients.map((patient) => (
+            visiblePatients.map((patient) => (
               <PatientCard
                 key={patient.userId}
                 patient={patient}
@@ -747,11 +824,90 @@ const styles = StyleSheet.create({
     color: colors.textSecondary,
     flex: 1,
   },
-  chartCard: {
-    borderRadius: 16,
-    padding: 16,
-    gap: 12,
+  heroCard: {
     backgroundColor: '#FFFFFF',
+    borderRadius: 18,
+    paddingHorizontal: 18,
+    paddingTop: 16,
+    paddingBottom: 14,
+    gap: 4,
+  },
+  heroLabel: {
+    ...uiText(14, 'medium'),
+    color: colors.textMuted,
+  },
+  heroValue: {
+    ...uiText(40, 'semiBold'),
+    color: colors.navy,
+  },
+  heroHint: {
+    ...uiText(13),
+    color: colors.textSecondary,
+  },
+  heroStats: {
+    marginTop: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F4F7FB',
+    borderRadius: 12,
+    paddingVertical: 10,
+  },
+  heroStat: {
+    flex: 1,
+    alignItems: 'center',
+    gap: 2,
+  },
+  heroDivider: {
+    width: 1,
+    height: 28,
+    backgroundColor: '#E5E7EB',
+  },
+  heroStatValue: {
+    ...uiText(18, 'semiBold'),
+    color: colors.navy,
+  },
+  heroStatLabel: {
+    ...uiText(11, 'medium'),
+    color: colors.textMuted,
+    textAlign: 'center',
+  },
+  filterRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  filterChip: {
+    borderRadius: 999,
+    backgroundColor: '#FFFFFF',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+  },
+  filterChipSelected: {
+    backgroundColor: colors.navy,
+  },
+  filterChipText: {
+    ...uiText(13, 'medium'),
+    color: colors.textSecondary,
+  },
+  filterChipTextSelected: {
+    ...uiText(13, 'semiBold'),
+    color: '#FFFFFF',
+  },
+  chartCard: {
+    borderRadius: 18,
+    padding: 16,
+    gap: 14,
+    backgroundColor: '#FFFFFF',
+  },
+  chartHead: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    justifyContent: 'space-between',
+    gap: 12,
+  },
+  chartHeadText: {
+    flex: 1,
+    gap: 4,
   },
   chartTitle: {
     ...uiText(16, 'semiBold'),
@@ -760,7 +916,79 @@ const styles = StyleSheet.create({
   chartHint: {
     ...uiText(13),
     color: colors.textMuted,
-    marginTop: -6,
+  },
+  chartTotal: {
+    ...uiText(14, 'semiBold'),
+    color: colors.navy,
+  },
+  columnChart: {
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    gap: 8,
+  },
+  column: {
+    flex: 1,
+    alignItems: 'center',
+    gap: 6,
+  },
+  columnCount: {
+    ...uiText(12, 'semiBold'),
+    color: colors.navy,
+  },
+  columnTrack: {
+    width: '100%',
+    justifyContent: 'flex-end',
+    alignItems: 'center',
+  },
+  columnBar: {
+    width: '70%',
+    maxWidth: 36,
+    borderRadius: 8,
+    backgroundColor: colors.buttonPrimary,
+    minHeight: 6,
+  },
+  columnLabel: {
+    ...uiText(11, 'medium'),
+    color: colors.textMuted,
+    textAlign: 'center',
+  },
+  stackTrack: {
+    height: 14,
+    borderRadius: 8,
+    overflow: 'hidden',
+    flexDirection: 'row',
+    backgroundColor: '#E8EEF5',
+  },
+  stackEasy: {
+    backgroundColor: '#1F8A4C',
+  },
+  stackHard: {
+    backgroundColor: '#E08A1E',
+  },
+  stackTired: {
+    backgroundColor: '#C2415B',
+  },
+  legend: {
+    gap: 8,
+  },
+  legendItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  legendDot: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+  },
+  legendLabel: {
+    ...uiText(13, 'medium'),
+    color: colors.textPrimary,
+    flex: 1,
+  },
+  legendValue: {
+    ...uiText(13, 'semiBold'),
+    color: colors.navy,
   },
   chartRows: {
     gap: 8,

@@ -636,7 +636,13 @@
     "feedbackSectionTitle": "அமர்வுக்குப் பின் கருத்து",
     "patientsTitle": "நோயாளிகள்",
     "sessionsChartTitle": "முடித்த அமர்வுகள்",
-    "sessionsChartHint": "28 அமர்வுகளில் எத்தனை முடித்துள்ளனர் என்பதன் அடிப்படையில் நோயாளிகள்.",
+    "sessionsChartHint": "ஒவ்வொரு பட்டையும் அந்த அளவு அமர்வுகளை முடித்த நோயாளிகளின் எண்ணிக்கை.",
+    "sessionsLogged": "{{count}} பதிவு",
+    "filterAll": "அனைத்தும்",
+    "filterActive": "செயலில்",
+    "filterPaused": "இடைநிறுத்தம்",
+    "filterQuit": "நிறுத்தம்",
+    "filterEmpty": "இந்தப் பட்டியலில் நோயாளிகள் இல்லை.",
     "noFeedback": "கருத்து இல்லை"
   },
   "chat": {
