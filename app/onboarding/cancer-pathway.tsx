@@ -43,7 +43,7 @@ export default function CancerPathwayScreen() {
 
   return (
     <SafeAreaView style={styles.screen} edges={['top', 'bottom']}>
-      <ScreenHeader title={t('cancerPathway.header')} showBack largeTitle />
+      <ScreenHeader title={t('cancerPathway.header')} showBack />
 
       <ScrollView
         style={styles.flex}
@@ -120,7 +120,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   title: {
-    ...uiText(22, 'bold'),
+    ...uiText(18, 'semiBold'),
     color: colors.textPrimary,
   },
   subtitle: {

@@ -94,7 +94,7 @@ export default function TreatmentScreen() {
 
   return (
     <SafeAreaView style={styles.screen} edges={['top', 'bottom']}>
-      <ScreenHeader title={t('treatment.header')} showBack largeTitle />
+      <ScreenHeader title={t('treatment.header')} showBack />
 
       <KeyboardAvoidingView
         style={styles.flex}
@@ -203,7 +203,7 @@ const styles = StyleSheet.create({
     gap: 16,
   },
   heading: {
-    ...uiText(16, 'bold'),
+    ...uiText(16, 'semiBold'),
     color: colors.textPrimary,
   },
   warning: {
