@@ -21,11 +21,11 @@ const STEP_HAND_IMAGE: Record<PulseOximeterMediaGender, string> = {
 
 /** Wrist-count posters. One English file and one Tamil file, shared by every gender. */
 const MANUAL_PULSE_IMAGE = 'Oximeter info/English Wrist Pulse Guide.png';
-const TAMIL_MANUAL_PULSE_IMAGE = 'Oximeter info/Tamil Wrist Pulse Guide.png';
+const TAMIL_MANUAL_PULSE_IMAGE = 'Oximeter info/tamil wrist 1 min .png';
 
 /** Step 6 heart-rate callout. One English file and one Tamil file, shared by every gender. */
 const HEART_RATE_GUIDE_IMAGE = 'Oximeter info/English PM dem.png';
-const TAMIL_HEART_RATE_GUIDE_IMAGE = 'Oximeter info/Tamil PM Dem.png';
+const TAMIL_HEART_RATE_GUIDE_IMAGE = 'Oximeter info/Pulse Oximeter Heart Rate Guide (2).png';
 
 function usesTamilGuide(language?: string | null): boolean {
   return (language ?? '').toLowerCase().startsWith('ta');
@@ -50,7 +50,7 @@ export function getPulseOximeterCoachImageUrl(
     const url = getPublicStorageUrl(
       usesTamilGuide(language) ? TAMIL_HEART_RATE_GUIDE_IMAGE : HEART_RATE_GUIDE_IMAGE,
     );
-    return url ? `${url}?v=3` : null;
+    return url ? `${url}?v=4` : null;
   }
   const objectPath =
     mediaGender === 'female'
@@ -68,7 +68,7 @@ export function getManualPulseGuideUrl(
     usesTamilGuide(language) ? TAMIL_MANUAL_PULSE_IMAGE : MANUAL_PULSE_IMAGE,
   );
   // New filename. A query keeps a previously cached poster from sticking.
-  return url ? `${url}?v=3` : null;
+  return url ? `${url}?v=4` : null;
 }
 
 export function getPulseOximeterCoachImageUrls(
