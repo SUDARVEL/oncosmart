@@ -141,16 +141,17 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   title: {
-    fontSize: 16,
+    fontSize: 20,
+    lineHeight: 30,
     ...font('semiBold'),
     color: colors.textPrimary,
     letterSpacing: 0.1,
   },
   subtitle: {
-    fontSize: 14,
+    fontSize: 15,
     ...font('medium'),
     color: colors.textSecondary,
-    lineHeight: 20,
+    lineHeight: 22,
   },
   cardsRow: {
     flexDirection: 'row',

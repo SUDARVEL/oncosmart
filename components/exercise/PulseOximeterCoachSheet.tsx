@@ -17,6 +17,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import {
   getManualPulseGuideUrl,
+  manualPulseAspect,
   getPulseOximeterCoachImageUrl,
   getPulseOximeterCoachImageUrls,
   PULSE_OXIMETER_COACH_STEP_COUNT,
@@ -42,12 +43,11 @@ type Props = {
 type MeasureMethod = 'manual' | 'oximeter';
 
 const STEPS = Array.from({ length: PULSE_OXIMETER_COACH_STEP_COUNT }, (_, index) => index + 1);
-/** Title (2 lines) + body (3 lines) so Skip / Next stay put while copy length changes. */
-const COPY_BLOCK_HEIGHT = 124;
+/** Title (2 lines at 20) + body (3 lines) so Skip / Next stay put while copy length changes. */
+const COPY_BLOCK_HEIGHT = 148;
 /** Matches the zoom on the coach illustration. */
 const IMAGE_ZOOM = 1.04;
-/** English and Tamil wrist posters are both 1145×1374. */
-const MANUAL_ASPECT = 1374 / 1145;
+/** English poster is portrait; the Tamil infographic is landscape. */
 
 /**
  * Bottom sheet for checking pulse before a session.
@@ -72,7 +72,7 @@ export function PulseOximeterCoachSheet({
   const imageHeight = Math.min(Math.round(width / 1.15), Math.round(height * 0.36));
   const manualWidth = width - 32;
   const manualHeight = Math.min(
-    Math.round(manualWidth * MANUAL_ASPECT),
+    Math.round(manualWidth * manualPulseAspect(language)),
     Math.round(height * 0.42),
   );
   indexRef.current = index;
@@ -341,7 +341,7 @@ const styles = StyleSheet.create({
   sheetTitle: {
     marginTop: 14,
     paddingHorizontal: 20,
-    ...uiText(18, 'semiBold'),
+    ...uiText(20, 'semiBold'),
     color: '#111827',
   },
   tabs: {
@@ -415,7 +415,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
   },
   title: {
-    ...uiText(18, 'semiBold'),
+    ...uiText(20, 'semiBold'),
     color: '#111827',
   },
   body: {
@@ -439,7 +439,7 @@ const styles = StyleSheet.create({
   },
   manualCopy: {
     alignSelf: 'stretch',
-    minHeight: 92,
+    minHeight: 140,
     paddingTop: 14,
     paddingHorizontal: 4,
   },

@@ -83,7 +83,8 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   title: {
-    fontSize: 18,
+    fontSize: 20,
+    lineHeight: 30,
     ...font('semiBold'),
     color: colors.textPrimary,
     textAlign: 'center',

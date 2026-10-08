@@ -141,8 +141,8 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   welcome: {
-    fontSize: 18,
-    lineHeight: 22,
+    fontSize: 20,
+    lineHeight: 30,
     textAlign: 'center',
     ...font('semiBold'),
     color: '#262526',

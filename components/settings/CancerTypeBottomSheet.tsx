@@ -130,6 +130,7 @@ export function CancerTypeBottomSheet({ visible, selected, onClose, onSelect }: 
                 <View style={{ width: stride }}>
                   <Pressable
                     onPress={() => onSelect(slug)}
+                    android_ripple={null}
                     style={[styles.card, { width: cardWidth }, isSelected && styles.cardSelected]}
                     accessibilityRole="button"
                     accessibilityState={{ selected: isSelected }}
@@ -144,7 +145,7 @@ export function CancerTypeBottomSheet({ visible, selected, onClose, onSelect }: 
                         />
                       ) : null}
                     </View>
-                    <Text style={[styles.cardLabel, isSelected && styles.cardLabelSelected]}>
+                    <Text style={styles.cardLabel} numberOfLines={2}>
                       {t(CANCER_TYPE_I18N_KEYS[slug])}
                     </Text>
                     <View style={[styles.radio, isSelected && styles.radioSelected]}>
@@ -214,7 +215,7 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     flex: 1,
-    ...uiText(18, 'semiBold'),
+    ...uiText(20, 'semiBold'),
     color: colors.textPrimary,
   },
   closeButton: {
@@ -262,10 +263,6 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     color: '#1F2937',
     minHeight: 46,
-  },
-  cardLabelSelected: {
-    ...uiText(16, 'semiBold'),
-    color: colors.navy,
   },
   radio: {
     width: 22,

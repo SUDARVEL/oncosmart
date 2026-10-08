@@ -72,8 +72,8 @@ const styles = StyleSheet.create({
   title: {
     flex: 1,
     textAlign: 'center',
-    fontSize: 16,
-    lineHeight: 24,
+    fontSize: 20,
+    lineHeight: 30,
     ...font('semiBold'),
     color: colors.textPrimary,
     letterSpacing: 0,

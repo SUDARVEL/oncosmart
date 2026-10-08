@@ -65,6 +65,7 @@ export default function CancerPathwayScreen() {
               <Pressable
                 key={slug}
                 onPress={() => setSelected(slug)}
+                android_ripple={null}
                 style={[styles.card, isSelected && styles.cardSelected]}
                 accessibilityRole="button"
                 accessibilityState={{ selected: isSelected }}
@@ -79,7 +80,7 @@ export default function CancerPathwayScreen() {
                     />
                   ) : null}
                 </View>
-                <Text style={[styles.cardLabel, isSelected && styles.cardLabelSelected]}>
+                <Text style={styles.cardLabel} numberOfLines={2}>
                   {t(CANCER_TYPE_I18N_KEYS[slug])}
                 </Text>
                 <View style={[styles.radio, isSelected && styles.radioSelected]}>
@@ -120,7 +121,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   title: {
-    ...uiText(18, 'semiBold'),
+    ...uiText(20, 'semiBold'),
     color: colors.textPrimary,
   },
   subtitle: {
@@ -131,12 +132,11 @@ const styles = StyleSheet.create({
     gap: 16,
   },
   card: {
-    minHeight: 88,
+    height: 88,
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
     paddingHorizontal: 12,
-    paddingVertical: 12,
     borderRadius: 14,
     borderWidth: 1,
     borderColor: '#E5E7EB',
@@ -164,10 +164,6 @@ const styles = StyleSheet.create({
     flexShrink: 1,
     ...uiText(16, 'medium'),
     color: '#1F2937',
-  },
-  cardLabelSelected: {
-    ...uiText(16, 'semiBold'),
-    color: colors.navy,
   },
   radio: {
     width: 22,

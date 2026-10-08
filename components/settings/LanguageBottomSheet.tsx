@@ -102,8 +102,8 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     flex: 1,
-    fontSize: 18,
-    lineHeight: 24,
+    fontSize: 20,
+    lineHeight: 30,
     color: colors.textPrimary,
     ...font('semiBold'),
   },

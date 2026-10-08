@@ -18,7 +18,6 @@ import { normalizeCancerTypeSlug } from '../../lib/cancerPathway';
 import { isOnboardingReview, onboardingReviewHref } from '../../lib/onboardingReview';
 import { TreatmentType, useAppStore } from '../../store/useAppStore';
 import { colors } from '../../theme/colors';
-import { font } from '../../theme/fonts';
 import { uiText } from '../../theme/typography';
 
 /** Figma Treatment Details — first row hugs content; second row splits evenly. */
@@ -43,6 +42,7 @@ function ChoiceChip({ label, selected, onPress, compact = false }: ChoiceChipPro
   return (
     <Pressable
       onPress={onPress}
+      android_ripple={null}
       style={[
         styles.chip,
         styles.chipFlex,
@@ -52,10 +52,7 @@ function ChoiceChip({ label, selected, onPress, compact = false }: ChoiceChipPro
       accessibilityRole="button"
       accessibilityState={{ selected }}
     >
-      <Text
-        style={[styles.chipText, selected && styles.chipTextSelected]}
-        numberOfLines={2}
-      >
+      <Text style={[styles.chipText, selected && styles.chipTextSelected]} numberOfLines={2}>
         {label}
       </Text>
     </Pressable>
@@ -203,7 +200,7 @@ const styles = StyleSheet.create({
     gap: 16,
   },
   heading: {
-    ...uiText(16, 'semiBold'),
+    ...uiText(20, 'semiBold'),
     color: colors.textPrimary,
   },
   warning: {
@@ -250,7 +247,6 @@ const styles = StyleSheet.create({
     letterSpacing: 0,
   },
   chipTextSelected: {
-    ...font('semiBold'),
     color: colors.optionTextSelected,
   },
   advice: {

@@ -21,7 +21,11 @@ const STEP_HAND_IMAGE: Record<PulseOximeterMediaGender, string> = {
 
 /** Wrist-count posters. One English file and one Tamil file, shared by every gender. */
 const MANUAL_PULSE_IMAGE = 'Oximeter info/English Wrist Pulse Guide.png';
-const TAMIL_MANUAL_PULSE_IMAGE = 'Oximeter info/tamil wrist 1 min .png';
+const TAMIL_MANUAL_PULSE_IMAGE = 'Oximeter info/Tamil Wrist Pulse Check Infographic.png';
+
+/** English wrist poster is portrait 1145×1374. Tamil infographic is landscape 1385×1136. */
+export const ENGLISH_MANUAL_PULSE_ASPECT = 1374 / 1145;
+export const TAMIL_MANUAL_PULSE_ASPECT = 1136 / 1385;
 
 /** Step 6 heart-rate callout. One English file and one Tamil file, shared by every gender. */
 const HEART_RATE_GUIDE_IMAGE = 'Oximeter info/English PM dem.png';
@@ -68,7 +72,11 @@ export function getManualPulseGuideUrl(
     usesTamilGuide(language) ? TAMIL_MANUAL_PULSE_IMAGE : MANUAL_PULSE_IMAGE,
   );
   // New filename. A query keeps a previously cached poster from sticking.
-  return url ? `${url}?v=4` : null;
+  return url ? `${url}?v=5` : null;
+}
+
+export function manualPulseAspect(language?: string | null): number {
+  return usesTamilGuide(language) ? TAMIL_MANUAL_PULSE_ASPECT : ENGLISH_MANUAL_PULSE_ASPECT;
 }
 
 export function getPulseOximeterCoachImageUrls(
