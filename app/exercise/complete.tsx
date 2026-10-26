@@ -57,8 +57,8 @@ export default function SessionCompleteScreen() {
   }, [dismissBadgeCelebration]);
 
   const handleFeedback = useCallback(
-    (feedback: SessionFeedback) => {
-      setSessionFeedback(sessionId, feedback);
+    (feedback: SessionFeedback, note?: string) => {
+      setSessionFeedback(sessionId, feedback, note);
       setFeedbackDismissed(true);
       const userId = useAppStore.getState().activeAuthUserId;
       if (userId) {
@@ -67,6 +67,7 @@ export default function SessionCompleteScreen() {
           level,
           dayInLevel,
           feedback,
+          note,
         });
       }
     },

@@ -84,8 +84,9 @@ create table if not exists exercise_completions (
   end_bpm int,
   session_feedback text check (
     session_feedback is null
-    or session_feedback = any (array['easy'::text, 'hard'::text, 'tired'::text])
+    or session_feedback = any (array['easy'::text, 'hard'::text, 'tired'::text, 'other'::text])
   ),
+  session_feedback_note text,
   completed_at timestamptz default now(),
   unique (patient_id, session_key)
 );

@@ -20,6 +20,7 @@ export type AdminSessionDetail = {
   startBpm: number | null;
   endBpm: number | null;
   sessionFeedback: SessionFeedback | null;
+  sessionFeedbackNote: string | null;
 };
 
 export type AdminPatientProgress = {
@@ -66,12 +67,13 @@ export type AdminSessionRow = {
   startBpm: number | null;
   endBpm: number | null;
   sessionFeedback: SessionFeedback | null;
+  sessionFeedbackNote: string | null;
 };
 
 export type SessionFeedbackCounts = Record<SessionFeedback, number>;
 
 export function emptyFeedbackCounts(): SessionFeedbackCounts {
-  return { easy: 0, hard: 0, tired: 0 };
+  return { easy: 0, hard: 0, tired: 0, other: 0 };
 }
 
 export function summarizeSessionFeedback(
@@ -119,6 +121,7 @@ export function buildAdminSessionRows(patient: AdminPatientProgress): AdminSessi
           ? detail.endBpm
           : null,
       sessionFeedback: detail?.sessionFeedback ?? null,
+      sessionFeedbackNote: detail?.sessionFeedbackNote ?? null,
     });
   }
 
@@ -142,6 +145,7 @@ export function buildAdminSessionRows(patient: AdminPatientProgress): AdminSessi
           ? detail.endBpm
           : null,
       sessionFeedback: detail.sessionFeedback,
+      sessionFeedbackNote: detail.sessionFeedbackNote,
     });
   }
 
@@ -217,6 +221,10 @@ function asSessionDetails(value: unknown): AdminSessionDetail[] {
             ? null
             : Number(row.end_bpm),
       sessionFeedback: asSessionFeedback(row.session_feedback),
+      sessionFeedbackNote:
+        typeof row.session_feedback_note === 'string' && row.session_feedback_note.trim()
+          ? row.session_feedback_note.trim()
+          : null,
     });
   }
   return out.sort((a, b) => a.level - b.level || a.dayInLevel - b.dayInLevel);

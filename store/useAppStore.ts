@@ -44,6 +44,8 @@ export type AppStateSnapshot = {
   pauseReasonNote: string | null;
   /** How the session felt, keyed by L{level}D{day}. */
   sessionFeedbackByKey: Record<string, SessionFeedback>;
+  /** Written note when session feedback is `other`, keyed the same way. */
+  sessionFeedbackNoteByKey: Record<string, string | null>;
   /** Why the patient quit mid-exercise (Why did you stop?). */
   quitReason: QuitReason | null;
   /** Free-text reason typed on Why did you stop? */
@@ -98,8 +100,15 @@ type AppState = AppStateSnapshot & {
     holdType?: ProgressHoldType | null,
     note?: string | null,
   ) => void;
-  setSessionFeedback: (sessionKey: string, feedback: SessionFeedback) => void;
-  mergeSessionFeedbackFromCloud: (entries: Record<string, SessionFeedback>) => void;
+  setSessionFeedback: (
+    sessionKey: string,
+    feedback: SessionFeedback,
+    note?: string | null,
+  ) => void;
+  mergeSessionFeedbackFromCloud: (
+    entries: Record<string, SessionFeedback>,
+    notes?: Record<string, string | null>,
+  ) => void;
   /** Record mid-exercise quit without pausing program progress. */
   recordExerciseQuit: (reason: QuitReason, note?: string | null) => void;
   setSessionBpm: (
@@ -182,6 +191,7 @@ export const useAppStore = create<AppState>()(
       pauseReason: null,
       pauseReasonNote: null,
       sessionFeedbackByKey: {},
+      sessionFeedbackNoteByKey: {},
       quitReason: null,
       quitReasonNote: null,
       sessionBpmByKey: {},
@@ -243,13 +253,20 @@ export const useAppStore = create<AppState>()(
             pauseReasonNote,
           };
         }),
-      setSessionFeedback: (sessionKey, feedback) =>
+      setSessionFeedback: (sessionKey, feedback, note) =>
         set((state) => ({
           sessionFeedbackByKey: { ...state.sessionFeedbackByKey, [sessionKey]: feedback },
+          sessionFeedbackNoteByKey: {
+            ...state.sessionFeedbackNoteByKey,
+            [sessionKey]: feedback === 'other' ? asPauseReasonNote(note) : null,
+          },
         })),
-      mergeSessionFeedbackFromCloud: (entries) =>
+      mergeSessionFeedbackFromCloud: (entries, notes) =>
         set((state) => ({
           sessionFeedbackByKey: { ...state.sessionFeedbackByKey, ...entries },
+          sessionFeedbackNoteByKey: notes
+            ? { ...state.sessionFeedbackNoteByKey, ...notes }
+            : state.sessionFeedbackNoteByKey,
         })),
       recordExerciseQuit: (reason, note) =>
         set({
@@ -384,6 +401,7 @@ export const useAppStore = create<AppState>()(
           pauseReason: null,
           pauseReasonNote: null,
           sessionFeedbackByKey: {},
+          sessionFeedbackNoteByKey: {},
           quitReason: null,
           quitReasonNote: null,
           sessionBpmByKey: {},
@@ -422,6 +440,7 @@ export const useAppStore = create<AppState>()(
         pauseReason: state.pauseReason,
         pauseReasonNote: state.pauseReasonNote,
         sessionFeedbackByKey: state.sessionFeedbackByKey,
+        sessionFeedbackNoteByKey: state.sessionFeedbackNoteByKey,
         quitReason: state.quitReason,
         quitReasonNote: state.quitReasonNote,
         levelsCompleted: state.levelsCompleted,

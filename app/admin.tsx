@@ -125,20 +125,24 @@ function FeedbackChart({
   easyLabel,
   hardLabel,
   tiredLabel,
+  otherLabel,
   easy,
   hard,
   tired,
+  other,
 }: {
   title: string;
   emptyLabel: string;
   easyLabel: string;
   hardLabel: string;
   tiredLabel: string;
+  otherLabel: string;
   easy: number;
   hard: number;
   tired: number;
+  other: number;
 }) {
-  const total = easy + hard + tired;
+  const total = easy + hard + tired + other;
   const share = (count: number) => (total === 0 ? 0 : Math.round((count / total) * 100));
   return (
     <View style={styles.chartCard}>
@@ -159,6 +163,9 @@ function FeedbackChart({
             ) : null}
             {tired > 0 ? (
               <View style={[styles.stackTired, { flex: tired }]} />
+            ) : null}
+            {other > 0 ? (
+              <View style={[styles.stackOther, { flex: other }]} />
             ) : null}
           </View>
           <View style={styles.legend}>
@@ -183,6 +190,15 @@ function FeedbackChart({
                 {tired} · {share(tired)}%
               </Text>
             </View>
+            {other > 0 ? (
+              <View style={styles.legendItem}>
+                <View style={[styles.legendDot, styles.stackOther]} />
+                <Text style={styles.legendLabel}>{otherLabel}</Text>
+                <Text style={styles.legendValue}>
+                  {other} · {share(other)}%
+                </Text>
+              </View>
+            ) : null}
           </View>
         </>
       )}
@@ -220,13 +236,21 @@ function PatientCard({
   const { t, i18n } = useTranslation();
   const sessionRows = useMemo(() => buildAdminSessionRows(patient), [patient]);
   const feedbackCounts = useMemo(() => {
-    const counts = { easy: 0, hard: 0, tired: 0 };
+    const counts = { easy: 0, hard: 0, tired: 0, other: 0 };
     for (const row of sessionRows) {
       if (row.sessionFeedback) counts[row.sessionFeedback] += 1;
     }
     return counts;
   }, [sessionRows]);
-  const feedbackTotal = feedbackCounts.easy + feedbackCounts.hard + feedbackCounts.tired;
+  const otherNotes = useMemo(
+    () =>
+      sessionRows.filter(
+        (row) => row.sessionFeedback === 'other' && row.sessionFeedbackNote,
+      ),
+    [sessionRows],
+  );
+  const feedbackTotal =
+    feedbackCounts.easy + feedbackCounts.hard + feedbackCounts.tired + feedbackCounts.other;
   const progressPct = Math.min(
     100,
     Math.round((patient.sessionsCompleted / TOTAL_SESSIONS) * 100),
@@ -363,7 +387,18 @@ function PatientCard({
             <Text style={[styles.feedbackChip, styles.feedbackTired]}>
               {t('complete.feedbackTired')} {feedbackCounts.tired}
             </Text>
+            {feedbackCounts.other > 0 ? (
+              <Text style={[styles.feedbackChip, styles.feedbackOther]}>
+                {t('complete.feedbackOther')} {feedbackCounts.other}
+              </Text>
+            ) : null}
           </View>
+          {otherNotes.map((row) => (
+            <Text key={row.sessionKey} style={styles.feedbackNote}>
+              {t('admin.feedbackNoteLine', { level: row.level, day: row.dayInLevel })}:{' '}
+              {row.sessionFeedbackNote}
+            </Text>
+          ))}
         </View>
       ) : null}
 
@@ -694,9 +729,11 @@ export default function AdminScreen() {
             easyLabel={t('complete.feedbackEasy')}
             hardLabel={t('complete.feedbackHard')}
             tiredLabel={t('complete.feedbackTired')}
+            otherLabel={t('complete.feedbackOther')}
             easy={feedback.easy}
             hard={feedback.hard}
             tired={feedback.tired}
+            other={feedback.other}
           />
 
           <Text style={styles.sectionTitle}>{t('admin.patientsTitle')}</Text>
@@ -977,6 +1014,9 @@ const styles = StyleSheet.create({
   stackTired: {
     backgroundColor: '#C2415B',
   },
+  stackOther: {
+    backgroundColor: '#1D4ED8',
+  },
   legend: {
     gap: 8,
   },
@@ -1204,6 +1244,14 @@ const styles = StyleSheet.create({
   feedbackTired: {
     backgroundColor: '#FFF1F2',
     color: '#9F1239',
+  },
+  feedbackOther: {
+    backgroundColor: '#EFF6FF',
+    color: '#1D4ED8',
+  },
+  feedbackNote: {
+    ...uiText(14, 'medium'),
+    color: '#1F2937',
   },
   badgeRow: {
     flexDirection: 'row',

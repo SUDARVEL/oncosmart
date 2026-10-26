@@ -194,7 +194,10 @@
     "feedbackSubtitle": "This helps us support you better.",
     "feedbackEasy": "Easy to finish",
     "feedbackHard": "A little bit hard",
-    "feedbackTired": "Felt tired"
+    "feedbackTired": "Felt tired",
+    "feedbackOther": "Any other",
+    "feedbackOtherPlaceholder": "Tell us in your own words",
+    "feedbackOtherSave": "Save reason"
   },
   "sessionFlow": {
     "pause": "Pause",
@@ -611,6 +614,7 @@
     "bpmColEnd": "End BPM",
     "bpmColPain": "Pain",
     "feedbackColumn": "Feedback",
+    "feedbackNoteLine": "Level {{level}}, day {{day}}",
     "bpmColCompleted": "Completed",
     "lastUpdated": "Last updated",
     "completedSessions": "Completed sessions",

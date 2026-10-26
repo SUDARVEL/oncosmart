@@ -194,7 +194,10 @@
     "feedbackSubtitle": "உங்கள் பதில் திட்டத்தை சரிசெய்ய உதவும்.",
     "feedbackEasy": "எளிதாக முடிந்தது",
     "feedbackHard": "சிறிது கடினமாக இருந்தது",
-    "feedbackTired": "சோர்வாக உணர்ந்தேன்"
+    "feedbackTired": "சோர்வாக உணர்ந்தேன்",
+    "feedbackOther": "வேறு ஏதேனும்",
+    "feedbackOtherPlaceholder": "உங்கள் காரணத்தை இங்கே எழுதுங்கள்",
+    "feedbackOtherSave": "காரணத்தை சேமி"
   },
   "sessionFlow": {
     "pause": "இடைநிறுத்து",
@@ -611,6 +614,7 @@
     "bpmColEnd": "முடிவு BPM",
     "bpmColPain": "வலி",
     "feedbackColumn": "கருத்து",
+    "feedbackNoteLine": "நிலை {{level}}, நாள் {{day}}",
     "bpmColCompleted": "முடிந்தது",
     "lastUpdated": "கடைசியாக புதுப்பிக்கப்பட்டது",
     "completedSessions": "முடித்த அமர்வுகள்",

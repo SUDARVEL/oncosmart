@@ -194,7 +194,7 @@ export async function loadSessionBpmIntoStore(patientId: string): Promise<void> 
 
   const { data, error } = await supabase
     .from('exercise_completions')
-    .select('session_key,start_bpm,end_bpm,session_feedback')
+    .select('session_key,start_bpm,end_bpm,session_feedback,session_feedback_note')
     .eq('patient_id', patientId);
 
   if (error) {
@@ -204,6 +204,7 @@ export async function loadSessionBpmIntoStore(patientId: string): Promise<void> 
 
   const entries: Record<string, { startBpm: number; endBpm: number }> = {};
   const feedbackEntries: Record<string, SessionFeedback> = {};
+  const feedbackNotes: Record<string, string | null> = {};
   for (const row of data ?? []) {
     const key = typeof row.session_key === 'string' ? row.session_key : '';
     if (!key) continue;
@@ -214,14 +215,18 @@ export async function loadSessionBpmIntoStore(patientId: string): Promise<void> 
       entries[key] = { startBpm, endBpm };
     }
     const feedback = asSessionFeedback(row.session_feedback);
-    if (feedback) feedbackEntries[key] = feedback;
+    if (feedback) {
+      feedbackEntries[key] = feedback;
+      feedbackNotes[key] =
+        feedback === 'other' ? asPauseReasonNote(row.session_feedback_note) : null;
+    }
   }
 
   if (Object.keys(entries).length > 0) {
     useAppStore.getState().mergeSessionBpmFromCloud(entries);
   }
   if (Object.keys(feedbackEntries).length > 0) {
-    useAppStore.getState().mergeSessionFeedbackFromCloud(feedbackEntries);
+    useAppStore.getState().mergeSessionFeedbackFromCloud(feedbackEntries, feedbackNotes);
   }
 }
 
@@ -383,6 +388,7 @@ export async function upsertSessionCompletion(params: {
   startBpm?: number;
   endBpm?: number;
   sessionFeedback?: SessionFeedback;
+  sessionFeedbackNote?: string | null;
 }): Promise<void> {
   const supabase = getSupabase();
   if (!supabase) return;
@@ -412,6 +418,8 @@ export async function upsertSessionCompletion(params: {
   }
   if (params.sessionFeedback) {
     row.session_feedback = params.sessionFeedback;
+    row.session_feedback_note =
+      params.sessionFeedback === 'other' ? asPauseReasonNote(params.sessionFeedbackNote) : null;
   }
 
   const { error } = await supabase.from('exercise_completions').upsert(row, {
@@ -428,6 +436,7 @@ export async function saveSessionFeedback(params: {
   level: number;
   dayInLevel: number;
   feedback: SessionFeedback;
+  note?: string | null;
 }): Promise<void> {
   const state = useAppStore.getState();
   const key = `L${params.level}D${params.dayInLevel}`;
@@ -443,5 +452,6 @@ export async function saveSessionFeedback(params: {
     startBpm: bpm?.startBpm,
     endBpm: bpm?.endBpm,
     sessionFeedback: params.feedback,
+    sessionFeedbackNote: params.note,
   });
 }

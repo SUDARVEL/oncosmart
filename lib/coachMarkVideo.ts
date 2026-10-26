@@ -1,9 +1,9 @@
 import { getPublicStorageUrl } from './supabaseStorage';
 
-/** Storage names. The Tamil file keeps the space before “.mp4”. */
+/** Storage names in the Coach mark video folder. */
 const COACH_MARK_VIDEO_PATHS = {
-  en: 'Coach mark video/English.mp4',
-  ta: 'Coach mark video/Tamil .mp4',
+  en: 'Coach mark video/Oncosmart Tutorial Video New Version English(1).mp4',
+  ta: 'Coach mark video/Oncosmart Tutorial Video New Version Tamil.mp4',
 } as const;
 
 export type CoachFilmChapter = {
@@ -13,19 +13,19 @@ export type CoachFilmChapter = {
 };
 
 /**
- * Shared beats in the English and Tamil Coach mark films.
- * Both recordings run the same walkthrough at these times.
+ * Shared beats in the English and Tamil coach films.
+ * Both new recordings follow this walkthrough.
  */
 export const COACH_FILM_CHAPTERS: CoachFilmChapter[] = [
   { start: 0, titleKey: 'coach.filmWelcomeTitle' },
   { start: 8, titleKey: 'coach.filmAvatarTitle' },
-  { start: 20, titleKey: 'coach.filmSessionTitle' },
-  { start: 32, titleKey: 'coach.filmStartTitle' },
-  { start: 56, titleKey: 'coach.filmProgressTitle' },
-  { start: 64, titleKey: 'coach.filmLevelsTitle' },
-  { start: 100, titleKey: 'coach.filmWorkoutsTitle' },
-  { start: 128, titleKey: 'coach.filmProfileTitle' },
-  { start: 148, titleKey: 'coach.filmAllSetTitle' },
+  { start: 24, titleKey: 'coach.filmSessionTitle' },
+  { start: 64, titleKey: 'coach.filmStartTitle' },
+  { start: 72, titleKey: 'coach.filmProgressTitle' },
+  { start: 80, titleKey: 'coach.filmLevelsTitle' },
+  { start: 120, titleKey: 'coach.filmWorkoutsTitle' },
+  { start: 144, titleKey: 'coach.filmProfileTitle' },
+  { start: 168, titleKey: 'coach.filmAllSetTitle' },
 ];
 
 export function getCoachMarkVideoUrl(language: string | null | undefined): string | null {

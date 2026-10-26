@@ -1,30 +1,67 @@
 import { Ionicons } from '@expo/vector-icons';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Modal, Pressable, StyleSheet, Text, View } from 'react-native';
+import {
+  KeyboardAvoidingView,
+  Modal,
+  Platform,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import type { SessionFeedback } from '../../lib/sessionFeedback';
 import { colors } from '../../theme/colors';
 import { font } from '../../theme/fonts';
+import { uiText } from '../../theme/typography';
+import { AppTextInput } from '../AppTextInput';
 
 type Props = {
   visible: boolean;
   onClose: () => void;
-  onSelect: (feedback: SessionFeedback) => void;
+  onSelect: (feedback: SessionFeedback, note?: string) => void;
 };
 
-const OPTIONS: { id: SessionFeedback; labelKey: string }[] = [
+const OPTIONS: { id: Exclude<SessionFeedback, 'other'>; labelKey: string }[] = [
   { id: 'easy', labelKey: 'complete.feedbackEasy' },
   { id: 'hard', labelKey: 'complete.feedbackHard' },
   { id: 'tired', labelKey: 'complete.feedbackTired' },
 ];
 
-/** Asked once after a session is saved. Choosing an option closes the sheet. */
+/** Asked once after a session is saved. Presets close the sheet. "Any other" asks for a note. */
 export function SessionFeedbackModal({ visible, onClose, onSelect }: Props) {
   const { t } = useTranslation();
+  const insets = useSafeAreaInsets();
+  const [otherOpen, setOtherOpen] = useState(false);
+  const [note, setNote] = useState('');
+
+  useEffect(() => {
+    if (!visible) {
+      setOtherOpen(false);
+      setNote('');
+    }
+  }, [visible]);
+
+  const trimmedNote = note.trim();
+  const canSaveOther = trimmedNote.length > 0;
+
+  const submitOther = () => {
+    if (!canSaveOther) return;
+    onSelect('other', trimmedNote);
+  };
 
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
-      <View style={styles.backdrop}>
+      <KeyboardAvoidingView
+        style={[
+          styles.backdrop,
+          { paddingTop: insets.top + 12, paddingBottom: insets.bottom + 12 },
+        ]}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      >
         <View style={styles.card}>
           <View style={styles.header}>
             <Text style={styles.title}>{t('complete.feedbackTitle')}</Text>
@@ -37,21 +74,67 @@ export function SessionFeedbackModal({ visible, onClose, onSelect }: Props) {
               <Ionicons name="close" size={22} color="#374151" />
             </Pressable>
           </View>
-          <Text style={styles.subtitle}>{t('complete.feedbackSubtitle')}</Text>
-          <View style={styles.options}>
-            {OPTIONS.map((option) => (
+          <ScrollView
+            style={styles.scroll}
+            contentContainerStyle={styles.body}
+            keyboardShouldPersistTaps="handled"
+            showsVerticalScrollIndicator={false}
+            bounces={false}
+          >
+            <Text style={styles.subtitle}>{t('complete.feedbackSubtitle')}</Text>
+            <View style={styles.options}>
+              {OPTIONS.map((option) => (
+                <Pressable
+                  key={option.id}
+                  style={styles.optionButton}
+                  onPress={() => onSelect(option.id)}
+                  accessibilityRole="button"
+                >
+                  <Text style={styles.optionText}>{t(option.labelKey)}</Text>
+                </Pressable>
+              ))}
               <Pressable
-                key={option.id}
-                style={styles.optionButton}
-                onPress={() => onSelect(option.id)}
+                style={[styles.optionButton, otherOpen && styles.optionButtonSelected]}
+                onPress={() => setOtherOpen(true)}
                 accessibilityRole="button"
+                accessibilityState={{ selected: otherOpen }}
               >
-                <Text style={styles.optionText}>{t(option.labelKey)}</Text>
+                <Text style={[styles.optionText, otherOpen && styles.optionTextSelected]}>
+                  {t('complete.feedbackOther')}
+                </Text>
               </Pressable>
-            ))}
-          </View>
+              {otherOpen ? (
+                <AppTextInput
+                  value={note}
+                  onChangeText={setNote}
+                  placeholder={t('complete.feedbackOtherPlaceholder')}
+                  style={styles.noteInput}
+                  multiline
+                  maxLength={240}
+                  textAlignVertical="top"
+                  returnKeyType="done"
+                  blurOnSubmit
+                  onSubmitEditing={submitOther}
+                  accessibilityLabel={t('complete.feedbackOther')}
+                />
+              ) : null}
+            </View>
+          </ScrollView>
+          {otherOpen ? (
+            <View style={styles.footer}>
+              <Pressable
+                style={[styles.saveButton, !canSaveOther && styles.saveButtonDisabled]}
+                onPress={submitOther}
+                disabled={!canSaveOther}
+                accessibilityRole="button"
+                accessibilityState={{ disabled: !canSaveOther }}
+              >
+                <Text style={styles.saveButtonText}>{t('complete.feedbackOtherSave')}</Text>
+              </Pressable>
+            </View>
+          ) : null}
         </View>
-      </View>
+      </KeyboardAvoidingView>
     </Modal>
   );
 }
@@ -67,17 +150,17 @@ const styles = StyleSheet.create({
   card: {
     width: '100%',
     maxWidth: 400,
+    maxHeight: '100%',
     backgroundColor: '#FFFFFF',
     borderRadius: 16,
-    paddingHorizontal: 20,
-    paddingTop: 18,
-    paddingBottom: 20,
-    gap: 14,
+    overflow: 'hidden',
   },
   header: {
     flexDirection: 'row',
     alignItems: 'flex-start',
     gap: 12,
+    paddingHorizontal: 20,
+    paddingTop: 18,
   },
   title: {
     flex: 1,
@@ -91,6 +174,16 @@ const styles = StyleSheet.create({
     height: 32,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  scroll: {
+    flexGrow: 0,
+    flexShrink: 1,
+  },
+  body: {
+    paddingHorizontal: 20,
+    paddingTop: 14,
+    paddingBottom: 20,
+    gap: 14,
   },
   subtitle: {
     fontSize: 14,
@@ -112,11 +205,51 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     backgroundColor: '#FFFFFF',
   },
+  optionButtonSelected: {
+    borderColor: colors.buttonPrimary,
+    backgroundColor: colors.cardSelectedBg,
+  },
   optionText: {
     fontSize: 16,
     lineHeight: 24,
     color: '#1F2937',
     textAlign: 'center',
     ...font('semiBold'),
+  },
+  optionTextSelected: {
+    color: colors.buttonPrimary,
+  },
+  noteInput: {
+    height: 96,
+    borderWidth: 1,
+    borderColor: '#D5D7DA',
+    borderRadius: 12,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    backgroundColor: '#FFFFFF',
+    textAlignVertical: 'top',
+  },
+  footer: {
+    paddingHorizontal: 20,
+    paddingTop: 4,
+    paddingBottom: 16,
+    backgroundColor: '#FFFFFF',
+  },
+  saveButton: {
+    minHeight: 52,
+    borderRadius: 12,
+    backgroundColor: colors.buttonPrimary,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+  },
+  saveButtonDisabled: {
+    backgroundColor: colors.buttonDisabled,
+  },
+  saveButtonText: {
+    color: '#FFFFFF',
+    textAlign: 'center',
+    ...uiText(16, 'semiBold'),
   },
 });

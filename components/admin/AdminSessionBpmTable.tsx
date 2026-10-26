@@ -20,12 +20,18 @@ function formatBpm(value: number | null, emptyLabel: string): string {
 
 function feedbackLabel(
   value: SessionFeedback | null,
+  note: string | null,
   t: (key: string) => string,
   emptyLabel: string,
 ): string {
   if (value === 'easy') return t('complete.feedbackEasy');
   if (value === 'hard') return t('complete.feedbackHard');
   if (value === 'tired') return t('complete.feedbackTired');
+  if (value === 'other') {
+    const written = note?.trim();
+    const label = t('complete.feedbackOther');
+    return written ? `${label}: ${written}` : label;
+  }
   return emptyLabel;
 }
 
@@ -84,10 +90,11 @@ export function AdminSessionBpmTable({ rows, formatWhen }: Props) {
                 row.sessionFeedback === 'easy' && styles.feedbackEasy,
                 row.sessionFeedback === 'hard' && styles.feedbackHard,
                 row.sessionFeedback === 'tired' && styles.feedbackTired,
+                row.sessionFeedback === 'other' && styles.feedbackOther,
               ]}
-              numberOfLines={2}
+              numberOfLines={4}
             >
-              {feedbackLabel(row.sessionFeedback, t, empty)}
+              {feedbackLabel(row.sessionFeedback, row.sessionFeedbackNote, t, empty)}
             </Text>
             <Text style={[styles.cell, styles.colWhen]} numberOfLines={2}>
               {formatWhen(row.completedAt)}
@@ -151,7 +158,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   colFeedback: {
-    width: 132,
+    width: 200,
     textAlign: 'left',
   },
   feedbackEasy: {
@@ -165,6 +172,10 @@ const styles = StyleSheet.create({
   feedbackTired: {
     ...font('semiBold'),
     color: '#9F1239',
+  },
+  feedbackOther: {
+    ...font('semiBold'),
+    color: '#1D4ED8',
   },
   colWhen: {
     width: 128,
