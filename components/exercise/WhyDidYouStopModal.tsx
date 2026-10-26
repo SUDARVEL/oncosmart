@@ -18,39 +18,39 @@ import { font } from '../../theme/fonts';
 import { uiText } from '../../theme/typography';
 import { AppTextInput } from '../AppTextInput';
 
-export type StopReason = 'tired' | 'pain' | 'exploring';
+export type StopReason = 'tired' | 'pain' | 'exploring' | 'other';
 
 type Props = {
   visible: boolean;
   onClose: () => void;
-  onSelect: (reason: StopReason, note: string) => void;
+  onSelect: (reason: StopReason, note?: string) => void;
 };
+
+const OPTIONS: { reason: Exclude<StopReason, 'other'>; labelKey: string }[] = [
+  { reason: 'tired', labelKey: 'sessionFlow.stopReasonTired' },
+  { reason: 'pain', labelKey: 'sessionFlow.stopReasonPain' },
+  { reason: 'exploring', labelKey: 'sessionFlow.stopReasonExploring' },
+];
 
 export function WhyDidYouStopModal({ visible, onClose, onSelect }: Props) {
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
-  const [selected, setSelected] = useState<StopReason | null>(null);
+  const [otherOpen, setOtherOpen] = useState(false);
   const [note, setNote] = useState('');
 
   useEffect(() => {
     if (!visible) {
-      setSelected(null);
+      setOtherOpen(false);
       setNote('');
     }
   }, [visible]);
 
   const trimmedNote = note.trim();
-  const canSave = selected != null && trimmedNote.length > 0;
+  const canSaveOther = trimmedNote.length > 0;
 
-  const options: { reason: StopReason; label: string }[] = [
-    { reason: 'tired', label: t('sessionFlow.stopReasonTired') },
-    { reason: 'pain', label: t('sessionFlow.stopReasonPain') },
-    { reason: 'exploring', label: t('sessionFlow.stopReasonExploring') },
-  ];
-
-  const submit = () => {
-    if (!selected || trimmedNote.length === 0) return;
-    onSelect(selected, trimmedNote);
+  const submitOther = () => {
+    if (!canSaveOther) return;
+    onSelect('other', trimmedNote);
   };
 
   return (
@@ -87,51 +87,57 @@ export function WhyDidYouStopModal({ visible, onClose, onSelect }: Props) {
             <Text style={styles.subtitle}>{t('sessionFlow.stopSubtitle')}</Text>
 
             <View style={styles.options}>
-              {options.map((option) => {
-                const isSelected = selected === option.reason;
-                return (
-                  <Pressable
-                    key={option.reason}
-                    style={[styles.optionButton, isSelected && styles.optionButtonSelected]}
-                    onPress={() => setSelected(option.reason)}
-                    accessibilityRole="button"
-                    accessibilityState={{ selected: isSelected }}
-                  >
-                    <Text style={[styles.optionText, isSelected && styles.optionTextSelected]}>
-                      {option.label}
-                    </Text>
-                  </Pressable>
-                );
-              })}
+              {OPTIONS.map((option) => (
+                <Pressable
+                  key={option.reason}
+                  style={styles.optionButton}
+                  onPress={() => onSelect(option.reason)}
+                  accessibilityRole="button"
+                >
+                  <Text style={styles.optionText}>{t(option.labelKey)}</Text>
+                </Pressable>
+              ))}
+              <Pressable
+                style={[styles.optionButton, otherOpen && styles.optionButtonSelected]}
+                onPress={() => setOtherOpen(true)}
+                accessibilityRole="button"
+                accessibilityState={{ selected: otherOpen }}
+              >
+                <Text style={[styles.optionText, otherOpen && styles.optionTextSelected]}>
+                  {t('sessionFlow.stopReasonOther')}
+                </Text>
+              </Pressable>
+              {otherOpen ? (
+                <AppTextInput
+                  value={note}
+                  onChangeText={setNote}
+                  placeholder={t('sessionFlow.stopReasonPlaceholder')}
+                  style={styles.noteInput}
+                  multiline
+                  maxLength={240}
+                  textAlignVertical="top"
+                  returnKeyType="done"
+                  blurOnSubmit
+                  onSubmitEditing={submitOther}
+                  accessibilityLabel={t('sessionFlow.stopReasonOther')}
+                />
+              ) : null}
             </View>
-
-            <Text style={styles.prompt}>{t('sessionFlow.stopReasonPrompt')}</Text>
-            <AppTextInput
-              value={note}
-              onChangeText={setNote}
-              placeholder={t('sessionFlow.stopReasonPlaceholder')}
-              style={styles.noteInput}
-              multiline
-              maxLength={240}
-              textAlignVertical="top"
-              returnKeyType="done"
-              blurOnSubmit
-              onSubmitEditing={submit}
-              accessibilityLabel={t('sessionFlow.stopReasonPrompt')}
-            />
           </ScrollView>
 
-          <View style={styles.footer}>
-            <Pressable
-              style={[styles.saveButton, !canSave && styles.saveButtonDisabled]}
-              onPress={submit}
-              disabled={!canSave}
-              accessibilityRole="button"
-              accessibilityState={{ disabled: !canSave }}
-            >
-              <Text style={styles.saveButtonText}>{t('sessionFlow.stopReasonSave')}</Text>
-            </Pressable>
-          </View>
+          {otherOpen ? (
+            <View style={styles.footer}>
+              <Pressable
+                style={[styles.saveButton, !canSaveOther && styles.saveButtonDisabled]}
+                onPress={submitOther}
+                disabled={!canSaveOther}
+                accessibilityRole="button"
+                accessibilityState={{ disabled: !canSaveOther }}
+              >
+                <Text style={styles.saveButtonText}>{t('sessionFlow.stopReasonSave')}</Text>
+              </Pressable>
+            </View>
+          ) : null}
         </View>
       </KeyboardAvoidingView>
     </Modal>
@@ -228,11 +234,6 @@ const styles = StyleSheet.create({
   },
   optionTextSelected: {
     color: colors.buttonPrimary,
-  },
-  prompt: {
-    marginTop: 8,
-    color: '#374151',
-    ...uiText(15, 'medium'),
   },
   noteInput: {
     height: 96,

@@ -217,6 +217,7 @@
     "stopReasonTired": "சோர்வாக உணர்கிறேன்",
     "stopReasonPain": "வலி உள்ளது",
     "stopReasonExploring": "ஆராய்ந்து பார்க்கிறேன்",
+    "stopReasonOther": "வேறு ஏதேனும்",
     "stopReasonPrompt": "காரணத்தை எழுதுங்கள்",
     "stopReasonPlaceholder": "உங்கள் காரணத்தை இங்கே எழுதுங்கள்",
     "stopReasonSave": "காரணத்தை சேமி",

@@ -217,6 +217,7 @@
     "stopReasonTired": "I feel tired",
     "stopReasonPain": "I have pain",
     "stopReasonExploring": "Just exploring",
+    "stopReasonOther": "Any other",
     "stopReasonPrompt": "Write your reason",
     "stopReasonPlaceholder": "Tell us in your own words",
     "stopReasonSave": "Save reason",

@@ -28,7 +28,7 @@ create table if not exists patients (
   pause_reason_note text,
   quit_reason text check (
     quit_reason is null
-    or quit_reason = any (array['tired'::text, 'pain'::text, 'exploring'::text, 'treatment'::text, 'unwell'::text])
+    or quit_reason = any (array['tired'::text, 'pain'::text, 'exploring'::text, 'treatment'::text, 'unwell'::text, 'other'::text])
   ),
   quit_reason_note text,
   paused_at timestamptz,

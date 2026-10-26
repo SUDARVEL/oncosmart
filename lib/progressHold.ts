@@ -5,7 +5,7 @@ export type ProgressHoldType = 'pause' | 'quit';
 export type PauseReason = 'tired' | 'pain' | 'treatment' | 'unwell' | 'other';
 
 /** Reasons from guided session → Why did you stop? */
-export type QuitReason = 'tired' | 'pain' | 'exploring';
+export type QuitReason = 'tired' | 'pain' | 'exploring' | 'other';
 
 export type HoldReason = PauseReason | QuitReason;
 
@@ -18,7 +18,7 @@ export function asPauseReasonNote(value: unknown): string | null {
   const trimmed = value.trim().slice(0, PAUSE_NOTE_MAX);
   return trimmed.length > 0 ? trimmed : null;
 }
-const QUIT_REASONS = new Set<QuitReason>(['tired', 'pain', 'exploring']);
+const QUIT_REASONS = new Set<QuitReason>(['tired', 'pain', 'exploring', 'other']);
 
 export function asPauseReason(value: unknown): PauseReason | null {
   return typeof value === 'string' && PAUSE_REASONS.has(value as PauseReason)

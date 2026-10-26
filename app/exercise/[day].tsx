@@ -261,13 +261,14 @@ function GuidedSessionScreen({
   }, [completeSession, exerciseIndex, level]);
 
   const handleStopReason = useCallback(
-    (reason: StopReason, note: string) => {
-      // Mid-exercise back → Why did you stop? = Quit (admin sees quit + written reason).
+    (reason: StopReason, note?: string) => {
+      // Preset reasons save immediately. "Any other" saves the typed comment.
       const quitReason: QuitReason =
-        reason === 'tired' || reason === 'pain' || reason === 'exploring'
+        reason === 'tired' || reason === 'pain' || reason === 'exploring' || reason === 'other'
           ? reason
           : 'exploring';
-      const quitNote = note.trim().slice(0, 240);
+      const quitNote = quitReason === 'other' ? (note ?? '').trim().slice(0, 240) : null;
+      if (quitReason === 'other' && !quitNote) return;
       setShowStopModal(false);
       const state = useAppStore.getState();
       state.recordExerciseQuit(quitReason, quitNote);
@@ -281,7 +282,7 @@ function GuidedSessionScreen({
         await notifyAdminsOfHold({
           holdType: 'quit',
           reason: quitReason,
-          note: quitNote,
+          note: quitNote || null,
           patientName: displayName,
           patientUsername: displayName,
         });
