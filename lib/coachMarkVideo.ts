@@ -23,7 +23,6 @@ export const COACH_FILM_CHAPTERS: CoachFilmChapter[] = [
   { start: 64, titleKey: 'coach.filmStartTitle' },
   { start: 72, titleKey: 'coach.filmProgressTitle' },
   { start: 80, titleKey: 'coach.filmLevelsTitle' },
-  { start: 90, titleKey: 'coach.filmPauseTitle' },
   { start: 120, titleKey: 'coach.filmWorkoutsTitle' },
   { start: 144, titleKey: 'coach.filmProfileTitle' },
   { start: 168, titleKey: 'coach.filmAllSetTitle' },

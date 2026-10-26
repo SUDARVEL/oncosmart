@@ -1,7 +1,7 @@
 import { Image } from "expo-image";
 import type { Ref } from "react";
 import { useTranslation } from "react-i18next";
-import { StyleSheet, Text, View } from "react-native";
+import { Pressable, StyleSheet, Text, View } from "react-native";
 import { SvgXml } from "react-native-svg";
 
 import type { AppAvatar } from "../../store/useAppStore";
@@ -69,7 +69,7 @@ export function LevelsCard({
           </View>
         </View>
 
-        <View style={styles.avatarFrame}>
+        <View style={styles.avatarFrame} pointerEvents="none">
           <Image
             source={avatarSource}
             style={styles.avatarImage}
@@ -91,15 +91,18 @@ export function LevelsCard({
             <Text style={styles.resumeText}>{resumeLabel}</Text>
           </PressableScale>
         ) : (
-          <PressableScale
+          <Pressable
             style={styles.pauseButton}
             onPress={onPause}
+            hitSlop={12}
             accessibilityRole="button"
             accessibilityLabel={t("growth.pauseProgress")}
           >
-            <SvgXml xml={PAUSE_ICON_XML} width={10} height={12} />
-            <Text style={styles.pauseText}>{t("growth.pauseProgress")}</Text>
-          </PressableScale>
+            <SvgXml xml={PAUSE_ICON_XML} width={10} height={12} pointerEvents="none" />
+            <Text style={styles.pauseText} pointerEvents="none">
+              {t("growth.pauseProgress")}
+            </Text>
+          </Pressable>
         )}
       </View>
     </View>
@@ -186,6 +189,7 @@ const styles = StyleSheet.create({
     marginTop: 12,
     alignItems: "center",
     width: "100%",
+    zIndex: 2,
   },
   pauseButton: {
     flexDirection: "row",

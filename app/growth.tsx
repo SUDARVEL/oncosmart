@@ -208,14 +208,14 @@ export default function GrowthScreen() {
       />
       </View>
 
-      <PauseReasonModal
-        visible={showPauseReason}
-        holdType="pause"
-        onClose={() => setShowPauseReason(false)}
-        onSelect={handlePauseReasonSelect}
-      />
-
     </SafeAreaView>
+
+    <PauseReasonModal
+      visible={showPauseReason}
+      holdType="pause"
+      onClose={() => setShowPauseReason(false)}
+      onSelect={handlePauseReasonSelect}
+    />
     </View>
   );
 }
