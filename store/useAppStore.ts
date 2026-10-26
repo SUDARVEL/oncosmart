@@ -4,7 +4,12 @@ import { createJSONStorage, persist } from 'zustand/middleware';
 
 import { getCompletedLevelsCount, sessionKey } from '../lib/programProgress';
 import type { BadgeKey } from '../lib/getEarnedBadges';
-import type { ProgressHoldType, PauseReason, QuitReason } from '../lib/progressHold';
+import {
+  asPauseReasonNote,
+  type ProgressHoldType,
+  type PauseReason,
+  type QuitReason,
+} from '../lib/progressHold';
 import type { SessionFeedback } from '../lib/sessionFeedback';
 
 export type AppLanguage = 'en' | 'ta';
@@ -41,6 +46,8 @@ export type AppStateSnapshot = {
   sessionFeedbackByKey: Record<string, SessionFeedback>;
   /** Why the patient quit mid-exercise (Why did you stop?). */
   quitReason: QuitReason | null;
+  /** Free-text reason typed on Why did you stop? */
+  quitReasonNote: string | null;
   /** Start/end BPM captured per session key (L1D1, etc.) before cloud sync. */
   sessionBpmByKey: Record<string, { startBpm: number; endBpm: number }>;
   levelsCompleted: number;
@@ -94,7 +101,7 @@ type AppState = AppStateSnapshot & {
   setSessionFeedback: (sessionKey: string, feedback: SessionFeedback) => void;
   mergeSessionFeedbackFromCloud: (entries: Record<string, SessionFeedback>) => void;
   /** Record mid-exercise quit without pausing program progress. */
-  recordExerciseQuit: (reason: QuitReason) => void;
+  recordExerciseQuit: (reason: QuitReason, note?: string | null) => void;
   setSessionBpm: (
     key: string,
     data: { startBpm: number; endBpm?: number },
@@ -176,6 +183,7 @@ export const useAppStore = create<AppState>()(
       pauseReasonNote: null,
       sessionFeedbackByKey: {},
       quitReason: null,
+      quitReasonNote: null,
       sessionBpmByKey: {},
       levelsCompleted: 0,
       dayCompletedAt: {},
@@ -243,9 +251,10 @@ export const useAppStore = create<AppState>()(
         set((state) => ({
           sessionFeedbackByKey: { ...state.sessionFeedbackByKey, ...entries },
         })),
-      recordExerciseQuit: (reason) =>
+      recordExerciseQuit: (reason, note) =>
         set({
           quitReason: reason,
+          quitReasonNote: asPauseReasonNote(note),
         }),
       setSessionBpm: (key, data) =>
         set((state) => {
@@ -376,6 +385,7 @@ export const useAppStore = create<AppState>()(
           pauseReasonNote: null,
           sessionFeedbackByKey: {},
           quitReason: null,
+          quitReasonNote: null,
           sessionBpmByKey: {},
           levelsCompleted: 0,
           dayCompletedAt: {},
@@ -413,6 +423,7 @@ export const useAppStore = create<AppState>()(
         pauseReasonNote: state.pauseReasonNote,
         sessionFeedbackByKey: state.sessionFeedbackByKey,
         quitReason: state.quitReason,
+        quitReasonNote: state.quitReasonNote,
         levelsCompleted: state.levelsCompleted,
         dayCompletedAt: state.dayCompletedAt,
         sessionBpmByKey: state.sessionBpmByKey,

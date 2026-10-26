@@ -261,15 +261,16 @@ function GuidedSessionScreen({
   }, [completeSession, exerciseIndex, level]);
 
   const handleStopReason = useCallback(
-    (reason: StopReason) => {
-      // Mid-exercise back → Why did you stop? = Quit (admin sees quit + reason).
+    (reason: StopReason, note: string) => {
+      // Mid-exercise back → Why did you stop? = Quit (admin sees quit + written reason).
       const quitReason: QuitReason =
         reason === 'tired' || reason === 'pain' || reason === 'exploring'
           ? reason
           : 'exploring';
+      const quitNote = note.trim().slice(0, 240);
       setShowStopModal(false);
       const state = useAppStore.getState();
-      state.recordExerciseQuit(quitReason);
+      state.recordExerciseQuit(quitReason, quitNote);
       void cancelNextExerciseNotification();
       const displayName = state.username.trim() || 'Patient';
       const authUserId = state.activeAuthUserId;
@@ -280,6 +281,7 @@ function GuidedSessionScreen({
         await notifyAdminsOfHold({
           holdType: 'quit',
           reason: quitReason,
+          note: quitNote,
           patientName: displayName,
           patientUsername: displayName,
         });

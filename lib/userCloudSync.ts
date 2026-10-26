@@ -115,7 +115,7 @@ export async function loadCloudProfileIntoStore(userId: string): Promise<CloudLo
   const { data, error } = await supabase
     .from('patients')
     .select(
-      'id,user_id,name,language,gender,avatar,age,age_range,cancer_type,treatment_undergoing,underwent_surgery,anaemia_diagnosed,parq_answers,parq_cleared,progress_paused,progress_hold_type,pause_reason,pause_reason_note,quit_reason,pain_scores,day_completed_at,levels_completed,onboarding_complete,coach_tour_seen',
+      'id,user_id,name,language,gender,avatar,age,age_range,cancer_type,treatment_undergoing,underwent_surgery,anaemia_diagnosed,parq_answers,parq_cleared,progress_paused,progress_hold_type,pause_reason,pause_reason_note,quit_reason,quit_reason_note,pain_scores,day_completed_at,levels_completed,onboarding_complete,coach_tour_seen',
     )
     .eq('user_id', userId)
     .maybeSingle();
@@ -148,6 +148,7 @@ export async function loadCloudProfileIntoStore(userId: string): Promise<CloudLo
   const pauseReasonNote =
     progressPaused && pauseReason === 'other' ? asPauseReasonNote(data.pause_reason_note) : null;
   const quitReason = asQuitReason(data.quit_reason);
+  const quitReasonNote = asPauseReasonNote(data.quit_reason_note);
 
   useAppStore.getState().hydrateFromCloud({
     activeAuthUserId: userId,
@@ -170,6 +171,7 @@ export async function loadCloudProfileIntoStore(userId: string): Promise<CloudLo
     pauseReason,
     pauseReasonNote,
     quitReason,
+    quitReasonNote,
     painScores: asRecordNumber(data.pain_scores),
     dayCompletedAt,
     levelsCompleted:
@@ -255,6 +257,7 @@ export async function saveCloudProfileFromStore(userId: string): Promise<boolean
       pause_reason_note:
         state.progressPaused && state.pauseReason === 'other' ? state.pauseReasonNote : null,
       quit_reason: state.quitReason,
+      quit_reason_note: state.quitReason ? state.quitReasonNote : null,
       ...(state.progressPaused
         ? {}
         : {

@@ -341,6 +341,12 @@ function PatientCard({
             {t('admin.reasonLabel')}:{' '}
             {formatHoldReason(patient.quitReason, t, 'admin.quitReasonUnknown')}
           </Text>
+          {patient.quitReasonNote ? (
+            <View style={styles.noteBlock}>
+              <Text style={[styles.noteLabel, styles.quitNoteLabel]}>{t('admin.pauseNoteLabel')}</Text>
+              <Text style={styles.noteBody}>{patient.quitReasonNote}</Text>
+            </View>
+          ) : null}
         </View>
       ) : null}
 
@@ -437,6 +443,9 @@ function PatientCard({
             {patient.quitReason
               ? formatHoldReason(patient.quitReason, t, 'admin.quitReasonUnknown')
               : t('admin.pauseReasonNone')}
+          </Text>
+          <Text style={styles.detailLine}>
+            {t('admin.pauseNoteLabel')}: {patient.quitReasonNote ?? t('admin.pauseReasonNone')}
           </Text>
 
           <Text style={styles.completedTitle}>{t('admin.painScoresTitle')}</Text>
@@ -1273,6 +1282,9 @@ const styles = StyleSheet.create({
     ...font('medium'),
     fontSize: 13,
     color: '#7F1D1D',
+  },
+  quitNoteLabel: {
+    color: '#991B1B',
   },
   detailBlock: {
     borderTopWidth: 1,

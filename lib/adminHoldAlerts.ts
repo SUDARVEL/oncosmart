@@ -20,23 +20,25 @@ export type AdminHoldAlert = {
 const ADMIN_ALERTS_CHANNEL_ID = 'admin-alerts';
 
 function reasonLabel(reason: string | null | undefined, note?: string | null): string {
+  const extra = note?.trim() ?? '';
   switch (reason) {
     case 'tired':
-      return 'Feeling tired';
+      return extra ? `Feeling tired: ${extra}` : 'Feeling tired';
     case 'pain':
-      return 'Having pain';
+      return extra ? `Having pain: ${extra}` : 'Having pain';
     case 'treatment':
-      return 'Recently underwent treatment';
+      return extra ? `Recently underwent treatment: ${extra}` : 'Recently underwent treatment';
     case 'unwell':
-      return 'Not feeling well';
+      return extra ? `Not feeling well: ${extra}` : 'Not feeling well';
     case 'exploring':
-      return 'Just exploring';
-    case 'other': {
-      const extra = note?.trim();
+      return extra ? `Just exploring: ${extra}` : 'Just exploring';
+    case 'other':
       return extra ? `Any other: ${extra}` : 'Any other';
+    default: {
+      const fallback =
+        typeof reason === 'string' && reason.trim() ? reason.trim() : 'No reason given';
+      return extra ? `${fallback}: ${extra}` : fallback;
     }
-    default:
-      return typeof reason === 'string' && reason.trim() ? reason.trim() : 'No reason given';
   }
 }
 

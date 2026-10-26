@@ -44,6 +44,7 @@ export function CloudSyncBridge() {
   const pauseReason = useAppStore((s) => s.pauseReason);
   const pauseReasonNote = useAppStore((s) => s.pauseReasonNote);
   const quitReason = useAppStore((s) => s.quitReason);
+  const quitReasonNote = useAppStore((s) => s.quitReasonNote);
   const painScores = useAppStore((s) => s.painScores);
   const dayCompletedAt = useAppStore((s) => s.dayCompletedAt);
   const levelsCompleted = useAppStore((s) => s.levelsCompleted);
@@ -114,6 +115,7 @@ export function CloudSyncBridge() {
     pauseReason,
     pauseReasonNote,
     quitReason,
+    quitReasonNote,
     painScores,
     dayCompletedAt,
     levelsCompleted,

@@ -30,6 +30,7 @@ create table if not exists patients (
     quit_reason is null
     or quit_reason = any (array['tired'::text, 'pain'::text, 'exploring'::text, 'treatment'::text, 'unwell'::text])
   ),
+  quit_reason_note text,
   paused_at timestamptz,
   quit_at timestamptz,
   pain_scores jsonb not null default '{}'::jsonb,
