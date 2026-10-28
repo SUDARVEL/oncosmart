@@ -6,7 +6,6 @@ import {
   Modal,
   Platform,
   Pressable,
-  ScrollView,
   StyleSheet,
   Text,
   View,
@@ -31,7 +30,7 @@ const OPTIONS: { id: Exclude<SessionFeedback, 'other'>; labelKey: string }[] = [
   { id: 'tired', labelKey: 'complete.feedbackTired' },
 ];
 
-/** Asked once after a session is saved. Presets close the sheet. "Any other" asks for a note. */
+/** Asked after every finished session. Presets close the sheet. "Any other" asks for a note. */
 export function SessionFeedbackModal({ visible, onClose, onSelect }: Props) {
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
@@ -54,13 +53,20 @@ export function SessionFeedbackModal({ visible, onClose, onSelect }: Props) {
   };
 
   return (
-    <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
+    <Modal
+      visible={visible}
+      transparent
+      animationType="fade"
+      statusBarTranslucent
+      presentationStyle="overFullScreen"
+      onRequestClose={onClose}
+    >
       <KeyboardAvoidingView
         style={[
           styles.backdrop,
-          { paddingTop: insets.top + 12, paddingBottom: insets.bottom + 12 },
+          { paddingTop: insets.top + 12, paddingBottom: Math.max(insets.bottom, 12) },
         ]}
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       >
         <View style={styles.card}>
           <View style={styles.header}>
@@ -74,13 +80,7 @@ export function SessionFeedbackModal({ visible, onClose, onSelect }: Props) {
               <Ionicons name="close" size={22} color="#374151" />
             </Pressable>
           </View>
-          <ScrollView
-            style={styles.scroll}
-            contentContainerStyle={styles.body}
-            keyboardShouldPersistTaps="handled"
-            showsVerticalScrollIndicator={false}
-            bounces={false}
-          >
+          <View style={styles.body}>
             <Text style={styles.subtitle}>{t('complete.feedbackSubtitle')}</Text>
             <View style={styles.options}>
               {OPTIONS.map((option) => (
@@ -103,7 +103,9 @@ export function SessionFeedbackModal({ visible, onClose, onSelect }: Props) {
                   {t('complete.feedbackOther')}
                 </Text>
               </Pressable>
-              {otherOpen ? (
+            </View>
+            {otherOpen ? (
+              <View style={styles.otherBlock}>
                 <AppTextInput
                   value={note}
                   onChangeText={setNote}
@@ -117,22 +119,18 @@ export function SessionFeedbackModal({ visible, onClose, onSelect }: Props) {
                   onSubmitEditing={submitOther}
                   accessibilityLabel={t('complete.feedbackOther')}
                 />
-              ) : null}
-            </View>
-          </ScrollView>
-          {otherOpen ? (
-            <View style={styles.footer}>
-              <Pressable
-                style={[styles.saveButton, !canSaveOther && styles.saveButtonDisabled]}
-                onPress={submitOther}
-                disabled={!canSaveOther}
-                accessibilityRole="button"
-                accessibilityState={{ disabled: !canSaveOther }}
-              >
-                <Text style={styles.saveButtonText}>{t('complete.feedbackOtherSave')}</Text>
-              </Pressable>
-            </View>
-          ) : null}
+                <Pressable
+                  style={[styles.saveButton, !canSaveOther && styles.saveButtonDisabled]}
+                  onPress={submitOther}
+                  disabled={!canSaveOther}
+                  accessibilityRole="button"
+                  accessibilityState={{ disabled: !canSaveOther }}
+                >
+                  <Text style={styles.saveButtonText}>{t('complete.feedbackOtherSave')}</Text>
+                </Pressable>
+              </View>
+            ) : null}
+          </View>
         </View>
       </KeyboardAvoidingView>
     </Modal>
@@ -175,10 +173,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  scroll: {
-    flexGrow: 0,
-    flexShrink: 1,
-  },
   body: {
     paddingHorizontal: 20,
     paddingTop: 14,
@@ -219,6 +213,9 @@ const styles = StyleSheet.create({
   optionTextSelected: {
     color: colors.buttonPrimary,
   },
+  otherBlock: {
+    gap: 12,
+  },
   noteInput: {
     height: 96,
     borderWidth: 1,
@@ -228,12 +225,6 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     backgroundColor: '#FFFFFF',
     textAlignVertical: 'top',
-  },
-  footer: {
-    paddingHorizontal: 20,
-    paddingTop: 4,
-    paddingBottom: 16,
-    backgroundColor: '#FFFFFF',
   },
   saveButton: {
     minHeight: 52,

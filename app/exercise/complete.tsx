@@ -35,22 +35,25 @@ function formatUnlockTime(epochMs: number): string {
 export default function SessionCompleteScreen() {
   const router = useRouter();
   const { t } = useTranslation();
-  const { level: levelParam, day: dayParam } = useLocalSearchParams<{
+  const { level: levelParam, day: dayParam, done: doneParam } = useLocalSearchParams<{
     level?: string;
     day?: string;
+    done?: string;
   }>();
   const level = Number(levelParam) || 1;
   const dayInLevel = Number(dayParam) || 1;
 
   const sessionId = sessionKey(level, dayInLevel);
   const completedAt = useAppStore((state) => state.dayCompletedAt[sessionId]);
-  const savedFeedback = useAppStore((state) => state.sessionFeedbackByKey[sessionId]);
   const setSessionFeedback = useAppStore((state) => state.setSessionFeedback);
   const pendingBadges = useAppStore((state) => state.pendingBadgeCelebrations);
   const dismissBadgeCelebration = useAppStore((state) => state.dismissBadgeCelebration);
   const activeBadge = pendingBadges[0] ?? null;
-  const [feedbackDismissed, setFeedbackDismissed] = useState(false);
-  const askFeedback = savedFeedback == null && !feedbackDismissed;
+  // A new `done` value is sent every time a session is finished, so the
+  // question shows again even when this day already has feedback saved.
+  const visitId = Array.isArray(doneParam) ? doneParam[0] : (doneParam ?? sessionId);
+  const [closedFor, setClosedFor] = useState<string | null>(null);
+  const askFeedback = closedFor !== visitId;
 
   const handleCelebrationDismiss = useCallback(() => {
     dismissBadgeCelebration();
@@ -59,7 +62,7 @@ export default function SessionCompleteScreen() {
   const handleFeedback = useCallback(
     (feedback: SessionFeedback, note?: string) => {
       setSessionFeedback(sessionId, feedback, note);
-      setFeedbackDismissed(true);
+      setClosedFor(visitId);
       const userId = useAppStore.getState().activeAuthUserId;
       if (userId) {
         void saveSessionFeedback({
@@ -71,7 +74,7 @@ export default function SessionCompleteScreen() {
         });
       }
     },
-    [dayInLevel, level, sessionId, setSessionFeedback],
+    [dayInLevel, level, sessionId, setSessionFeedback, visitId],
   );
 
   const next = getNextSession(level, dayInLevel);
@@ -135,7 +138,7 @@ export default function SessionCompleteScreen() {
 
       <SessionFeedbackModal
         visible={askFeedback}
-        onClose={() => setFeedbackDismissed(true)}
+        onClose={() => setClosedFor(visitId)}
         onSelect={handleFeedback}
       />
 

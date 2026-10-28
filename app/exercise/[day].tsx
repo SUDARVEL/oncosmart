@@ -195,7 +195,9 @@ function GuidedSessionScreen({
         announceCompletion: true,
       });
 
-      router.replace(`/exercise/complete?level=${level}&day=${dayInLevel}`);
+      router.replace(
+        `/exercise/complete?level=${level}&day=${dayInLevel}&done=${Date.now()}`,
+      );
     },
     [dayInLevel, level, router, startBpm],
   );
