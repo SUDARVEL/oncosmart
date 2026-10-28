@@ -203,6 +203,12 @@ export default function SettingsScreen() {
             onPress={() => router.push('/settings/change-password')}
           />
           <SettingsRow
+            title={t('settings.recoveryEmail')}
+            description={t('settings.recoveryEmailDescription')}
+            showChevron
+            onPress={() => router.push('/settings/recovery-email')}
+          />
+          <SettingsRow
             title={t('settings.helpSupport')}
             description={t('settings.helpSupportDescription')}
             showChevron

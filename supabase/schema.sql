@@ -6,6 +6,7 @@ create table if not exists patients (
   user_id uuid unique references auth.users(id) on delete cascade,
   name text not null default '',
   phone text,
+  recovery_email text,
   language text check (language in ('en', 'ta')),
   gender text,
   avatar text,

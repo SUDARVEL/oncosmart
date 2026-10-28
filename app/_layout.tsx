@@ -124,6 +124,7 @@ export default function RootLayout() {
         <Stack.Screen name="language" />
         <Stack.Screen name="login" />
         <Stack.Screen name="login-phone" />
+        <Stack.Screen name="forgot-password" />
         <Stack.Screen name="onboarding" />
         <Stack.Screen name="home" />
         <Stack.Screen name="admin" />
@@ -137,6 +138,7 @@ export default function RootLayout() {
         <Stack.Screen name="growth" />
         <Stack.Screen name="settings/index" />
         <Stack.Screen name="settings/change-password" />
+        <Stack.Screen name="settings/recovery-email" />
       </Stack>
     </SafeAreaProvider>
   );

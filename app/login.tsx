@@ -129,7 +129,7 @@ export default function LoginScreen() {
               {error ? <Text style={styles.errorText}>{error}</Text> : null}
 
               <Pressable
-                onPress={() => router.push('/login-phone?mode=reset')}
+                onPress={() => router.push('/forgot-password')}
                 accessibilityRole="link"
                 style={styles.forgotWrap}
               >
