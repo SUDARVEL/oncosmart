@@ -15,13 +15,9 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { AppTextInput } from '../components/AppTextInput';
 import { OncosmartLogo } from '../components/OncosmartLogo';
 import { PrimaryButton } from '../components/PrimaryButton';
-import { getCurrentSession, signInWithUsername } from '../lib/auth';
-import { isAdminSession } from '../lib/isAdmin';
+import { signInWithUsername } from '../lib/auth';
 import { getPreferredLanguage } from '../lib/preferredLanguage';
-import { openWhatsAppForgotPassword } from '../lib/openWhatsAppSupport';
-import { syncNextExerciseNotification } from '../lib/nextExerciseNotification';
-import { prepareAdminExerciseProfile } from '../lib/prepareAdminExerciseProfile';
-import { loadCloudProfileIntoStore } from '../lib/userCloudSync';
+import { routeAfterSignIn } from '../lib/routeAfterSignIn';
 import { useAppStore } from '../store/useAppStore';
 import { colors } from '../theme/colors';
 import { font } from '../theme/fonts';
@@ -32,7 +28,6 @@ export default function LoginScreen() {
   const router = useRouter();
   const resetApp = useAppStore((state) => state.resetApp);
   const setLanguage = useAppStore((state) => state.setLanguage);
-  const setActiveAuthUserId = useAppStore((state) => state.setActiveAuthUserId);
   const language = useAppStore((state) => state.language);
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -77,33 +72,7 @@ export default function LoginScreen() {
       return;
     }
 
-    const session = await getCurrentSession();
-    if (isAdminSession(session) && session?.user?.id) {
-      // Admin gets the full exercise app + dashboard/testing tools from Settings.
-      await prepareAdminExerciseProfile(session, keptLanguage);
-      void syncNextExerciseNotification(useAppStore.getState().dayCompletedAt);
-      router.replace('/home');
-      setSubmitting(false);
-      return;
-    }
-    if (session?.user?.id) {
-      // Bind sync immediately so onboarding/progress start uploading right away.
-      setActiveAuthUserId(session.user.id);
-      const cloud = await loadCloudProfileIntoStore(session.user.id);
-      // Keep the language chosen before login for this device session.
-      if (keptLanguage) setLanguage(keptLanguage);
-      void syncNextExerciseNotification(useAppStore.getState().dayCompletedAt);
-
-      // Trust cloud onboarding_complete so returning users always skip onboarding.
-      if (cloud.onboardingComplete) {
-        router.replace('/home');
-      } else {
-        router.replace('/onboarding');
-      }
-      setSubmitting(false);
-      return;
-    }
-    router.replace('/onboarding');
+    await routeAfterSignIn(router);
     setSubmitting(false);
   };
 
@@ -160,7 +129,7 @@ export default function LoginScreen() {
               {error ? <Text style={styles.errorText}>{error}</Text> : null}
 
               <Pressable
-                onPress={() => void openWhatsAppForgotPassword(username)}
+                onPress={() => router.push('/login-phone?mode=reset')}
                 accessibilityRole="link"
                 style={styles.forgotWrap}
               >
@@ -173,6 +142,14 @@ export default function LoginScreen() {
                 disabled={!canSubmit}
                 style={styles.button}
               />
+
+              <Pressable
+                onPress={() => router.push('/login-phone')}
+                accessibilityRole="button"
+                style={styles.phoneLink}
+              >
+                <Text style={styles.phoneLinkText}>{t('login.phoneSignIn')}</Text>
+              </Pressable>
             </View>
           </View>
         </ScrollView>
@@ -248,5 +225,14 @@ const styles = StyleSheet.create({
   button: {
     height: 48,
     marginTop: 8,
+  },
+  phoneLink: {
+    alignSelf: 'center',
+    paddingVertical: 8,
+  },
+  phoneLinkText: {
+    ...uiText(14, 'semiBold'),
+    color: colors.buttonPrimary,
+    textAlign: 'center',
   },
 });

@@ -5,6 +5,7 @@ create table if not exists patients (
   id uuid primary key default gen_random_uuid(),
   user_id uuid unique references auth.users(id) on delete cascade,
   name text not null default '',
+  phone text,
   language text check (language in ('en', 'ta')),
   gender text,
   avatar text,

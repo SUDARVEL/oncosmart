@@ -123,6 +123,7 @@ export default function RootLayout() {
         <Stack.Screen name="index" />
         <Stack.Screen name="language" />
         <Stack.Screen name="login" />
+        <Stack.Screen name="login-phone" />
         <Stack.Screen name="onboarding" />
         <Stack.Screen name="home" />
         <Stack.Screen name="admin" />

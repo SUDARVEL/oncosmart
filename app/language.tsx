@@ -40,7 +40,7 @@ export default function PreLoginLanguageScreen() {
     if (!selected) return;
     setLanguage(selected);
     void setPreferredLanguage(selected);
-    router.replace('/login');
+    router.replace('/login-phone');
   };
 
   return (
