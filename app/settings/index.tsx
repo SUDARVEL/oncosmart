@@ -21,6 +21,7 @@ import { formatCancerTypeForDisplay, resolveMediaGender } from '../../lib/cancer
 import type { CancerTypeSlug } from '../../lib/cancerPathway';
 import { getCompletedSessionCount } from '../../lib/programProgress';
 import { SettingsRow } from '../../components/settings/SettingsRow';
+import { RecoveryEmailCard } from '../../components/settings/RecoveryEmailCard';
 import { AdminTestingTools } from '../../components/admin/AdminTestingTools';
 import { useAndroidBack } from '../../hooks/useAndroidBack';
 import { usePullToRefresh } from '../../hooks/usePullToRefresh';
@@ -170,6 +171,7 @@ export default function SettingsScreen() {
         }
       >
         <View style={styles.menuAnchor}>
+          <RecoveryEmailCard />
           <View collapsable={false}>
             <SettingsRow
               title={t('settings.myProfile')}
@@ -201,12 +203,6 @@ export default function SettingsScreen() {
             description={t('settings.changePasswordDescription')}
             showChevron
             onPress={() => router.push('/settings/change-password')}
-          />
-          <SettingsRow
-            title={t('settings.recoveryEmail')}
-            description={t('settings.recoveryEmailDescription')}
-            showChevron
-            onPress={() => router.push('/settings/recovery-email')}
           />
           <SettingsRow
             title={t('settings.helpSupport')}
