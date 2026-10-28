@@ -142,14 +142,6 @@ export default function LoginScreen() {
                 disabled={!canSubmit}
                 style={styles.button}
               />
-
-              <Pressable
-                onPress={() => router.push('/login-phone')}
-                accessibilityRole="button"
-                style={styles.phoneLink}
-              >
-                <Text style={styles.phoneLinkText}>{t('login.phoneSignIn')}</Text>
-              </Pressable>
             </View>
           </View>
         </ScrollView>
@@ -225,14 +217,5 @@ const styles = StyleSheet.create({
   button: {
     height: 48,
     marginTop: 8,
-  },
-  phoneLink: {
-    alignSelf: 'center',
-    paddingVertical: 8,
-  },
-  phoneLinkText: {
-    ...uiText(14, 'semiBold'),
-    color: colors.buttonPrimary,
-    textAlign: 'center',
   },
 });
