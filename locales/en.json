@@ -619,10 +619,11 @@
     "appUpdateBody": "A new version is installing now. The app will refresh in a moment."
   },
   "errors": {
-    "offline": "There is no network connection. Check your network connection and try again.",
-    "offlineTitle": "There is no network connection",
-    "offlineHint": "Check your network connection and try again.",
-    "offlineRetry": "Retry",
+    "offline": "No internet connection",
+    "offlineTitle": "No internet connection",
+    "offlineHint": "Your progress is saved on this phone. Check your Wi-Fi or mobile data and try again.",
+    "offlineRetry": "Try again",
+    "offlineBack": "Back",
     "retrying": "Retrying…",
     "loadFailed": "Couldn't load this. Please try again.",
     "generic": "Something went wrong. Please try again.",

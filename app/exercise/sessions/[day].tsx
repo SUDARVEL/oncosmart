@@ -192,7 +192,7 @@ export default function ExerciseSessionsScreen() {
       ) : loadError && exercises.length === 0 ? (
         <View style={styles.loadingWrap}>
           <Text style={styles.errorText}>
-            {t(loadError === 'offline' ? 'errors.offline' : 'errors.loadFailed')}
+            {t('errors.loadFailed')}
           </Text>
           <Pressable
             style={styles.retryButton}

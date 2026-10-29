@@ -65,7 +65,6 @@ export default function ChangePasswordScreen() {
     if (!result.ok) {
       if (isOfflineMessage(result.message)) {
         setOnline(false);
-        setError(t('errors.offline'));
       } else if (result.message === 'Current password is incorrect.') {
         setError(t('changePassword.wrongCurrent'));
       } else {

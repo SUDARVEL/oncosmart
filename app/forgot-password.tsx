@@ -39,6 +39,10 @@ export default function ForgotPasswordScreen() {
   const [error, setError] = useState<string | null>(null);
 
   const showError = (codeName: RecoveryError) => {
+    if (codeName === 'offline') {
+      setError(null);
+      return;
+    }
     setError(t(`forgotPassword.errors.${codeName}`, { defaultValue: t('forgotPassword.errors.mail_failed') }));
   };
 

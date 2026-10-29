@@ -31,7 +31,7 @@ import { cancelNextExerciseNotification } from '../../lib/nextExerciseNotificati
 import { openWhatsAppSupport } from '../../lib/openWhatsAppSupport';
 import { setPreferredLanguage } from '../../lib/preferredLanguage';
 import { useIsAdmin } from '../../lib/useIsAdmin';
-import { probeOnline } from '../../lib/networkStatus';
+import { probeOnline, setOnline } from '../../lib/networkStatus';
 import { saveCloudProfileFromStore } from '../../lib/userCloudSync';
 import { CloudSyncIssueNote } from '../../components/CloudSyncIssueNote';
 import { AppLanguage, useAppStore } from '../../store/useAppStore';
@@ -92,12 +92,14 @@ export default function SettingsScreen() {
         const saved = await applyCancerTypeChange(slug);
         if (!saved) {
           const online = await probeOnline();
-          setActionError(t(online ? 'errors.loadFailed' : 'errors.offline'));
+          if (!online) setOnline(false);
+          else setActionError(t('errors.loadFailed'));
         }
       } catch (error) {
         console.warn('[Settings] cancer pathway change failed', error);
         const online = await probeOnline();
-        setActionError(t(online ? 'errors.generic' : 'errors.offline'));
+        if (!online) setOnline(false);
+        else setActionError(t('errors.generic'));
       } finally {
         setPathwayChangeBusy(false);
         setResetPathwayModalOpen(false);

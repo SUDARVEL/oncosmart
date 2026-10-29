@@ -70,7 +70,6 @@ export default function LoginScreen() {
     if (!result.ok) {
       if (isOfflineMessage(result.message)) {
         setOnline(false);
-        setError(t('errors.offline'));
       } else {
         setError(t('login.error'));
       }

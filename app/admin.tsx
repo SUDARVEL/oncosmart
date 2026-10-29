@@ -647,7 +647,7 @@ export default function AdminScreen() {
         >
           {loadError ? (
             <Text style={styles.loadError}>
-              {t(loadError === 'offline' ? 'errors.offline' : 'errors.loadFailed')}
+              {t('errors.loadFailed')}
             </Text>
           ) : null}
           <View style={styles.alertsCard}>
@@ -761,7 +761,7 @@ export default function AdminScreen() {
             <Text style={styles.emptyList}>
               {patients.length === 0
                 ? loadError
-                  ? t(loadError === 'offline' ? 'errors.offline' : 'errors.loadFailed')
+                  ? t('errors.loadFailed')
                   : t('admin.empty')
                 : t('admin.filterEmpty')}
             </Text>

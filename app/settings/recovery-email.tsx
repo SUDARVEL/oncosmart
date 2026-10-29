@@ -41,8 +41,7 @@ export default function RecoveryEmailScreen() {
       if (!alive) return;
       setSaved(result.email);
       if (result.email) setEmail(result.email);
-      if (result.error === 'offline') setError(t('errors.offline'));
-      else if (result.error === 'failed') setError(t('errors.loadFailed'));
+      if (result.error === 'failed') setError(t('errors.loadFailed'));
     });
     return () => {
       alive = false;
@@ -61,6 +60,10 @@ export default function RecoveryEmailScreen() {
   );
 
   const showError = (codeName: RecoveryError) => {
+    if (codeName === 'offline') {
+      setError(null);
+      return;
+    }
     setError(t(`recoveryEmail.errors.${codeName}`, { defaultValue: t('recoveryEmail.errors.mail_failed') }));
   };
 
