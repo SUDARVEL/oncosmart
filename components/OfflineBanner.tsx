@@ -1,42 +1,94 @@
-import { useSyncExternalStore } from 'react';
+import { useState, useSyncExternalStore } from 'react';
 import { useTranslation } from 'react-i18next';
-import { StyleSheet, Text } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { Modal, Pressable, StyleSheet, Text, View } from 'react-native';
 
-import { getOnlineSnapshot, subscribeOnline } from '../lib/networkStatus';
+import { getOnlineSnapshot, refreshOnline, subscribeOnline } from '../lib/networkStatus';
 import { uiText } from '../theme/typography';
 
 function useOnlineStatus(): boolean | null {
   return useSyncExternalStore(subscribeOnline, getOnlineSnapshot, getOnlineSnapshot);
 }
 
-/** Shown on every screen while the phone cannot reach the internet. */
+/** Gray full-screen notice while the phone cannot reach the internet. */
 export function OfflineBanner() {
   const online = useOnlineStatus();
   const { t } = useTranslation();
-  if (online !== false) return null;
+  const [checking, setChecking] = useState(false);
+
+  const onRetry = async () => {
+    if (checking) return;
+    setChecking(true);
+    try {
+      await refreshOnline();
+    } finally {
+      setChecking(false);
+    }
+  };
 
   return (
-    <SafeAreaView edges={['top']} style={styles.banner}>
-      <Text style={styles.text}>{t('errors.offline')}</Text>
-    </SafeAreaView>
+    <Modal
+      visible={online === false}
+      transparent
+      animationType="fade"
+      statusBarTranslucent
+      onRequestClose={() => {
+        void onRetry();
+      }}
+    >
+      <View style={styles.screen}>
+        <Text style={styles.title}>{t('errors.offlineTitle')}</Text>
+        <Text style={styles.hint}>{t('errors.offlineHint')}</Text>
+        <Pressable
+          style={[styles.button, checking && styles.buttonBusy]}
+          onPress={() => void onRetry()}
+          disabled={checking}
+          accessibilityRole="button"
+        >
+          <Text style={styles.buttonText}>
+            {checking ? t('errors.retrying') : t('errors.offlineRetry')}
+          </Text>
+        </Pressable>
+      </View>
+    </Modal>
   );
 }
 
 export { useOnlineStatus };
 
 const styles = StyleSheet.create({
-  banner: {
-    backgroundColor: '#FEF2F2',
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: '#FECACA',
-    paddingHorizontal: 16,
-    paddingBottom: 10,
+  screen: {
+    flex: 1,
+    backgroundColor: '#F3F4F6',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 32,
   },
-  text: {
-    ...uiText(14, 'medium'),
-    color: '#B91C1C',
+  title: {
+    ...uiText(18, 'bold'),
+    color: '#111827',
     textAlign: 'center',
-    lineHeight: 20,
+  },
+  hint: {
+    ...uiText(15),
+    color: '#9CA3AF',
+    textAlign: 'center',
+    marginTop: 8,
+  },
+  button: {
+    marginTop: 22,
+    minWidth: 112,
+    height: 44,
+    paddingHorizontal: 22,
+    borderRadius: 10,
+    backgroundColor: '#111827',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  buttonBusy: {
+    opacity: 0.7,
+  },
+  buttonText: {
+    ...uiText(15, 'medium'),
+    color: '#FFFFFF',
   },
 });
