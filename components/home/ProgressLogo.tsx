@@ -4,7 +4,7 @@ const VIEW_W = 79.6228;
 const VIEW_H = 80.5745;
 const CX = 39.8;
 const CY = 40.2;
-const RADIUS = 34.2;
+const RADIUS = 36.4;
 const ARC_COUNT = 7;
 /** Gap between arcs, matching the old broken ring. */
 const GAP = 0.28;
@@ -36,8 +36,8 @@ type ProgressLogoProps = {
 export function ProgressLogo({
   completed,
   total = ARC_COUNT,
-  width = 79,
-  height = 80,
+  width = 92,
+  height = 93,
 }: ProgressLogoProps) {
   const arcCount = Math.max(1, total);
   const filled = Math.max(0, Math.min(arcCount, Math.floor(completed)));
@@ -55,7 +55,7 @@ export function ProgressLogo({
           key={index}
           d={arcPath(index, arcCount)}
           stroke={index < filled ? '#005F99' : '#9CA3AF'}
-          strokeWidth={5}
+          strokeWidth={6}
           strokeLinecap="round"
           strokeOpacity={0.5}
           fill="none"

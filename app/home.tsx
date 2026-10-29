@@ -353,7 +353,7 @@ function HomeLoadingSkeleton() {
   return (
     <View>
       <View style={styles.progressSection}>
-        <SkeletonBlock width={80} height={80} radius={40} />
+        <SkeletonBlock width={92} height={93} radius={46} />
         <SkeletonBlock width={96} height={18} radius={6} />
       </View>
       <View style={styles.quoteScroll}>

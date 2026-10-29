@@ -102,7 +102,7 @@
   "home": {
     "welcome": "Welcome, {{name}}",
     "changeAvatar": "Change avatar",
-    "daysCompleted": "{{completed}}/{{total}} days",
+    "daysCompleted": "{{completed}}/{{total}} days completed",
     "firstStep": "Let's make today your first step toward progress!",
     "quote1": "Strength today freedom always",
     "quote2": "Don't pause your life. Press play on your rehab",

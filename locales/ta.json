@@ -102,7 +102,7 @@
   "home": {
     "welcome": "வரவேற்கிறோம், {{name}}",
     "changeAvatar": "தோற்றத்தை மாற்று",
-    "daysCompleted": "{{completed}}/{{total}} நாட்கள்",
+    "daysCompleted": "{{completed}}/{{total}} நாட்கள் நிறைவு",
     "firstStep": "இன்றே உங்கள் முன்னேற்றத்தின் முதல் படி",
     "quote1": "இன்று சக்தி எப்போதும் சுதந்திரம்",
     "quote2": "முன்னேற்றம் இன்று தொடங்குகிறது !",
