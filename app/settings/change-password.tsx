@@ -16,6 +16,7 @@ import { PrimaryButton } from '../../components/PrimaryButton';
 import { ScreenHeader } from '../../components/ScreenHeader';
 import { useAndroidBack } from '../../hooks/useAndroidBack';
 import { changePassword } from '../../lib/auth';
+import { isOfflineMessage, setOnline } from '../../lib/networkStatus';
 import { goBackOr } from '../../lib/navBack';
 import { markPasswordChanged } from '../../lib/userCloudSync';
 import { useAppStore } from '../../store/useAppStore';
@@ -62,11 +63,14 @@ export default function ChangePasswordScreen() {
     setSubmitting(false);
 
     if (!result.ok) {
-      setError(
-        result.message === 'Current password is incorrect.'
-          ? t('changePassword.wrongCurrent')
-          : result.message,
-      );
+      if (isOfflineMessage(result.message)) {
+        setOnline(false);
+        setError(t('errors.offline'));
+      } else if (result.message === 'Current password is incorrect.') {
+        setError(t('changePassword.wrongCurrent'));
+      } else {
+        setError(t('errors.generic'));
+      }
       return;
     }
 

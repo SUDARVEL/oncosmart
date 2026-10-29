@@ -2,7 +2,7 @@ import Constants from 'expo-constants';
 import { useRouter } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { RefreshControl, ScrollView, StyleSheet, View } from 'react-native';
+import { RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { BottomTabBar } from '../../components/BottomTabBar';
@@ -31,7 +31,9 @@ import { cancelNextExerciseNotification } from '../../lib/nextExerciseNotificati
 import { openWhatsAppSupport } from '../../lib/openWhatsAppSupport';
 import { setPreferredLanguage } from '../../lib/preferredLanguage';
 import { useIsAdmin } from '../../lib/useIsAdmin';
+import { probeOnline } from '../../lib/networkStatus';
 import { saveCloudProfileFromStore } from '../../lib/userCloudSync';
+import { CloudSyncIssueNote } from '../../components/CloudSyncIssueNote';
 import { AppLanguage, useAppStore } from '../../store/useAppStore';
 import { colors } from '../../theme/colors';
 
@@ -56,6 +58,7 @@ export default function SettingsScreen() {
   const [pendingCancerSlug, setPendingCancerSlug] = useState<CancerTypeSlug | null>(null);
   const [pathwayChangeBusy, setPathwayChangeBusy] = useState(false);
   const [oximeterTipsOpen, setOximeterTipsOpen] = useState(false);
+  const [actionError, setActionError] = useState<string | null>(null);
   const { refreshing, onRefresh } = usePullToRefresh();
 
   const selectedLanguage: AppLanguage = language === 'ta' ? 'ta' : 'en';
@@ -83,15 +86,24 @@ export default function SettingsScreen() {
 
   const commitCancerPathwayChange = (slug: CancerTypeSlug) => {
     setPathwayChangeBusy(true);
-    void applyCancerTypeChange(slug)
-      .catch((error) => {
+    setActionError(null);
+    void (async () => {
+      try {
+        const saved = await applyCancerTypeChange(slug);
+        if (!saved) {
+          const online = await probeOnline();
+          setActionError(t(online ? 'errors.loadFailed' : 'errors.offline'));
+        }
+      } catch (error) {
         console.warn('[Settings] cancer pathway change failed', error);
-      })
-      .finally(() => {
+        const online = await probeOnline();
+        setActionError(t(online ? 'errors.generic' : 'errors.offline'));
+      } finally {
         setPathwayChangeBusy(false);
         setResetPathwayModalOpen(false);
         setPendingCancerSlug(null);
-      });
+      }
+    })();
   };
 
   const handleCancerPathwaySelect = (slug: CancerTypeSlug) => {
@@ -170,6 +182,8 @@ export default function SettingsScreen() {
           />
         }
       >
+        <CloudSyncIssueNote />
+        {actionError ? <Text style={styles.actionError}>{actionError}</Text> : null}
         <View style={styles.menuAnchor}>
           <RecoveryEmailCard />
           <View collapsable={false}>
@@ -335,5 +349,13 @@ const styles = StyleSheet.create({
   menuAnchor: {
     width: '100%',
     alignSelf: 'stretch',
+  },
+  actionError: {
+    color: '#B91C1C',
+    fontSize: 14,
+    lineHeight: 20,
+    textAlign: 'center',
+    marginHorizontal: 16,
+    marginBottom: 8,
   },
 });

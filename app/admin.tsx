@@ -3,7 +3,6 @@ import { useFocusEffect, useRouter } from 'expo-router';
 import { useCallback, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
-  ActivityIndicator,
   Pressable,
   RefreshControl,
   ScrollView,
@@ -14,6 +13,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ScreenHeader } from '../components/ScreenHeader';
+import { SkeletonBlock } from '../components/ui/SkeletonBlock';
 import { AdminSessionBpmTable } from '../components/admin/AdminSessionBpmTable';
 import {
   fetchAdminHoldAlerts,
@@ -530,6 +530,7 @@ export default function AdminScreen() {
   const [alerts, setAlerts] = useState<AdminHoldAlert[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [loadError, setLoadError] = useState<'offline' | 'failed' | null>(null);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [patientFilter, setPatientFilter] = useState<'all' | 'active' | 'paused' | 'quit'>('all');
 
@@ -563,12 +564,21 @@ export default function AdminScreen() {
   const load = useCallback(async (mode: 'initial' | 'refresh' = 'initial') => {
     if (mode === 'initial') setLoading(true);
     if (mode === 'refresh') setRefreshing(true);
-    const [rows, holdAlerts] = await Promise.all([
+    const [progress, holdAlerts] = await Promise.all([
       fetchAdminPatientProgress(),
       fetchAdminHoldAlerts(20),
     ]);
-    setPatients(rows);
-    setAlerts(holdAlerts);
+    if (progress.error) {
+      setLoadError(progress.error);
+      if (mode === 'initial') {
+        setPatients([]);
+        setAlerts([]);
+      }
+    } else {
+      setLoadError(null);
+      setPatients(progress.patients);
+      setAlerts(holdAlerts);
+    }
     setLoading(false);
     setRefreshing(false);
   }, []);
@@ -615,8 +625,12 @@ export default function AdminScreen() {
       </View>
 
       {loading ? (
-        <View style={styles.centered}>
-          <ActivityIndicator size="large" color={colors.buttonPrimary} />
+        <View style={styles.skeletonList}>
+          <SkeletonBlock height={88} radius={16} />
+          <SkeletonBlock height={160} radius={16} />
+          <SkeletonBlock height={72} radius={12} />
+          <SkeletonBlock height={72} radius={12} />
+          <SkeletonBlock height={72} radius={12} />
         </View>
       ) : (
         <ScrollView
@@ -631,6 +645,11 @@ export default function AdminScreen() {
           }
           showsVerticalScrollIndicator={false}
         >
+          {loadError ? (
+            <Text style={styles.loadError}>
+              {t(loadError === 'offline' ? 'errors.offline' : 'errors.loadFailed')}
+            </Text>
+          ) : null}
           <View style={styles.alertsCard}>
             <Text style={styles.alertsTitle}>{t('admin.alertsTitle')}</Text>
             <Text style={styles.alertsHint}>{t('admin.alertsHint')}</Text>
@@ -740,7 +759,11 @@ export default function AdminScreen() {
           <Text style={styles.subtitle}>{t('admin.subtitle')}</Text>
           {visiblePatients.length === 0 ? (
             <Text style={styles.emptyList}>
-              {patients.length === 0 ? t('admin.empty') : t('admin.filterEmpty')}
+              {patients.length === 0
+                ? loadError
+                  ? t(loadError === 'offline' ? 'errors.offline' : 'errors.loadFailed')
+                  : t('admin.empty')
+                : t('admin.filterEmpty')}
             </Text>
           ) : (
             visiblePatients.map((patient) => (
@@ -835,6 +858,20 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  skeletonList: {
+    flex: 1,
+    paddingHorizontal: 16,
+    paddingTop: 16,
+    gap: 12,
+  },
+  loadError: {
+    ...font('medium'),
+    fontSize: 14,
+    lineHeight: 20,
+    color: '#B91C1C',
+    textAlign: 'center',
+    marginBottom: 12,
   },
   emptyList: {
     ...font('regular'),

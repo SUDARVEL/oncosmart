@@ -9,7 +9,9 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { CloudSyncIssueNote } from '../components/CloudSyncIssueNote';
 import { BottomTabBar } from '../components/BottomTabBar';
+import { SkeletonBlock } from '../components/ui/SkeletonBlock';
 import { ChatFab } from '../components/ChatFab';
 import { BadgesSection } from '../components/growth/BadgesSection';
 import { GrowthTabSwitch, type GrowthTab } from '../components/growth/GrowthTabSwitch';
@@ -68,6 +70,7 @@ export default function GrowthScreen() {
   const avatar = useAppStore((state) => state.avatar);
   const painScores = useAppStore((state) => state.painScores);
   const dayCompletedAt = useAppStore((state) => state.dayCompletedAt);
+  const cloudProfileReady = useAppStore((state) => state.cloudProfileReady);
 
   const handlePauseReasonSelect = (reason: PauseReason, note?: string) => {
     setShowPauseReason(false);
@@ -147,6 +150,8 @@ export default function GrowthScreen() {
           />
         }
       >
+        <CloudSyncIssueNote />
+
         <View style={styles.tabSwitcherWrap}>
           <GrowthTabSwitch
             activeTab={activeTab}
@@ -155,7 +160,13 @@ export default function GrowthScreen() {
           />
         </View>
 
-        {activeTab === 'progress' ? (
+        {!cloudProfileReady ? (
+          <View style={styles.skeletonWrap}>
+            <SkeletonBlock height={180} radius={16} />
+            <SkeletonBlock height={120} radius={16} />
+            <SkeletonBlock height={140} radius={16} />
+          </View>
+        ) : activeTab === 'progress' ? (
           <View style={styles.cards}>
             <View
               ref={(node) => registerTarget('growth.progress', node)}
@@ -232,6 +243,11 @@ const styles = StyleSheet.create({
     paddingBottom: 120,
     gap: 16,
     alignItems: 'center',
+  },
+  skeletonWrap: {
+    width: '100%',
+    paddingHorizontal: 16,
+    gap: 16,
   },
   tabSwitcherWrap: {
     paddingHorizontal: 16,

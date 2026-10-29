@@ -102,7 +102,7 @@
   "home": {
     "welcome": "Welcome, {{name}}",
     "changeAvatar": "Change avatar",
-    "daysCompleted": "{{completed}} / {{total}} Days completed",
+    "daysCompleted": "{{completed}}/{{total}} days",
     "firstStep": "Let's make today your first step toward progress!",
     "quote1": "Strength today freedom always",
     "quote2": "Don't pause your life. Press play on your rehab",
@@ -573,7 +573,8 @@
       "weak_password": "Use at least 8 characters.",
       "unauthorized": "Sign in again, then save your email.",
       "mail_failed": "The email could not be sent. Check Spam later, or try again.",
-      "unavailable": "This is not available right now."
+      "unavailable": "This is not available right now.",
+      "offline": "No internet connection. Check your network and try again."
     }
   },
   "forgotPassword": {
@@ -604,7 +605,8 @@
       "weak_password": "Use at least 8 characters.",
       "unauthorized": "Sign in again, then try once more.",
       "mail_failed": "The email could not be sent. Try again in a minute.",
-      "unavailable": "This is not available right now."
+      "unavailable": "This is not available right now.",
+      "offline": "No internet connection. Check your network and try again."
     }
   },
   "notifications": {
@@ -615,6 +617,12 @@
     "dayCompletedFinalBody": "Level {{level}}, Day {{day}} is done. You’ve finished the program!",
     "appUpdateTitle": "ONCOSMART update ready",
     "appUpdateBody": "A new version is installing now. The app will refresh in a moment."
+  },
+  "errors": {
+    "offline": "No internet connection. Check your network and try again.",
+    "loadFailed": "Couldn't load this. Please try again.",
+    "generic": "Something went wrong. Please try again.",
+    "retry": "Try again"
   },
   "refresh": {
     "hint": "Pull down to refresh"

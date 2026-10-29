@@ -23,10 +23,12 @@ import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ActivityIndicator, Platform, StyleSheet, View } from 'react-native';
+import { Platform, StyleSheet, View } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { AdminAlertBridge } from '../components/AdminAlertBridge';
+import { OfflineBanner } from '../components/OfflineBanner';
+import { SkeletonBlock } from '../components/ui/SkeletonBlock';
 import { CoachTourFilm } from '../components/coach/CoachTourFilm';
 import { AppUpdateBridge } from '../components/AppUpdateBridge';
 import { CloudSyncBridge } from '../components/CloudSyncBridge';
@@ -34,6 +36,7 @@ import { PathwayVideoBridge } from '../components/PathwayVideoBridge';
 import { isSupabaseConfigured } from '../lib/env';
 import { ensureExerciseAudioSession } from '../lib/ensureExerciseAudioSession';
 import { prepareNotifications } from '../lib/nextExerciseNotification';
+import { startNetworkMonitor } from '../lib/networkStatus';
 import { checkSupabaseConnection } from '../lib/supabase';
 import { useAppStore } from '../store/useAppStore';
 import { colors } from '../theme/colors';
@@ -103,10 +106,14 @@ export default function RootLayout() {
     void prepareNotifications();
   }, []);
 
+  useEffect(() => startNetworkMonitor(), []);
+
   if (!appReady) {
     return (
       <View style={styles.bootScreen}>
-        <ActivityIndicator size="large" color={colors.buttonPrimary} />
+        <SkeletonBlock width={88} height={88} radius={44} />
+        <SkeletonBlock width={180} height={18} radius={8} style={styles.bootLine} />
+        <SkeletonBlock width={120} height={14} radius={8} />
       </View>
     );
   }
@@ -114,6 +121,8 @@ export default function RootLayout() {
   return (
     <SafeAreaProvider>
       <StatusBar style="dark" />
+      <OfflineBanner />
+      <View style={styles.stack}>
       <CloudSyncBridge />
       <PathwayVideoBridge />
       <AdminAlertBridge />
@@ -139,6 +148,7 @@ export default function RootLayout() {
         <Stack.Screen name="settings/change-password" />
         <Stack.Screen name="settings/recovery-email" />
       </Stack>
+      </View>
     </SafeAreaProvider>
   );
 }
@@ -149,5 +159,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: colors.background,
+    gap: 12,
+  },
+  bootLine: {
+    marginTop: 8,
+  },
+  stack: {
+    flex: 1,
   },
 });

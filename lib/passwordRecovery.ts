@@ -1,3 +1,4 @@
+import { isOfflineMessage, requestFailureKind, setOnline } from './networkStatus';
 import { getSupabase } from './supabase';
 
 export type RecoveryError =
@@ -11,7 +12,8 @@ export type RecoveryError =
   | 'weak_password'
   | 'unauthorized'
   | 'mail_failed'
-  | 'unavailable';
+  | 'unavailable'
+  | 'offline';
 
 export type RecoveryResult = { ok: true } | { ok: false; error: RecoveryError };
 
@@ -28,6 +30,10 @@ async function callRecovery(
     body: { action, ...body },
   });
   if (error) {
+    if (isOfflineMessage(`${error.name ?? ''} ${error.message ?? ''}`)) {
+      setOnline(false);
+      return { ok: false, error: 'offline' };
+    }
     const context = (error as { context?: { json?: () => Promise<{ error?: string }> } }).context;
     if (context?.json) {
       try {
@@ -37,7 +43,9 @@ async function callRecovery(
         // Fall through to the generic failure.
       }
     }
-    return { ok: false, error: 'mail_failed' };
+    const kind = requestFailureKind(error);
+    if (kind === 'offline') setOnline(false);
+    return { ok: false, error: kind === 'offline' ? 'offline' : 'mail_failed' };
   }
   const payload = data as { ok?: boolean; error?: RecoveryError } | null;
   if (payload?.ok) return { ok: true };
@@ -60,17 +68,38 @@ export function confirmPasswordReset(username: string, code: string, password: s
   return callRecovery('reset_confirm', { username, code, password });
 }
 
-export async function loadRecoveryEmail(): Promise<string | null> {
+export type RecoveryEmailLoad = {
+  email: string | null;
+  error: 'offline' | 'failed' | null;
+};
+
+export async function loadRecoveryEmail(): Promise<RecoveryEmailLoad> {
   const supabase = getSupabase();
-  if (!supabase) return null;
-  const { data: userData } = await supabase.auth.getUser();
-  const userId = userData.user?.id;
-  if (!userId) return null;
-  const { data } = await supabase
-    .from('patients')
-    .select('recovery_email')
-    .eq('user_id', userId)
-    .maybeSingle();
-  const email = (data?.recovery_email as string | null) ?? '';
-  return email.trim() || null;
+  if (!supabase) return { email: null, error: 'failed' };
+  try {
+    const { data: userData, error: userError } = await supabase.auth.getUser();
+    if (userError) {
+      const kind = requestFailureKind(userError);
+      if (kind === 'offline') setOnline(false);
+      return { email: null, error: kind };
+    }
+    const userId = userData.user?.id;
+    if (!userId) return { email: null, error: null };
+    const { data, error } = await supabase
+      .from('patients')
+      .select('recovery_email')
+      .eq('user_id', userId)
+      .maybeSingle();
+    if (error) {
+      const kind = requestFailureKind(error);
+      if (kind === 'offline') setOnline(false);
+      return { email: null, error: kind };
+    }
+    const email = ((data?.recovery_email as string | null) ?? '').trim();
+    return { email: email || null, error: null };
+  } catch (error) {
+    const kind = requestFailureKind(error);
+    if (kind === 'offline') setOnline(false);
+    return { email: null, error: kind };
+  }
 }

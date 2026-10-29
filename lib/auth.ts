@@ -1,5 +1,6 @@
 import type { Session } from '@supabase/supabase-js';
 
+import { isOfflineMessage } from './networkStatus';
 import { getSupabase } from './supabase';
 
 /** Test accounts are username-based; Supabase Auth is email-based, so we map them. */
@@ -80,6 +81,9 @@ export async function changePassword(
     password: currentPassword,
   });
   if (reauthError) {
+    if (isOfflineMessage(reauthError.message)) {
+      return { ok: false, message: reauthError.message };
+    }
     return { ok: false, message: 'Current password is incorrect.' };
   }
 

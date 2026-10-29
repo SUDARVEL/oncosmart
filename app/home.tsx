@@ -21,8 +21,10 @@ import { BottomTabBar } from "../components/BottomTabBar";
 import { ChatFab } from "../components/ChatFab";
 import { ExerciseVideoBanner } from "../components/ExerciseVideoBanner";
 import { ResumeProgressModal } from "../components/growth/ResumeProgressModal";
+import { CloudSyncIssueNote } from "../components/CloudSyncIssueNote";
 import { HomeAvatarButton } from "../components/home/HomeAvatarButton";
 import { ProgressLogo } from "../components/home/ProgressLogo";
+import { SkeletonBlock } from "../components/ui/SkeletonBlock";
 import { PressableScale } from "../components/PressableScale";
 import { useAndroidBack } from "../hooks/useAndroidBack";
 import { useCoachTour } from "../hooks/useCoachTour";
@@ -43,11 +45,9 @@ import {
   UNLOCK_DELAY_HOURS,
   formatCountdown,
   getActiveLevel,
-  getCompletedSessionCount,
   getOverallSessionNumber,
   getSessionState,
   sessionKey,
-  TOTAL_SESSIONS,
   type SessionState,
 } from "../lib/programProgress";
 import { useIsAdmin } from "../lib/useIsAdmin";
@@ -95,6 +95,7 @@ export default function HomeScreen() {
   const gender = useAppStore((state) => state.gender);
   const isFemaleUser = avatar === "female" || (!avatar && gender === "female");
   const dayCompletedAt = useAppStore((state) => state.dayCompletedAt);
+  const cloudProfileReady = useAppStore((state) => state.cloudProfileReady);
   const progressPaused = useAppStore((state) => state.progressPaused);
   const devUnlockOverride = useAppStore((state) => state.devUnlockOverride);
 
@@ -122,7 +123,6 @@ export default function HomeScreen() {
     };
   }, [router]);
 
-  const completedCount = getCompletedSessionCount(dayCompletedAt);
   const activeLevel = getActiveLevel(dayCompletedAt);
   const sessionStates = Array.from({ length: DAYS_PER_LEVEL }, (_, index) =>
     getSessionState(
@@ -133,6 +133,9 @@ export default function HomeScreen() {
       devUnlockOverride,
     ),
   );
+  const levelDaysCompleted = sessionStates.filter(
+    (state) => state.status === "completed",
+  ).length;
   const primarySession = getPrimarySessionState(sessionStates);
   const hasActiveCountdown = sessionStates.some(
     (state) => state.status === "locked" && state.remainingMs > 0,
@@ -229,16 +232,22 @@ export default function HomeScreen() {
           </View>
         </View>
 
+        <CloudSyncIssueNote />
+
+        {!cloudProfileReady ? (
+          <HomeLoadingSkeleton />
+        ) : (
+          <>
         <View
           ref={(node) => registerTarget("home.progress", node)}
           collapsable={false}
           style={styles.progressSection}
         >
-          <ProgressLogo width={79} height={80} />
+          <ProgressLogo completed={levelDaysCompleted} total={DAYS_PER_LEVEL} />
           <Text style={styles.daysCompleted}>
             {t("home.daysCompleted", {
-              completed: completedCount,
-              total: TOTAL_SESSIONS,
+              completed: levelDaysCompleted,
+              total: DAYS_PER_LEVEL,
             })}
           </Text>
         </View>
@@ -297,6 +306,8 @@ export default function HomeScreen() {
             onStart={handleStartSession}
           />
         </View>
+          </>
+        )}
 
         {__DEV__ || isAdmin ? (
           <>
@@ -334,6 +345,33 @@ export default function HomeScreen() {
       />
 
     </SafeAreaView>
+    </View>
+  );
+}
+
+function HomeLoadingSkeleton() {
+  return (
+    <View>
+      <View style={styles.progressSection}>
+        <SkeletonBlock width={64} height={64} radius={32} />
+        <View style={styles.skeletonBars}>
+          {Array.from({ length: DAYS_PER_LEVEL }, (_, index) => (
+            <SkeletonBlock key={index} width={10} height={28} radius={5} />
+          ))}
+        </View>
+        <SkeletonBlock width={96} height={18} radius={6} />
+      </View>
+      <View style={styles.quoteScroll}>
+        <SkeletonBlock width={QUOTE_CARD_WIDTH} height={96} radius={10} />
+      </View>
+      <View style={styles.sessionSection}>
+        <SkeletonBlock width={160} height={22} radius={6} style={styles.skeletonTitle} />
+        <SkeletonBlock
+          width={DAY_CARD_WIDTH}
+          height={DAY_CARD_MEDIA_HEIGHT + 128}
+          radius={16}
+        />
+      </View>
     </View>
   );
 }
@@ -558,6 +596,16 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: 8,
     paddingHorizontal: 16,
+  },
+  skeletonBars: {
+    flexDirection: "row",
+    alignItems: "flex-end",
+    gap: 7,
+  },
+  skeletonTitle: {
+    alignSelf: "flex-start",
+    marginBottom: 8,
+    marginLeft: 13,
   },
   daysCompleted: {
     fontSize: 20,

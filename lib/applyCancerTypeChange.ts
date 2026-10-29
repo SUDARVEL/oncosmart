@@ -13,10 +13,10 @@ import { saveCloudProfileFromStore } from './userCloudSync';
 import { useAppStore } from '../store/useAppStore';
 
 /** Apply a new cancer pathway slug and rebuild video session caches. */
-export async function applyCancerTypeChange(nextSlug: CancerTypeSlug): Promise<void> {
+export async function applyCancerTypeChange(nextSlug: CancerTypeSlug): Promise<boolean> {
   const state = useAppStore.getState();
   const current = normalizeCancerTypeSlug(state.cancerType);
-  if (current === nextSlug) return;
+  if (current === nextSlug) return true;
 
   state.resetExerciseProgress();
   state.setCancerType(nextSlug);
@@ -27,10 +27,9 @@ export async function applyCancerTypeChange(nextSlug: CancerTypeSlug): Promise<v
   clearLevelExercisesCache();
 
   const userId = useAppStore.getState().activeAuthUserId;
-  if (userId) {
-    await saveCloudProfileFromStore(userId);
-  }
+  const saved = userId ? await saveCloudProfileFromStore(userId) : true;
 
   await cancelNextExerciseNotification();
   void syncNextExerciseNotification(useAppStore.getState().dayCompletedAt);
+  return saved;
 }

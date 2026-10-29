@@ -16,6 +16,7 @@ import { AppTextInput } from '../components/AppTextInput';
 import { OncosmartLogo } from '../components/OncosmartLogo';
 import { PrimaryButton } from '../components/PrimaryButton';
 import { signInWithUsername } from '../lib/auth';
+import { isOfflineMessage, setOnline } from '../lib/networkStatus';
 import { getPreferredLanguage } from '../lib/preferredLanguage';
 import { routeAfterSignIn } from '../lib/routeAfterSignIn';
 import { useAppStore } from '../store/useAppStore';
@@ -67,7 +68,12 @@ export default function LoginScreen() {
 
     const result = await signInWithUsername(username, password);
     if (!result.ok) {
-      setError(t('login.error'));
+      if (isOfflineMessage(result.message)) {
+        setOnline(false);
+        setError(t('errors.offline'));
+      } else {
+        setError(t('login.error'));
+      }
       setSubmitting(false);
       return;
     }

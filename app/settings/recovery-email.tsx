@@ -36,8 +36,18 @@ export default function RecoveryEmailScreen() {
   const [success, setSuccess] = useState(false);
 
   useEffect(() => {
-    void loadRecoveryEmail().then(setSaved);
-  }, []);
+    let alive = true;
+    void loadRecoveryEmail().then((result) => {
+      if (!alive) return;
+      setSaved(result.email);
+      if (result.email) setEmail(result.email);
+      if (result.error === 'offline') setError(t('errors.offline'));
+      else if (result.error === 'failed') setError(t('errors.loadFailed'));
+    });
+    return () => {
+      alive = false;
+    };
+  }, [t]);
 
   const handleBack = useCallback(() => {
     goBackOr(() => router.replace('/settings'));

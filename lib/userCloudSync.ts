@@ -6,6 +6,7 @@ import {
   asQuitReason,
 } from './progressHold';
 import { asSessionFeedback, type SessionFeedback } from './sessionFeedback';
+import { probeOnline, requestFailureKind, setOnline } from './networkStatus';
 import { getSupabase } from './supabase';
 import type {
   AgeRange,
@@ -95,11 +96,19 @@ export async function ensurePatientRow(userId: string, displayName = ''): Promis
   return (inserted?.id as string) ?? null;
 }
 
+async function markCloudLoadFailed(error?: unknown): Promise<void> {
+  const issue =
+    error == null ? ((await probeOnline()) ? 'failed' : 'offline') : requestFailureKind(error);
+  if (issue === 'offline') setOnline(false);
+  useAppStore.getState().setCloudSyncIssue(issue);
+  useAppStore.getState().setCloudProfileReady(true);
+}
+
 /** Pull this auth user's cloud profile into the local Zustand store. */
 export async function loadCloudProfileIntoStore(userId: string): Promise<CloudLoadResult> {
   const supabase = getSupabase();
   if (!supabase) {
-    useAppStore.getState().setCloudProfileReady(true);
+    await markCloudLoadFailed();
     return { ok: false, onboardingComplete: false };
   }
 
@@ -108,7 +117,7 @@ export async function loadCloudProfileIntoStore(userId: string): Promise<CloudLo
   const patientId = await ensurePatientRow(userId);
   if (!patientId) {
     console.warn('[CloudSync] load aborted — could not ensure patient row');
-    useAppStore.getState().setCloudProfileReady(true);
+    await markCloudLoadFailed();
     return { ok: false, onboardingComplete: false };
   }
 
@@ -122,11 +131,11 @@ export async function loadCloudProfileIntoStore(userId: string): Promise<CloudLo
 
   if (error) {
     console.warn('[CloudSync] load failed', error.message);
-    useAppStore.getState().setCloudProfileReady(true);
+    await markCloudLoadFailed(error);
     return { ok: false, onboardingComplete: false };
   }
   if (!data) {
-    useAppStore.getState().setCloudProfileReady(true);
+    await markCloudLoadFailed();
     return { ok: false, onboardingComplete: false };
   }
 

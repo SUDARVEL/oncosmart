@@ -12,6 +12,7 @@ import { colors } from '../../theme/colors';
 import { uiText } from '../../theme/typography';
 import { AppTextInput } from '../AppTextInput';
 import { PrimaryButton } from '../PrimaryButton';
+import { SkeletonBlock } from '../ui/SkeletonBlock';
 
 /** Email box shown directly on Settings. The code confirms the inbox before it is saved. */
 export function RecoveryEmailCard() {
@@ -23,13 +24,22 @@ export function RecoveryEmailCard() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+  const [emailLoading, setEmailLoading] = useState(true);
 
   useEffect(() => {
-    void loadRecoveryEmail().then((value) => {
-      setSaved(value);
-      if (value) setEmail(value);
+    let alive = true;
+    void loadRecoveryEmail().then((result) => {
+      if (!alive) return;
+      setSaved(result.email);
+      if (result.email) setEmail(result.email);
+      if (result.error === 'offline') setError(t('errors.offline'));
+      else if (result.error === 'failed') setError(t('errors.loadFailed'));
+      setEmailLoading(false);
     });
-  }, []);
+    return () => {
+      alive = false;
+    };
+  }, [t]);
 
   const showError = (codeName: RecoveryError) => {
     setError(
@@ -73,19 +83,23 @@ export function RecoveryEmailCard() {
     <View style={styles.card}>
       <Text style={styles.label}>{t('settings.emailFieldLabel')}</Text>
       <Text style={styles.hint}>{t('settings.emailFieldHint')}</Text>
-      <AppTextInput
-        value={email}
-        onChangeText={(value) => {
-          setEmail(value);
-          setSent(false);
-          setError(null);
-          setSuccess(false);
-        }}
-        autoCapitalize="none"
-        autoCorrect={false}
-        keyboardType="email-address"
-        placeholder={t('settings.emailFieldPlaceholder')}
-      />
+      {emailLoading ? (
+        <SkeletonBlock height={48} radius={8} />
+      ) : (
+        <AppTextInput
+          value={email}
+          onChangeText={(value) => {
+            setEmail(value);
+            setSent(false);
+            setError(null);
+            setSuccess(false);
+          }}
+          autoCapitalize="none"
+          autoCorrect={false}
+          keyboardType="email-address"
+          placeholder={t('settings.emailFieldPlaceholder')}
+        />
+      )}
       {sent ? (
         <AppTextInput
           value={code}

@@ -2,6 +2,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 
+import type { ConnectionIssue } from '../lib/networkStatus';
 import { getCompletedLevelsCount, sessionKey } from '../lib/programProgress';
 import type { BadgeKey } from '../lib/getEarnedBadges';
 import {
@@ -76,6 +77,8 @@ type AppState = AppStateSnapshot & {
    * Ephemeral — prevents the first-run coach tour from racing ahead of cloud data.
    */
   cloudProfileReady: boolean;
+  /** Last cloud profile load problem. Cleared after a successful refresh. */
+  cloudSyncIssue: ConnectionIssue | null;
   setLanguage: (language: AppLanguage) => void;
   setUsername: (username: string) => void;
   setAge: (age: number) => void;
@@ -120,6 +123,7 @@ type AppState = AppStateSnapshot & {
   setCoachTourSeen: (seen: boolean) => void;
   setCoachTourStep: (step: number | null) => void;
   setCloudProfileReady: (ready: boolean) => void;
+  setCloudSyncIssue: (issue: ConnectionIssue | null) => void;
   /** Restart the product tour from step 0 (Settings → Replay tips). */
   restartCoachTour: () => void;
   /** Replace local profile/progress with cloud data for the signed-in user. */
@@ -201,6 +205,7 @@ export const useAppStore = create<AppState>()(
       coachTourSeen: false,
       coachTourStep: null,
       cloudProfileReady: false,
+      cloudSyncIssue: null,
       devUnlockOverride: false,
       pendingBadgeCelebrations: [],
       setLanguage: (language) => set({ language }),
@@ -295,6 +300,7 @@ export const useAppStore = create<AppState>()(
             step == null || !Number.isFinite(step) ? null : Math.max(0, Math.floor(step)),
         }),
       setCloudProfileReady: (ready) => set({ cloudProfileReady: Boolean(ready) }),
+      setCloudSyncIssue: (issue) => set({ cloudSyncIssue: issue }),
       restartCoachTour: () => set({ coachTourSeen: false, coachTourStep: 0 }),
       hydrateFromCloud: (payload) =>
         set((state) => {
@@ -314,6 +320,7 @@ export const useAppStore = create<AppState>()(
             ...payload,
             coachTourSeen,
             cloudProfileReady: true,
+            cloudSyncIssue: null,
             parqAnswers: payload.parqAnswers
               ? [...payload.parqAnswers]
               : state.parqAnswers,
@@ -411,6 +418,7 @@ export const useAppStore = create<AppState>()(
           coachTourSeen: false,
           coachTourStep: null,
           cloudProfileReady: false,
+          cloudSyncIssue: null,
           devUnlockOverride: false,
           pendingBadgeCelebrations: [],
         }),

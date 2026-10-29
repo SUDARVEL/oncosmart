@@ -3,7 +3,6 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
-  ActivityIndicator,
   FlatList,
   Pressable,
   StyleSheet,
@@ -14,6 +13,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ExerciseSessionCard } from '../../../components/exercise/ExerciseSessionCard';
+import { SkeletonBlock } from '../../../components/ui/SkeletonBlock';
 import type { ResolvedDayExercise } from '../../../lib/getDayExercises';
 import { PulseOximeterCoachSheet } from '../../../components/exercise/PulseOximeterCoachSheet';
 import { PulseOximeterModal } from '../../../components/exercise/PulseOximeterModal';
@@ -21,6 +21,7 @@ import { ResumeProgressModal } from '../../../components/growth/ResumeProgressMo
 import { ReadyToBeginModal } from '../../../components/pain/ReadyToBeginModal';
 import { useExercisePauseGuard } from '../../../hooks/useExercisePauseGuard';
 import { clearLevelExercisesCache, getDayExercises, getLevelSession } from '../../../lib/getDayExercises';
+import { requestFailureKind, setOnline } from '../../../lib/networkStatus';
 import { hasGuidedSession, warmPathwaySessionsFromStore } from '../../../lib/getDay1Session';
 import { normalizeCancerTypeSlug, resolveMediaGender } from '../../../lib/cancerPathway';
 import { getModerateHeartRateUpperLimit } from '../../../lib/moderateHeartRateLimit';
@@ -41,6 +42,8 @@ export default function ExerciseSessionsScreen() {
   const avatar = useAppStore((state) => state.avatar);
   const cancerType = useAppStore((state) => state.cancerType);
   const [pathwayLoaded, setPathwayLoaded] = useState(() => !normalizeCancerTypeSlug(cancerType));
+  const [loadError, setLoadError] = useState<'offline' | 'failed' | null>(null);
+  const [reloadToken, setReloadToken] = useState(0);
   const age = useAppStore((state) => state.age);
   const ageRange = useAppStore((state) => state.ageRange);
   const dayCompletedAt = useAppStore((state) => state.dayCompletedAt);
@@ -61,16 +64,26 @@ export default function ExerciseSessionsScreen() {
 
     let cancelled = false;
     setPathwayLoaded(false);
-    void warmPathwaySessionsFromStore().then(() => {
-      if (cancelled) return;
-      clearLevelExercisesCache();
-      setPathwayLoaded(true);
-    });
+    setLoadError(null);
+    void warmPathwaySessionsFromStore()
+      .then((ok) => {
+        if (cancelled) return;
+        clearLevelExercisesCache();
+        setLoadError(ok ? null : 'failed');
+        setPathwayLoaded(true);
+      })
+      .catch((error) => {
+        if (cancelled) return;
+        const kind = requestFailureKind(error);
+        if (kind === 'offline') setOnline(false);
+        setLoadError(kind);
+        setPathwayLoaded(true);
+      });
 
     return () => {
       cancelled = true;
     };
-  }, [avatar, cancerType, gender, language, level]);
+  }, [avatar, cancerType, gender, language, level, reloadToken]);
 
   const session = getLevelSession(level);
   const exercises = useMemo(() => {
@@ -170,12 +183,26 @@ export default function ExerciseSessionsScreen() {
       </View>
 
       {!pathwayLoaded ? (
-        <View style={styles.loadingWrap}>
-          <ActivityIndicator size="large" color={colors.buttonPrimary} />
-          <Text style={styles.loadingText}>{t('daySession.loadingExercises')}</Text>
+        <View style={styles.scrollContent}>
+          <SkeletonBlock height={112} radius={12} />
+          <SkeletonBlock height={112} radius={12} />
+          <SkeletonBlock height={112} radius={12} />
+          <SkeletonBlock height={112} radius={12} />
         </View>
-      ) : null}
-
+      ) : loadError && exercises.length === 0 ? (
+        <View style={styles.loadingWrap}>
+          <Text style={styles.errorText}>
+            {t(loadError === 'offline' ? 'errors.offline' : 'errors.loadFailed')}
+          </Text>
+          <Pressable
+            style={styles.retryButton}
+            accessibilityRole="button"
+            onPress={() => setReloadToken((value) => value + 1)}
+          >
+            <Text style={styles.retryText}>{t('errors.retry')}</Text>
+          </Pressable>
+        </View>
+      ) : (
       <FlatList
         style={styles.scroll}
         contentContainerStyle={styles.scrollContent}
@@ -198,7 +225,8 @@ export default function ExerciseSessionsScreen() {
             isActive={activePreviewIds.has(exercise.id)}
           />
         )}
-      />
+        />
+      )}
 
       <SafeAreaView style={styles.footer} edges={['bottom']}>
         <Pressable
@@ -320,6 +348,27 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: colors.textMuted,
     ...font('regular'),
+  },
+  errorText: {
+    fontSize: 15,
+    lineHeight: 22,
+    color: '#B91C1C',
+    textAlign: 'center',
+    paddingHorizontal: 24,
+    ...font('medium'),
+  },
+  retryButton: {
+    minHeight: 44,
+    paddingHorizontal: 18,
+    borderRadius: 8,
+    backgroundColor: colors.buttonPrimary,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  retryText: {
+    fontSize: 14,
+    color: '#FFFFFF',
+    ...font('medium'),
   },
   footer: {
     backgroundColor: '#F9FAFB',

@@ -1,8 +1,10 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+
+import { useOnlineStatus } from '../OfflineBanner';
+import { SkeletonBlock } from '../ui/SkeletonBlock';
 import {
-  ActivityIndicator,
   Platform,
   Pressable,
   ScrollView,
@@ -59,6 +61,7 @@ export function ExercisePlayerView({
   overlayPaused = false,
 }: Props) {
   const { t, i18n } = useTranslation();
+  const online = useOnlineStatus();
   const { width: screenWidth } = useWindowDimensions();
   const [isPaused, setIsPaused] = useState(() => Platform.OS === 'web');
   const [restartToken, setRestartToken] = useState(0);
@@ -206,13 +209,15 @@ export function ExercisePlayerView({
             ) : null}
             {isBuffering && !playbackFailed ? (
               <View style={styles.videoLoaderOverlay} pointerEvents="none">
-                <ActivityIndicator size="large" color="#005F99" />
+                <SkeletonBlock width="100%" height="100%" radius={0} />
               </View>
             ) : null}
             {playbackFailed ? (
               <View style={styles.videoErrorOverlay} pointerEvents="none">
                 <Ionicons name="videocam-off-outline" size={40} color="#FFFFFF" />
-                <Text style={styles.videoErrorText}>{t('sessionFlow.videoUnavailable')}</Text>
+                <Text style={styles.videoErrorText}>
+                  {t(online === false ? 'errors.offline' : 'sessionFlow.videoUnavailable')}
+                </Text>
               </View>
             ) : null}
           </Pressable>

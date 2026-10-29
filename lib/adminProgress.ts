@@ -1,3 +1,4 @@
+import { requestFailureKind, type ConnectionIssue } from './networkStatus';
 import { getSupabase } from './supabase';
 import type { ProgressHoldType } from './progressHold';
 import { asSessionFeedback, type SessionFeedback } from './sessionFeedback';
@@ -271,19 +272,24 @@ type RpcRow = {
   created_at: string | null;
 };
 
+export type AdminProgressLoad = {
+  patients: AdminPatientProgress[];
+  error: ConnectionIssue | null;
+};
+
 /** Fetch all patient accounts + progress for the signed-in admin. */
-export async function fetchAdminPatientProgress(): Promise<AdminPatientProgress[]> {
+export async function fetchAdminPatientProgress(): Promise<AdminProgressLoad> {
   const supabase = getSupabase();
-  if (!supabase) return [];
+  if (!supabase) return { patients: [], error: 'failed' };
 
   const { data, error } = await supabase.rpc('admin_list_patient_progress');
   if (error) {
     console.warn('[Admin] list progress failed', error.message);
-    return [];
+    return { patients: [], error: requestFailureKind(error) };
   }
 
   const rows = (data ?? []) as RpcRow[];
-  return rows.map((row) => {
+  const mapped: AdminPatientProgress[] = rows.map((row) => {
     const dayCompletedAt = asRecordNumber(row.day_completed_at);
     const sessionsCompleted =
       typeof row.sessions_completed === 'number'
@@ -343,6 +349,7 @@ export async function fetchAdminPatientProgress(): Promise<AdminPatientProgress[
       createdAt: row.created_at,
     };
   });
+  return { patients: mapped, error: null };
 }
 
 export function buildAdminDashboardStats(
