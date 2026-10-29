@@ -353,12 +353,7 @@ function HomeLoadingSkeleton() {
   return (
     <View>
       <View style={styles.progressSection}>
-        <SkeletonBlock width={64} height={64} radius={32} />
-        <View style={styles.skeletonBars}>
-          {Array.from({ length: DAYS_PER_LEVEL }, (_, index) => (
-            <SkeletonBlock key={index} width={10} height={28} radius={5} />
-          ))}
-        </View>
+        <SkeletonBlock width={80} height={80} radius={40} />
         <SkeletonBlock width={96} height={18} radius={6} />
       </View>
       <View style={styles.quoteScroll}>
@@ -596,11 +591,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: 8,
     paddingHorizontal: 16,
-  },
-  skeletonBars: {
-    flexDirection: "row",
-    alignItems: "flex-end",
-    gap: 7,
   },
   skeletonTitle: {
     alignSelf: "flex-start",
