@@ -1,5 +1,7 @@
 import Svg, { Path } from 'react-native-svg';
 
+import { colors } from '../../theme/colors';
+
 const VIEW_W = 79.6228;
 const VIEW_H = 80.5745;
 const CX = 39.8;
@@ -54,10 +56,10 @@ export function ProgressLogo({
         <Path
           key={index}
           d={arcPath(index, arcCount)}
-          stroke={index < filled ? '#005F99' : '#9CA3AF'}
+          stroke={index < filled ? colors.buttonPrimary : '#D1D5DB'}
           strokeWidth={6}
           strokeLinecap="round"
-          strokeOpacity={0.5}
+          strokeOpacity={1}
           fill="none"
         />
       ))}
