@@ -26,7 +26,12 @@ const LOW_POSES = new Set([
   'ankle-pumps',
   'hamstring-stretch',
   'straight-leg-raise',
+  'heel-slides',
+  'pelvic-bridge',
 ]);
+
+/** Split-screen clips: keep the front view in the circle. */
+const TOP_POSES = new Set(['shoulder-retraction']);
 
 function isFemaleMediaTrack(
   gender: AppGender | null,
@@ -102,5 +107,6 @@ export function getPhase2CircleContentPosition(
 ): ImageContentPosition {
   const base = exerciseSlugFromId(exerciseId).replace(/-(left|right)$/i, '');
   if (LOW_POSES.has(base)) return 'bottom';
+  if (TOP_POSES.has(base)) return 'top';
   return 'center';
 }
