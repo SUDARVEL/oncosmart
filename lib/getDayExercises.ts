@@ -18,6 +18,7 @@ import {
   getExercisePortraitVideoUrl,
   getSessionLandscapeVideoUrl,
 } from './exerciseMediaUrls';
+import { getNewExerciseCardStill } from './newExerciseStills';
 import { resolvePhase2CardLandscapePreview } from './phase2LandscapeMedia';
 import {
   guessSupabaseExerciseVideoUrl,
@@ -39,6 +40,11 @@ function resolveCardLandscapePreview(
   gender: AppGender | null,
   avatar: AppAvatar | null,
 ): { previewVideo: string | null; previewPhoto: ImageSource | null } {
+  const fittedCard = getNewExerciseCardStill(slug, gender, avatar);
+  if (fittedCard) {
+    return { previewVideo: null, previewPhoto: fittedCard };
+  }
+
   const phase2 = resolvePhase2CardLandscapePreview(slug, gender, avatar);
   const phase2Poster = phase2.previewPhotoUrl
     ? { uri: phase2.previewPhotoUrl }

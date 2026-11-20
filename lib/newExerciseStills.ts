@@ -34,6 +34,20 @@ const MALE_STILLS: Record<string, ImageSource> = {
   'hamstring-stretch': require('../assets/workouts/stills/male-hamstring-stretch.jpg'),
 };
 
+/**
+ * Wide session-card frames (257×112). The portrait clips are too tall for
+ * that strip, so these crops keep the action inside the card.
+ */
+const FEMALE_CARD_STILLS: Record<string, ImageSource> = {
+  'incentive-spirometer': require('../assets/workouts/stills/cards/female-incentive-spirometer.jpg'),
+  'shoulder-retraction': require('../assets/workouts/stills/cards/female-shoulder-retraction.jpg'),
+};
+
+const MALE_CARD_STILLS: Record<string, ImageSource> = {
+  'incentive-spirometer': require('../assets/workouts/stills/cards/male-incentive-spirometer.jpg'),
+  'shoulder-retraction': require('../assets/workouts/stills/cards/male-shoulder-retraction.jpg'),
+};
+
 /** These replaced an older still, so the new frame must win. */
 const REPLACES_OLDER_STILL = new Set([
   'hamstring-stretch',
@@ -55,6 +69,16 @@ export function getNewExerciseStill(
 ): ImageSource | null {
   const base = newExerciseStillBase(exerciseId);
   const map = isFemale(gender, avatar) ? FEMALE_STILLS : MALE_STILLS;
+  return map[base] ?? null;
+}
+
+export function getNewExerciseCardStill(
+  exerciseId: string,
+  gender: AppGender | null,
+  avatar: AppAvatar | null = null,
+): ImageSource | null {
+  const base = newExerciseStillBase(exerciseId);
+  const map = isFemale(gender, avatar) ? FEMALE_CARD_STILLS : MALE_CARD_STILLS;
   return map[base] ?? null;
 }
 
