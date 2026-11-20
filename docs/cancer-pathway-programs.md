@@ -21,9 +21,9 @@ Left/right storage clips for one diagram step (e.g. Wall Climbing) play as **two
 
 1. Load the existing MP4s for `{Gender} - {Language}/{Cancer}/Level N`
 2. Load new exercises from `Newly added {Gender}/{Gender} ({language}) - newly added/Level N`
-3. Match files to this level's list. Breast Level 1 arm circles use the short-lever clip. Abdomen Level 4 pelvic bridge uses the unilateral clip. Head & Neck Level 1 neck rotation uses the 1st-level clip.
-4. If an existing exercise has no file in that folder, use the same cancer's clip from the nearest other level, then another cancer at this gender and language
-5. Leave out storage files that are not in the list, including re-filmed copies of exercises that already have an old video
+3. Match files to this level's list. When the new folder has that exercise, it replaces the old video: hamstring stretch (chair, left and right) and neck flexion. Breast Level 1 arm circles use the short-lever clip. Abdomen Level 4 pelvic bridge uses the unilateral clip. Head & Neck Level 1 neck rotation uses the 1st-level clip.
+4. If the new folder has no clip, use the old file from the same cancer, then another cancer at this gender and language
+5. Leave out storage files that are not on the sheet for that level
 
 ## Storage notes
 

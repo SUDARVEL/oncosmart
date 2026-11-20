@@ -105,8 +105,8 @@ export const CLINICAL_EXERCISE_DESCRIPTIONS: Record<string, ClinicalExerciseDesc
     ta: "தொடையின் பின்புறத் தசைகளை வலுப்படுத்தி, முழங்கால் இயக்கத்தை மேம்படுத்துகிறது. நிமிர்ந்து நின்று, ஆதரவாக நாற்காலியை பிடிக்கவும். இடது முழங்காலை வசதியான அளவு வரை மெதுவாக மடக்கி, காலை பின்புறமாக உயர்த்தவும். பின்னர் மெதுவாக காலை ஆரம்ப நிலைக்கு கொண்டு வரவும்.",
   },
   "hamstring-stretch": {
-    en: "Improves flexibility of the back of the thigh. Sit on the bed with your legs straight. Slowly lean forward and reach toward your toes. Feel a gentle stretch behind your thighs.",
-    ta: "தொடையின் பின்புறத் தசைகளை நீட்ட உதவும். படுக்கையில் கால்களை நேராக வைத்து அமரவும். மெதுவாக முன்னால் சாய்ந்து, கால்விரல்களைத் தொட முயற்சிக்கவும். தொடையின் பின்புறத்தில் மெதுவாக இழுக்கும் உணர்வு இருக்கும்.",
+    en: "Stretches the back of the thigh. Use a chair for support and hold a gentle stretch. Keep the knee comfortable and breathe steadily.",
+    ta: "தொடையின் பின்புறத் தசையை நீட்டும். நாற்காலியை ஆதரவாகப் பயன்படுத்தி மெதுவாக நீட்டவும். முழங்கால் வசதியாக இருக்கட்டும். அமைதியாக சுவாசிக்கவும்.",
   },
   "quadriceps-stretch-right": {
     en: "Improves flexibility of the front thigh muscles. Stand upright and hold the chair for support. Bend your right knee as far as comfortable and gently pull your foot toward your buttock to stretch the front of your thigh.",
@@ -236,6 +236,8 @@ export const CLINICAL_EXERCISE_TITLES: Record<string, string> = {
   'standing-hamstring-curls-right': 'Hamstring Curls (Right)',
   'standing-hamstring-curls-left': 'Hamstring Curls (Left)',
   'hamstring-stretch': 'Hamstring Stretch',
+  'hamstring-stretch-left': 'Hamstring Stretch (Left)',
+  'hamstring-stretch-right': 'Hamstring Stretch (Right)',
   'quadriceps-stretch-right': 'Quadriceps Stretch (Right)',
   'quadriceps-stretch-left': 'Quadriceps Stretch (Left)',
   'calf-raise': 'Calf Raises',

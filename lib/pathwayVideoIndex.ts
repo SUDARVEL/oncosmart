@@ -283,9 +283,8 @@ function takeNewStep(
 
 /**
  * Order clips by the sheet for this level.
- * Existing exercises keep their old videos. A missing old clip is borrowed
- * from the same cancer first. New sheet exercises come from Newly added.
- * Files that are not on the sheet are left out.
+ * A Newly added clip replaces the old video when the folder has that exercise.
+ * If it does not, the old clip is kept. Files that are not on the sheet are left out.
  */
 function orderClipsByPathwayProgram(
   legacyClips: ParsedPathwayClip[],
@@ -304,9 +303,13 @@ function orderClipsByPathwayProgram(
 
   for (const step of program) {
     const variant = variantForStep(step, cancerType, level);
-    const chosen = usesNewLibraryClip(step, cancerType, level)
+    const fromNewLibrary = usesNewLibraryClip(step, cancerType, level)
       ? takeNewStep(fresh, step, level, variant)
-      : takeLegacyStep(legacy, step, level, cancerType, variant);
+      : [];
+    const chosen =
+      fromNewLibrary.length > 0
+        ? fromNewLibrary
+        : takeLegacyStep(legacy, step, level, cancerType, variant);
     ordered.push(...chosen);
   }
 

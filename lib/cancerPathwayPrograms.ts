@@ -128,13 +128,19 @@ export function getPathwayStepDose(step: PathwayExerciseKey, level: number): Pat
   return repsDose(reps);
 }
 
-/** Breast Level 1 arm circles use the new short-lever clip. Other arm circles stay on the old video. */
+/**
+ * Prefer the Newly added clip when that folder has this exercise.
+ * Breast Level 1 arm circles use the short-lever clip.
+ * Hamstring stretch and neck flexion replace the older clips.
+ * Other arm circles stay on the old video.
+ */
 export function usesNewLibraryClip(
   step: PathwayExerciseKey,
   cancerType: CancerTypeSlug,
   level: number,
 ): boolean {
   if (NEW_LIBRARY_EXERCISE_KEYS.has(step)) return true;
+  if (step === 'hamstring-stretch' || step === 'neck-flexion-extension') return true;
   return step === 'arm-circles' && cancerType === 'breast' && level === 1;
 }
 
