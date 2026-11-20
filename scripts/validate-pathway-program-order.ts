@@ -37,6 +37,18 @@ function fail(message: string) {
   console.error(`FAIL ${message}`);
 }
 
+const sidesByExercise = new Map<string, Map<string, Set<'left' | 'right'>>>();
+
+function baseTitle(title: string): string {
+  return title.replace(/ \((Left|Right)\)$/, '');
+}
+
+function sideOfTitle(title: string): 'left' | 'right' | null {
+  if (title.endsWith('(Left)')) return 'left';
+  if (title.endsWith('(Right)')) return 'right';
+  return null;
+}
+
 for (const gender of genders) {
   for (const language of languages) {
     for (const cancerType of CANCER_TYPE_SLUGS) {
@@ -102,9 +114,31 @@ for (const gender of genders) {
           }
         }
         if (cursor !== session.length) fail(`${label} has extra steps`);
+
+        for (const item of session) {
+          const side = sideOfTitle(item.title);
+          if (!side) continue;
+          const key = `${cancerType} L${level} ${baseTitle(item.title)}`;
+          const profiles = sidesByExercise.get(key) ?? new Map<string, Set<'left' | 'right'>>();
+          const sides = profiles.get(`${gender} ${language}`) ?? new Set<'left' | 'right'>();
+          sides.add(side);
+          profiles.set(`${gender} ${language}`, sides);
+          sidesByExercise.set(key, profiles);
+        }
       }
       const label = `${gender} ${language} ${cancerType}`;
       if (byLevel[1] === byLevel[2]) fail(`${label} L1 matches L2`);
+    }
+  }
+}
+
+for (const [exercise, profiles] of sidesByExercise) {
+  const both = [...profiles.values()].some((sides) => sides.has('left') && sides.has('right'));
+  if (!both) continue;
+  for (const [profile, sides] of profiles) {
+    if (!sides.has('left') || !sides.has('right')) {
+      const missing = sides.has('left') ? 'right' : 'left';
+      fail(`${profile} ${exercise} is missing the ${missing} side`);
     }
   }
 }

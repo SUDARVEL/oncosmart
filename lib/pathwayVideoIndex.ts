@@ -225,6 +225,45 @@ function takeMatchingGroup(
   return played;
 }
 
+/**
+ * A sheet row that is filmed on both sides should play both sides.
+ * If this level only has one side, use the closest same-profile clip of the other side.
+ */
+function completeMissingSide(
+  chosen: ParsedPathwayClip[],
+  pool: ParsedPathwayClip[],
+  step: PathwayExerciseKey,
+  level: number,
+  cancer: CancerTypeSlug | null,
+  variants: ClipVariant[],
+): ParsedPathwayClip[] {
+  const present = new Set(chosen.map((clip) => clipSide(clip.copy.slug)));
+  if (present.has('left') === present.has('right')) return chosen;
+  const missing = present.has('left') ? 'right' : 'left';
+
+  const partner = pool
+    .filter((clip) => {
+      if (clipSide(clip.copy.slug) !== missing) return false;
+      if (!variants.includes(clip.variant)) return false;
+      if (cancer != null && clip.cancer != null && clip.cancer !== cancer) return false;
+      return storageSlugMatchesProgramKey(clip.copy.slug, step);
+    })
+    .sort((a, b) => {
+      const distance = (clip: ParsedPathwayClip) =>
+        clip.level == null ? 99 : Math.abs(clip.level - level);
+      return distance(a) - distance(b) || sortClipsForStep(a, b);
+    })[0];
+
+  if (!partner) {
+    if (cancer == null) return chosen;
+    return completeMissingSide(chosen, pool, step, level, null, variants);
+  }
+
+  const index = pool.indexOf(partner);
+  if (index >= 0) pool.splice(index, 1);
+  return [...chosen, partner].sort(sortClipsForStep);
+}
+
 function takeLegacyStep(
   pool: ParsedPathwayClip[],
   step: PathwayExerciseKey,
@@ -232,25 +271,28 @@ function takeLegacyStep(
   cancerType: CancerTypeSlug,
   variant: ClipVariant,
 ): ParsedPathwayClip[] {
+  const finish = (chosen: ParsedPathwayClip[]) =>
+    completeMissingSide(chosen, pool, step, level, cancerType, [variant]);
+
   const local = takeMatchingGroup(pool, step, variant, level, cancerType);
-  if (local.length > 0) return local;
+  if (local.length > 0) return finish(local);
 
   for (const otherLevel of nearbyLevels(level)) {
     const sameCancer = takeMatchingGroup(pool, step, variant, otherLevel, cancerType);
-    if (sameCancer.length > 0) return sameCancer;
+    if (sameCancer.length > 0) return finish(sameCancer);
   }
 
   for (const source of CANCER_TYPE_SLUGS) {
     if (source === cancerType) continue;
     const sameLevel = takeMatchingGroup(pool, step, variant, level, source);
-    if (sameLevel.length > 0) return sameLevel;
+    if (sameLevel.length > 0) return finish(sameLevel);
   }
 
   for (const source of CANCER_TYPE_SLUGS) {
     if (source === cancerType) continue;
     for (const otherLevel of nearbyLevels(level)) {
       const borrowed = takeMatchingGroup(pool, step, variant, otherLevel, source);
-      if (borrowed.length > 0) return borrowed;
+      if (borrowed.length > 0) return finish(borrowed);
     }
   }
 
@@ -265,16 +307,18 @@ function takeNewStep(
 ): ParsedPathwayClip[] {
   const variants: ClipVariant[] =
     variant === 'first-level' ? ['first-level', 'standard'] : [variant];
+  const finish = (chosen: ParsedPathwayClip[]) =>
+    completeMissingSide(chosen, pool, step, level, null, variants);
 
   for (const nextVariant of variants) {
     const local = takeMatchingGroup(pool, step, nextVariant, level, null);
-    if (local.length > 0) return local;
+    if (local.length > 0) return finish(local);
   }
 
   for (const otherLevel of nearbyLevels(level)) {
     for (const nextVariant of variants) {
       const borrowed = takeMatchingGroup(pool, step, nextVariant, otherLevel, null);
-      if (borrowed.length > 0) return borrowed;
+      if (borrowed.length > 0) return finish(borrowed);
     }
   }
 
