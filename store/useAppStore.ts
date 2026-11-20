@@ -19,6 +19,7 @@ export type AppAvatar = 'male' | 'female';
 /** @deprecated Prefer numeric `age`. Kept for reading older persisted profiles. */
 export type AgeRange = '18-24' | '25-34' | '35-44' | '45-54' | '55-64';
 export type TreatmentType = 'chemotherapy' | 'radiation' | 'both' | 'none';
+export type BreastSide = 'left' | 'right' | 'both';
 export type { ProgressHoldType, PauseReason, QuitReason };
 
 export type AppStateSnapshot = {
@@ -32,6 +33,8 @@ export type AppStateSnapshot = {
   underwentSurgery: boolean | null;
   /** Yes/No from the cancer-pathway anaemia question. Null until answered. */
   anaemiaDiagnosed: boolean | null;
+  /** Affected breast, asked for breast cancer only. Null until answered. */
+  breastSide: BreastSide | null;
   avatar: AppAvatar | null;
   parqAnswers: (boolean | null)[];
   parqCleared: boolean | null;
@@ -88,6 +91,7 @@ type AppState = AppStateSnapshot & {
   setTreatmentUndergoing: (treatment: TreatmentType) => void;
   setUnderwentSurgery: (value: boolean) => void;
   setAnaemiaDiagnosed: (value: boolean) => void;
+  setBreastSide: (value: BreastSide | null) => void;
   setAvatar: (avatar: AppAvatar) => void;
   setParqAnswer: (index: number, value: boolean) => void;
   setParqCleared: (cleared: boolean) => void;
@@ -186,6 +190,7 @@ export const useAppStore = create<AppState>()(
       treatmentUndergoing: null,
       underwentSurgery: null,
       anaemiaDiagnosed: null,
+      breastSide: null,
       avatar: null,
       parqAnswers: [...INITIAL_PARQ_ANSWERS],
       parqCleared: null,
@@ -217,6 +222,7 @@ export const useAppStore = create<AppState>()(
       setTreatmentUndergoing: (treatmentUndergoing) => set({ treatmentUndergoing }),
       setUnderwentSurgery: (underwentSurgery) => set({ underwentSurgery }),
       setAnaemiaDiagnosed: (anaemiaDiagnosed) => set({ anaemiaDiagnosed }),
+      setBreastSide: (breastSide) => set({ breastSide }),
       setAvatar: (avatar) => set({ avatar }),
       setParqAnswer: (index, value) =>
         set((state) => {
@@ -399,6 +405,7 @@ export const useAppStore = create<AppState>()(
           treatmentUndergoing: null,
           underwentSurgery: null,
           anaemiaDiagnosed: null,
+          breastSide: null,
           avatar: null,
           parqAnswers: [...INITIAL_PARQ_ANSWERS],
           parqCleared: null,
@@ -439,6 +446,7 @@ export const useAppStore = create<AppState>()(
         treatmentUndergoing: state.treatmentUndergoing,
         underwentSurgery: state.underwentSurgery,
         anaemiaDiagnosed: state.anaemiaDiagnosed,
+        breastSide: state.breastSide,
         avatar: state.avatar,
         parqAnswers: state.parqAnswers,
         parqCleared: state.parqCleared,
