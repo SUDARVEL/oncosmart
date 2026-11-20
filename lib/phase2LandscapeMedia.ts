@@ -22,7 +22,7 @@ function isFemaleMediaTrack(
   gender: AppGender | null,
   avatar: AppAvatar | null = null,
 ): boolean {
-  return avatar === 'female' || gender === 'female';
+  return avatar ? avatar === 'female' : gender === 'female';
 }
 
 const SUPABASE_PUBLIC_BASE =

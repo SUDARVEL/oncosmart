@@ -16,6 +16,7 @@ create table if not exists patients (
   treatment_undergoing text,
   underwent_surgery boolean,
   anaemia_diagnosed boolean,
+  breast_side text check (breast_side is null or breast_side in ('left', 'right', 'both')),
   parq_answers jsonb not null default '[]'::jsonb,
   parq_cleared boolean default false,
   progress_paused boolean not null default false,

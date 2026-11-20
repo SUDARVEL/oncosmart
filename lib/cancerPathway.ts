@@ -21,9 +21,8 @@ export function resolveMediaGender(
   gender: AppGender | null,
   avatar: AppAvatar | null,
 ): 'male' | 'female' {
-  if (avatar === 'female' || gender === 'female') return 'female';
-  if (avatar === 'male' || gender === 'male') return 'male';
-  return 'male';
+  if (avatar) return avatar === 'female' ? 'female' : 'male';
+  return gender === 'female' ? 'female' : 'male';
 }
 
 /** Supabase root folder: `Male - English`, etc. */

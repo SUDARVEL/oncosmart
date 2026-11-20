@@ -18,6 +18,8 @@ import {
   getExercisePortraitVideoUrl,
   getSessionLandscapeVideoUrl,
 } from './exerciseMediaUrls';
+import { resolveNewExerciseCardPreview } from './newExerciseLibraryMedia';
+import { getNewExerciseCardStill } from './newExerciseStills';
 import { resolvePhase2CardLandscapePreview } from './phase2LandscapeMedia';
 import {
   guessSupabaseExerciseVideoUrl,
@@ -39,7 +41,16 @@ function resolveCardLandscapePreview(
   gender: AppGender | null,
   avatar: AppAvatar | null,
 ): { previewVideo: string | null; previewPhoto: ImageSource | null } {
-  const phase2 = resolvePhase2CardLandscapePreview(slug, gender, avatar);
+  const libraryCard = resolveNewExerciseCardPreview(slug, gender, avatar);
+  if (libraryCard.previewVideo || libraryCard.previewPhoto) return libraryCard;
+
+  const catalogSlug = catalogSlugFromPathwayId(slug) ?? slug;
+  const fittedCard = getNewExerciseCardStill(catalogSlug, gender, avatar);
+  if (fittedCard) {
+    return { previewVideo: null, previewPhoto: fittedCard };
+  }
+
+  const phase2 = resolvePhase2CardLandscapePreview(catalogSlug, gender, avatar);
   const phase2Poster = phase2.previewPhotoUrl
     ? { uri: phase2.previewPhotoUrl }
     : null;
@@ -52,9 +63,9 @@ function resolveCardLandscapePreview(
     return { previewVideo: null, previewPhoto: phase2Poster };
   }
 
-  const legacyVideo = slug.includes('stretch')
+  const legacyVideo = catalogSlug.includes('stretch')
     ? null
-    : getSessionLandscapeVideoUrl(slug, gender, avatar);
+    : getSessionLandscapeVideoUrl(catalogSlug, gender, avatar);
   return { previewVideo: legacyVideo, previewPhoto: null };
 }
 
@@ -120,9 +131,7 @@ function pathwayToResolved(
   const repLabel = repLabelFromGuided(exercise);
   const videoSource = exercise.videoUrl ?? null;
   const thumbnail = slug ? getDay1Thumbnail(slug) : null;
-  const card = slug
-    ? resolveCardLandscapePreview(slug, gender, avatar)
-    : { previewVideo: null, previewPhoto: null };
+  const card = resolveCardLandscapePreview(exercise.id, gender, avatar);
 
   // When Phase II has no landscape asset (e.g. neck-flexion-extension), loop the
   // guided pathway clip on the card so it never stays a grey placeholder.

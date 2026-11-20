@@ -26,13 +26,25 @@ const LOW_POSES = new Set([
   'ankle-pumps',
   'hamstring-stretch',
   'straight-leg-raise',
+  'heel-slides',
+  'pelvic-bridge',
+  'unilateral-bridge',
 ]);
+
+/**
+ * Head sits at the top of the frame.
+ * Shoulder retraction is split: the front view is the top half.
+ * Incentive spirometer is a seated close-up. A centered cover cuts the
+ * hair off on every pathway row. Top alignment keeps the full head in the
+ * circle, and the device stays visible.
+ */
+const TOP_POSES = new Set(['shoulder-retraction', 'incentive-spirometer']);
 
 function isFemaleMediaTrack(
   gender: AppGender | null,
   avatar: AppAvatar | null = null,
 ): boolean {
-  return avatar === 'female' || gender === 'female';
+  return avatar ? avatar === 'female' : gender === 'female';
 }
 
 export function exerciseSlugFromId(exerciseId: string): string {
@@ -102,5 +114,6 @@ export function getPhase2CircleContentPosition(
 ): ImageContentPosition {
   const base = exerciseSlugFromId(exerciseId).replace(/-(left|right)$/i, '');
   if (LOW_POSES.has(base)) return 'bottom';
+  if (TOP_POSES.has(base)) return 'top';
   return 'center';
 }

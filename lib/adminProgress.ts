@@ -2,7 +2,7 @@ import { requestFailureKind, type ConnectionIssue } from './networkStatus';
 import { getSupabase } from './supabase';
 import type { ProgressHoldType } from './progressHold';
 import { asSessionFeedback, type SessionFeedback } from './sessionFeedback';
-import type { TreatmentType } from '../store/useAppStore';
+import type { BreastSide, TreatmentType } from '../store/useAppStore';
 import {
   DAYS_PER_LEVEL,
   TOTAL_SESSIONS,
@@ -36,6 +36,7 @@ export type AdminPatientProgress = {
   cancerType: string;
   treatmentUndergoing: TreatmentType | null;
   underwentSurgery: boolean | null;
+  breastSide: BreastSide | null;
   onboardingComplete: boolean;
   progressPaused: boolean;
   progressHoldType: ProgressHoldType | null;
@@ -251,6 +252,7 @@ type RpcRow = {
   cancer_type: string | null;
   treatment_undergoing: string | null;
   underwent_surgery: boolean | null;
+  breast_side: string | null;
   onboarding_complete: boolean | null;
   progress_paused: boolean | null;
   progress_hold_type: string | null;
@@ -326,6 +328,10 @@ export async function fetchAdminPatientProgress(): Promise<AdminProgressLoad> {
       treatmentUndergoing: asTreatmentType(row.treatment_undergoing),
       underwentSurgery:
         typeof row.underwent_surgery === 'boolean' ? row.underwent_surgery : null,
+      breastSide:
+        row.breast_side === 'left' || row.breast_side === 'right' || row.breast_side === 'both'
+          ? row.breast_side
+          : null,
       onboardingComplete: Boolean(row.onboarding_complete),
       progressPaused,
       progressHoldType: progressPaused ? 'pause' : null,

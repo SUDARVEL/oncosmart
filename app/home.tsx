@@ -66,7 +66,7 @@ const DAY_CARD_PREVIEW_ASPECT = HOME_DAY_CARD_PREVIEW_ASPECT;
 
 const WALKING_CHARACTER = require("../assets/home/walking-character.png");
 
-const QUOTES = ["quote1", "quote2", "quote3"] as const;
+const QUOTES = ["quote1", "quote4", "quote2", "quote3"] as const;
 
 function getPrimarySessionState(states: SessionState[]): SessionState {
   const available = states.find((state) => state.status === "available");
