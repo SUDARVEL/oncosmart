@@ -684,6 +684,7 @@
     "cancerSectionTitle": "Cancer & treatment",
     "treatmentUndergoing": "Ongoing treatment",
     "underwentSurgery": "Surgery",
+    "breastSide": "Affected breast",
     "startBpm": "Start {{bpm}} bpm",
     "endBpm": "End {{bpm}} bpm",
     "bpmTableTitle": "Exercise sessions & heart rate",
