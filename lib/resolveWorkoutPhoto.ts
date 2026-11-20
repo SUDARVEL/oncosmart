@@ -8,6 +8,7 @@ import { getWorkoutSliderPhotoUrl } from "./workoutSliderPhotoUrls";
 import { getWorkoutLocalPhoto } from "./workoutLocalPhotos";
 import { resolveSessionLandscapePhotoSource } from "./sessionLandscapePhotos";
 import { getPhase2PlaceholderUrl, exerciseSlugFromId } from "./phase2PlaceholderMedia";
+import { getNewExercisePlaceholderSource } from "./newExerciseLibraryMedia";
 import {
   getNewExerciseStill,
   newExerciseStillReplacesOlder,
@@ -64,6 +65,9 @@ export function resolveWorkoutPhotoSource(
   gender: AppGender | null,
   avatar: AppAvatar | null = null,
 ): ImageSource | null {
+  const libraryStill = getNewExercisePlaceholderSource(exerciseId, gender, avatar);
+  if (libraryStill) return libraryStill;
+
   const freshStill = getNewExerciseStill(exerciseId, gender, avatar);
   if (freshStill && newExerciseStillReplacesOlder(exerciseId)) return freshStill;
 
@@ -88,6 +92,9 @@ export function resolveWorkoutSliderPhotoSource(
   gender: AppGender | null,
   avatar: AppAvatar | null = null,
 ): ImageSource | null {
+  const libraryStill = getNewExercisePlaceholderSource(exerciseId, gender, avatar);
+  if (libraryStill) return libraryStill;
+
   const freshStill = getNewExerciseStill(exerciseId, gender, avatar);
   if (freshStill && newExerciseStillReplacesOlder(exerciseId)) return freshStill;
 

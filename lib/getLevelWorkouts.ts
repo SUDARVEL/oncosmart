@@ -19,11 +19,6 @@ export type LevelWorkout = {
   mediaGender: "male" | "female";
 };
 
-function catalogSlugFromPathwayId(exerciseId: string): string | null {
-  const match = /-s\d+-(.+)$/.exec(exerciseId);
-  return match?.[1] ?? null;
-}
-
 export function getLevelWorkouts(
   level: number,
   gender: AppGender | null,
@@ -36,8 +31,7 @@ export function getLevelWorkouts(
   const cancerPathway = Boolean(getPathwayProfileFromStore()?.cancerType);
   if (pathway.length > 0) {
     return pathway.map((entry) => {
-      const slug = catalogSlugFromPathwayId(entry.id) ?? entry.id;
-      const photoSource = resolveWorkoutPhotoSource(slug, gender, avatar);
+      const photoSource = resolveWorkoutPhotoSource(entry.id, gender, avatar);
       return {
         id: entry.id,
         titleKey: "",
