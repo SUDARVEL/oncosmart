@@ -143,6 +143,24 @@ const MALE_LANDSCAPE_PHOTOS: Partial<Record<string, string>> = {
     'Newly added Female/Landscape - New male-20261120T182252Z-1-001/Landscape - New male/Hamstring stretch with chair male right Landscape.png',
 };
 
+/**
+ * The spirometer art was rendered on a lavender backdrop. These copies use the
+ * same neutral grey studio background as every other placeholder.
+ */
+const SPIROMETER_PORTRAIT: Record<'female' | 'male', ImageSource> = {
+  female: require('../assets/workouts/stills/spirometer/female-portrait.jpg'),
+  male: require('../assets/workouts/stills/spirometer/male-portrait.jpg'),
+};
+
+const SPIROMETER_LANDSCAPE: Record<'female' | 'male', ImageSource> = {
+  female: require('../assets/workouts/stills/spirometer/female-landscape.jpg'),
+  male: require('../assets/workouts/stills/spirometer/male-landscape.jpg'),
+};
+
+function isSpirometer(exerciseId: string): boolean {
+  return exerciseSlugFromId(exerciseId) === 'incentive-spirometer';
+}
+
 const urlCache = new Map<string, string>();
 
 function isFemale(gender: AppGender | null, avatar: AppAvatar | null): boolean {
@@ -210,6 +228,9 @@ export function getNewExercisePlaceholderSource(
   gender: AppGender | null,
   avatar: AppAvatar | null = null,
 ): ImageSource | null {
+  if (isSpirometer(exerciseId)) {
+    return SPIROMETER_PORTRAIT[isFemale(gender, avatar) ? 'female' : 'male'];
+  }
   const url = getNewExercisePlaceholderUrl(exerciseId, gender, avatar);
   return url ? { uri: url } : null;
 }
@@ -229,9 +250,10 @@ const HEAD_UP_CARD_SLUGS = new Set([
  */
 export function isNewLibraryHeadUpPreview(
   exerciseId: string,
-  mediaUri: string | null | undefined,
+  mediaUri: string | number | null | undefined,
 ): boolean {
-  if (!mediaUri || !/Newly(%20| )added/i.test(mediaUri)) return false;
+  if (mediaUri == null) return false;
+  if (typeof mediaUri === 'string' && !/Newly(%20| )added/i.test(mediaUri)) return false;
   return HEAD_UP_CARD_SLUGS.has(
     exerciseSlugFromId(exerciseId).replace(/-(left|right)$/i, ''),
   );
@@ -243,6 +265,12 @@ export function resolveNewExerciseCardPreview(
   avatar: AppAvatar | null = null,
 ): { previewVideo: string | null; previewPhoto: ImageSource | null } {
   const female = isFemale(gender, avatar);
+  if (isSpirometer(exerciseId)) {
+    return {
+      previewVideo: null,
+      previewPhoto: SPIROMETER_LANDSCAPE[female ? 'female' : 'male'],
+    };
+  }
   const videoPath = lookup(
     female ? FEMALE_LANDSCAPE_VIDEOS : MALE_LANDSCAPE_VIDEOS,
     exerciseId,

@@ -54,7 +54,9 @@ export function ExerciseSessionCard({
   const photoUri =
     previewPhoto && typeof previewPhoto === 'object' && 'uri' in previewPhoto
       ? (previewPhoto.uri ?? null)
-      : null;
+      : typeof previewPhoto === 'number'
+        ? previewPhoto
+        : null;
   const alignTop = isNewLibraryHeadUpPreview(exerciseId, previewVideo ?? photoUri);
   // Cap concurrent expo-video players: only mount when the card is viewable.
   const showVideo = Boolean(previewVideo) && !videoFailed && isActive;
