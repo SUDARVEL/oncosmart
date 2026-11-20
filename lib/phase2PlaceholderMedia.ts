@@ -31,8 +31,14 @@ const LOW_POSES = new Set([
   'unilateral-bridge',
 ]);
 
-/** Split-screen clips: keep the front view in the circle. */
-const TOP_POSES = new Set(['shoulder-retraction']);
+/**
+ * Head sits at the top of the frame.
+ * Shoulder retraction is split: the front view is the top half.
+ * Incentive spirometer is a seated close-up. A centered cover cuts the
+ * hair off on every pathway row. Top alignment keeps the full head in the
+ * circle, and the device stays visible.
+ */
+const TOP_POSES = new Set(['shoulder-retraction', 'incentive-spirometer']);
 
 function isFemaleMediaTrack(
   gender: AppGender | null,
