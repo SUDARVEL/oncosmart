@@ -59,7 +59,7 @@ const REPLACES_OLDER_STILL = new Set([
 ]);
 
 function isFemale(gender: AppGender | null, avatar: AppAvatar | null): boolean {
-  return avatar === 'female' || gender === 'female';
+  return avatar ? avatar === 'female' : gender === 'female';
 }
 
 export function newExerciseStillBase(exerciseId: string): string {

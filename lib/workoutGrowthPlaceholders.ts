@@ -126,7 +126,8 @@ export function resolveWorkoutMediaGender(
   gender: AppGender | null,
   avatar: AppAvatar | null = null,
 ): "male" | "female" {
-  if (avatar === "female" || gender === "female") return "female";
+  if (avatar) return avatar === "female" ? "female" : "male";
+  if (gender === "female") return "female";
   return "male";
 }
 

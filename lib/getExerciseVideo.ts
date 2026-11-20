@@ -17,7 +17,7 @@ export function getVideoVariant(
   gender: AppGender | null,
   avatar: AppAvatar | null,
 ): VideoVariant {
-  const isFemale = avatar === 'female' || gender === 'female';
+  const isFemale = avatar ? avatar === 'female' : gender === 'female';
   const isTamil = language === 'ta';
   if (isFemale) return isTamil ? 'female-ta' : 'female-en';
   return isTamil ? 'male-ta' : 'male-en';

@@ -44,7 +44,7 @@ function isFemaleMediaTrack(
   gender: AppGender | null,
   avatar: AppAvatar | null = null,
 ): boolean {
-  return avatar === 'female' || gender === 'female';
+  return avatar ? avatar === 'female' : gender === 'female';
 }
 
 export function exerciseSlugFromId(exerciseId: string): string {

@@ -164,7 +164,7 @@ function isSpirometer(exerciseId: string): boolean {
 const urlCache = new Map<string, string>();
 
 function isFemale(gender: AppGender | null, avatar: AppAvatar | null): boolean {
-  return avatar === 'female' || gender === 'female';
+  return avatar ? avatar === 'female' : gender === 'female';
 }
 
 function encodeObjectPath(objectPath: string): string {

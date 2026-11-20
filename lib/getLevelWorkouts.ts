@@ -25,7 +25,7 @@ export function getLevelWorkouts(
   avatar: AppAvatar | null = null,
 ): LevelWorkout[] {
   const mediaGender =
-    avatar === "female" || gender === "female" ? "female" : "male";
+    (avatar ? avatar === "female" : gender === "female") ? "female" : "male";
 
   const pathway = getSessionExercisesForLevel(level);
   const cancerPathway = Boolean(getPathwayProfileFromStore()?.cancerType);
