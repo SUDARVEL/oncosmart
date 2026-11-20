@@ -14,9 +14,11 @@ import {
 type Props = {
   uri: string;
   onFailed?: () => void;
+  /** Show the top of a 16:9 clip so heads near the top edge are not cropped. */
+  alignTop?: boolean;
 };
 
-export function SessionCardLoopVideo({ uri, onFailed }: Props) {
+export function SessionCardLoopVideo({ uri, onFailed, alignTop = false }: Props) {
   const player = useVideoPlayer(uri, (instance) => {
     instance.loop = true;
     instance.muted = true;
@@ -42,7 +44,7 @@ export function SessionCardLoopVideo({ uri, onFailed }: Props) {
 
   return (
     <VideoView
-      style={styles.video}
+      style={alignTop ? styles.videoTop : styles.video}
       player={player}
       contentFit="cover"
       nativeControls={false}
@@ -51,7 +53,13 @@ export function SessionCardLoopVideo({ uri, onFailed }: Props) {
   );
 }
 
+const FULL_FRAME_HEIGHT = Math.round((SESSION_EXERCISE_CARD_PREVIEW_WIDTH * 9) / 16);
+
 const styles = StyleSheet.create({
+  videoTop: {
+    width: SESSION_EXERCISE_CARD_PREVIEW_WIDTH,
+    height: FULL_FRAME_HEIGHT,
+  },
   video: {
     width: SESSION_EXERCISE_CARD_PREVIEW_WIDTH,
     height: SESSION_EXERCISE_CARD_PREVIEW_HEIGHT,

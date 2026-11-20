@@ -214,6 +214,29 @@ export function getNewExercisePlaceholderSource(
   return url ? { uri: url } : null;
 }
 
+const HEAD_UP_CARD_SLUGS = new Set([
+  'incentive-spirometer',
+  'neck-flexion-extension',
+  'neck-nodding',
+  'neck-rotation',
+  'neck-side-flexion',
+  'shoulder-retraction',
+]);
+
+/**
+ * The 16:9 landscape art is cropped to the 257×112 card. These exercises have
+ * the head near the top of the frame, so a centered crop cuts the head off.
+ */
+export function isNewLibraryHeadUpPreview(
+  exerciseId: string,
+  mediaUri: string | null | undefined,
+): boolean {
+  if (!mediaUri || !/Newly(%20| )added/i.test(mediaUri)) return false;
+  return HEAD_UP_CARD_SLUGS.has(
+    exerciseSlugFromId(exerciseId).replace(/-(left|right)$/i, ''),
+  );
+}
+
 export function resolveNewExerciseCardPreview(
   exerciseId: string,
   gender: AppGender | null,
