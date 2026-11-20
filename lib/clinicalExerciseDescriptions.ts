@@ -69,8 +69,8 @@ export const CLINICAL_EXERCISE_DESCRIPTIONS: Record<string, ClinicalExerciseDesc
     ta: "இரத்த ஓட்டத்தையும் சக்தியையும் மேம்படுத்தும். நேராக நின்று மாறி மாறி முழங்கால்களை உயர்த்தி இடத்தில் நடைபோடவும்.",
   },
   "neck-flexion-extension": {
-    en: "Helps improve neck mobility and flexibility. Slowly move your chin toward your chest and return to the starting position. Then gently tilt your head backward to a comfortable range and return to the starting position.",
-    ta: "கழுத்தின் இயக்கம் மற்றும் நெகிழ்வுத்தன்மையை மேம்படுத்த உதவும். மெதுவாக உங்கள் தாடையை மார்பை நோக்கி கீழே கொண்டு வந்து, ஆரம்ப நிலைக்கு திரும்பவும். அடுத்து, தலையை மெதுவாக பின்னால் சாய்த்து, வசதியான அளவு வரை கொண்டு சென்று, ஆரம்ப நிலைக்கு திரும்பவும்.",
+    en: "Improves neck mobility and helps reduce stiffness. Slowly bend your head forward, bringing your chin towards your chest, then return to the starting position and gently tilt your head backwards within your comfortable range.",
+    ta: "கழுத்தின் இயக்கத்தை மேம்படுத்தி, இறுக்கத்தைக் குறைக்க உதவும். தலையை மெதுவாகக் கீழே சாய்த்து, தாடையை மார்பை நோக்கிக் கொண்டு வந்து, மீண்டும் ஆரம்ப நிலைக்குத் திரும்பி, பின்னர் வசதியான அளவு வரை தலையைப் பின்னால் சாய்க்கவும்.",
   },
   "jaw-opening-closing": {
     en: "Helps improve jaw and mouth mobility. Stand upright and slowly open your mouth as wide as comfortable. Then gently close your mouth and return to the starting position.",
@@ -105,8 +105,8 @@ export const CLINICAL_EXERCISE_DESCRIPTIONS: Record<string, ClinicalExerciseDesc
     ta: "தொடையின் பின்புறத் தசைகளை வலுப்படுத்தி, முழங்கால் இயக்கத்தை மேம்படுத்துகிறது. நிமிர்ந்து நின்று, ஆதரவாக நாற்காலியை பிடிக்கவும். இடது முழங்காலை வசதியான அளவு வரை மெதுவாக மடக்கி, காலை பின்புறமாக உயர்த்தவும். பின்னர் மெதுவாக காலை ஆரம்ப நிலைக்கு கொண்டு வரவும்.",
   },
   "hamstring-stretch": {
-    en: "Stretches the back of the thigh. Use a chair for support and hold a gentle stretch. Keep the knee comfortable and breathe steadily.",
-    ta: "தொடையின் பின்புறத் தசையை நீட்டும். நாற்காலியை ஆதரவாகப் பயன்படுத்தி மெதுவாக நீட்டவும். முழங்கால் வசதியாக இருக்கட்டும். அமைதியாக சுவாசிக்கவும்.",
+    en: "Improves flexibility of the muscles at the back of the thigh. Lie on your back and place the heel of your leg on a chair of comfortable height, keeping your knee straight, then gently pull your toes towards you until you feel a stretch.",
+    ta: "தொடையின் பின்புறத் தசைகளின் நெகிழ்வுத்தன்மையை மேம்படுத்த உதவும். முதுகில் படுத்து, காலை நேராக வைத்தபடி அதன் குதிகாலை வசதியான உயரத்தில் உள்ள நாற்காலியின் மீது வைத்து, கால் விரல்களை மெதுவாக உங்களை நோக்கி இழுக்கவும்.",
   },
   "quadriceps-stretch-right": {
     en: "Improves flexibility of the front thigh muscles. Stand upright and hold the chair for support. Bend your right knee as far as comfortable and gently pull your foot toward your buttock to stretch the front of your thigh.",
@@ -173,42 +173,55 @@ export const CLINICAL_EXERCISE_DESCRIPTIONS: Record<string, ClinicalExerciseDesc
     ta: "கழுத்தின் இயக்கத்தை மேம்படுத்த உதவும். நிமிர்ந்து நின்று, தோள்களை தளர்வாக வைத்திருக்கவும். மெதுவாக தலையை வலது தோள்பக்கம் சாய்க்கவும். வலது கையால் மெதுவாக அழுத்தம் கொடுக்கவும். கழுத்தின் இடது பக்கத்தில் இழுக்கும் உணர்வு இருக்கும்.",
   },
   "incentive-spirometer": {
-    en: "Helps you take a slow, deep breath. Sit upright, seal your lips around the mouthpiece, and breathe in slowly so the ball rises. Pause, then breathe out gently.",
-    ta: "மெதுவாக ஆழமாக சுவாசிக்க உதவும். நிமிர்ந்து அமர்ந்து, வாய்க்குழாயை உதடுகளால் மூடி, பந்து மேலே ஏறும்படி மெதுவாக உள்ளே சுவாசிக்கவும். சிறிது நின்று, மெதுவாக வெளியே விடவும்.",
+    en: "Helps improve lung expansion and encourages deep breathing. Sit upright, place the mouthpiece between your lips, and slowly breathe in through it to raise the balls inside the spirometer.",
+    ta: "நுரையீரல் விரிவை மேம்படுத்தி, ஆழமாகச் சுவாசிக்க உதவும். நேராக அமர்ந்து, வாயில் வைக்கும் பகுதியை உதடுகளால் மூடி, அதன் வழியாக மெதுவாக மூச்சை உள்ளே இழுத்து, ஸ்பைரோமீட்டருக்குள் உள்ள பந்துகளை உயர்த்தவும்.",
   },
   "shoulder-retraction": {
-    en: "Helps open the chest and strengthen the muscles between the shoulder blades. Sit or stand tall. Draw both shoulders back, gently squeeze the shoulder blades together, then relax.",
-    ta: "மார்பை திறக்கவும், தோள்பட்டைகளுக்கு இடையிலுள்ள தசைகளை வலுப்படுத்தவும் உதவும். நிமிர்ந்து அமரவும் அல்லது நிற்கவும். இரண்டு தோள்களையும் பின்னால் இழுத்து, தோள்பட்டைகளை மெதுவாக சேர்த்து, பின்னர் தளர்த்தவும்.",
+    en: "Strengthens the upper back muscles and improves shoulder posture. Stand straight with your elbows bent and close to your body, then gently pull your shoulders backwards and squeeze your upper back.",
+    ta: "மேல் முதுகுத் தசைகளை வலுப்படுத்தி, தோள்களின் நிலையை மேம்படுத்த உதவும். நேராக நின்று, முழங்கைகளை மடக்கி உடலுக்கு அருகில் வைத்து, இரண்டு தோள்களையும் மெதுவாகப் பின்னால் இழுத்து, மேல் முதுகுப் பகுதியை இறுக்கவும்.",
   },
   "shoulder-external-rotation": {
-    en: "Helps shoulder mobility. Keep your elbow bent and close to your side. Slowly turn your forearm outward, then return to the start.",
-    ta: "தோளின் இயக்கத்திற்கு உதவும். முழங்கையை மடக்கி உடலுக்கு அருகில் வைக்கவும். முன்கையை மெதுவாக வெளிப்புறமாக திருப்பி, பின்னர் ஆரம்ப நிலைக்கு கொண்டு வரவும்.",
+    en: "Strengthens the shoulder muscles and improves shoulder movement. Stand straight with your elbows bent and tucked close to your body, then slowly move your forearms outwards within your comfortable range.",
+    ta: "தோள்பட்டை தசைகளை வலுப்படுத்தி, தோளின் இயக்கத்தை மேம்படுத்த உதவும். நேராக நின்று, முழங்கைகளை மடக்கி உடலுக்கு அருகில் வைத்து, முன்கைகளை மெதுவாக வெளிப்புறமாக உங்களுக்கு வசதியான அளவு வரை நகர்த்தவும்.",
   },
   "heel-slides": {
-    en: "Helps bend and straighten the knee. Lie on your back. Slowly slide one heel along the bed toward your hip, then slide it back down.",
-    ta: "முழந்தாளை மடக்கவும் நேராக்கவும் உதவும். முதுகில் படுக்கவும். ஒரு குதிகாலை படுக்கையில் மெதுவாக இடுப்பை நோக்கி நகர்த்தி, பின்னர் மீண்டும் கீழே நகர்த்தவும்.",
+    en: "Improves knee movement and helps maintain leg mobility. Lie on your back with your legs straight, then slowly slide your heel towards your buttock by bending your knee and return to the starting position.",
+    ta: "முழங்கால் இயக்கத்தை மேம்படுத்தி, கால்களின் இயக்கத்தைப் பராமரிக்க உதவும். முதுகில் படுத்து, காலை மெதுவாக மடக்கி குதிகாலை புட்டிப் பகுதியை நோக்கி நகர்த்தி, மீண்டும் ஆரம்ப நிலைக்குக் கொண்டு வரவும்.",
   },
   "pelvic-bridge": {
-    en: "Strengthens the hips and trunk. Lie on your back with both knees bent and feet on the bed. Slowly lift your hips, pause, then lower them.",
-    ta: "இடுப்பு மற்றும் உடல் தசைகளை வலுப்படுத்தும். முதுகில் படுத்து, இரண்டு முழங்கால்களையும் மடக்கி பாதங்களை படுக்கையில் வைக்கவும். இடுப்பை மெதுவாக உயர்த்தி, சிறிது நின்று, கீழே இறக்கவும்.",
+    en: "Strengthens the buttock muscles and improves hip stability. Lie on your back with your knees bent and feet flat on the floor, then slowly lift your hips upwards and lower them back down.",
+    ta: "இடுப்புப் பகுதி தசைகளை வலுப்படுத்தி, இடுப்பின் உறுதித்தன்மையை மேம்படுத்த உதவும். முதுகில் படுத்து, முழங்கால்களை மடக்கி பாதங்களைத் தரையில் வைத்து, இடுப்பை மெதுவாக மேலே உயர்த்தி மீண்டும் கீழே இறக்கவும்.",
   },
   "unilateral-bridge": {
-    en: "Strengthens one side of the hips. Lie on your back with one knee bent and the other leg straight. Lift your hips, pause, then lower.",
-    ta: "இடுப்பின் ஒரு பக்கத்தை வலுப்படுத்தும். முதுகில் படுத்து, ஒரு முழங்காலை மடக்கி மற்ற காலை நேராக வைக்கவும். இடுப்பை உயர்த்தி, சிறிது நின்று, கீழே இறக்கவும்.",
+    en: "Strengthens the buttock muscles and improves pelvic stability. Lie on your back with your left knee bent and left foot flat on the floor, then lift your right leg and slowly raise and lower your hips while keeping the right leg lifted.",
+    ta: "இடுப்புப் பகுதி தசைகளை வலுப்படுத்தி, இடுப்பின் உறுதித்தன்மையை மேம்படுத்த உதவும். முதுகில் படுத்து, இடது முழங்காலை மடக்கி பாதத்தைத் தரையில் வைத்து, வலது காலை உயர்த்தியபடி இடுப்பை மெதுவாக மேலே உயர்த்தி மீண்டும் கீழே இறக்கவும்.",
   },
   "neck-nodding": {
-    en: "Gently moves the neck. Sit tall and slowly nod your head as if saying yes. Keep the movement small and comfortable.",
-    ta: "கழுத்தை மெதுவாக அசைக்க உதவும். நிமிர்ந்து அமர்ந்து, ஆம் என்பது போல தலையை மெதுவாக ஆட்டவும். அசைவு சிறியதாகவும் வசதியாகவும் இருக்கட்டும்.",
+    en: "Improves neck mobility and helps reduce stiffness. Gently nod your head downwards, bringing your chin towards your chest, then return to the starting position.",
+    ta: "கழுத்தின் இயக்கத்தை மேம்படுத்தி, இறுக்கத்தைக் குறைக்க உதவும். தலையை மெதுவாகக் கீழே சாய்த்து, தாடையை மார்பை நோக்கிக் கொண்டு வந்து, மீண்டும் ஆரம்ப நிலைக்குத் திரும்பவும்.",
   },
   "neck-side-flexion": {
-    en: "Helps neck movement to the side. Sit tall and slowly tilt your ear toward one shoulder, then return to the middle and repeat on the other side.",
-    ta: "கழுத்தை பக்கவாட்டில் அசைக்க உதவும். நிமிர்ந்து அமர்ந்து, காதை ஒரு தோளை நோக்கி மெதுவாக சாய்த்து, நடுவுக்கு திரும்பி, மறுபக்கமும் செய்யவும்.",
+    en: "Improves neck mobility and flexibility. Slowly tilt your head towards your right and left shoulders, staying within your comfortable range.",
+    ta: "கழுத்தின் இயக்கத்தையும் நெகிழ்வுத்தன்மையையும் மேம்படுத்த உதவும். தலையை மெதுவாக வலது மற்றும் இடது தோள்பட்டை நோக்கி, உங்களுக்கு வசதியான அளவு வரை சாய்க்கவும்.",
   },
   "neck-rotation": {
-    en: "Helps you turn the neck. Sit tall and slowly turn your head to one side, return to the middle, then turn to the other side. Stay in a comfortable range.",
-    ta: "கழுத்தை திருப்ப உதவும். நிமிர்ந்து அமர்ந்து, தலையை ஒரு பக்கம் மெதுவாக திருப்பி, நடுவுக்கு வந்து, மறுபக்கம் திருப்பவும். வசதியான அளவிலேயே செய்யவும்.",
+    en: "Improves neck mobility and helps maintain comfortable head movement. Slowly turn your head towards the right and left, staying within your comfortable range.",
+    ta: "கழுத்தின் இயக்கத்தை மேம்படுத்தி, தலையை வசதியாகத் திருப்ப உதவும். தலையை மெதுவாக வலது மற்றும் இடது பக்கமாக, உங்களுக்கு வசதியான அளவு வரை திருப்பவும்.",
   },
 };
+
+const ARM_CIRCLES_SHORT_LEVER = {
+  en: "Improves shoulder mobility and helps reduce stiffness. Bend your elbows and place your hands on your shoulders, then slowly rotate your elbows in circles forwards and backwards.",
+  ta: "தோள்பட்டை இயக்கத்தை மேம்படுத்தி, இறுக்கத்தைக் குறைக்க உதவும். முழங்கைகளை மடக்கி, கைகளைத் தோள்களின் மீது வைத்து, முழங்கைகளை மெதுவாக முன்னும் பின்னும் வட்டமாகச் சுற்றவும்.",
+};
+
+function isBreastLevel1ArmCircles(exerciseId: string): boolean {
+  const slug = exerciseSlugFromId(exerciseId).replace(/-(left|right)$/i, '');
+  return (
+    (slug === 'arm-circles' || slug === 'arm-rotation') &&
+    /pathway-breast-l1-/i.test(exerciseId)
+  );
+}
 
 /**
  * Headings copied from the exercise documents. Tamil copy in those files
@@ -263,6 +276,7 @@ export const CLINICAL_EXERCISE_TITLES: Record<string, string> = {
 };
 
 export function getClinicalExerciseTitle(exerciseId: string): string | null {
+  if (isBreastLevel1ArmCircles(exerciseId)) return 'Arm Circles (Short Lever)';
   const slug = exerciseSlugFromId(exerciseId || '');
   return CLINICAL_EXERCISE_TITLES[slug] ?? null;
 }
@@ -276,6 +290,7 @@ export function getClinicalExerciseDescription(
     language === 'ta' || (language ?? '').toLowerCase().startsWith('ta')
       ? 'ta'
       : 'en';
+  if (isBreastLevel1ArmCircles(exerciseId)) return ARM_CIRCLES_SHORT_LEVER[lang];
   const direct = CLINICAL_EXERCISE_DESCRIPTIONS[slug];
   if (direct) return direct[lang];
   const base = slug.replace(/-(left|right)$/i, '');
