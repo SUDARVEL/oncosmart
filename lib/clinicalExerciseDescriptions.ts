@@ -172,6 +172,38 @@ export const CLINICAL_EXERCISE_DESCRIPTIONS: Record<string, ClinicalExerciseDesc
     en: "Helps improve neck movement. Stand upright with your shoulders relaxed. Slowly tilt your head towards your right shoulder. Gently apply pressure with your right hand. You should feel a stretch along the left side of your neck.",
     ta: "கழுத்தின் இயக்கத்தை மேம்படுத்த உதவும். நிமிர்ந்து நின்று, தோள்களை தளர்வாக வைத்திருக்கவும். மெதுவாக தலையை வலது தோள்பக்கம் சாய்க்கவும். வலது கையால் மெதுவாக அழுத்தம் கொடுக்கவும். கழுத்தின் இடது பக்கத்தில் இழுக்கும் உணர்வு இருக்கும்.",
   },
+  "incentive-spirometer": {
+    en: "Helps you take a slow, deep breath. Sit upright, seal your lips around the mouthpiece, and breathe in slowly so the ball rises. Pause, then breathe out gently.",
+    ta: "மெதுவாக ஆழமாக சுவாசிக்க உதவும். நிமிர்ந்து அமர்ந்து, வாய்க்குழாயை உதடுகளால் மூடி, பந்து மேலே ஏறும்படி மெதுவாக உள்ளே சுவாசிக்கவும். சிறிது நின்று, மெதுவாக வெளியே விடவும்.",
+  },
+  "shoulder-retraction": {
+    en: "Helps open the chest and strengthen the muscles between the shoulder blades. Sit or stand tall. Draw both shoulders back, gently squeeze the shoulder blades together, then relax.",
+    ta: "மார்பை திறக்கவும், தோள்பட்டைகளுக்கு இடையிலுள்ள தசைகளை வலுப்படுத்தவும் உதவும். நிமிர்ந்து அமரவும் அல்லது நிற்கவும். இரண்டு தோள்களையும் பின்னால் இழுத்து, தோள்பட்டைகளை மெதுவாக சேர்த்து, பின்னர் தளர்த்தவும்.",
+  },
+  "shoulder-external-rotation": {
+    en: "Helps shoulder mobility. Keep your elbow bent and close to your side. Slowly turn your forearm outward, then return to the start.",
+    ta: "தோளின் இயக்கத்திற்கு உதவும். முழங்கையை மடக்கி உடலுக்கு அருகில் வைக்கவும். முன்கையை மெதுவாக வெளிப்புறமாக திருப்பி, பின்னர் ஆரம்ப நிலைக்கு கொண்டு வரவும்.",
+  },
+  "heel-slides": {
+    en: "Helps bend and straighten the knee. Lie on your back. Slowly slide one heel along the bed toward your hip, then slide it back down.",
+    ta: "முழந்தாளை மடக்கவும் நேராக்கவும் உதவும். முதுகில் படுக்கவும். ஒரு குதிகாலை படுக்கையில் மெதுவாக இடுப்பை நோக்கி நகர்த்தி, பின்னர் மீண்டும் கீழே நகர்த்தவும்.",
+  },
+  "pelvic-bridge": {
+    en: "Strengthens the hips and trunk. Lie on your back with both knees bent and feet on the bed. Slowly lift your hips, pause, then lower them.",
+    ta: "இடுப்பு மற்றும் உடல் தசைகளை வலுப்படுத்தும். முதுகில் படுத்து, இரண்டு முழங்கால்களையும் மடக்கி பாதங்களை படுக்கையில் வைக்கவும். இடுப்பை மெதுவாக உயர்த்தி, சிறிது நின்று, கீழே இறக்கவும்.",
+  },
+  "neck-nodding": {
+    en: "Gently moves the neck. Sit tall and slowly nod your head as if saying yes. Keep the movement small and comfortable.",
+    ta: "கழுத்தை மெதுவாக அசைக்க உதவும். நிமிர்ந்து அமர்ந்து, ஆம் என்பது போல தலையை மெதுவாக ஆட்டவும். அசைவு சிறியதாகவும் வசதியாகவும் இருக்கட்டும்.",
+  },
+  "neck-side-flexion": {
+    en: "Helps neck movement to the side. Sit tall and slowly tilt your ear toward one shoulder, then return to the middle and repeat on the other side.",
+    ta: "கழுத்தை பக்கவாட்டில் அசைக்க உதவும். நிமிர்ந்து அமர்ந்து, காதை ஒரு தோளை நோக்கி மெதுவாக சாய்த்து, நடுவுக்கு திரும்பி, மறுபக்கமும் செய்யவும்.",
+  },
+  "neck-rotation": {
+    en: "Helps you turn the neck. Sit tall and slowly turn your head to one side, return to the middle, then turn to the other side. Stay in a comfortable range.",
+    ta: "கழுத்தை திருப்ப உதவும். நிமிர்ந்து அமர்ந்து, தலையை ஒரு பக்கம் மெதுவாக திருப்பி, நடுவுக்கு வந்து, மறுபக்கம் திருப்பவும். வசதியான அளவிலேயே செய்யவும்.",
+  },
 };
 
 /**
@@ -211,6 +243,16 @@ export const CLINICAL_EXERCISE_TITLES: Record<string, string> = {
   'straight-leg-raise-left': 'Straight Leg Raise (Left)',
   'calf-stretch-right': 'Calf Stretch (Right)',
   'calf-stretch-left': 'Calf Stretch (Left)',
+  'incentive-spirometer': 'Incentive Spirometer',
+  'shoulder-retraction': 'Shoulder Retraction',
+  'shoulder-external-rotation': 'Shoulder External Rotation',
+  'heel-slides': 'Heel Slides',
+  'heel-slides-left': 'Heel Slides (Left)',
+  'heel-slides-right': 'Heel Slides (Right)',
+  'pelvic-bridge': 'Pelvic Bridge',
+  'neck-nodding': 'Neck Nodding',
+  'neck-side-flexion': 'Neck Side Flexion',
+  'neck-rotation': 'Neck Rotation',
 };
 
 export function getClinicalExerciseTitle(exerciseId: string): string | null {

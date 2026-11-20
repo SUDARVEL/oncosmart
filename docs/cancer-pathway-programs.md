@@ -6,25 +6,27 @@ Encoded in [`data/cancer-pathway-programs.json`](../data/cancer-pathway-programs
 
 ## Rules
 
-| Level | Reps | Sequence |
-|------:|-----:|----------|
-| 1 | 5 × 1 | Level 1 list |
-| 2 | 5 × 1 | Level 2 list |
-| 3 | 10 × 1 | **Same as Level 2** |
-| 4 | 15 × 1 | **Same as Level 2** |
+| Level | Counted reps | Sequence |
+|------:|-------------:|----------|
+| 1 | 5 × 1 | That level's list. Dashed sheet cells are omitted. |
+| 2 | 5 × 1 | That level's list |
+| 3 | 10 × 1 | That level's list |
+| 4 | 15 × 1 | That level's list |
+
+Incentive spirometer is 10, 10, 15, 15. Pelvic bridge at Level 4 is 10 reps, one side. Stretches are 30 seconds. Spot marching is 1 minute. The sheet dose is shown even when an older filename prints a different count. The old video file is still the one that plays.
 
 Left/right storage clips for one diagram step (e.g. Wall Climbing) play as **two consecutive steps**.
 
 ## Runtime
 
-1. Load MP4s for `{Gender} - {Language}/{Cancer}/Level N`
-2. Match files to the diagram sequence (slug + aliases)
-3. If a table step has no file in that folder, use the same cancer's Level 2 clip when this is Level 3 or 4, then the same exercise from another cancer folder at the same gender and language
-4. Leave out storage files that are not in the table
-5. Keep filename MINS and SECS, and filename REPS when the count is greater than 0; otherwise use the level default (5 / 5 / 10 / 15)
+1. Load the existing MP4s for `{Gender} - {Language}/{Cancer}/Level N`
+2. Load new exercises from `Newly added {Gender}/{Gender} ({language}) - newly added/Level N`
+3. Match files to this level's list. Breast Level 1 arm circles use the short-lever clip. Abdomen Level 4 pelvic bridge uses the unilateral clip. Head & Neck Level 1 neck rotation uses the 1st-level clip.
+4. If an existing exercise has no file in that folder, use the same cancer's clip from the nearest other level, then another cancer at this gender and language
+5. Leave out storage files that are not in the list, including re-filmed copies of exercises that already have an old video
 
 ## Storage notes
 
-- **Breast / Thorax:** storage order matches the tables (with L/R expansion).
-- **Abdomen Level 2** follows the table: Standing Hamstring Curls, Calf Raise, then Straight Leg Raise.
-- **Head & Neck:** Ankle Pumps files in that folder are not part of the table and are not shown. Thoracic Expansion is taken from the same gender and language when the Head & Neck folder does not include it. Arm Rotation uses the Arm Circles clip.
+- Old clips stay in the cancer folders. New clips stay in `Newly added Female` and `Newly added Male`.
+- **Head & Neck:** Ankle Pumps files in that folder are not part of the list and are not shown. Thoracic Expansion is taken from the same gender and language when the Head & Neck folder does not include it. Arm Rotation uses the existing Arm Circles clip.
+- Female English Level 4 has no Neck Rotation file. That step uses the Female English Level 3 Neck Rotation clip and still shows 15 reps.

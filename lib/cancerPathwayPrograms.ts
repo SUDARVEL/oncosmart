@@ -5,6 +5,7 @@ export type PathwayExerciseKey =
   | 'diaphragmatic-breathing'
   | 'ankle-pumps'
   | 'thoracic-expansion'
+  | 'incentive-spirometer'
   | 'chest-stretch'
   | 'arm-circles'
   | 'arm-rotation'
@@ -13,6 +14,8 @@ export type PathwayExerciseKey =
   | 'triceps-stretch'
   | 'spot-marching'
   | 'shoulder-shrugging'
+  | 'shoulder-retraction'
+  | 'shoulder-external-rotation'
   | 'wall-slides'
   | 'wall-pushup'
   | 'seated-knee-extension'
@@ -20,12 +23,24 @@ export type PathwayExerciseKey =
   | 'hamstring-stretch'
   | 'quadriceps-stretch'
   | 'straight-leg-raise'
+  | 'heel-slides'
+  | 'pelvic-bridge'
   | 'calf-raise'
   | 'calf-stretch'
+  | 'neck-nodding'
   | 'neck-flexion-extension'
+  | 'neck-side-flexion'
+  | 'neck-rotation'
   | 'jaw-opening-closing'
   | 'jaw-side-to-side'
   | 'neck-stretch';
+
+export type PathwayDose = {
+  repType: 'reps' | 'duration';
+  repValue: number;
+  displayValue: string;
+  displayLabel: 'REPS' | 'MINS' | 'SECS';
+};
 
 type PathwayProgramsFile = {
   levelRepDefaults: Record<string, { reps: number; sets: number }>;
@@ -66,6 +81,63 @@ export function getPathwayLevelRepDefault(level: number): { reps: number; sets: 
   return { reps: 5, sets: 1 };
 }
 
+const STRETCH_KEYS = new Set<PathwayExerciseKey>([
+  'chest-stretch',
+  'triceps-stretch',
+  'hamstring-stretch',
+  'quadriceps-stretch',
+  'calf-stretch',
+  'neck-stretch',
+]);
+
+/** Exercises that exist only in the Newly added storage folders. */
+export const NEW_LIBRARY_EXERCISE_KEYS = new Set<PathwayExerciseKey>([
+  'incentive-spirometer',
+  'shoulder-retraction',
+  'shoulder-external-rotation',
+  'heel-slides',
+  'pelvic-bridge',
+  'neck-nodding',
+  'neck-rotation',
+  'neck-side-flexion',
+]);
+
+function repsDose(reps: number): PathwayDose {
+  return {
+    repType: 'reps',
+    repValue: reps,
+    displayValue: reps < 10 ? `0${reps}` : String(reps),
+    displayLabel: 'REPS',
+  };
+}
+
+/**
+ * Sheet prescription for one step. This wins over the number printed in an
+ * older filename, so a Level 4 clip stored as 10Reps still shows 15 reps.
+ */
+export function getPathwayStepDose(step: PathwayExerciseKey, level: number): PathwayDose {
+  if (step === 'spot-marching') {
+    return { repType: 'duration', repValue: 60, displayValue: '01', displayLabel: 'MINS' };
+  }
+  if (STRETCH_KEYS.has(step)) {
+    return { repType: 'duration', repValue: 30, displayValue: '30', displayLabel: 'SECS' };
+  }
+  let reps = getPathwayLevelRepDefault(level).reps;
+  if (step === 'incentive-spirometer') reps = level <= 2 ? 10 : 15;
+  if (step === 'pelvic-bridge' && level >= 4) reps = 10;
+  return repsDose(reps);
+}
+
+/** Breast Level 1 arm circles use the new short-lever clip. Other arm circles stay on the old video. */
+export function usesNewLibraryClip(
+  step: PathwayExerciseKey,
+  cancerType: CancerTypeSlug,
+  level: number,
+): boolean {
+  if (NEW_LIBRARY_EXERCISE_KEYS.has(step)) return true;
+  return step === 'arm-circles' && cancerType === 'breast' && level === 1;
+}
+
 /**
  * Map a storage-derived slug (may include -left/-right) onto a diagram exercise key.
  * Arm circles in storage can satisfy an arm-rotation program step when needed.
@@ -76,6 +148,7 @@ export function programKeyFromStorageSlug(storageSlug: string): PathwayExerciseK
     'diaphragmatic-breathing': 'diaphragmatic-breathing',
     'ankle-pumps': 'ankle-pumps',
     'thoracic-expansion': 'thoracic-expansion',
+    'incentive-spirometer': 'incentive-spirometer',
     'chest-stretch': 'chest-stretch',
     'arm-circles': 'arm-circles',
     'arm-rotation': 'arm-rotation',
@@ -84,6 +157,8 @@ export function programKeyFromStorageSlug(storageSlug: string): PathwayExerciseK
     'triceps-stretch': 'triceps-stretch',
     'spot-marching': 'spot-marching',
     'shoulder-shrugging': 'shoulder-shrugging',
+    'shoulder-retraction': 'shoulder-retraction',
+    'shoulder-external-rotation': 'shoulder-external-rotation',
     'wall-slides': 'wall-slides',
     'wall-pushup': 'wall-pushup',
     'seated-knee-extension': 'seated-knee-extension',
@@ -91,9 +166,14 @@ export function programKeyFromStorageSlug(storageSlug: string): PathwayExerciseK
     'hamstring-stretch': 'hamstring-stretch',
     'quadriceps-stretch': 'quadriceps-stretch',
     'straight-leg-raise': 'straight-leg-raise',
+    'heel-slides': 'heel-slides',
+    'pelvic-bridge': 'pelvic-bridge',
     'calf-raise': 'calf-raise',
     'calf-stretch': 'calf-stretch',
+    'neck-nodding': 'neck-nodding',
     'neck-flexion-extension': 'neck-flexion-extension',
+    'neck-side-flexion': 'neck-side-flexion',
+    'neck-rotation': 'neck-rotation',
     'jaw-opening-closing': 'jaw-opening-closing',
     'jaw-side-to-side': 'jaw-side-to-side',
     'neck-stretch': 'neck-stretch',
