@@ -28,6 +28,7 @@ const LOW_POSES = new Set([
   'straight-leg-raise',
   'heel-slides',
   'pelvic-bridge',
+  'unilateral-bridge',
 ]);
 
 /** Split-screen clips: keep the front view in the circle. */

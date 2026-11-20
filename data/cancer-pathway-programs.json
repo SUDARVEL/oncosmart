@@ -47,7 +47,6 @@
           "wall-climbing",
           "wall-slides",
           "wall-pushup",
-          "triceps-stretch",
           "spot-marching",
           "diaphragmatic-breathing"
         ],
@@ -79,6 +78,7 @@
           "wall-climbing",
           "wall-slides",
           "wall-pushup",
+          "triceps-stretch",
           "spot-marching",
           "diaphragmatic-breathing"
         ]
@@ -222,7 +222,7 @@
           "incentive-spirometer",
           "arm-rotation",
           "biceps-curls",
-          "pelvic-bridge",
+          "unilateral-bridge",
           "straight-leg-raise",
           "seated-knee-extension",
           "standing-hamstring-curls",

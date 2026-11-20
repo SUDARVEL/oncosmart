@@ -36,6 +36,7 @@ const SLUG_RULES: SlugRule[] = [
   { pattern: /hamstring curl/i, slug: 'standing-hamstring-curls' },
   { pattern: /hamstring/i, slug: 'hamstring-stretch' },
   { pattern: /heel slide/i, slug: 'heel-slides' },
+  { pattern: /unilateral/i, slug: 'unilateral-bridge' },
   { pattern: /pelvic bridge/i, slug: 'pelvic-bridge' },
   { pattern: /knee extension|seated knee/i, slug: 'seated-knee-extension' },
   { pattern: /\bslr\b|straight leg/i, slug: 'straight-leg-raise' },
@@ -77,6 +78,7 @@ const TITLES: Record<string, string> = {
   'straight-leg-raise': 'Straight Leg Raise',
   'heel-slides': 'Heel Slides',
   'pelvic-bridge': 'Pelvic Bridge',
+  'unilateral-bridge': 'Unilateral Bridge',
   'quadriceps-stretch': 'Quadriceps Stretch',
   'triceps-stretch': 'Triceps Stretch',
   'chest-stretch': 'Pectoralis Stretch',
@@ -133,6 +135,8 @@ const DESCRIPTIONS: Record<string, string> = {
     'Lie on your back and slide one heel along the bed to bend the knee, then slide it back.',
   'pelvic-bridge':
     'Lie on your back with knees bent and slowly lift your hips, then lower with control.',
+  'unilateral-bridge':
+    'Lie on your back with one knee bent and the other leg straight. Lift your hips, pause, then lower.',
   'quadriceps-stretch':
     'Stretches the front of the thigh. Hold a gentle stretch and avoid arching your back.',
   'triceps-stretch':

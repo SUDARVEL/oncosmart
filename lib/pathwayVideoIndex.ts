@@ -162,7 +162,7 @@ function variantForStep(
   level: number,
 ): ClipVariant {
   if (step === 'arm-circles' && cancerType === 'breast' && level === 1) return 'short-lever';
-  if (step === 'pelvic-bridge' && level >= 4) return 'unilateral';
+  if (step === 'unilateral-bridge') return 'unilateral';
   if (step === 'neck-rotation' && level === 1) return 'first-level';
   return 'standard';
 }

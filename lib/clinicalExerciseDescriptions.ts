@@ -192,6 +192,10 @@ export const CLINICAL_EXERCISE_DESCRIPTIONS: Record<string, ClinicalExerciseDesc
     en: "Strengthens the hips and trunk. Lie on your back with both knees bent and feet on the bed. Slowly lift your hips, pause, then lower them.",
     ta: "இடுப்பு மற்றும் உடல் தசைகளை வலுப்படுத்தும். முதுகில் படுத்து, இரண்டு முழங்கால்களையும் மடக்கி பாதங்களை படுக்கையில் வைக்கவும். இடுப்பை மெதுவாக உயர்த்தி, சிறிது நின்று, கீழே இறக்கவும்.",
   },
+  "unilateral-bridge": {
+    en: "Strengthens one side of the hips. Lie on your back with one knee bent and the other leg straight. Lift your hips, pause, then lower.",
+    ta: "இடுப்பின் ஒரு பக்கத்தை வலுப்படுத்தும். முதுகில் படுத்து, ஒரு முழங்காலை மடக்கி மற்ற காலை நேராக வைக்கவும். இடுப்பை உயர்த்தி, சிறிது நின்று, கீழே இறக்கவும்.",
+  },
   "neck-nodding": {
     en: "Gently moves the neck. Sit tall and slowly nod your head as if saying yes. Keep the movement small and comfortable.",
     ta: "கழுத்தை மெதுவாக அசைக்க உதவும். நிமிர்ந்து அமர்ந்து, ஆம் என்பது போல தலையை மெதுவாக ஆட்டவும். அசைவு சிறியதாகவும் வசதியாகவும் இருக்கட்டும்.",
@@ -252,6 +256,7 @@ export const CLINICAL_EXERCISE_TITLES: Record<string, string> = {
   'heel-slides-left': 'Heel Slides (Left)',
   'heel-slides-right': 'Heel Slides (Right)',
   'pelvic-bridge': 'Pelvic Bridge',
+  'unilateral-bridge': 'Unilateral Bridge',
   'neck-nodding': 'Neck Nodding',
   'neck-side-flexion': 'Neck Side Flexion',
   'neck-rotation': 'Neck Rotation',

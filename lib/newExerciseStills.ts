@@ -14,6 +14,7 @@ const FEMALE_STILLS: Record<string, ImageSource> = {
   'shoulder-external-rotation': require('../assets/workouts/stills/female-shoulder-external-rotation.jpg'),
   'heel-slides': require('../assets/workouts/stills/female-heel-slides.jpg'),
   'pelvic-bridge': require('../assets/workouts/stills/female-pelvic-bridge.jpg'),
+  'unilateral-bridge': require('../assets/workouts/stills/female-unilateral-bridge.jpg'),
   'neck-nodding': require('../assets/workouts/stills/female-neck-nodding.jpg'),
   'neck-rotation': require('../assets/workouts/stills/female-neck-rotation.jpg'),
   'neck-side-flexion': require('../assets/workouts/stills/female-neck-side-flexion.jpg'),
@@ -27,6 +28,7 @@ const MALE_STILLS: Record<string, ImageSource> = {
   'shoulder-external-rotation': require('../assets/workouts/stills/male-shoulder-external-rotation.jpg'),
   'heel-slides': require('../assets/workouts/stills/male-heel-slides.jpg'),
   'pelvic-bridge': require('../assets/workouts/stills/male-pelvic-bridge.jpg'),
+  'unilateral-bridge': require('../assets/workouts/stills/male-unilateral-bridge.jpg'),
   'neck-nodding': require('../assets/workouts/stills/male-neck-nodding.jpg'),
   'neck-rotation': require('../assets/workouts/stills/male-neck-rotation.jpg'),
   'neck-side-flexion': require('../assets/workouts/stills/male-neck-side-flexion.jpg'),
@@ -41,11 +43,13 @@ const MALE_STILLS: Record<string, ImageSource> = {
 const FEMALE_CARD_STILLS: Record<string, ImageSource> = {
   'incentive-spirometer': require('../assets/workouts/stills/cards/female-incentive-spirometer.jpg'),
   'shoulder-retraction': require('../assets/workouts/stills/cards/female-shoulder-retraction.jpg'),
+  'unilateral-bridge': require('../assets/workouts/stills/cards/female-unilateral-bridge.jpg'),
 };
 
 const MALE_CARD_STILLS: Record<string, ImageSource> = {
   'incentive-spirometer': require('../assets/workouts/stills/cards/male-incentive-spirometer.jpg'),
   'shoulder-retraction': require('../assets/workouts/stills/cards/male-shoulder-retraction.jpg'),
+  'unilateral-bridge': require('../assets/workouts/stills/cards/male-unilateral-bridge.jpg'),
 };
 
 /** These replaced an older still, so the new frame must win. */

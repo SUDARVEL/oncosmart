@@ -13,7 +13,7 @@ Encoded in [`data/cancer-pathway-programs.json`](../data/cancer-pathway-programs
 | 3 | 10 × 1 | That level's list |
 | 4 | 15 × 1 | That level's list |
 
-Incentive spirometer is 10, 10, 15, 15. Pelvic bridge at Level 4 is 10 reps, one side. Stretches are 30 seconds. Spot marching is 1 minute. The sheet dose is shown even when an older filename prints a different count. The old video file is still the one that plays.
+Incentive spirometer is 10, 10, 15, 15. Unilateral bridge is its own exercise at abdomen Level 4, 10 reps. Stretches are 30 seconds. Spot marching is 1 minute. The sheet dose is shown even when an older filename prints a different count. The old video file is still the one that plays.
 
 Left/right storage clips for one diagram step (e.g. Wall Climbing) play as **two consecutive steps**.
 
@@ -21,7 +21,7 @@ Left/right storage clips for one diagram step (e.g. Wall Climbing) play as **two
 
 1. Load the existing MP4s for `{Gender} - {Language}/{Cancer}/Level N`
 2. Load new exercises from `Newly added {Gender}/{Gender} ({language}) - newly added/Level N`
-3. Match files to this level's list. When the new folder has that exercise, it replaces the old video: hamstring stretch (chair, left and right) and neck flexion. Breast Level 1 arm circles use the short-lever clip. Abdomen Level 4 pelvic bridge uses the unilateral clip. Head & Neck Level 1 neck rotation uses the 1st-level clip.
+3. Match files to this level's list. When the new folder has that exercise, it replaces the old video: hamstring stretch (chair, left and right) and neck flexion. Breast Level 1 arm circles use the short-lever clip. Abdomen Level 4 uses Unilateral Bridge, its own exercise, with the one-leg clip and 10 reps. Pelvic Bridge stays on Levels 1–3. Head & Neck Level 1 neck rotation uses the 1st-level clip. Breast Level 2 has no triceps stretch. Breast Levels 3 and 4 include it for 30 seconds.
 4. If the new folder has no clip, use the old file from the same cancer, then another cancer at this gender and language
 5. Leave out storage files that are not on the sheet for that level
 

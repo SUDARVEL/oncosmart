@@ -91,8 +91,11 @@ for (const gender of genders) {
           if (step === 'arm-circles' && cancerType === 'breast' && level === 1 && !/short lever/i.test(path)) {
             fail(`${label} arm circles is not the short-lever clip`);
           }
-          if (step === 'pelvic-bridge' && level === 4 && !/unilateral/i.test(path)) {
-            fail(`${label} pelvic bridge is not the unilateral clip`);
+          if (step === 'unilateral-bridge' && !/unilateral/i.test(path)) {
+            fail(`${label} unilateral bridge is not the one-leg clip`);
+          }
+          if (step === 'pelvic-bridge' && /unilateral/i.test(path)) {
+            fail(`${label} pelvic bridge is using the one-leg clip`);
           }
           if (step === 'neck-rotation' && level === 1 && !/1\s*st\s*level/i.test(path)) {
             fail(`${label} neck rotation is not the 1st-level clip`);

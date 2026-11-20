@@ -25,6 +25,7 @@ export type PathwayExerciseKey =
   | 'straight-leg-raise'
   | 'heel-slides'
   | 'pelvic-bridge'
+  | 'unilateral-bridge'
   | 'calf-raise'
   | 'calf-stretch'
   | 'neck-nodding'
@@ -97,6 +98,7 @@ export const NEW_LIBRARY_EXERCISE_KEYS = new Set<PathwayExerciseKey>([
   'shoulder-external-rotation',
   'heel-slides',
   'pelvic-bridge',
+  'unilateral-bridge',
   'neck-nodding',
   'neck-rotation',
   'neck-side-flexion',
@@ -124,7 +126,7 @@ export function getPathwayStepDose(step: PathwayExerciseKey, level: number): Pat
   }
   let reps = getPathwayLevelRepDefault(level).reps;
   if (step === 'incentive-spirometer') reps = level <= 2 ? 10 : 15;
-  if (step === 'pelvic-bridge' && level >= 4) reps = 10;
+  if (step === 'unilateral-bridge') reps = 10;
   return repsDose(reps);
 }
 
@@ -174,6 +176,7 @@ export function programKeyFromStorageSlug(storageSlug: string): PathwayExerciseK
     'straight-leg-raise': 'straight-leg-raise',
     'heel-slides': 'heel-slides',
     'pelvic-bridge': 'pelvic-bridge',
+    'unilateral-bridge': 'unilateral-bridge',
     'calf-raise': 'calf-raise',
     'calf-stretch': 'calf-stretch',
     'neck-nodding': 'neck-nodding',
