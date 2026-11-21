@@ -10,7 +10,7 @@ import {
   usesNewLibraryClip,
   type PathwayExerciseKey,
 } from '../lib/cancerPathwayPrograms';
-import { buildPathwaySessionFromManifest } from '../lib/pathwayVideoIndex';
+import { buildPathwaySessionFromManifest, isSpirometerFolderPath } from '../lib/pathwayVideoIndex';
 
 const paths = pathwayVideos.paths;
 
@@ -94,7 +94,7 @@ for (const gender of genders) {
               );
             }
             const stored = item.storageObjectPath ?? '';
-            const fresh = stored.startsWith('Newly added');
+            const fresh = stored.startsWith('Newly added') || isSpirometerFolderPath(stored);
             if (fresh !== usesNewLibraryClip(step, cancerType, level)) {
               fail(`${label} ${step} video ${stored}`);
             }

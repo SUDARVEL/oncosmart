@@ -153,6 +153,35 @@ function dropTamilDuplicatesForEnglish(paths: string[]): string[] {
   });
 }
 
+const SPIROMETER_FOLDER = /^Incentive Spiro(?:me|mo)ter (Female|Male)\//i;
+
+export function isSpirometerFolderPath(objectPath: string): boolean {
+  return SPIROMETER_FOLDER.test(objectPath);
+}
+
+/**
+ * The spirometer videos live in their own Incentive Spirometer Female / Male folders,
+ * one file per language and rep count (10 for Levels 1-2, 15 for Levels 3-4).
+ */
+function findSpirometerPath(
+  paths: string[],
+  profile: PathwayProfile,
+  level: number,
+): string | null {
+  const gender = resolveMediaGender(profile.gender, profile.avatar);
+  const language = profile.language === 'ta' ? 'tamil' : 'english';
+  const reps = level <= 2 ? 10 : 15;
+  const repsPattern = new RegExp(`(^|\\D)${reps}\\s*reps`, 'i');
+  const matches = paths.filter((objectPath) => {
+    const folder = SPIROMETER_FOLDER.exec(objectPath);
+    if (!folder || folder[1]!.toLowerCase() !== gender) return false;
+    const fileName = (objectPath.split('/').pop() ?? '').toLowerCase();
+    return fileName.includes(language) && repsPattern.test(fileName);
+  });
+  matches.sort((a, b) => a.length - b.length || a.localeCompare(b));
+  return matches[0] ?? null;
+}
+
 function matchesNewLibrary(objectPath: string, profile: PathwayProfile): boolean {
   if (!isNewlyAddedPath(objectPath)) return false;
   const mediaGender = resolveMediaGender(profile.gender, profile.avatar);
@@ -436,7 +465,20 @@ export function buildPathwaySessionFromManifest(
   const legacyPaths =
     profile.language === 'en' ? dropTamilDuplicatesForEnglish(rootPaths) : rootPaths;
   const newLibraryPaths = paths.filter((objectPath) => matchesNewLibrary(objectPath, profile));
-  return buildGuidedExercisesFromPaths(legacyPaths, level, profile, newLibraryPaths);
+  const exercises = buildGuidedExercisesFromPaths(legacyPaths, level, profile, newLibraryPaths);
+  const spirometerPath = findSpirometerPath(paths, profile, level);
+  if (!spirometerPath) return exercises;
+  const spirometerUrl = getPublicVideoUrl(spirometerPath) ?? '';
+  return exercises.map((exercise) =>
+    exercise.id.endsWith('-incentive-spirometer')
+      ? {
+          ...exercise,
+          storageObjectPath: spirometerPath,
+          portraitVideo: spirometerPath,
+          videoUrl: spirometerUrl || exercise.videoUrl,
+        }
+      : exercise,
+  );
 }
 
 export async function getPathwaySessionExercises(
