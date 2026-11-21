@@ -129,6 +129,30 @@ function isNewlyAddedPath(objectPath: string): boolean {
   return /^Newly added (Female|Male)\//i.test(objectPath);
 }
 
+function isTamilNamedClip(objectPath: string): boolean {
+  return /\bTamil\b/i.test(objectPath.split('/').pop() ?? '');
+}
+
+function exerciseSlugOfPath(objectPath: string): string {
+  const fileName = objectPath.split('/').pop() ?? objectPath;
+  return resolvePathwayExerciseCopy(parsePathwayFilename(fileName).rawLabel).slug;
+}
+
+/** English profiles skip a Tamil-narrated file when the same folder also has an English one for that exercise. */
+function dropTamilDuplicatesForEnglish(paths: string[]): string[] {
+  const englishKeys = new Set<string>();
+  for (const objectPath of paths) {
+    if (isTamilNamedClip(objectPath)) continue;
+    const folder = objectPath.slice(0, objectPath.lastIndexOf('/'));
+    englishKeys.add(`${folder}|${exerciseSlugOfPath(objectPath)}`);
+  }
+  return paths.filter((objectPath) => {
+    if (!isTamilNamedClip(objectPath)) return true;
+    const folder = objectPath.slice(0, objectPath.lastIndexOf('/'));
+    return !englishKeys.has(`${folder}|${exerciseSlugOfPath(objectPath)}`);
+  });
+}
+
 function matchesNewLibrary(objectPath: string, profile: PathwayProfile): boolean {
   if (!isNewlyAddedPath(objectPath)) return false;
   const mediaGender = resolveMediaGender(profile.gender, profile.avatar);
@@ -406,9 +430,11 @@ export function buildPathwaySessionFromManifest(
 ): GuidedSessionExercise[] {
   const root = getPathwayStorageRoot(profile.gender, profile.avatar, profile.language);
   const prefix = `${root}/`;
-  const legacyPaths = paths.filter(
+  const rootPaths = paths.filter(
     (objectPath) => objectPath.startsWith(prefix) && !isNewlyAddedPath(objectPath),
   );
+  const legacyPaths =
+    profile.language === 'en' ? dropTamilDuplicatesForEnglish(rootPaths) : rootPaths;
   const newLibraryPaths = paths.filter((objectPath) => matchesNewLibrary(objectPath, profile));
   return buildGuidedExercisesFromPaths(legacyPaths, level, profile, newLibraryPaths);
 }
