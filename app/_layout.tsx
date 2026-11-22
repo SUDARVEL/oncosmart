@@ -147,6 +147,9 @@ export default function RootLayout() {
         <Stack.Screen name="settings/index" />
         <Stack.Screen name="settings/change-password" />
         <Stack.Screen name="settings/recovery-email" />
+        <Stack.Screen name="settings/guidelines/index" />
+        <Stack.Screen name="settings/guidelines/general" />
+        <Stack.Screen name="settings/guidelines/dos-donts" />
       </Stack>
       </View>
     </SafeAreaProvider>

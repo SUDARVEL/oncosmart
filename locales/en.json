@@ -782,5 +782,81 @@
     "settingsTabBody": "Open Settings to update your profile, language, password, and get help.",
     "settingsMenuTitle": "Manage Your Profile",
     "settingsMenuBody": "View and update your personal information here."
+  },
+  "guidelines": {
+    "title": "Exercise Safety & Guidelines",
+    "settingsDescription": "General instructions and do's & don'ts",
+    "generalTitle": "General Instructions",
+    "generalDescription": "Key points for every session",
+    "dosDontsTitle": "{{cancer}} Do's & Don'ts",
+    "dosDontsDescription": "What to do and what to avoid",
+    "dos": "Do's",
+    "donts": "Don'ts",
+    "general": {
+      "timingMeal": {
+        "title": "Timing & meal",
+        "body": "Exercise at a comfortable time; avoid right after a heavy meal."
+      },
+      "clothing": {
+        "title": "Clothing",
+        "body": "Wear comfortable, loose clothing and safe footwear."
+      },
+      "fever": {
+        "title": "Fever alert",
+        "body": "Do not exercise if you have fever (≥ 38°C) or an active infection."
+      },
+      "breathlessness": {
+        "title": "Breathlessness",
+        "body": "Mild breathlessness is expected; stop if it is severe, sudden or worsening."
+      },
+      "pain": {
+        "title": "Pain",
+        "body": "Stop the exercise if you feel unbearable or new pain."
+      },
+      "dizziness": {
+        "title": "Dizziness",
+        "body": "Stop and rest if you feel dizzy or unsteady."
+      },
+      "hydration": {
+        "title": "Hydration",
+        "body": "Keep yourself well hydrated (unless fluid is restricted)."
+      },
+      "heartRate": {
+        "title": "Heart rate",
+        "body": "Keep your heart rate within the target range advised by your team."
+      },
+      "chestPain": {
+        "title": "Chest pain",
+        "body": "Stop the exercise and seek immediate medical help."
+      }
+    },
+    "items": {
+      "followPlan": "Follow your prescribed exercise plan",
+      "dontOverdo": "Don’t overdo your prescribed exercise plan",
+      "breastCheckArm": "Check your arm every day for swelling or heaviness",
+      "breastSleeve": "Wear your compression sleeve if your doctor has advised",
+      "breastTellDoctor": "Tell your doctor immediately if you notice new swelling or pain in your arm",
+      "breastNoHeavy": "If you have undergone surgery, avoid lifting heavy objects until your doctor says it is safe",
+      "breastNoInjection": "Avoid injections on the side of your surgery",
+      "breastNoHeatIce": "Avoid applying direct heat or ice on the surgery area",
+      "thoraxTellPain": "Tell your doctor if you have new pain in your chest, ribs or back",
+      "thoraxCoughSheet": "If you have undergone surgery, hold a folded sheet firmly against your wound when you cough",
+      "thoraxWound": "Tell your doctor if your wound becomes red, swollen or leaks fluid",
+      "thoraxCoughBlood": "Tell your doctor immediately if you cough up blood",
+      "thoraxNoPush": "If you have undergone surgery, avoid lifting, pushing or pulling heavy objects until your doctor says it is safe",
+      "thoraxNoSmoke": "Avoid smoke, dust and polluted air",
+      "abdomenStoma": "If you have a stoma, empty the bag before you exercise",
+      "abdomenCoughSheet": "If you have undergone surgery, support your wound with a folded sheet when you cough",
+      "abdomenBulge": "Tell your doctor if you notice a new bulge near your wound or stoma",
+      "abdomenNoBreathHold": "Avoid holding your breath or pushing hard while exercising",
+      "abdomenNoLift": "Avoid lifting heavy objects and exercise machines that press on your belly",
+      "abdomenNoContact": "If you have a stoma, avoid contact sports and weight training",
+      "hnSwelling": "Tell your doctor if you have new swelling on your face or neck",
+      "hnSwallow": "Tell your doctor if swallowing or opening your mouth becomes difficult",
+      "hnLooseClothes": "Wear soft, loose clothes over skin treated with radiation",
+      "hnNoOverhead": "If you have undergone neck surgery, avoid lifting heavy objects over your head until your doctor says it is safe",
+      "hnNoSun": "Avoid direct sunlight on skin treated with radiation",
+      "hnNoScratch": "Avoid rubbing or scratching skin treated with radiation"
+    }
   }
 }
