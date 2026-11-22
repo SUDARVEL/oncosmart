@@ -1,4 +1,4 @@
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useLocalSearchParams, useNavigation, useRouter } from 'expo-router';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -12,6 +12,7 @@ import {
   type StopReason,
 } from '../../components/exercise/WhyDidYouStopModal';
 import { ResumeProgressModal } from '../../components/growth/ResumeProgressModal';
+import { useAndroidBack } from '../../hooks/useAndroidBack';
 import { useExercisePauseGuard } from '../../hooks/useExercisePauseGuard';
 import { notifyAdminsOfHold } from '../../lib/adminNotify';
 import { getSessionExerciseVideoSource } from '../../lib/getDayExercises';
@@ -124,6 +125,36 @@ function GuidedSessionScreen({
   const [showStopModal, setShowStopModal] = useState(false);
   const [showEndBpmModal, setShowEndBpmModal] = useState(false);
   const exerciseFinishedRef = useRef(false);
+  /** When true, Android swipe/back may leave (quit saved, session finished, etc.). */
+  const allowLeaveRef = useRef(false);
+  const navigation = useNavigation();
+
+  const openStopModal = useCallback(() => {
+    setShowStopModal(true);
+  }, []);
+
+  useAndroidBack(
+    useCallback(() => {
+      if (showEndBpmModal) return true;
+      if (showStopModal) {
+        setShowStopModal(false);
+        return true;
+      }
+      openStopModal();
+      return true;
+    }, [openStopModal, showEndBpmModal, showStopModal]),
+  );
+
+  useEffect(() => {
+    const unsubscribe = navigation.addListener('beforeRemove', (event) => {
+      if (allowLeaveRef.current) return;
+      event.preventDefault();
+      if (!showEndBpmModal) {
+        openStopModal();
+      }
+    });
+    return unsubscribe;
+  }, [navigation, openStopModal, showEndBpmModal]);
 
   useEffect(() => {
     setExerciseIndex(Math.max(0, Number(indexParam) || 0));
@@ -142,6 +173,7 @@ function GuidedSessionScreen({
     (endBpm: number) => {
       const state = useAppStore.getState();
       if (state.progressPaused) {
+        allowLeaveRef.current = true;
         router.replace('/home');
         return;
       }
@@ -195,6 +227,7 @@ function GuidedSessionScreen({
         announceCompletion: true,
       });
 
+      allowLeaveRef.current = true;
       router.replace(
         `/exercise/complete?level=${level}&day=${dayInLevel}&done=${Date.now()}`,
       );
@@ -289,14 +322,13 @@ function GuidedSessionScreen({
           patientUsername: displayName,
         });
       })();
+      allowLeaveRef.current = true;
       router.replace('/home');
     },
     [router],
   );
 
-  const handleBackPress = useCallback(() => {
-    setShowStopModal(true);
-  }, []);
+  const handleBackPress = openStopModal;
 
   const totalExercises = getSessionExercisesForLevel(level).length;
 
