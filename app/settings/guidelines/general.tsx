@@ -73,7 +73,7 @@ const styles = StyleSheet.create({
     padding: 10,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#D6E6F5',
+    borderColor: colors.cardBorder,
     backgroundColor: colors.background,
   },
   image: {
@@ -93,6 +93,6 @@ const styles = StyleSheet.create({
   },
   rowBody: {
     ...uiText(13, 'regular'),
-    color: '#374151',
+    color: colors.progressText,
   },
 });

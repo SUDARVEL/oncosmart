@@ -20,13 +20,12 @@ import { uiText } from '../../../theme/typography';
 
 type GuidelineCardProps = {
   icon: keyof typeof Ionicons.glyphMap;
-  iconColor: string;
   title: string;
   description: string;
   onPress: () => void;
 };
 
-function GuidelineCard({ icon, iconColor, title, description, onPress }: GuidelineCardProps) {
+function GuidelineCard({ icon, title, description, onPress }: GuidelineCardProps) {
   return (
     <PressableScale
       onPress={onPress}
@@ -36,13 +35,13 @@ function GuidelineCard({ icon, iconColor, title, description, onPress }: Guideli
       style={styles.card}
     >
       <View style={styles.iconBox}>
-        <Ionicons name={icon} size={30} color={iconColor} />
+        <Ionicons name={icon} size={28} color={colors.buttonPrimary} />
       </View>
       <View style={styles.cardText}>
         <Text style={styles.cardTitle}>{title}</Text>
         <Text style={styles.cardDescription}>{description}</Text>
       </View>
-      <Ionicons name="chevron-forward" size={22} color={colors.navy} />
+      <Ionicons name="chevron-forward" size={20} color={colors.textPlaceholder} />
     </PressableScale>
   );
 }
@@ -71,7 +70,6 @@ export default function GuidelinesScreen() {
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <GuidelineCard
           icon="clipboard-outline"
-          iconColor={colors.buttonPrimary}
           title={t('guidelines.generalTitle')}
           description={t('guidelines.generalDescription')}
           onPress={() => router.push('/settings/guidelines/general')}
@@ -79,8 +77,7 @@ export default function GuidelinesScreen() {
         {cancers.map((slug) => (
           <GuidelineCard
             key={slug}
-            icon="ribbon"
-            iconColor="#EC4899"
+            icon="ribbon-outline"
             title={t('guidelines.dosDontsTitle', { cancer: t(CANCER_TYPE_I18N_KEYS[slug]) })}
             description={t('guidelines.dosDontsDescription')}
             onPress={() =>
@@ -112,8 +109,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#BFDDF2',
-    backgroundColor: colors.cardSelectedBg,
+    borderColor: colors.cardBorder,
+    backgroundColor: colors.homeCardBg,
   },
   iconBox: {
     width: 48,
@@ -121,7 +118,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: colors.background,
+    backgroundColor: colors.tabIconActiveBg,
   },
   cardText: {
     flex: 1,

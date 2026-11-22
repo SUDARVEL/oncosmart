@@ -22,9 +22,10 @@ import { uiText } from '../../../theme/typography';
 
 type Tab = 'dos' | 'donts';
 
-const TAB_COLORS: Record<Tab, { solid: string; border: string; tint: string }> = {
-  dos: { solid: '#16A34A', border: '#B7E4C7', tint: '#F0FAF4' },
-  donts: { solid: '#DC2626', border: '#F5C2C2', tint: '#FEF3F3' },
+/** The app's own success green and error red, used only for the tick and cross marks. */
+const MARK_COLORS: Record<Tab, string> = {
+  dos: '#16A34A',
+  donts: '#DC2626',
 };
 
 function pairs(keys: DoDontKey[]): DoDontKey[][] {
@@ -47,7 +48,6 @@ export default function DosAndDontsScreen() {
   const slug =
     normalizeCancerTypeSlug(params.cancer) ?? normalizeCancerTypeSlug(storedCancer) ?? 'breast';
   const mediaGender = resolveMediaGender(gender, avatar);
-  const palette = TAB_COLORS[tab];
   const rows = pairs(DOS_AND_DONTS[slug][tab]);
 
   const handleBack = useCallback(() => {
@@ -75,12 +75,12 @@ export default function DosAndDontsScreen() {
               accessibilityRole="button"
               accessibilityState={{ selected: active }}
               pressedScale={0.98}
-              style={[styles.tab, active && { backgroundColor: TAB_COLORS[entry].solid }]}
+              style={[styles.tab, active && styles.tabActive]}
             >
               <Ionicons
                 name={entry === 'dos' ? 'checkmark-circle' : 'close-circle'}
                 size={18}
-                color={active ? '#FFFFFF' : TAB_COLORS[entry].solid}
+                color={active ? colors.buttonText : MARK_COLORS[entry]}
               />
               <Text
                 style={[styles.tabLabel, active && styles.tabLabelActive]}
@@ -97,13 +97,7 @@ export default function DosAndDontsScreen() {
         {rows.map((row) => (
           <View key={row.join('|')} style={styles.gridRow}>
             {row.map((key) => (
-              <View
-                key={key}
-                style={[
-                  styles.card,
-                  { borderColor: palette.border, backgroundColor: palette.tint },
-                ]}
-              >
+              <View key={key} style={styles.card}>
                 <View style={styles.imageWrap}>
                   <Image
                     source={getDoDontImage(key, mediaGender)}
@@ -111,11 +105,11 @@ export default function DosAndDontsScreen() {
                     contentFit="cover"
                     accessible={false}
                   />
-                  <View style={[styles.badge, { backgroundColor: palette.solid }]}>
+                  <View style={[styles.badge, { backgroundColor: MARK_COLORS[tab] }]}>
                     <Ionicons
                       name={tab === 'dos' ? 'checkmark' : 'close'}
                       size={18}
-                      color="#FFFFFF"
+                      color={colors.buttonText}
                     />
                   </View>
                 </View>
@@ -144,7 +138,7 @@ const styles = StyleSheet.create({
     borderRadius: 999,
     borderWidth: 1,
     borderColor: colors.cardBorder,
-    backgroundColor: colors.background,
+    backgroundColor: colors.optionBg,
   },
   tab: {
     flex: 1,
@@ -157,14 +151,17 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
     borderRadius: 999,
   },
+  tabActive: {
+    backgroundColor: colors.buttonPrimary,
+  },
   tabLabel: {
     ...uiText(14, 'semiBold'),
-    color: '#1E1E1E',
+    color: colors.progressText,
     flexShrink: 1,
     textAlign: 'center',
   },
   tabLabelActive: {
-    color: '#FFFFFF',
+    color: colors.buttonText,
   },
   content: {
     paddingHorizontal: 16,
@@ -184,6 +181,8 @@ const styles = StyleSheet.create({
     gap: 8,
     borderRadius: 12,
     borderWidth: 1,
+    borderColor: colors.cardBorder,
+    backgroundColor: colors.homeCardBg,
   },
   cardSpacer: {
     flex: 1,
