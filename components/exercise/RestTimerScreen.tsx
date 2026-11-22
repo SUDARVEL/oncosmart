@@ -28,13 +28,13 @@ function formatClock(totalSeconds: number): string {
 export function RestTimerScreen({ seconds, onComplete, onBackPress }: Props) {
   const { t } = useTranslation();
   const [remaining, setRemaining] = useState(seconds);
-  const [extraAdded, setExtraAdded] = useState(false);
+  const [extraCount, setExtraCount] = useState(0);
   const onCompleteRef = useRef(onComplete);
   onCompleteRef.current = onComplete;
 
   useEffect(() => {
     setRemaining(seconds);
-    setExtraAdded(false);
+    setExtraCount(0);
   }, [seconds]);
 
   useEffect(() => {
@@ -51,15 +51,14 @@ export function RestTimerScreen({ seconds, onComplete, onBackPress }: Props) {
   }, [remaining]);
 
   const handleAddExtra = () => {
-    if (extraAdded) return;
     setRemaining((value) => value + EXTRA_REST_SECONDS);
-    setExtraAdded(true);
+    setExtraCount((value) => value + 1);
   };
 
   const handleUndoExtra = () => {
-    if (!extraAdded) return;
+    if (extraCount <= 0) return;
     setRemaining((value) => Math.max(0, value - EXTRA_REST_SECONDS));
-    setExtraAdded(false);
+    setExtraCount((value) => value - 1);
   };
 
   const handleSkip = () => {
@@ -90,7 +89,18 @@ export function RestTimerScreen({ seconds, onComplete, onBackPress }: Props) {
         </Text>
 
         <View style={styles.actions}>
-          {extraAdded ? (
+          <PressableScale
+            onPress={handleAddExtra}
+            style={[styles.actionButton, styles.actionSecondary]}
+            accessibilityRole="button"
+            accessibilityLabel={t('sessionFlow.restAddExtra')}
+          >
+            <Text style={styles.actionSecondaryText} numberOfLines={1}>
+              {t('sessionFlow.restAddExtra')}
+            </Text>
+          </PressableScale>
+
+          {extraCount > 0 ? (
             <PressableScale
               onPress={handleUndoExtra}
               style={[styles.actionButton, styles.actionSecondary]}
@@ -101,18 +111,7 @@ export function RestTimerScreen({ seconds, onComplete, onBackPress }: Props) {
                 {t('sessionFlow.restUndoExtra')}
               </Text>
             </PressableScale>
-          ) : (
-            <PressableScale
-              onPress={handleAddExtra}
-              style={[styles.actionButton, styles.actionSecondary]}
-              accessibilityRole="button"
-              accessibilityLabel={t('sessionFlow.restAddExtra')}
-            >
-              <Text style={styles.actionSecondaryText} numberOfLines={1}>
-                {t('sessionFlow.restAddExtra')}
-              </Text>
-            </PressableScale>
-          )}
+          ) : null}
 
           <PressableScale
             onPress={handleSkip}

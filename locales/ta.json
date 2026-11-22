@@ -218,7 +218,7 @@
     "restSubtitle": "அடுத்த பயிற்சிக்கு முன் சிறிய இடைவெளி எடுத்துக் கொள்ளுங்கள்.",
     "restSecondsUnit": "வினாடி",
     "restAddExtra": "+20 வினாடி",
-    "restUndoExtra": "+20 ரத்து",
+    "restUndoExtra": "கடைசி +20 ரத்து",
     "restSkip": "தவிர்",
     "whyDidYouStop": "ஏன் தொடரவில்லை?",
     "stopSubtitle": "இது உங்களுக்கு ஏற்ற பயிற்சியை வழங்க உதவும்.",
