@@ -285,6 +285,248 @@
         "female-en": "",
         "female-ta": "Female Tamil Compressed-20260719T095054Z-1-001/Female Tamil Compressed/Neck Stretch Female Left Tamil.mp4"
       }
+    },
+    "incentive-spirometer": {
+      "id": "incentive-spirometer",
+      "name": "Incentive Spirometer",
+      "repLabel": "x10",
+      "videos": {
+        "male-en": "",
+        "male-ta": "",
+        "female-en": "",
+        "female-ta": ""
+      }
+    },
+    "arm-rotation": {
+      "id": "arm-rotation",
+      "name": "Arm Rotation",
+      "repLabel": "x10",
+      "videos": {
+        "male-en": "",
+        "male-ta": "",
+        "female-en": "",
+        "female-ta": ""
+      }
+    },
+    "wall-climbing": {
+      "id": "wall-climbing",
+      "name": "Wall Climbing",
+      "repLabel": "x10",
+      "videos": {
+        "male-en": "",
+        "male-ta": "",
+        "female-en": "",
+        "female-ta": ""
+      }
+    },
+    "wall-slides": {
+      "id": "wall-slides",
+      "name": "Wall Slides",
+      "repLabel": "x10",
+      "videos": {
+        "male-en": "",
+        "male-ta": "",
+        "female-en": "",
+        "female-ta": ""
+      }
+    },
+    "shoulder-retraction": {
+      "id": "shoulder-retraction",
+      "name": "Shoulder Retraction",
+      "repLabel": "x10",
+      "videos": {
+        "male-en": "",
+        "male-ta": "",
+        "female-en": "",
+        "female-ta": ""
+      }
+    },
+    "shoulder-external-rotation": {
+      "id": "shoulder-external-rotation",
+      "name": "Shoulder External Rotation",
+      "repLabel": "x10",
+      "videos": {
+        "male-en": "",
+        "male-ta": "",
+        "female-en": "",
+        "female-ta": ""
+      }
+    },
+    "seated-knee-extension": {
+      "id": "seated-knee-extension",
+      "name": "Knee Extension",
+      "repLabel": "x10",
+      "videos": {
+        "male-en": "",
+        "male-ta": "",
+        "female-en": "",
+        "female-ta": ""
+      }
+    },
+    "standing-hamstring-curls": {
+      "id": "standing-hamstring-curls",
+      "name": "Hamstring Curls",
+      "repLabel": "x10",
+      "videos": {
+        "male-en": "",
+        "male-ta": "",
+        "female-en": "",
+        "female-ta": ""
+      }
+    },
+    "heel-slides": {
+      "id": "heel-slides",
+      "name": "Heel Slides",
+      "repLabel": "x10",
+      "videos": {
+        "male-en": "",
+        "male-ta": "",
+        "female-en": "",
+        "female-ta": ""
+      }
+    },
+    "pelvic-bridge": {
+      "id": "pelvic-bridge",
+      "name": "Pelvic Bridge",
+      "repLabel": "x10",
+      "videos": {
+        "male-en": "",
+        "male-ta": "",
+        "female-en": "",
+        "female-ta": ""
+      }
+    },
+    "unilateral-bridge": {
+      "id": "unilateral-bridge",
+      "name": "Unilateral Bridge",
+      "repLabel": "x10",
+      "videos": {
+        "male-en": "",
+        "male-ta": "",
+        "female-en": "",
+        "female-ta": ""
+      }
+    },
+    "neck-nodding": {
+      "id": "neck-nodding",
+      "name": "Neck Nodding",
+      "repLabel": "x10",
+      "videos": {
+        "male-en": "",
+        "male-ta": "",
+        "female-en": "",
+        "female-ta": ""
+      }
+    },
+    "neck-flexion-extension": {
+      "id": "neck-flexion-extension",
+      "name": "Neck Flexion and Extension",
+      "repLabel": "x10",
+      "videos": {
+        "male-en": "",
+        "male-ta": "",
+        "female-en": "",
+        "female-ta": ""
+      }
+    },
+    "neck-side-flexion": {
+      "id": "neck-side-flexion",
+      "name": "Neck Side Flexion",
+      "repLabel": "x10",
+      "videos": {
+        "male-en": "",
+        "male-ta": "",
+        "female-en": "",
+        "female-ta": ""
+      }
+    },
+    "neck-rotation": {
+      "id": "neck-rotation",
+      "name": "Neck Rotation",
+      "repLabel": "x10",
+      "videos": {
+        "male-en": "",
+        "male-ta": "",
+        "female-en": "",
+        "female-ta": ""
+      }
+    },
+    "jaw-opening-closing": {
+      "id": "jaw-opening-closing",
+      "name": "Mouth Opening and Closing",
+      "repLabel": "x10",
+      "videos": {
+        "male-en": "",
+        "male-ta": "",
+        "female-en": "",
+        "female-ta": ""
+      }
+    },
+    "jaw-side-to-side": {
+      "id": "jaw-side-to-side",
+      "name": "Jaw Side-to-Side",
+      "repLabel": "x10",
+      "videos": {
+        "male-en": "",
+        "male-ta": "",
+        "female-en": "",
+        "female-ta": ""
+      }
+    },
+    "neck-stretch": {
+      "id": "neck-stretch",
+      "name": "Neck Stretch",
+      "repLabel": "00:30",
+      "videos": {
+        "male-en": "",
+        "male-ta": "",
+        "female-en": "",
+        "female-ta": ""
+      }
+    },
+    "calf-stretch": {
+      "id": "calf-stretch",
+      "name": "Calf Stretch",
+      "repLabel": "00:30",
+      "videos": {
+        "male-en": "",
+        "male-ta": "",
+        "female-en": "",
+        "female-ta": ""
+      }
+    },
+    "quadriceps-stretch": {
+      "id": "quadriceps-stretch",
+      "name": "Quadriceps Stretch",
+      "repLabel": "00:30",
+      "videos": {
+        "male-en": "",
+        "male-ta": "",
+        "female-en": "",
+        "female-ta": ""
+      }
+    },
+    "triceps-stretch": {
+      "id": "triceps-stretch",
+      "name": "Triceps Stretch",
+      "repLabel": "00:30",
+      "videos": {
+        "male-en": "",
+        "male-ta": "",
+        "female-en": "",
+        "female-ta": ""
+      }
+    },
+    "straight-leg-raise": {
+      "id": "straight-leg-raise",
+      "name": "Straight Leg Raise",
+      "repLabel": "x10",
+      "videos": {
+        "male-en": "",
+        "male-ta": "",
+        "female-en": "",
+        "female-ta": ""
+      }
     }
   },
   "levels": [

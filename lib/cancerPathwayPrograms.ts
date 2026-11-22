@@ -1,5 +1,9 @@
 import pathwayPrograms from '../data/cancer-pathway-programs.json';
-import type { CancerTypeSlug } from './cancerPathway';
+import {
+  cancerTypeFromPathwayId,
+  type CancerTypeSlug,
+  type PathwayId,
+} from './cancerPathway';
 
 export type PathwayExerciseKey =
   | 'diaphragmatic-breathing'
@@ -80,6 +84,22 @@ export function getPathwayLevelRepDefault(level: number): { reps: number; sets: 
   if (level >= 4) return { reps: 15, sets: 1 };
   if (level === 3) return { reps: 10, sets: 1 };
   return { reps: 5, sets: 1 };
+}
+
+/** Plan API: exercise ids for a gender×cancer pathway + level. */
+export function getPathwayExerciseIds(
+  pathwayId: PathwayId,
+  level: number,
+): readonly string[] {
+  return getPathwayExerciseSequence(cancerTypeFromPathwayId(pathwayId), level);
+}
+
+/** Plan API: L1/L2 → 5, L3 → 10, L4 → 15 for rep-type exercises. */
+export function getPathwayLevelRepCount(level: number): 5 | 10 | 15 {
+  const reps = getPathwayLevelRepDefault(level).reps;
+  if (reps >= 15) return 15;
+  if (reps >= 10) return 10;
+  return 5;
 }
 
 const STRETCH_KEYS = new Set<PathwayExerciseKey>([
