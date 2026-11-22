@@ -28,13 +28,11 @@ function formatClock(totalSeconds: number): string {
 export function RestTimerScreen({ seconds, onComplete, onBackPress }: Props) {
   const { t } = useTranslation();
   const [remaining, setRemaining] = useState(seconds);
-  const [extraCount, setExtraCount] = useState(0);
   const onCompleteRef = useRef(onComplete);
   onCompleteRef.current = onComplete;
 
   useEffect(() => {
     setRemaining(seconds);
-    setExtraCount(0);
   }, [seconds]);
 
   useEffect(() => {
@@ -52,13 +50,6 @@ export function RestTimerScreen({ seconds, onComplete, onBackPress }: Props) {
 
   const handleAddExtra = () => {
     setRemaining((value) => value + EXTRA_REST_SECONDS);
-    setExtraCount((value) => value + 1);
-  };
-
-  const handleUndoExtra = () => {
-    if (extraCount <= 0) return;
-    setRemaining((value) => Math.max(0, value - EXTRA_REST_SECONDS));
-    setExtraCount((value) => value - 1);
   };
 
   const handleSkip = () => {
@@ -99,19 +90,6 @@ export function RestTimerScreen({ seconds, onComplete, onBackPress }: Props) {
               {t('sessionFlow.restAddExtra')}
             </Text>
           </PressableScale>
-
-          {extraCount > 0 ? (
-            <PressableScale
-              onPress={handleUndoExtra}
-              style={[styles.actionButton, styles.actionSecondary]}
-              accessibilityRole="button"
-              accessibilityLabel={t('sessionFlow.restUndoExtra')}
-            >
-              <Text style={styles.actionSecondaryText} numberOfLines={1}>
-                {t('sessionFlow.restUndoExtra')}
-              </Text>
-            </PressableScale>
-          ) : null}
 
           <PressableScale
             onPress={handleSkip}
