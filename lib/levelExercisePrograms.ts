@@ -1,12 +1,18 @@
 /**
- * Exercise order for each program level (single source of truth).
- * Used by guided sessions, exercise lists, pain-score flow, and Growth workouts.
+ * Exercise order for each program level.
+ * Cancer pathways (gender × cancer type) are the source of truth when a cancer
+ * slug is available; legacy lists remain for accounts without a pathway yet.
  */
+import { normalizeCancerTypeSlug, type CancerTypeSlug } from './cancerPathway';
+import { getPathwayExerciseSequence } from './cancerPathwayPrograms';
+import { useAppStore } from '../store/useAppStore';
+
 export type LevelExerciseProgram = {
   level: number;
   exerciseIds: readonly string[];
 };
 
+/** Pre-pathway fallback program (no cancer type selected). */
 export const LEVEL_EXERCISE_PROGRAMS: readonly LevelExerciseProgram[] = [
   {
     level: 1,
@@ -123,14 +129,42 @@ export const LEVEL_EXERCISE_PROGRAMS: readonly LevelExerciseProgram[] = [
   },
 ] as const;
 
-export function getLevelExerciseProgram(level: number): LevelExerciseProgram | null {
+function resolveCancerType(
+  cancerType?: string | CancerTypeSlug | null,
+): CancerTypeSlug | null {
+  if (cancerType === undefined) {
+    return normalizeCancerTypeSlug(useAppStore.getState().cancerType);
+  }
+  return normalizeCancerTypeSlug(cancerType);
+}
+
+export function getLevelExerciseProgram(
+  level: number,
+  cancerType?: string | CancerTypeSlug | null,
+): LevelExerciseProgram | null {
+  const slug = resolveCancerType(cancerType);
+  if (slug) {
+    const exerciseIds = getPathwayExerciseSequence(slug, level);
+    if (exerciseIds.length === 0) return null;
+    return { level, exerciseIds };
+  }
   return LEVEL_EXERCISE_PROGRAMS.find((entry) => entry.level === level) ?? null;
 }
 
-export function getExerciseIdsForLevel(level: number): readonly string[] {
-  return getLevelExerciseProgram(level)?.exerciseIds ?? [];
+export function getExerciseIdsForLevel(
+  level: number,
+  cancerType?: string | CancerTypeSlug | null,
+): readonly string[] {
+  return getLevelExerciseProgram(level, cancerType)?.exerciseIds ?? [];
 }
 
-export function isExerciseInLevel(level: number, exerciseId: string): boolean {
-  return getExerciseIdsForLevel(level).includes(exerciseId);
+export function isExerciseInLevel(
+  level: number,
+  exerciseId: string,
+  cancerType?: string | CancerTypeSlug | null,
+): boolean {
+  const base = exerciseId.replace(/-(left|right)$/i, '');
+  return getExerciseIdsForLevel(level, cancerType).some(
+    (id) => id === exerciseId || id === base || `${id}-left` === exerciseId || `${id}-right` === exerciseId,
+  );
 }

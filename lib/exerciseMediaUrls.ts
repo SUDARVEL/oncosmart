@@ -10,6 +10,12 @@ import {
 } from './exerciseFemaleVideos';
 import { getMaleTamilPortraitVideoPath } from './exerciseMaleTamilVideos';
 import { getPhase2LandscapeVideoUrl } from './phase2LandscapeMedia';
+import { sanitizePublicVideoUrl } from './videoStoragePolicy';
+import {
+  getPathwayProfileFromStore,
+  getSessionExercisesForLevel,
+} from './getDay1Session';
+import { TOTAL_LEVELS } from './programProgress';
 
 const SUPABASE_PUBLIC_BASE =
   'https://soyaeuffzytrjojifvdz.supabase.co/storage/v1/object/public/Oncosmart%20Videos%20and%20Assets';
@@ -125,6 +131,38 @@ export function getSessionLandscapeVideoUrl(
   return publicUrlForObjectPath(`${MALE_LANDSCAPE_FOLDER}/${file}`);
 }
 
+/**
+ * Prefer a warmed pathway session URL (Supabase pathway clip) when available,
+ * then fall back to legacy portrait/landscape maps.
+ */
+export function resolvePathwayVideoUrl(
+  exerciseId: string,
+  gender: AppGender | null = null,
+  avatar: AppAvatar | null = null,
+  language: AppLanguage | null = null,
+): string | null {
+  const profile = getPathwayProfileFromStore();
+  if (profile) {
+    const base = exerciseId.replace(/-(left|right)$/i, '');
+    for (let level = 1; level <= TOTAL_LEVELS; level += 1) {
+      const match = getSessionExercisesForLevel(level, profile).find((entry) => {
+        const idBase = entry.id.replace(/^pathway-.+-s\d+-/, '').replace(/-(left|right)$/i, '');
+        return (
+          entry.id === exerciseId ||
+          idBase === exerciseId ||
+          idBase === base ||
+          entry.id.endsWith(`-${exerciseId}`) ||
+          entry.id.endsWith(`-${base}`)
+        );
+      });
+      const url = match?.videoUrl?.trim();
+      if (url) return sanitizePublicVideoUrl(url);
+    }
+  }
+  const legacy = getExercisePortraitVideoUrl(exerciseId, gender, avatar, language);
+  return legacy ? sanitizePublicVideoUrl(legacy) : null;
+}
+
 /** Portrait URL for guided exercise playback — full-length instructor video only. */
 export function resolveExerciseGuidedPortraitUrl(
   exerciseId: string,
@@ -132,7 +170,7 @@ export function resolveExerciseGuidedPortraitUrl(
   avatar: AppAvatar | null = null,
   language: AppLanguage | null = null,
 ): string | null {
-  return getExercisePortraitVideoUrl(exerciseId, gender, avatar, language);
+  return resolvePathwayVideoUrl(exerciseId, gender, avatar, language);
 }
 
 /** Portrait first only — landscape previews are NEVER guided playback sources. */

@@ -1,4 +1,4 @@
-import { normalizeCancerTypeSlug } from './cancerPathway';
+import { normalizeCancerTypeSlug, normalizeLegacyCancerType } from './cancerPathway';
 import { getCompletedLevelsCount } from './programProgress';
 import {
   asPauseReason,
@@ -172,7 +172,7 @@ export async function loadCloudProfileIntoStore(userId: string): Promise<CloudLo
     avatar: (data.avatar as AppAvatar | null) ?? null,
     age: typeof data.age === 'number' ? data.age : null,
     ageRange: (data.age_range as AgeRange | null) ?? null,
-    cancerType: data.cancer_type ?? '',
+    cancerType: normalizeLegacyCancerType(data.cancer_type) ?? data.cancer_type ?? '',
     treatmentUndergoing: (data.treatment_undergoing as TreatmentType | null) ?? null,
     underwentSurgery:
       typeof data.underwent_surgery === 'boolean' ? data.underwent_surgery : null,

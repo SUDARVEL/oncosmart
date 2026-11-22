@@ -116,9 +116,10 @@ for (const gender of genders) {
         if (cursor !== session.length) fail(`${label} has extra steps`);
 
         for (const item of session) {
-          const side = sideOfTitle(item.title);
+          const title = item.title ?? '';
+          const side = sideOfTitle(title);
           if (!side) continue;
-          const key = `${cancerType} L${level} ${baseTitle(item.title)}`;
+          const key = `${cancerType} L${level} ${baseTitle(title)}`;
           const profiles = sidesByExercise.get(key) ?? new Map<string, Set<'left' | 'right'>>();
           const sides = profiles.get(`${gender} ${language}`) ?? new Set<'left' | 'right'>();
           sides.add(side);

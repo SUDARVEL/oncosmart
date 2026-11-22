@@ -3,11 +3,39 @@ import type { AppAvatar, AppGender, AppLanguage } from '../store/useAppStore';
 /** Stored in profile + Supabase `cancer_type`. */
 export type CancerTypeSlug = 'breast' | 'thorax' | 'abdomen' | 'head-neck';
 
+/** Plan alias for the stored cancer-type enum. */
+export type CancerType = CancerTypeSlug;
+
 export const CANCER_TYPE_SLUGS: readonly CancerTypeSlug[] = [
   'breast',
   'thorax',
   'abdomen',
   'head-neck',
+] as const;
+
+/**
+ * Composite pathway id: gender × cancer type (8 pathways).
+ * Exercise lists are keyed by cancer type; gender selects media (Male/Female storage roots).
+ */
+export type PathwayId =
+  | 'male-breast'
+  | 'male-thorax'
+  | 'male-abdomen'
+  | 'male-head-neck'
+  | 'female-breast'
+  | 'female-thorax'
+  | 'female-abdomen'
+  | 'female-head-neck';
+
+export const PATHWAY_IDS: readonly PathwayId[] = [
+  'male-breast',
+  'male-thorax',
+  'male-abdomen',
+  'male-head-neck',
+  'female-breast',
+  'female-thorax',
+  'female-abdomen',
+  'female-head-neck',
 ] as const;
 
 export type PathwayProfile = {
@@ -22,7 +50,27 @@ export function resolveMediaGender(
   avatar: AppAvatar | null,
 ): 'male' | 'female' {
   if (avatar) return avatar === 'female' ? 'female' : 'male';
+  // prefer_not_to_say / null → avatar when set (handled above), else male default.
   return gender === 'female' ? 'female' : 'male';
+}
+
+/**
+ * Resolve the 8-way pathway id from onboarding gender + cancer type.
+ * When gender is prefer_not_to_say / null, uses avatar if set, else male.
+ */
+export function resolveCancerPathway(
+  gender: AppGender | null,
+  avatar: AppAvatar | null,
+  cancerType: string | null | undefined,
+): PathwayId | null {
+  const slug = normalizeCancerTypeSlug(cancerType);
+  if (!slug) return null;
+  const mediaGender = resolveMediaGender(gender, avatar);
+  return `${mediaGender}-${slug}` as PathwayId;
+}
+
+export function cancerTypeFromPathwayId(pathwayId: PathwayId): CancerTypeSlug {
+  return pathwayId.replace(/^(male|female)-/, '') as CancerTypeSlug;
 }
 
 /** Supabase root folder: `Male - English`, etc. */
@@ -52,6 +100,9 @@ export function normalizeCancerTypeSlug(raw: string | null | undefined): CancerT
   }
   return null;
 }
+
+/** Plan alias — normalize free-text / legacy cloud `cancer_type` values. */
+export const normalizeLegacyCancerType = normalizeCancerTypeSlug;
 
 /** Match storage cancer folder segment (handles typos / naming quirks). */
 export function cancerPathMatchesSlug(cancerFolderSegment: string, slug: CancerTypeSlug): boolean {
