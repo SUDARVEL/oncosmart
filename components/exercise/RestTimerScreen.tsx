@@ -1,11 +1,16 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { PressableScale } from '../PressableScale';
 import { colors } from '../../theme/colors';
-import { font, displayFontStyle } from '../../theme/fonts';
+import { displayFontStyle, font } from '../../theme/fonts';
+import { uiText } from '../../theme/typography';
+
+/** Optional extra rest a patient can add once during the mandatory rest. */
+export const EXTRA_REST_SECONDS = 20;
 
 type Props = {
   seconds: number;
@@ -13,14 +18,23 @@ type Props = {
   onBackPress: () => void;
 };
 
+function formatClock(totalSeconds: number): string {
+  const safe = Math.max(0, totalSeconds);
+  const mins = Math.floor(safe / 60);
+  const secs = safe % 60;
+  return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+}
+
 export function RestTimerScreen({ seconds, onComplete, onBackPress }: Props) {
   const { t } = useTranslation();
   const [remaining, setRemaining] = useState(seconds);
+  const [extraAdded, setExtraAdded] = useState(false);
   const onCompleteRef = useRef(onComplete);
   onCompleteRef.current = onComplete;
 
   useEffect(() => {
     setRemaining(seconds);
+    setExtraAdded(false);
   }, [seconds]);
 
   useEffect(() => {
@@ -36,12 +50,33 @@ export function RestTimerScreen({ seconds, onComplete, onBackPress }: Props) {
     return () => clearTimeout(timer);
   }, [remaining]);
 
+  const handleAddExtra = () => {
+    if (extraAdded) return;
+    setRemaining((value) => value + EXTRA_REST_SECONDS);
+    setExtraAdded(true);
+  };
+
+  const handleUndoExtra = () => {
+    if (!extraAdded) return;
+    setRemaining((value) => Math.max(0, value - EXTRA_REST_SECONDS));
+    setExtraAdded(false);
+  };
+
+  const handleSkip = () => {
+    onCompleteRef.current();
+  };
+
   return (
     <SafeAreaView style={styles.screen} edges={['top', 'bottom']}>
       <View style={styles.header}>
-        <Pressable onPress={onBackPress} style={styles.backButton} accessibilityRole="button">
+        <PressableScale
+          onPress={onBackPress}
+          style={styles.backButton}
+          accessibilityRole="button"
+          pressedScale={0.9}
+        >
           <Ionicons name="arrow-back" size={24} color={colors.textPrimary} />
-        </Pressable>
+        </PressableScale>
       </View>
 
       <View style={styles.content}>
@@ -50,9 +85,46 @@ export function RestTimerScreen({ seconds, onComplete, onBackPress }: Props) {
           <Text style={styles.subtitle}>{t('sessionFlow.restSubtitle')}</Text>
         </View>
 
-        <Text style={styles.timer}>
-          {remaining} {t('sessionFlow.restSecondsUnit')}
+        <Text style={styles.timer} accessibilityRole="timer">
+          {formatClock(remaining)}
         </Text>
+
+        <View style={styles.actions}>
+          {extraAdded ? (
+            <PressableScale
+              onPress={handleUndoExtra}
+              style={[styles.actionButton, styles.actionSecondary]}
+              accessibilityRole="button"
+              accessibilityLabel={t('sessionFlow.restUndoExtra')}
+            >
+              <Text style={styles.actionSecondaryText} numberOfLines={1}>
+                {t('sessionFlow.restUndoExtra')}
+              </Text>
+            </PressableScale>
+          ) : (
+            <PressableScale
+              onPress={handleAddExtra}
+              style={[styles.actionButton, styles.actionSecondary]}
+              accessibilityRole="button"
+              accessibilityLabel={t('sessionFlow.restAddExtra')}
+            >
+              <Text style={styles.actionSecondaryText} numberOfLines={1}>
+                {t('sessionFlow.restAddExtra')}
+              </Text>
+            </PressableScale>
+          )}
+
+          <PressableScale
+            onPress={handleSkip}
+            style={[styles.actionButton, styles.actionPrimary]}
+            accessibilityRole="button"
+            accessibilityLabel={t('sessionFlow.restSkip')}
+          >
+            <Text style={styles.actionPrimaryText} numberOfLines={1}>
+              {t('sessionFlow.restSkip')}
+            </Text>
+          </PressableScale>
+        </View>
       </View>
     </SafeAreaView>
   );
@@ -80,7 +152,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: 17,
-    gap: 11,
+    gap: 16,
   },
   textBlock: {
     width: '100%',
@@ -108,5 +180,36 @@ const styles = StyleSheet.create({
     color: '#00131F',
     textAlign: 'center',
     ...displayFontStyle(),
+  },
+  actions: {
+    width: '100%',
+    maxWidth: 356,
+    flexDirection: 'row',
+    gap: 12,
+    marginTop: 8,
+  },
+  actionButton: {
+    flex: 1,
+    minHeight: 48,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 10,
+  },
+  actionSecondary: {
+    backgroundColor: colors.tabIconActiveBg,
+    borderWidth: 1,
+    borderColor: colors.buttonPrimary,
+  },
+  actionPrimary: {
+    backgroundColor: colors.buttonPrimary,
+  },
+  actionSecondaryText: {
+    ...uiText(15, 'semiBold'),
+    color: colors.buttonPrimary,
+  },
+  actionPrimaryText: {
+    ...uiText(15, 'semiBold'),
+    color: colors.buttonText,
   },
 });
