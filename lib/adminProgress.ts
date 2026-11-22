@@ -162,8 +162,24 @@ export type AdminDashboardStats = {
   passwordChanged: number;
   paused: number;
   quit: number;
+  /** Patients with no pause/quit and no completed sessions. */
+  idle: number;
+  sessionsLogged: number;
+  avgSessions: number;
+  completionRate: number;
   sessionBuckets: { label: string; count: number }[];
+  cancerBuckets: { slug: string; count: number }[];
+  statusBuckets: { id: 'active' | 'paused' | 'quit' | 'idle'; count: number }[];
 };
+
+export type AdminPatientStatus = 'active' | 'paused' | 'quit' | 'idle';
+
+export function getAdminPatientStatus(patient: AdminPatientProgress): AdminPatientStatus {
+  if (patient.progressPaused) return 'paused';
+  if (patient.quitReason || patient.quitAt) return 'quit';
+  if (patient.sessionsCompleted > 0) return 'active';
+  return 'idle';
+}
 
 function asRecordNumber(value: unknown): Record<string, number> {
   if (!value || typeof value !== 'object' || Array.isArray(value)) return {};
@@ -369,20 +385,52 @@ export function buildAdminDashboardStats(
     { label: '22–28', min: 22, max: 28 },
   ];
 
+  const paused = patients.filter((p) => p.progressPaused).length;
+  const quit = patients.filter(
+    (p) => !p.progressPaused && Boolean(p.quitReason || p.quitAt),
+  ).length;
+  const withProgress = patients.filter((p) => p.sessionsCompleted > 0).length;
+  const active = patients.filter((p) => getAdminPatientStatus(p) === 'active').length;
+  const idle = patients.filter((p) => getAdminPatientStatus(p) === 'idle').length;
+  const sessionsLogged = patients.reduce((sum, p) => sum + p.sessionsCompleted, 0);
+  const completedProgram = patients.filter(
+    (p) => p.sessionsCompleted >= TOTAL_SESSIONS,
+  ).length;
+
+  const cancerMap = new Map<string, number>();
+  for (const patient of patients) {
+    const slug = (patient.cancerType || '').trim().toLowerCase() || 'unknown';
+    cancerMap.set(slug, (cancerMap.get(slug) ?? 0) + 1);
+  }
+
   return {
     total: patients.length,
     onboarded: patients.filter((p) => p.onboardingComplete).length,
-    withProgress: patients.filter((p) => p.sessionsCompleted > 0).length,
+    withProgress,
     neverLoggedIn: patients.filter((p) => !p.lastSignInAt).length,
     passwordChanged: patients.filter((p) => p.passwordChanged).length,
-    paused: patients.filter((p) => p.progressPaused).length,
-    quit: patients.filter((p) => Boolean(p.quitReason || p.quitAt)).length,
+    paused,
+    quit,
+    idle,
+    sessionsLogged,
+    avgSessions: patients.length === 0 ? 0 : Math.round((sessionsLogged / patients.length) * 10) / 10,
+    completionRate:
+      patients.length === 0 ? 0 : Math.round((completedProgram / patients.length) * 100),
     sessionBuckets: buckets.map((b) => ({
       label: b.label,
       count: patients.filter(
         (p) => p.sessionsCompleted >= b.min && p.sessionsCompleted <= b.max,
       ).length,
     })),
+    cancerBuckets: [...cancerMap.entries()]
+      .map(([slug, count]) => ({ slug, count }))
+      .sort((a, b) => b.count - a.count || a.slug.localeCompare(b.slug)),
+    statusBuckets: [
+      { id: 'active', count: active },
+      { id: 'paused', count: paused },
+      { id: 'quit', count: quit },
+      { id: 'idle', count: idle },
+    ],
   };
 }
 

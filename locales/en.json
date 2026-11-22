@@ -732,7 +732,22 @@
     "filterPaused": "Paused",
     "filterQuit": "Quit",
     "filterEmpty": "No patients in this group.",
-    "noFeedback": "No feedback yet"
+    "noFeedback": "No feedback yet",
+    "statusIdle": "Idle",
+    "statusBreakdownTitle": "Patient status",
+    "cancerBreakdownTitle": "Cancer types",
+    "completionRate": "Program done",
+    "avgSessions": "Avg {{count}} sessions",
+    "viewCards": "Cards",
+    "viewTable": "Table",
+    "viewToggleLabel": "Patient view",
+    "tablePatient": "Patient",
+    "tableStatus": "Status",
+    "tableProgress": "Progress",
+    "tableLevel": "Level",
+    "tableCancer": "Cancer",
+    "tableLastSignIn": "Last in",
+    "insightsTitle": "Insights"
   },
   "coach": {
     "avatarTitle": "Choose your avatar",
