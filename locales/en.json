@@ -793,41 +793,33 @@
     "dos": "Do's",
     "donts": "Don'ts",
     "general": {
-      "timingMeal": {
-        "title": "Timing & meal",
-        "body": "Exercise at a comfortable time; avoid right after a heavy meal."
-      },
-      "clothing": {
-        "title": "Clothing",
-        "body": "Wear comfortable, loose clothing and safe footwear."
+      "timingClothing": {
+        "title": "Exercise timing & clothing",
+        "body": "Choose a comfortable time (avoid after a heavy meal). Wear loose, comfortable clothing and safe footwear."
       },
       "fever": {
-        "title": "Fever alert",
+        "title": "Fever or infection",
         "body": "Do not exercise if you have fever (≥ 38°C) or an active infection."
       },
       "breathlessness": {
         "title": "Breathlessness",
-        "body": "Mild breathlessness is expected; stop if it is severe, sudden or worsening."
+        "body": "Mild breathlessness may occur. Stop if it is severe, sudden or unusual."
       },
       "pain": {
         "title": "Pain",
-        "body": "Stop the exercise if you feel unbearable or new pain."
+        "body": "Stop the exercise if you feel unbearable, sharp or new pain."
       },
       "dizziness": {
         "title": "Dizziness",
         "body": "Stop and rest if you feel dizzy or unsteady."
       },
-      "hydration": {
-        "title": "Hydration",
-        "body": "Keep yourself well hydrated (unless fluid is restricted)."
+      "heartChest": {
+        "title": "Heart rate & chest pain",
+        "body": "Follow the heart-rate range advised by your team. Stop and seek immediate medical help for chest pain."
       },
-      "heartRate": {
-        "title": "Heart rate",
-        "body": "Keep your heart rate within the target range advised by your team."
-      },
-      "chestPain": {
-        "title": "Chest pain",
-        "body": "Stop the exercise and seek immediate medical help."
+      "informTeam": {
+        "title": "Inform your healthcare team",
+        "body": "Tell your healthcare team about any new, worsening or unusual symptoms (e.g., breathlessness, pain, dizziness or swelling)."
       }
     },
     "items": {
@@ -857,6 +849,7 @@
       "hnNoOverhead": "If you have undergone neck surgery, avoid lifting heavy objects over your head until your doctor says it is safe",
       "hnNoSun": "Avoid direct sunlight on skin treated with radiation",
       "hnNoScratch": "Avoid rubbing or scratching skin treated with radiation"
-    }
+    },
+    "generalSubtitle": "Common safety instructions for all exercises"
   }
 }

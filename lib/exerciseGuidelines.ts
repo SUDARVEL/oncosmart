@@ -13,12 +13,8 @@ function shared(source: ImageSource): GenderedImage {
 /** Key points shown on the General Instructions screen, in display order. */
 export const GENERAL_INSTRUCTIONS: readonly { key: string; image: GenderedImage }[] = [
   {
-    key: 'timingMeal',
-    image: shared(require('../assets/guidelines/shared/g-timing-meal.jpg')),
-  },
-  {
-    key: 'clothing',
-    image: shared(require('../assets/guidelines/shared/g-clothing.jpg')),
+    key: 'timingClothing',
+    image: shared(require('../assets/guidelines/shared/g-timing-clothing.jpg')),
   },
   {
     key: 'fever',
@@ -46,21 +42,14 @@ export const GENERAL_INSTRUCTIONS: readonly { key: string; image: GenderedImage 
     },
   },
   {
-    key: 'hydration',
-    image: {
-      female: require('../assets/guidelines/female/g-hydration.jpg'),
-      male: require('../assets/guidelines/male/g-hydration.jpg'),
-    },
+    key: 'heartChest',
+    image: shared(require('../assets/guidelines/shared/g-heart-chest.jpg')),
   },
   {
-    key: 'heartRate',
-    image: shared(require('../assets/guidelines/shared/g-heart-rate.jpg')),
-  },
-  {
-    key: 'chestPain',
+    key: 'informTeam',
     image: {
-      female: require('../assets/guidelines/female/g-chest-pain.jpg'),
-      male: require('../assets/guidelines/male/g-chest-pain.jpg'),
+      female: require('../assets/guidelines/female/g-inform-team.jpg'),
+      male: require('../assets/guidelines/male/g-inform-team.jpg'),
     },
   },
 ];

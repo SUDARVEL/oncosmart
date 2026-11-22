@@ -36,6 +36,7 @@ export default function GeneralInstructionsScreen() {
     <SafeAreaView style={styles.screen} edges={['top', 'bottom']}>
       <ScreenHeader title={t('guidelines.generalTitle')} showBack onBack={handleBack} />
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+        <Text style={styles.subtitle}>{t('guidelines.generalSubtitle')}</Text>
         {GENERAL_INSTRUCTIONS.map((item) => (
           <View key={item.key} style={styles.row}>
             <Image
@@ -62,9 +63,14 @@ const styles = StyleSheet.create({
   },
   content: {
     paddingHorizontal: 16,
-    paddingTop: 12,
+    paddingTop: 8,
     paddingBottom: 32,
     gap: 10,
+  },
+  subtitle: {
+    ...uiText(13, 'regular'),
+    color: colors.textMuted,
+    marginBottom: 2,
   },
   row: {
     flexDirection: 'row',
