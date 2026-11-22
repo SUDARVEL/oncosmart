@@ -63,6 +63,10 @@
     "cancerTypeAbdomen": "Abdomen Cancer",
     "cancerTypeHeadNeck": "Head & Neck Cancer",
     "cancerPathwayRequired": "Please go back and select a cancer pathway first.",
+    "breastSideLabel": "Which breast is affected?",
+    "breastLeft": "Left",
+    "breastRight": "Right",
+    "breastBoth": "Both",
     "treatmentLabel": "Ongoing Treatment",
     "chemotherapy": "Chemotherapy",
     "radiation": "Radiation Therapy",
@@ -107,6 +111,7 @@
     "quote1": "Strength today freedom always",
     "quote2": "Don't pause your life. Press play on your rehab",
     "quote3": "Exercise to win your tomorrow.",
+    "quote4": "A little exercise, better health!",
     "sessionTitle": "Today's Exercise",
     "sessionSubtitle": "Start Your Exercise",
     "dayLabel": "DAY {{day}}",
@@ -212,6 +217,8 @@
     "restTitle": "REST",
     "restSubtitle": "Take a short break before the next exercise.",
     "restSecondsUnit": "sec",
+    "restAddExtra": "+20s",
+    "restSkip": "Skip",
     "whyDidYouStop": "Why did you stop?",
     "stopSubtitle": "This helps us provide exercises that suit you better.",
     "stopReasonTired": "I feel tired",
@@ -679,6 +686,7 @@
     "cancerSectionTitle": "Cancer & treatment",
     "treatmentUndergoing": "Ongoing treatment",
     "underwentSurgery": "Surgery",
+    "breastSide": "Affected breast",
     "startBpm": "Start {{bpm}} bpm",
     "endBpm": "End {{bpm}} bpm",
     "bpmTableTitle": "Exercise sessions & heart rate",
@@ -776,5 +784,74 @@
     "settingsTabBody": "Open Settings to update your profile, language, password, and get help.",
     "settingsMenuTitle": "Manage Your Profile",
     "settingsMenuBody": "View and update your personal information here."
+  },
+  "guidelines": {
+    "title": "Exercise Safety & Guidelines",
+    "settingsDescription": "General instructions and do's & don'ts",
+    "generalTitle": "General Instructions",
+    "generalDescription": "Key points for every session",
+    "dosDontsTitle": "{{cancer}} Do's & Don'ts",
+    "dosDontsDescription": "What to do and what to avoid",
+    "dos": "Do's",
+    "donts": "Don'ts",
+    "general": {
+      "timingClothing": {
+        "title": "Exercise timing & clothing",
+        "body": "Choose a comfortable time (avoid after a heavy meal). Wear loose, comfortable clothing and safe footwear."
+      },
+      "fever": {
+        "title": "Fever or infection",
+        "body": "Do not exercise if you have fever (≥ 38°C) or an active infection."
+      },
+      "breathlessness": {
+        "title": "Breathlessness",
+        "body": "Mild breathlessness may occur. Stop if it is severe, sudden or unusual."
+      },
+      "pain": {
+        "title": "Pain",
+        "body": "Stop the exercise if you feel unbearable, sharp or new pain."
+      },
+      "dizziness": {
+        "title": "Dizziness",
+        "body": "Stop and rest if you feel dizzy or unsteady."
+      },
+      "heartChest": {
+        "title": "Heart rate & chest pain",
+        "body": "Follow the heart-rate range advised by your team. Stop and seek immediate medical help for chest pain."
+      },
+      "informTeam": {
+        "title": "Inform your healthcare team",
+        "body": "Tell your healthcare team about any new, worsening or unusual symptoms (e.g., breathlessness, pain, dizziness or swelling)."
+      }
+    },
+    "items": {
+      "followPlan": "Follow your prescribed exercise plan",
+      "dontOverdo": "Don’t overdo your prescribed exercise plan",
+      "breastCheckArm": "Check your arm every day for swelling or heaviness",
+      "breastSleeve": "Wear your compression sleeve if your doctor has advised",
+      "breastTellDoctor": "Tell your doctor immediately if you notice new swelling or pain in your arm",
+      "breastNoHeavy": "If you have undergone surgery, avoid lifting heavy objects until your doctor says it is safe",
+      "breastNoInjection": "Avoid injections on the side of your surgery",
+      "breastNoHeatIce": "Avoid applying direct heat or ice on the surgery area",
+      "thoraxTellPain": "Tell your doctor if you have new pain in your chest, ribs or back",
+      "thoraxCoughSheet": "If you have undergone surgery, hold a folded sheet firmly against your wound when you cough",
+      "thoraxWound": "Tell your doctor if your wound becomes red, swollen or leaks fluid",
+      "thoraxCoughBlood": "Tell your doctor immediately if you cough up blood",
+      "thoraxNoPush": "If you have undergone surgery, avoid lifting, pushing or pulling heavy objects until your doctor says it is safe",
+      "thoraxNoSmoke": "Avoid smoke, dust and polluted air",
+      "abdomenStoma": "If you have a stoma, empty the bag before you exercise",
+      "abdomenCoughSheet": "If you have undergone surgery, support your wound with a folded sheet when you cough",
+      "abdomenBulge": "Tell your doctor if you notice a new bulge near your wound or stoma",
+      "abdomenNoBreathHold": "Avoid holding your breath or pushing hard while exercising",
+      "abdomenNoLift": "Avoid lifting heavy objects and exercise machines that press on your belly",
+      "abdomenNoContact": "If you have a stoma, avoid contact sports and weight training",
+      "hnSwelling": "Tell your doctor if you have new swelling on your face or neck",
+      "hnSwallow": "Tell your doctor if swallowing or opening your mouth becomes difficult",
+      "hnLooseClothes": "Wear soft, loose clothes over skin treated with radiation",
+      "hnNoOverhead": "If you have undergone neck surgery, avoid lifting heavy objects over your head until your doctor says it is safe",
+      "hnNoSun": "Avoid direct sunlight on skin treated with radiation",
+      "hnNoScratch": "Avoid rubbing or scratching skin treated with radiation"
+    },
+    "generalSubtitle": "Common safety instructions for all exercises"
   }
 }

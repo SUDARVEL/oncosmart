@@ -16,7 +16,7 @@ import { PrimaryButton } from '../../components/PrimaryButton';
 import { ScreenHeader } from '../../components/ScreenHeader';
 import { normalizeCancerTypeSlug } from '../../lib/cancerPathway';
 import { isOnboardingReview, onboardingReviewHref } from '../../lib/onboardingReview';
-import { TreatmentType, useAppStore } from '../../store/useAppStore';
+import { BreastSide, TreatmentType, useAppStore } from '../../store/useAppStore';
 import { colors } from '../../theme/colors';
 import { uiText } from '../../theme/typography';
 
@@ -24,6 +24,12 @@ import { uiText } from '../../theme/typography';
 const TREATMENT_ROW_PRIMARY: { id: TreatmentType; labelKey: string }[] = [
   { id: 'chemotherapy', labelKey: 'treatment.chemotherapy' },
   { id: 'radiation', labelKey: 'treatment.radiation' },
+];
+
+const BREAST_SIDE_OPTIONS: { id: BreastSide; labelKey: string }[] = [
+  { id: 'left', labelKey: 'treatment.breastLeft' },
+  { id: 'right', labelKey: 'treatment.breastRight' },
+  { id: 'both', labelKey: 'treatment.breastBoth' },
 ];
 
 const TREATMENT_ROW_SECONDARY: { id: TreatmentType; labelKey: string }[] = [
@@ -69,23 +75,32 @@ export default function TreatmentScreen() {
   const savedTreatment = useAppStore((state) => state.treatmentUndergoing);
   const savedSurgery = useAppStore((state) => state.underwentSurgery);
   const savedAnaemia = useAppStore((state) => state.anaemiaDiagnosed);
+  const savedBreastSide = useAppStore((state) => state.breastSide);
   const setTreatmentUndergoing = useAppStore((state) => state.setTreatmentUndergoing);
   const setUnderwentSurgery = useAppStore((state) => state.setUnderwentSurgery);
   const setAnaemiaDiagnosed = useAppStore((state) => state.setAnaemiaDiagnosed);
+  const setBreastSide = useAppStore((state) => state.setBreastSide);
 
   const [treatment, setTreatmentLocal] = useState<TreatmentType | null>(savedTreatment);
   const [surgery, setSurgeryLocal] = useState<boolean | null>(savedSurgery);
   const [anaemia, setAnaemia] = useState<boolean | null>(savedAnaemia);
+  const [breastSideLocal, setBreastSideLocal] = useState<BreastSide | null>(savedBreastSide);
 
   const hasCancerPathway = normalizeCancerTypeSlug(cancerType) != null;
+  const isBreast = normalizeCancerTypeSlug(cancerType) === 'breast';
   const canContinue =
-    hasCancerPathway && treatment != null && surgery != null && anaemia != null;
+    hasCancerPathway &&
+    treatment != null &&
+    surgery != null &&
+    anaemia != null &&
+    (!isBreast || breastSideLocal != null);
 
   const handleContinue = () => {
     if (!canContinue || treatment == null || surgery == null || anaemia == null) return;
     setTreatmentUndergoing(treatment);
     setUnderwentSurgery(surgery);
     setAnaemiaDiagnosed(anaemia);
+    setBreastSide(isBreast ? breastSideLocal : null);
     router.push(review ? onboardingReviewHref('/onboarding/avatar') : '/onboarding/avatar');
   };
 
@@ -107,6 +122,22 @@ export default function TreatmentScreen() {
           <View style={styles.form}>
             {!hasCancerPathway ? (
               <Text style={styles.warning}>{t('treatment.cancerPathwayRequired')}</Text>
+            ) : null}
+
+            {isBreast ? (
+              <View style={styles.section}>
+                <Text style={styles.heading}>{t('treatment.breastSideLabel')}</Text>
+                <View style={styles.chipRow}>
+                  {BREAST_SIDE_OPTIONS.map((option) => (
+                    <ChoiceChip
+                      key={option.id}
+                      label={t(option.labelKey)}
+                      selected={breastSideLocal === option.id}
+                      onPress={() => setBreastSideLocal(option.id)}
+                    />
+                  ))}
+                </View>
+              </View>
             ) : null}
 
             <View style={styles.section}>

@@ -8,6 +8,11 @@ import { getWorkoutSliderPhotoUrl } from "./workoutSliderPhotoUrls";
 import { getWorkoutLocalPhoto } from "./workoutLocalPhotos";
 import { resolveSessionLandscapePhotoSource } from "./sessionLandscapePhotos";
 import { getPhase2PlaceholderUrl, exerciseSlugFromId } from "./phase2PlaceholderMedia";
+import { getNewExercisePlaceholderSource } from "./newExerciseLibraryMedia";
+import {
+  getNewExerciseStill,
+  newExerciseStillReplacesOlder,
+} from "./newExerciseStills";
 import { resolveWorkoutMediaGender } from "./workoutGrowthPlaceholders";
 import workoutPhotos from "../data/workout-photos.json";
 
@@ -60,8 +65,15 @@ export function resolveWorkoutPhotoSource(
   gender: AppGender | null,
   avatar: AppAvatar | null = null,
 ): ImageSource | null {
+  const libraryStill = getNewExercisePlaceholderSource(exerciseId, gender, avatar);
+  if (libraryStill) return libraryStill;
+
+  const freshStill = getNewExerciseStill(exerciseId, gender, avatar);
+  if (freshStill && newExerciseStillReplacesOlder(exerciseId)) return freshStill;
+
   const phase2Url = getPhase2PlaceholderUrl(exerciseId, gender, avatar);
   if (phase2Url) return { uri: phase2Url };
+  if (freshStill) return freshStill;
 
   const neckFlexion = getNeckFlexionStill(exerciseId, gender, avatar);
   if (neckFlexion) return neckFlexion;
@@ -80,8 +92,15 @@ export function resolveWorkoutSliderPhotoSource(
   gender: AppGender | null,
   avatar: AppAvatar | null = null,
 ): ImageSource | null {
+  const libraryStill = getNewExercisePlaceholderSource(exerciseId, gender, avatar);
+  if (libraryStill) return libraryStill;
+
+  const freshStill = getNewExerciseStill(exerciseId, gender, avatar);
+  if (freshStill && newExerciseStillReplacesOlder(exerciseId)) return freshStill;
+
   const phase2Url = getPhase2PlaceholderUrl(exerciseId, gender, avatar);
   if (phase2Url) return { uri: phase2Url };
+  if (freshStill) return freshStill;
 
   const neckFlexion = getNeckFlexionStill(exerciseId, gender, avatar);
   if (neckFlexion) return neckFlexion;

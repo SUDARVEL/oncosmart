@@ -8,10 +8,7 @@ import {
   getClinicalExerciseTitle,
 } from "../../lib/clinicalExerciseDescriptions";
 import type { LevelWorkout } from "../../lib/getLevelWorkouts";
-import {
-  getPhase2CircleContentPosition,
-  isPhase2PlaceholderUri,
-} from "../../lib/phase2PlaceholderMedia";
+import { getPhase2CircleContentPosition } from "../../lib/phase2PlaceholderMedia";
 import { getWorkoutGrowthPlaceholderFit } from "../../lib/workoutGrowthPlaceholders";
 import { colors } from "../../theme/colors";
 import { font } from "../../theme/fonts";
@@ -61,9 +58,7 @@ export function WorkoutRowCard({
         : null,
     [isSvg, workout.id, workout.mediaGender],
   );
-  const circlePosition = isPhase2PlaceholderUri(remoteUri)
-    ? getPhase2CircleContentPosition(workout.id)
-    : "center";
+  const circlePosition = getPhase2CircleContentPosition(workout.id);
   const handleImageError = useCallback(() => setImageFailed(true), []);
 
   useEffect(() => {

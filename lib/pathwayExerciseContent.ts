@@ -20,9 +20,12 @@ const SLUG_RULES: SlugRule[] = [
   { pattern: /\bdbe\b|diaphragmatic|breathing exercise/i, slug: 'diaphragmatic-breathing' },
   { pattern: /ankle pump/i, slug: 'ankle-pumps' },
   { pattern: /\btee\b|thoracic expansion/i, slug: 'thoracic-expansion' },
+  { pattern: /incentive spirom/i, slug: 'incentive-spirometer' },
   { pattern: /arm circle/i, slug: 'arm-circles' },
   { pattern: /arm rotation/i, slug: 'arm-rotation' },
+  { pattern: /^er\b|external rotation/i, slug: 'shoulder-external-rotation' },
   { pattern: /spot march/i, slug: 'spot-marching' },
+  { pattern: /shoulder retraction|\bretraction\b/i, slug: 'shoulder-retraction' },
   { pattern: /shoulder shrug/i, slug: 'shoulder-shrugging' },
   { pattern: /biceps curl/i, slug: 'biceps-curls' },
   { pattern: /wall push/i, slug: 'wall-pushup' },
@@ -32,11 +35,17 @@ const SLUG_RULES: SlugRule[] = [
   { pattern: /calf stretch/i, slug: 'calf-stretch' },
   { pattern: /hamstring curl/i, slug: 'standing-hamstring-curls' },
   { pattern: /hamstring/i, slug: 'hamstring-stretch' },
+  { pattern: /heel slide/i, slug: 'heel-slides' },
+  { pattern: /unilateral/i, slug: 'unilateral-bridge' },
+  { pattern: /pelvic bridge/i, slug: 'pelvic-bridge' },
   { pattern: /knee extension|seated knee/i, slug: 'seated-knee-extension' },
   { pattern: /\bslr\b|straight leg/i, slug: 'straight-leg-raise' },
   { pattern: /quadriceps stretch/i, slug: 'quadriceps-stretch' },
   { pattern: /triceps stretch/i, slug: 'triceps-stretch' },
   { pattern: /chest stretch|pectoralis/i, slug: 'chest-stretch' },
+  { pattern: /neck nod/i, slug: 'neck-nodding' },
+  { pattern: /neck side[\s-]*flexion/i, slug: 'neck-side-flexion' },
+  { pattern: /neck rotation/i, slug: 'neck-rotation' },
   {
     pattern: /neck flexion|flexion\s*(and|&|ad)?\s*extension/i,
     slug: 'neck-flexion-extension',
@@ -50,10 +59,13 @@ const TITLES: Record<string, string> = {
   'diaphragmatic-breathing': 'Diaphragmatic Breathing',
   'ankle-pumps': 'Ankle Pumps',
   'thoracic-expansion': 'Thoracic Expansion Exercise',
+  'incentive-spirometer': 'Incentive Spirometer',
   'arm-circles': 'Arm Circles',
   'arm-rotation': 'Arm Rotation',
   'spot-marching': 'Spot Marching',
   'shoulder-shrugging': 'Shoulder Shrugging',
+  'shoulder-retraction': 'Shoulder Retraction',
+  'shoulder-external-rotation': 'Shoulder External Rotation',
   'biceps-curls': 'Biceps Curls',
   'wall-pushup': 'Wall Push-up',
   'wall-slides': 'Wall Slides',
@@ -64,10 +76,16 @@ const TITLES: Record<string, string> = {
   'hamstring-stretch': 'Hamstring Stretch',
   'seated-knee-extension': 'Knee Extension',
   'straight-leg-raise': 'Straight Leg Raise',
+  'heel-slides': 'Heel Slides',
+  'pelvic-bridge': 'Pelvic Bridge',
+  'unilateral-bridge': 'Unilateral Bridge',
   'quadriceps-stretch': 'Quadriceps Stretch',
   'triceps-stretch': 'Triceps Stretch',
   'chest-stretch': 'Pectoralis Stretch',
+  'neck-nodding': 'Neck Nodding',
   'neck-flexion-extension': 'Neck Flexion and Extension',
+  'neck-side-flexion': 'Neck Side Flexion',
+  'neck-rotation': 'Neck Rotation',
   'jaw-opening-closing': 'Mouth Opening and Closing',
   'jaw-side-to-side': 'Jaw Side-to-Side',
   'neck-stretch': 'Neck Stretch',
@@ -80,6 +98,8 @@ const DESCRIPTIONS: Record<string, string> = {
     'Improves blood circulation and reduces stiffness in the legs. Pump your ankles up and down in a steady rhythm.',
   'thoracic-expansion':
     'Improves chest expansion and ventilation. Place your hands on the sides of your chest and breathe deeply.',
+  'incentive-spirometer':
+    'Helps improve lung expansion and encourages deep breathing. Sit upright, place the mouthpiece between your lips, and slowly breathe in through it to raise the balls inside the spirometer.',
   'arm-circles':
     'Improves shoulder mobility and circulation. Make slow, controlled circles with your arms.',
   'arm-rotation': 'Gently mobilises the shoulders and upper back. Move within a comfortable range.',
@@ -87,6 +107,10 @@ const DESCRIPTIONS: Record<string, string> = {
     'Light marching in place to warm up and improve circulation. Keep a steady, comfortable pace.',
   'shoulder-shrugging':
     'Releases tension in the neck and shoulders. Lift both shoulders toward your ears, then relax.',
+  'shoulder-retraction':
+    'Strengthens the upper back muscles and improves shoulder posture. Stand straight with your elbows bent and close to your body, then gently pull your shoulders backwards and squeeze your upper back.',
+  'shoulder-external-rotation':
+    'Strengthens the shoulder muscles and improves shoulder movement. Stand straight with your elbows bent and tucked close to your body, then slowly move your forearms outwards within your comfortable range.',
   'biceps-curls':
     'Maintains arm strength with a controlled curling motion. Keep your elbows close to your body.',
   'wall-pushup':
@@ -102,19 +126,31 @@ const DESCRIPTIONS: Record<string, string> = {
   'standing-hamstring-curls':
     'Activates hamstrings while standing with support. Bend the knee and bring the heel toward your seat.',
   'hamstring-stretch':
-    'Stretches the back of the thigh. Keep the stretch gentle and breathe steadily.',
+    'Improves flexibility of the muscles at the back of the thigh. Lie on your back and place the heel of your leg on a chair of comfortable height, keeping your knee straight, then gently pull your toes towards you until you feel a stretch.',
   'seated-knee-extension':
     'Strengthens the front of the thigh while seated. Straighten the knee, pause, then lower slowly.',
   'straight-leg-raise':
     'Strengthens hip flexors and core stability. Keep the leg straight and lift only as high as comfortable.',
+  'heel-slides':
+    'Improves knee movement and helps maintain leg mobility. Lie on your back with your legs straight, then slowly slide your heel towards your buttock by bending your knee and return to the starting position.',
+  'pelvic-bridge':
+    'Strengthens the buttock muscles and improves hip stability. Lie on your back with your knees bent and feet flat on the floor, then slowly lift your hips upwards and lower them back down.',
+  'unilateral-bridge':
+    'Strengthens the buttock muscles and improves pelvic stability. Lie on your back with your left knee bent and left foot flat on the floor, then lift your right leg and slowly raise and lower your hips while keeping the right leg lifted.',
   'quadriceps-stretch':
     'Stretches the front of the thigh. Hold a gentle stretch and avoid arching your back.',
   'triceps-stretch':
     'Stretches the back of the upper arm. Reach gently and keep breathing — do not force the stretch.',
   'chest-stretch':
     'Opens the chest and improves posture. Open the arms gently and keep shoulders relaxed.',
+  'neck-nodding':
+    'Improves neck mobility and helps reduce stiffness. Gently nod your head downwards, bringing your chin towards your chest, then return to the starting position.',
   'neck-flexion-extension':
-    'Gently moves the neck through flexion and extension. Move slowly and stay within comfort.',
+    'Improves neck mobility and helps reduce stiffness. Slowly bend your head forward, bringing your chin towards your chest, then return to the starting position and gently tilt your head backwards within your comfortable range.',
+  'neck-side-flexion':
+    'Improves neck mobility and flexibility. Slowly tilt your head towards your right and left shoulders, staying within your comfortable range.',
+  'neck-rotation':
+    'Improves neck mobility and helps maintain comfortable head movement. Slowly turn your head towards the right and left, staying within your comfortable range.',
   'jaw-opening-closing':
     'Mobilises the jaw for comfort and range of motion. Open and close slowly without forcing.',
   'jaw-side-to-side':

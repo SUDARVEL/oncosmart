@@ -244,6 +244,12 @@ export default function SettingsScreen() {
             showChevron
             onPress={() => setOximeterTipsOpen(true)}
           />
+          <SettingsRow
+            title={t('guidelines.title')}
+            description={t('guidelines.settingsDescription')}
+            showChevron
+            onPress={() => router.push('/settings/guidelines')}
+          />
           {isAdmin ? (
             <>
               <SettingsRow

@@ -28,7 +28,7 @@ import {
   summarizeSessionFeedback,
   type AdminPatientProgress,
 } from '../lib/adminProgress';
-import { formatCancerTypeForDisplay } from '../lib/cancerPathway';
+import { formatCancerTypeForDisplay, normalizeCancerTypeSlug } from '../lib/cancerPathway';
 import { signOut } from '../lib/auth';
 import { useAppStore } from '../store/useAppStore';
 import { colors } from '../theme/colors';
@@ -436,6 +436,20 @@ function PatientCard({
             {t('admin.cancerType')}:{' '}
             {formatCancerTypeForDisplay(patient.cancerType, t)}
           </Text>
+          {normalizeCancerTypeSlug(patient.cancerType) === 'breast' ? (
+            <Text style={styles.detailLine}>
+              {t('admin.breastSide')}:{' '}
+              {patient.breastSide
+                ? t(
+                    patient.breastSide === 'left'
+                      ? 'treatment.breastLeft'
+                      : patient.breastSide === 'right'
+                        ? 'treatment.breastRight'
+                        : 'treatment.breastBoth',
+                  )
+                : t('admin.pauseReasonNone')}
+            </Text>
+          ) : null}
           <Text style={styles.detailLine}>
             {t('admin.treatmentUndergoing')}:{' '}
             {formatTreatmentType(patient.treatmentUndergoing, t)}

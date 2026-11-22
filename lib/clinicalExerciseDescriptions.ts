@@ -69,8 +69,8 @@ export const CLINICAL_EXERCISE_DESCRIPTIONS: Record<string, ClinicalExerciseDesc
     ta: "இரத்த ஓட்டத்தையும் சக்தியையும் மேம்படுத்தும். நேராக நின்று மாறி மாறி முழங்கால்களை உயர்த்தி இடத்தில் நடைபோடவும்.",
   },
   "neck-flexion-extension": {
-    en: "Helps improve neck mobility and flexibility. Slowly move your chin toward your chest and return to the starting position. Then gently tilt your head backward to a comfortable range and return to the starting position.",
-    ta: "கழுத்தின் இயக்கம் மற்றும் நெகிழ்வுத்தன்மையை மேம்படுத்த உதவும். மெதுவாக உங்கள் தாடையை மார்பை நோக்கி கீழே கொண்டு வந்து, ஆரம்ப நிலைக்கு திரும்பவும். அடுத்து, தலையை மெதுவாக பின்னால் சாய்த்து, வசதியான அளவு வரை கொண்டு சென்று, ஆரம்ப நிலைக்கு திரும்பவும்.",
+    en: "Improves neck mobility and helps reduce stiffness. Slowly bend your head forward, bringing your chin towards your chest, then return to the starting position and gently tilt your head backwards within your comfortable range.",
+    ta: "கழுத்தின் இயக்கத்தை மேம்படுத்தி, இறுக்கத்தைக் குறைக்க உதவும். தலையை மெதுவாகக் கீழே சாய்த்து, தாடையை மார்பை நோக்கிக் கொண்டு வந்து, மீண்டும் ஆரம்ப நிலைக்குத் திரும்பி, பின்னர் வசதியான அளவு வரை தலையைப் பின்னால் சாய்க்கவும்.",
   },
   "jaw-opening-closing": {
     en: "Helps improve jaw and mouth mobility. Stand upright and slowly open your mouth as wide as comfortable. Then gently close your mouth and return to the starting position.",
@@ -105,8 +105,8 @@ export const CLINICAL_EXERCISE_DESCRIPTIONS: Record<string, ClinicalExerciseDesc
     ta: "தொடையின் பின்புறத் தசைகளை வலுப்படுத்தி, முழங்கால் இயக்கத்தை மேம்படுத்துகிறது. நிமிர்ந்து நின்று, ஆதரவாக நாற்காலியை பிடிக்கவும். இடது முழங்காலை வசதியான அளவு வரை மெதுவாக மடக்கி, காலை பின்புறமாக உயர்த்தவும். பின்னர் மெதுவாக காலை ஆரம்ப நிலைக்கு கொண்டு வரவும்.",
   },
   "hamstring-stretch": {
-    en: "Improves flexibility of the back of the thigh. Sit on the bed with your legs straight. Slowly lean forward and reach toward your toes. Feel a gentle stretch behind your thighs.",
-    ta: "தொடையின் பின்புறத் தசைகளை நீட்ட உதவும். படுக்கையில் கால்களை நேராக வைத்து அமரவும். மெதுவாக முன்னால் சாய்ந்து, கால்விரல்களைத் தொட முயற்சிக்கவும். தொடையின் பின்புறத்தில் மெதுவாக இழுக்கும் உணர்வு இருக்கும்.",
+    en: "Improves flexibility of the muscles at the back of the thigh. Lie on your back and place the heel of your leg on a chair of comfortable height, keeping your knee straight, then gently pull your toes towards you until you feel a stretch.",
+    ta: "தொடையின் பின்புறத் தசைகளின் நெகிழ்வுத்தன்மையை மேம்படுத்த உதவும். முதுகில் படுத்து, காலை நேராக வைத்தபடி அதன் குதிகாலை வசதியான உயரத்தில் உள்ள நாற்காலியின் மீது வைத்து, கால் விரல்களை மெதுவாக உங்களை நோக்கி இழுக்கவும்.",
   },
   "quadriceps-stretch-right": {
     en: "Improves flexibility of the front thigh muscles. Stand upright and hold the chair for support. Bend your right knee as far as comfortable and gently pull your foot toward your buttock to stretch the front of your thigh.",
@@ -172,7 +172,56 @@ export const CLINICAL_EXERCISE_DESCRIPTIONS: Record<string, ClinicalExerciseDesc
     en: "Helps improve neck movement. Stand upright with your shoulders relaxed. Slowly tilt your head towards your right shoulder. Gently apply pressure with your right hand. You should feel a stretch along the left side of your neck.",
     ta: "கழுத்தின் இயக்கத்தை மேம்படுத்த உதவும். நிமிர்ந்து நின்று, தோள்களை தளர்வாக வைத்திருக்கவும். மெதுவாக தலையை வலது தோள்பக்கம் சாய்க்கவும். வலது கையால் மெதுவாக அழுத்தம் கொடுக்கவும். கழுத்தின் இடது பக்கத்தில் இழுக்கும் உணர்வு இருக்கும்.",
   },
+  "incentive-spirometer": {
+    en: "Helps improve lung expansion and encourages deep breathing. Sit upright, place the mouthpiece between your lips, and slowly breathe in through it to raise the balls inside the spirometer.",
+    ta: "நுரையீரல் விரிவை மேம்படுத்தி, ஆழமாகச் சுவாசிக்க உதவும். நேராக அமர்ந்து, வாயில் வைக்கும் பகுதியை உதடுகளால் மூடி, அதன் வழியாக மெதுவாக மூச்சை உள்ளே இழுத்து, ஸ்பைரோமீட்டருக்குள் உள்ள பந்துகளை உயர்த்தவும்.",
+  },
+  "shoulder-retraction": {
+    en: "Strengthens the upper back muscles and improves shoulder posture. Stand straight with your elbows bent and close to your body, then gently pull your shoulders backwards and squeeze your upper back.",
+    ta: "மேல் முதுகுத் தசைகளை வலுப்படுத்தி, தோள்களின் நிலையை மேம்படுத்த உதவும். நேராக நின்று, முழங்கைகளை மடக்கி உடலுக்கு அருகில் வைத்து, இரண்டு தோள்களையும் மெதுவாகப் பின்னால் இழுத்து, மேல் முதுகுப் பகுதியை இறுக்கவும்.",
+  },
+  "shoulder-external-rotation": {
+    en: "Strengthens the shoulder muscles and improves shoulder movement. Stand straight with your elbows bent and tucked close to your body, then slowly move your forearms outwards within your comfortable range.",
+    ta: "தோள்பட்டை தசைகளை வலுப்படுத்தி, தோளின் இயக்கத்தை மேம்படுத்த உதவும். நேராக நின்று, முழங்கைகளை மடக்கி உடலுக்கு அருகில் வைத்து, முன்கைகளை மெதுவாக வெளிப்புறமாக உங்களுக்கு வசதியான அளவு வரை நகர்த்தவும்.",
+  },
+  "heel-slides": {
+    en: "Improves knee movement and helps maintain leg mobility. Lie on your back with your legs straight, then slowly slide your heel towards your buttock by bending your knee and return to the starting position.",
+    ta: "முழங்கால் இயக்கத்தை மேம்படுத்தி, கால்களின் இயக்கத்தைப் பராமரிக்க உதவும். முதுகில் படுத்து, காலை மெதுவாக மடக்கி குதிகாலை புட்டிப் பகுதியை நோக்கி நகர்த்தி, மீண்டும் ஆரம்ப நிலைக்குக் கொண்டு வரவும்.",
+  },
+  "pelvic-bridge": {
+    en: "Strengthens the buttock muscles and improves hip stability. Lie on your back with your knees bent and feet flat on the floor, then slowly lift your hips upwards and lower them back down.",
+    ta: "இடுப்புப் பகுதி தசைகளை வலுப்படுத்தி, இடுப்பின் உறுதித்தன்மையை மேம்படுத்த உதவும். முதுகில் படுத்து, முழங்கால்களை மடக்கி பாதங்களைத் தரையில் வைத்து, இடுப்பை மெதுவாக மேலே உயர்த்தி மீண்டும் கீழே இறக்கவும்.",
+  },
+  "unilateral-bridge": {
+    en: "Strengthens the buttock muscles and improves pelvic stability. Lie on your back with your left knee bent and left foot flat on the floor, then lift your right leg and slowly raise and lower your hips while keeping the right leg lifted.",
+    ta: "இடுப்புப் பகுதி தசைகளை வலுப்படுத்தி, இடுப்பின் உறுதித்தன்மையை மேம்படுத்த உதவும். முதுகில் படுத்து, இடது முழங்காலை மடக்கி பாதத்தைத் தரையில் வைத்து, வலது காலை உயர்த்தியபடி இடுப்பை மெதுவாக மேலே உயர்த்தி மீண்டும் கீழே இறக்கவும்.",
+  },
+  "neck-nodding": {
+    en: "Improves neck mobility and helps reduce stiffness. Gently nod your head downwards, bringing your chin towards your chest, then return to the starting position.",
+    ta: "கழுத்தின் இயக்கத்தை மேம்படுத்தி, இறுக்கத்தைக் குறைக்க உதவும். தலையை மெதுவாகக் கீழே சாய்த்து, தாடையை மார்பை நோக்கிக் கொண்டு வந்து, மீண்டும் ஆரம்ப நிலைக்குத் திரும்பவும்.",
+  },
+  "neck-side-flexion": {
+    en: "Improves neck mobility and flexibility. Slowly tilt your head towards your right and left shoulders, staying within your comfortable range.",
+    ta: "கழுத்தின் இயக்கத்தையும் நெகிழ்வுத்தன்மையையும் மேம்படுத்த உதவும். தலையை மெதுவாக வலது மற்றும் இடது தோள்பட்டை நோக்கி, உங்களுக்கு வசதியான அளவு வரை சாய்க்கவும்.",
+  },
+  "neck-rotation": {
+    en: "Improves neck mobility and helps maintain comfortable head movement. Slowly turn your head towards the right and left, staying within your comfortable range.",
+    ta: "கழுத்தின் இயக்கத்தை மேம்படுத்தி, தலையை வசதியாகத் திருப்ப உதவும். தலையை மெதுவாக வலது மற்றும் இடது பக்கமாக, உங்களுக்கு வசதியான அளவு வரை திருப்பவும்.",
+  },
 };
+
+const ARM_CIRCLES_SHORT_LEVER = {
+  en: "Improves shoulder mobility and helps reduce stiffness. Bend your elbows and place your hands on your shoulders, then slowly rotate your elbows in circles forwards and backwards.",
+  ta: "தோள்பட்டை இயக்கத்தை மேம்படுத்தி, இறுக்கத்தைக் குறைக்க உதவும். முழங்கைகளை மடக்கி, கைகளைத் தோள்களின் மீது வைத்து, முழங்கைகளை மெதுவாக முன்னும் பின்னும் வட்டமாகச் சுற்றவும்.",
+};
+
+function isBreastLevel1ArmCircles(exerciseId: string): boolean {
+  const slug = exerciseSlugFromId(exerciseId).replace(/-(left|right)$/i, '');
+  return (
+    (slug === 'arm-circles' || slug === 'arm-rotation') &&
+    /pathway-breast-l1-/i.test(exerciseId)
+  );
+}
 
 /**
  * Headings copied from the exercise documents. Tamil copy in those files
@@ -204,6 +253,8 @@ export const CLINICAL_EXERCISE_TITLES: Record<string, string> = {
   'standing-hamstring-curls-right': 'Hamstring Curls (Right)',
   'standing-hamstring-curls-left': 'Hamstring Curls (Left)',
   'hamstring-stretch': 'Hamstring Stretch',
+  'hamstring-stretch-left': 'Hamstring Stretch (Left)',
+  'hamstring-stretch-right': 'Hamstring Stretch (Right)',
   'quadriceps-stretch-right': 'Quadriceps Stretch (Right)',
   'quadriceps-stretch-left': 'Quadriceps Stretch (Left)',
   'calf-raise': 'Calf Raises',
@@ -211,9 +262,21 @@ export const CLINICAL_EXERCISE_TITLES: Record<string, string> = {
   'straight-leg-raise-left': 'Straight Leg Raise (Left)',
   'calf-stretch-right': 'Calf Stretch (Right)',
   'calf-stretch-left': 'Calf Stretch (Left)',
+  'incentive-spirometer': 'Incentive Spirometer',
+  'shoulder-retraction': 'Shoulder Retraction',
+  'shoulder-external-rotation': 'Shoulder External Rotation',
+  'heel-slides': 'Heel Slides',
+  'heel-slides-left': 'Heel Slides (Left)',
+  'heel-slides-right': 'Heel Slides (Right)',
+  'pelvic-bridge': 'Pelvic Bridge',
+  'unilateral-bridge': 'Unilateral Bridge',
+  'neck-nodding': 'Neck Nodding',
+  'neck-side-flexion': 'Neck Side Flexion',
+  'neck-rotation': 'Neck Rotation',
 };
 
 export function getClinicalExerciseTitle(exerciseId: string): string | null {
+  if (isBreastLevel1ArmCircles(exerciseId)) return 'Arm Circles (Short Lever)';
   const slug = exerciseSlugFromId(exerciseId || '');
   return CLINICAL_EXERCISE_TITLES[slug] ?? null;
 }
@@ -227,6 +290,7 @@ export function getClinicalExerciseDescription(
     language === 'ta' || (language ?? '').toLowerCase().startsWith('ta')
       ? 'ta'
       : 'en';
+  if (isBreastLevel1ArmCircles(exerciseId)) return ARM_CIRCLES_SHORT_LEVER[lang];
   const direct = CLINICAL_EXERCISE_DESCRIPTIONS[slug];
   if (direct) return direct[lang];
   const base = slug.replace(/-(left|right)$/i, '');

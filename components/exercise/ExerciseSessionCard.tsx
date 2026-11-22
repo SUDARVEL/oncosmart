@@ -9,6 +9,7 @@ import {
   SESSION_EXERCISE_CARD_PREVIEW_HEIGHT,
   SESSION_EXERCISE_CARD_PREVIEW_WIDTH,
 } from '../../lib/exerciseVideoFrame';
+import { isNewLibraryHeadUpPreview } from '../../lib/newExerciseLibraryMedia';
 import { font } from '../../theme/fonts';
 
 type Props = {
@@ -50,6 +51,13 @@ export function ExerciseSessionCard({
   }, [previewVideo, previewPhoto, exerciseId]);
 
   const hasPoster = Boolean(previewPhoto) && !photoFailed;
+  const photoUri =
+    previewPhoto && typeof previewPhoto === 'object' && 'uri' in previewPhoto
+      ? (previewPhoto.uri ?? null)
+      : typeof previewPhoto === 'number'
+        ? previewPhoto
+        : null;
+  const alignTop = isNewLibraryHeadUpPreview(exerciseId, previewVideo ?? photoUri);
   // Cap concurrent expo-video players: only mount when the card is viewable.
   const showVideo = Boolean(previewVideo) && !videoFailed && isActive;
 
@@ -62,7 +70,7 @@ export function ExerciseSessionCard({
               source={previewPhoto!}
               style={styles.previewMedia}
               contentFit="cover"
-              contentPosition="center"
+              contentPosition={alignTop ? 'top' : 'center'}
               recyclingKey={`session-card-${exerciseId}`}
               cachePolicy="memory-disk"
               onError={() => setPhotoFailed(true)}
@@ -74,6 +82,7 @@ export function ExerciseSessionCard({
             <View style={styles.videoOverlay} pointerEvents="none">
               <SessionCardLoopVideo
                 uri={previewVideo!}
+                alignTop={alignTop}
                 onFailed={() => setVideoFailed(true)}
               />
             </View>
