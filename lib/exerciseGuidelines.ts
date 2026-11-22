@@ -168,7 +168,7 @@ export const DOS_AND_DONTS: Record<CancerTypeSlug, { dos: DoDontKey[]; donts: Do
     donts: ['dontOverdo', 'breastNoHeavy', 'breastNoInjection', 'breastNoHeatIce'],
   },
   thorax: {
-    dos: ['followPlan', 'thoraxTellPain', 'thoraxCoughSheet', 'thoraxWound', 'thoraxCoughBlood'],
+    dos: ['followPlan', 'thoraxTellPain', 'thoraxCoughSheet', 'thoraxCoughBlood'],
     donts: ['dontOverdo', 'thoraxNoPush', 'thoraxNoSmoke'],
   },
   abdomen: {
