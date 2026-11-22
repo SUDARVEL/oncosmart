@@ -732,7 +732,22 @@
     "filterPaused": "இடைநிறுத்தம்",
     "filterQuit": "நிறுத்தம்",
     "filterEmpty": "இந்தப் பட்டியலில் நோயாளிகள் இல்லை.",
-    "noFeedback": "கருத்து இல்லை"
+    "noFeedback": "கருத்து இல்லை",
+    "statusIdle": "செயலற்றது",
+    "statusBreakdownTitle": "நோயாளி நிலை",
+    "cancerBreakdownTitle": "புற்றுநோய் வகைகள்",
+    "completionRate": "திட்டம் முடிந்தது",
+    "avgSessions": "சராசரி {{count}} அமர்வுகள்",
+    "viewCards": "அட்டைகள்",
+    "viewTable": "அட்டவணை",
+    "viewToggleLabel": "நோயாளி காட்சி",
+    "tablePatient": "நோயாளி",
+    "tableStatus": "நிலை",
+    "tableProgress": "முன்னேற்றம்",
+    "tableLevel": "நிலை",
+    "tableCancer": "புற்றுநோய்",
+    "tableLastSignIn": "கடைசி",
+    "insightsTitle": "பகுப்பாய்வு"
   },
   "chat": {
     "placeholder": "உங்கள் செய்தியை எழுதவும்...",

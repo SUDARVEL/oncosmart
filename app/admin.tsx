@@ -14,6 +14,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ScreenHeader } from '../components/ScreenHeader';
 import { SkeletonBlock } from '../components/ui/SkeletonBlock';
+import { AdminDashboardInsights } from '../components/admin/AdminDashboardInsights';
+import { AdminPatientTable } from '../components/admin/AdminPatientTable';
 import { AdminSessionBpmTable } from '../components/admin/AdminSessionBpmTable';
 import {
   fetchAdminHoldAlerts,
@@ -25,6 +27,7 @@ import {
   buildAdminDashboardStats,
   buildAdminSessionRows,
   fetchAdminPatientProgress,
+  getAdminPatientStatus,
   summarizeSessionFeedback,
   type AdminPatientProgress,
 } from '../lib/adminProgress';
@@ -78,134 +81,6 @@ function formatHoldReason(
   }
 }
 
-function SessionColumnChart({
-  title,
-  hint,
-  totalLabel,
-  buckets,
-}: {
-  title: string;
-  hint: string;
-  totalLabel: string;
-  buckets: { label: string; count: number }[];
-}) {
-  const max = Math.max(1, ...buckets.map((b) => b.count));
-  const chartHeight = 128;
-  return (
-    <View style={styles.chartCard}>
-      <View style={styles.chartHead}>
-        <View style={styles.chartHeadText}>
-          <Text style={styles.chartTitle}>{title}</Text>
-          <Text style={styles.chartHint}>{hint}</Text>
-        </View>
-        <Text style={styles.chartTotal}>{totalLabel}</Text>
-      </View>
-      <View style={styles.columnChart}>
-        {buckets.map((bucket) => {
-          const height =
-            bucket.count === 0 ? 0 : Math.max(8, Math.round((bucket.count / max) * chartHeight));
-          return (
-            <View key={bucket.label} style={styles.column}>
-              <Text style={styles.columnCount}>{bucket.count}</Text>
-              <View style={[styles.columnTrack, { height: chartHeight }]}>
-                <View style={[styles.columnBar, { height }]} />
-              </View>
-              <Text style={styles.columnLabel}>{bucket.label}</Text>
-            </View>
-          );
-        })}
-      </View>
-    </View>
-  );
-}
-
-function FeedbackChart({
-  title,
-  emptyLabel,
-  easyLabel,
-  hardLabel,
-  tiredLabel,
-  otherLabel,
-  easy,
-  hard,
-  tired,
-  other,
-}: {
-  title: string;
-  emptyLabel: string;
-  easyLabel: string;
-  hardLabel: string;
-  tiredLabel: string;
-  otherLabel: string;
-  easy: number;
-  hard: number;
-  tired: number;
-  other: number;
-}) {
-  const total = easy + hard + tired + other;
-  const share = (count: number) => (total === 0 ? 0 : Math.round((count / total) * 100));
-  return (
-    <View style={styles.chartCard}>
-      <View style={styles.chartHead}>
-        <Text style={styles.chartTitle}>{title}</Text>
-        <Text style={styles.chartTotal}>{total}</Text>
-      </View>
-      {total === 0 ? (
-        <Text style={styles.alertsEmpty}>{emptyLabel}</Text>
-      ) : (
-        <>
-          <View style={styles.stackTrack}>
-            {easy > 0 ? (
-              <View style={[styles.stackEasy, { flex: easy }]} />
-            ) : null}
-            {hard > 0 ? (
-              <View style={[styles.stackHard, { flex: hard }]} />
-            ) : null}
-            {tired > 0 ? (
-              <View style={[styles.stackTired, { flex: tired }]} />
-            ) : null}
-            {other > 0 ? (
-              <View style={[styles.stackOther, { flex: other }]} />
-            ) : null}
-          </View>
-          <View style={styles.legend}>
-            <View style={styles.legendItem}>
-              <View style={[styles.legendDot, styles.stackEasy]} />
-              <Text style={styles.legendLabel}>{easyLabel}</Text>
-              <Text style={styles.legendValue}>
-                {easy} · {share(easy)}%
-              </Text>
-            </View>
-            <View style={styles.legendItem}>
-              <View style={[styles.legendDot, styles.stackHard]} />
-              <Text style={styles.legendLabel}>{hardLabel}</Text>
-              <Text style={styles.legendValue}>
-                {hard} · {share(hard)}%
-              </Text>
-            </View>
-            <View style={styles.legendItem}>
-              <View style={[styles.legendDot, styles.stackTired]} />
-              <Text style={styles.legendLabel}>{tiredLabel}</Text>
-              <Text style={styles.legendValue}>
-                {tired} · {share(tired)}%
-              </Text>
-            </View>
-            {other > 0 ? (
-              <View style={styles.legendItem}>
-                <View style={[styles.legendDot, styles.stackOther]} />
-                <Text style={styles.legendLabel}>{otherLabel}</Text>
-                <Text style={styles.legendValue}>
-                  {other} · {share(other)}%
-                </Text>
-              </View>
-            ) : null}
-          </View>
-        </>
-      )}
-    </View>
-  );
-}
-
 function formatTreatmentType(
   treatment: AdminPatientProgress['treatmentUndergoing'],
   t: (key: string) => string,
@@ -256,6 +131,15 @@ function PatientCard({
     Math.round((patient.sessionsCompleted / TOTAL_SESSIONS) * 100),
   );
   const initial = (patient.displayName || patient.accountUsername || '?').trim().charAt(0).toUpperCase();
+  const status = getAdminPatientStatus(patient);
+  const statusTone =
+    status === 'active'
+      ? { bg: '#E8F8EE', text: '#15803D', label: t('admin.filterActive') }
+      : status === 'paused'
+        ? { bg: '#FFF7E8', text: '#B45309', label: t('admin.filterPaused') }
+        : status === 'quit'
+          ? { bg: '#FEECEC', text: '#B91C1C', label: t('admin.filterQuit') }
+          : { bg: '#F3F4F6', text: '#6B7280', label: t('admin.statusIdle') };
   const progressLabel = t('admin.sessionsProgress', {
     done: patient.sessionsCompleted,
     total: TOTAL_SESSIONS,
@@ -269,13 +153,22 @@ function PatientCard({
         });
 
   return (
-    <View style={styles.card}>
+    <View style={[styles.card, { borderLeftColor: statusTone.text, borderLeftWidth: 4 }]}>
       <Pressable onPress={onToggle} accessibilityRole="button" style={styles.cardHeader}>
         <View style={styles.avatar}>
           <Text style={styles.avatarText}>{initial}</Text>
         </View>
         <View style={styles.cardHeaderText}>
-          <Text style={styles.accountId}>{patient.displayName}</Text>
+          <View style={styles.cardTitleRow}>
+            <Text style={styles.accountId} numberOfLines={1}>
+              {patient.displayName}
+            </Text>
+            <View style={[styles.statusPill, { backgroundColor: statusTone.bg }]}>
+              <Text style={[styles.statusPillText, { color: statusTone.text }]}>
+                {statusTone.label}
+              </Text>
+            </View>
+          </View>
           <Text style={styles.displayName}>{patient.accountUsername}</Text>
         </View>
         <Ionicons
@@ -547,6 +440,7 @@ export default function AdminScreen() {
   const [loadError, setLoadError] = useState<'offline' | 'failed' | null>(null);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [patientFilter, setPatientFilter] = useState<'all' | 'active' | 'paused' | 'quit'>('all');
+  const [patientView, setPatientView] = useState<'cards' | 'table'>('cards');
 
   const stats = useMemo(() => buildAdminDashboardStats(patients), [patients]);
   const feedback = useMemo(() => summarizeSessionFeedback(patients), [patients]);
@@ -554,26 +448,15 @@ export default function AdminScreen() {
     () => alerts.filter((alert) => !alert.readAt).slice(0, 8),
     [alerts],
   );
-  const sessionsLogged = useMemo(
-    () => patients.reduce((sum, patient) => sum + patient.sessionsCompleted, 0),
-    [patients],
-  );
+  const activeCount = stats.statusBuckets.find((bucket) => bucket.id === 'active')?.count ?? 0;
   const visiblePatients = useMemo(() => {
-    if (patientFilter === 'paused') return patients.filter((patient) => patient.progressPaused);
-    if (patientFilter === 'quit') {
-      return patients.filter((patient) => Boolean(patient.quitReason || patient.quitAt));
-    }
-    if (patientFilter === 'active') {
-      return patients.filter(
-        (patient) =>
-          patient.sessionsCompleted > 0 &&
-          !patient.progressPaused &&
-          !patient.quitReason &&
-          !patient.quitAt,
-      );
-    }
-    return patients;
+    if (patientFilter === 'all') return patients;
+    return patients.filter((patient) => getAdminPatientStatus(patient) === patientFilter);
   }, [patientFilter, patients]);
+
+  const toggleExpanded = useCallback((userId: string) => {
+    setExpandedId((prev) => (prev === userId ? null : userId));
+  }, []);
 
   const load = useCallback(async (mode: 'initial' | 'refresh' = 'initial') => {
     if (mode === 'initial') setLoading(true);
@@ -695,31 +578,50 @@ export default function AdminScreen() {
             )}
           </View>
 
-          <View style={styles.heroCard}>
-            <Text style={styles.heroLabel}>{t('admin.statTotal')}</Text>
-            <Text style={styles.heroValue}>{stats.total}</Text>
-            <Text style={styles.heroHint}>
-              {t('admin.summary', {
-                total: stats.total,
-                onboarded: stats.onboarded,
-                active: stats.withProgress,
+          <Text style={styles.sectionTitle}>{t('admin.insightsTitle')}</Text>
+          <AdminDashboardInsights stats={stats} feedback={feedback} />
+
+          <View style={styles.listHeaderRow}>
+            <View style={styles.listHeaderText}>
+              <Text style={styles.sectionTitle}>{t('admin.patientsTitle')}</Text>
+              <Text style={styles.subtitle}>{t('admin.subtitle')}</Text>
+            </View>
+            <View
+              style={styles.viewToggle}
+              accessibilityRole="tablist"
+              accessibilityLabel={t('admin.viewToggleLabel')}
+            >
+              {(
+                [
+                  ['cards', t('admin.viewCards'), 'grid-outline'],
+                  ['table', t('admin.viewTable'), 'list-outline'],
+                ] as const
+              ).map(([id, label, icon]) => {
+                const selected = patientView === id;
+                return (
+                  <Pressable
+                    key={id}
+                    onPress={() => setPatientView(id)}
+                    accessibilityRole="tab"
+                    accessibilityState={{ selected }}
+                    style={[styles.viewToggleBtn, selected && styles.viewToggleBtnSelected]}
+                  >
+                    <Ionicons
+                      name={icon}
+                      size={16}
+                      color={selected ? '#FFFFFF' : colors.textSecondary}
+                    />
+                    <Text
+                      style={[
+                        styles.viewToggleText,
+                        selected && styles.viewToggleTextSelected,
+                      ]}
+                    >
+                      {label}
+                    </Text>
+                  </Pressable>
+                );
               })}
-            </Text>
-            <View style={styles.heroStats}>
-              <View style={styles.heroStat}>
-                <Text style={styles.heroStatValue}>{stats.onboarded}</Text>
-                <Text style={styles.heroStatLabel}>{t('admin.statOnboarded')}</Text>
-              </View>
-              <View style={styles.heroDivider} />
-              <View style={styles.heroStat}>
-                <Text style={styles.heroStatValue}>{stats.withProgress}</Text>
-                <Text style={styles.heroStatLabel}>{t('admin.statActive')}</Text>
-              </View>
-              <View style={styles.heroDivider} />
-              <View style={styles.heroStat}>
-                <Text style={styles.heroStatValue}>{stats.neverLoggedIn}</Text>
-                <Text style={styles.heroStatLabel}>{t('admin.statNeverLogin')}</Text>
-              </View>
             </View>
           </View>
 
@@ -727,7 +629,7 @@ export default function AdminScreen() {
             {(
               [
                 ['all', t('admin.filterAll'), stats.total],
-                ['active', t('admin.filterActive'), stats.withProgress],
+                ['active', t('admin.filterActive'), activeCount],
                 ['paused', t('admin.filterPaused'), stats.paused],
                 ['quit', t('admin.filterQuit'), stats.quit],
               ] as const
@@ -749,28 +651,6 @@ export default function AdminScreen() {
             })}
           </View>
 
-          <SessionColumnChart
-            title={t('admin.sessionsChartTitle')}
-            hint={t('admin.sessionsChartHint')}
-            totalLabel={t('admin.sessionsLogged', { count: sessionsLogged })}
-            buckets={stats.sessionBuckets}
-          />
-
-          <FeedbackChart
-            title={t('admin.feedbackSectionTitle')}
-            emptyLabel={t('admin.noFeedback')}
-            easyLabel={t('complete.feedbackEasy')}
-            hardLabel={t('complete.feedbackHard')}
-            tiredLabel={t('complete.feedbackTired')}
-            otherLabel={t('complete.feedbackOther')}
-            easy={feedback.easy}
-            hard={feedback.hard}
-            tired={feedback.tired}
-            other={feedback.other}
-          />
-
-          <Text style={styles.sectionTitle}>{t('admin.patientsTitle')}</Text>
-          <Text style={styles.subtitle}>{t('admin.subtitle')}</Text>
           {visiblePatients.length === 0 ? (
             <Text style={styles.emptyList}>
               {patients.length === 0
@@ -779,15 +659,26 @@ export default function AdminScreen() {
                   : t('admin.empty')
                 : t('admin.filterEmpty')}
             </Text>
+          ) : patientView === 'table' ? (
+            <AdminPatientTable
+              patients={visiblePatients}
+              expandedId={expandedId}
+              onToggle={toggleExpanded}
+              renderExpanded={(patient) => (
+                <PatientCard
+                  patient={patient}
+                  expanded
+                  onToggle={() => toggleExpanded(patient.userId)}
+                />
+              )}
+            />
           ) : (
             visiblePatients.map((patient) => (
               <PatientCard
                 key={patient.userId}
                 patient={patient}
                 expanded={expandedId === patient.userId}
-                onToggle={() =>
-                  setExpandedId((prev) => (prev === patient.userId ? null : patient.userId))
-                }
+                onToggle={() => toggleExpanded(patient.userId)}
               />
             ))
           )}
@@ -866,7 +757,47 @@ const styles = StyleSheet.create({
   subtitle: {
     ...uiText(14),
     color: colors.textMuted,
-    marginTop: -8,
+    marginTop: 2,
+  },
+  listHeaderRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    alignItems: 'flex-end',
+    justifyContent: 'space-between',
+    gap: 12,
+    marginTop: 4,
+  },
+  listHeaderText: {
+    flex: 1,
+    gap: 2,
+  },
+  viewToggle: {
+    flexDirection: 'row',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    padding: 3,
+    gap: 2,
+  },
+  viewToggleBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    borderRadius: 9,
+    paddingHorizontal: 10,
+    paddingVertical: 7,
+  },
+  viewToggleBtnSelected: {
+    backgroundColor: colors.navy,
+  },
+  viewToggleText: {
+    ...uiText(12, 'medium'),
+    color: colors.textSecondary,
+  },
+  viewToggleTextSelected: {
+    ...uiText(12, 'semiBold'),
+    color: '#FFFFFF',
   },
   centered: {
     flex: 1,
@@ -921,53 +852,6 @@ const styles = StyleSheet.create({
     color: colors.textSecondary,
     flex: 1,
   },
-  heroCard: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 18,
-    paddingHorizontal: 18,
-    paddingTop: 16,
-    paddingBottom: 14,
-    gap: 4,
-  },
-  heroLabel: {
-    ...uiText(14, 'medium'),
-    color: colors.textMuted,
-  },
-  heroValue: {
-    ...uiText(40, 'semiBold'),
-    color: colors.navy,
-  },
-  heroHint: {
-    ...uiText(13),
-    color: colors.textSecondary,
-  },
-  heroStats: {
-    marginTop: 10,
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#F4F7FB',
-    borderRadius: 12,
-    paddingVertical: 10,
-  },
-  heroStat: {
-    flex: 1,
-    alignItems: 'center',
-    gap: 2,
-  },
-  heroDivider: {
-    width: 1,
-    height: 28,
-    backgroundColor: '#E5E7EB',
-  },
-  heroStatValue: {
-    ...uiText(18, 'semiBold'),
-    color: colors.navy,
-  },
-  heroStatLabel: {
-    ...uiText(11, 'medium'),
-    color: colors.textMuted,
-    textAlign: 'center',
-  },
   filterRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',
@@ -978,9 +862,12 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     paddingHorizontal: 12,
     paddingVertical: 8,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
   },
   filterChipSelected: {
     backgroundColor: colors.navy,
+    borderColor: colors.navy,
   },
   filterChipText: {
     ...uiText(13, 'medium'),
@@ -989,139 +876,6 @@ const styles = StyleSheet.create({
   filterChipTextSelected: {
     ...uiText(13, 'semiBold'),
     color: '#FFFFFF',
-  },
-  chartCard: {
-    borderRadius: 18,
-    padding: 16,
-    gap: 14,
-    backgroundColor: '#FFFFFF',
-  },
-  chartHead: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    justifyContent: 'space-between',
-    gap: 12,
-  },
-  chartHeadText: {
-    flex: 1,
-    gap: 4,
-  },
-  chartTitle: {
-    ...uiText(16, 'semiBold'),
-    color: colors.textPrimary,
-  },
-  chartHint: {
-    ...uiText(13),
-    color: colors.textMuted,
-  },
-  chartTotal: {
-    ...uiText(14, 'semiBold'),
-    color: colors.navy,
-  },
-  columnChart: {
-    flexDirection: 'row',
-    alignItems: 'flex-end',
-    gap: 8,
-  },
-  column: {
-    flex: 1,
-    alignItems: 'center',
-    gap: 6,
-  },
-  columnCount: {
-    ...uiText(12, 'semiBold'),
-    color: colors.navy,
-  },
-  columnTrack: {
-    width: '100%',
-    justifyContent: 'flex-end',
-    alignItems: 'center',
-  },
-  columnBar: {
-    width: '70%',
-    maxWidth: 36,
-    borderRadius: 8,
-    backgroundColor: colors.buttonPrimary,
-    minHeight: 6,
-  },
-  columnLabel: {
-    ...uiText(11, 'medium'),
-    color: colors.textMuted,
-    textAlign: 'center',
-  },
-  stackTrack: {
-    height: 14,
-    borderRadius: 8,
-    overflow: 'hidden',
-    flexDirection: 'row',
-    backgroundColor: '#E8EEF5',
-  },
-  stackEasy: {
-    backgroundColor: '#1F8A4C',
-  },
-  stackHard: {
-    backgroundColor: '#E08A1E',
-  },
-  stackTired: {
-    backgroundColor: '#C2415B',
-  },
-  stackOther: {
-    backgroundColor: '#1D4ED8',
-  },
-  legend: {
-    gap: 8,
-  },
-  legendItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  legendDot: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-  },
-  legendLabel: {
-    ...uiText(13, 'medium'),
-    color: colors.textPrimary,
-    flex: 1,
-  },
-  legendValue: {
-    ...uiText(13, 'semiBold'),
-    color: colors.navy,
-  },
-  chartRows: {
-    gap: 8,
-  },
-  chartRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  chartLabel: {
-    width: 48,
-    ...font('medium'),
-    fontSize: 12,
-    color: colors.textSecondary,
-  },
-  chartTrack: {
-    flex: 1,
-    height: 12,
-    borderRadius: 8,
-    backgroundColor: '#E8EEF5',
-    overflow: 'hidden',
-  },
-  chartFill: {
-    height: '100%',
-    backgroundColor: colors.buttonPrimary,
-    borderRadius: 6,
-  },
-  chartCount: {
-    width: 28,
-    textAlign: 'right',
-    ...font('semiBold'),
-    fontSize: 12,
-    color: colors.textPrimary,
   },
   alertsCard: {
     borderRadius: 16,
@@ -1202,6 +956,8 @@ const styles = StyleSheet.create({
     padding: 16,
     backgroundColor: '#FFFFFF',
     gap: 12,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
   },
   cardHeader: {
     flexDirection: 'row',
@@ -1224,9 +980,23 @@ const styles = StyleSheet.create({
     flex: 1,
     gap: 2,
   },
+  cardTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
   accountId: {
     ...uiText(16, 'semiBold'),
     color: colors.textPrimary,
+    flexShrink: 1,
+  },
+  statusPill: {
+    borderRadius: 999,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+  },
+  statusPillText: {
+    ...uiText(11, 'semiBold'),
   },
   displayName: {
     ...uiText(13),
